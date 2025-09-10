@@ -6,10 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Package, MessageSquare, BarChart3 } from 'lucide-react';
+import { Plus, Package, MessageSquare, BarChart3, LogOut, Store } from 'lucide-react';
 import { ProductForm } from '@/components/ProductForm';
 import { SellerProducts } from '@/components/SellerProducts';
 import { SellerMessages } from '@/components/SellerMessages';
+import { useNavigate } from 'react-router-dom';
 
 interface Product {
   id: string;
@@ -30,12 +31,22 @@ interface Product {
 }
 
 const SellerDashboard = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  const handleViewPublicPage = () => {
+    navigate('/');
+  };
 
   useEffect(() => {
     if (user) {
@@ -127,9 +138,27 @@ const SellerDashboard = () => {
             <h1 className="text-3xl font-bold gradient-text-primary">Espace Vendeur</h1>
             <p className="text-muted-foreground">Gérez vos produits et commandes</p>
           </div>
-          <Badge variant="secondary" className="px-4 py-2">
-            Vendeur Certifié
-          </Badge>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              onClick={handleViewPublicPage}
+              className="flex items-center gap-2"
+            >
+              <Store className="h-4 w-4" />
+              Voir la page publique
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleSignOut}
+              className="flex items-center gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              Déconnexion
+            </Button>
+            <Badge variant="secondary" className="px-4 py-2">
+              Vendeur Certifié
+            </Badge>
+          </div>
         </div>
 
         {/* Stats Cards */}

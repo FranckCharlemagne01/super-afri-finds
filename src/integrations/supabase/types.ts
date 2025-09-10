@@ -14,7 +14,175 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cart_items: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          quantity: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          quantity?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          quantity?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cart_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      favorites: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          badge: string | null
+          category: string
+          created_at: string
+          description: string | null
+          discount_percentage: number | null
+          id: string
+          images: string[] | null
+          is_active: boolean | null
+          is_flash_sale: boolean | null
+          original_price: number | null
+          price: number
+          rating: number | null
+          reviews_count: number | null
+          seller_id: string
+          stock_quantity: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          badge?: string | null
+          category: string
+          created_at?: string
+          description?: string | null
+          discount_percentage?: number | null
+          id?: string
+          images?: string[] | null
+          is_active?: boolean | null
+          is_flash_sale?: boolean | null
+          original_price?: number | null
+          price: number
+          rating?: number | null
+          reviews_count?: number | null
+          seller_id: string
+          stock_quantity?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          badge?: string | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          discount_percentage?: number | null
+          id?: string
+          images?: string[] | null
+          is_active?: boolean | null
+          is_flash_sale?: boolean | null
+          original_price?: number | null
+          price?: number
+          rating?: number | null
+          reviews_count?: number | null
+          seller_id?: string
+          stock_quantity?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          address: string | null
+          avatar_url: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+          user_type: string | null
+        }
+        Insert: {
+          address?: string | null
+          avatar_url?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+          user_type?: string | null
+        }
+        Update: {
+          address?: string | null
+          avatar_url?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+          user_type?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

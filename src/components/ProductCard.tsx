@@ -2,8 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, Heart, ShoppingCart } from "lucide-react";
+import { useCart } from "@/hooks/useCart";
+import { useFavorites } from "@/hooks/useFavorites";
 
 interface ProductCardProps {
+  id?: string;
   image: string;
   title: string;
   originalPrice: number;
@@ -16,6 +19,7 @@ interface ProductCardProps {
 }
 
 export const ProductCard = ({
+  id = 'sample-product',
   image,
   title,
   originalPrice,
@@ -26,6 +30,18 @@ export const ProductCard = ({
   badge,
   isFlashSale = false,
 }: ProductCardProps) => {
+  const { addToCart } = useCart();
+  const { toggleFavorite, isFavorite } = useFavorites();
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    addToCart(id);
+  };
+
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleFavorite(id);
+  };
   return (
     <Card className="relative overflow-hidden hover-lift cursor-pointer border-0 shadow-lg">
       {/* Badges */}
@@ -46,8 +62,15 @@ export const ProductCard = ({
       </div>
 
       {/* Heart Icon */}
-      <button className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors">
-        <Heart className="w-4 h-4 text-muted-foreground hover:text-promo transition-colors" />
+      <button 
+        onClick={handleToggleFavorite}
+        className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
+      >
+        <Heart className={`w-4 h-4 transition-colors ${
+          isFavorite(id) 
+            ? 'text-promo fill-current' 
+            : 'text-muted-foreground hover:text-promo'
+        }`} />
       </button>
 
       {/* Product Image */}
@@ -97,6 +120,7 @@ export const ProductCard = ({
           variant="promo" 
           size="sm" 
           className="w-full mt-2"
+          onClick={handleAddToCart}
         >
           <ShoppingCart className="w-4 h-4" />
           Ajouter au panier

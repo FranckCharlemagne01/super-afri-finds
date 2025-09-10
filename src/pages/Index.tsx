@@ -3,6 +3,10 @@ import { ProductCard } from "@/components/ProductCard";
 import { CategoryCard } from "@/components/CategoryCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/hooks/useAuth";
+import { useCart } from "@/hooks/useCart";
+import { useFavorites } from "@/hooks/useFavorites";
+import { useNavigate } from "react-router-dom";
 import { 
   Smartphone, 
   Shirt, 
@@ -24,6 +28,37 @@ import productHeadphones from "@/assets/product-headphones.jpg";
 import productBlender from "@/assets/product-blender.jpg";
 
 const Index = () => {
+  const { user, signOut } = useAuth();
+  const { cartCount } = useCart();
+  const { favoriteIds } = useFavorites();
+  const navigate = useNavigate();
+
+  const handleProfileClick = () => {
+    if (user) {
+      // TODO: Navigate to profile page
+      console.log('Navigate to profile');
+    } else {
+      navigate('/auth');
+    }
+  };
+
+  const handleCartClick = () => {
+    if (user) {
+      // TODO: Navigate to cart page
+      console.log('Navigate to cart');
+    } else {
+      navigate('/auth');
+    }
+  };
+
+  const handleFavoritesClick = () => {
+    if (user) {
+      // TODO: Navigate to favorites page
+      console.log('Navigate to favorites');
+    } else {
+      navigate('/auth');
+    }
+  };
   const categories = [
     { icon: Smartphone, title: "Téléphones", itemCount: 1250, bgColor: "gradient-primary" },
     { icon: Shirt, title: "Mode", itemCount: 890, bgColor: "bg-promo" },
@@ -35,6 +70,7 @@ const Index = () => {
 
   const products = [
     {
+      id: "prod-001",
       image: productPhone,
       title: "Smartphone 5G Ultra - 128GB - Caméra 48MP",
       originalPrice: 85000,
@@ -46,6 +82,7 @@ const Index = () => {
       isFlashSale: true,
     },
     {
+      id: "prod-002",
       image: productClothing,
       title: "Robe Africaine Traditionnelle - Motifs Wax Premium",
       originalPrice: 25000,
@@ -56,6 +93,7 @@ const Index = () => {
       badge: "Top ventes",
     },
     {
+      id: "prod-003",
       image: productHeadphones,
       title: "Casque Audio Sans Fil - Réduction de Bruit Active",
       originalPrice: 35000,
@@ -66,6 +104,7 @@ const Index = () => {
       isFlashSale: true,
     },
     {
+      id: "prod-004",
       image: productBlender,
       title: "Blender Multifonction 1500W - 5 Vitesses",
       originalPrice: 45000,
@@ -76,6 +115,7 @@ const Index = () => {
       badge: "Nouveau",
     },
     {
+      id: "prod-005",
       image: productPhone,
       title: "Tablette 10 pouces - WiFi + 4G - 64GB",
       originalPrice: 65000,
@@ -85,6 +125,7 @@ const Index = () => {
       reviews: 123,
     },
     {
+      id: "prod-006",
       image: productClothing,
       title: "Ensemble Bogolan Homme - Coton Premium",
       originalPrice: 35000,
@@ -126,18 +167,25 @@ const Index = () => {
             </div>
             
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon">
-                <Heart className="w-5 h-5" />
+              <Button variant="ghost" size="icon" onClick={handleFavoritesClick}>
+                <Heart className={`w-5 h-5 ${favoriteIds.length > 0 ? 'fill-current text-promo' : ''}`} />
               </Button>
-              <Button variant="ghost" size="icon" className="relative">
+              <Button variant="ghost" size="icon" className="relative" onClick={handleCartClick}>
                 <ShoppingCart className="w-5 h-5" />
-                <Badge className="absolute -top-1 -right-1 bg-promo text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                  3
-                </Badge>
+                {cartCount > 0 && (
+                  <Badge className="absolute -top-1 -right-1 bg-promo text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                    {cartCount}
+                  </Badge>
+                )}
               </Button>
-              <Button variant="ghost" size="icon">
-                <User className="w-5 h-5" />
+              <Button variant="ghost" size="icon" onClick={handleProfileClick}>
+                <User className={`w-5 h-5 ${user ? 'text-primary' : ''}`} />
               </Button>
+              {user && (
+                <Button variant="ghost" size="sm" onClick={signOut}>
+                  Déconnexion
+                </Button>
+              )}
             </div>
           </div>
           

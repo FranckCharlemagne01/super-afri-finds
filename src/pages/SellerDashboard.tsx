@@ -132,81 +132,91 @@ const SellerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
+      <div className="container mx-auto px-4 py-6 lg:py-8">
+        {/* Header - Mobile optimized */}
+        <div className="flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-center mb-6 lg:mb-8">
           <div>
-            <h1 className="text-3xl font-bold gradient-text-primary">Espace Vendeur</h1>
-            <p className="text-muted-foreground">Gérez vos produits et commandes</p>
+            <h1 className="text-2xl lg:text-3xl font-bold gradient-text-primary">Espace Vendeur</h1>
+            <p className="text-sm lg:text-base text-muted-foreground">Gérez vos produits et commandes</p>
           </div>
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              onClick={handleViewPublicPage}
-              className="flex items-center gap-2"
-            >
-              <Store className="h-4 w-4" />
-              Voir la page publique
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleSignOut}
-              className="flex items-center gap-2"
-            >
-              <LogOut className="h-4 w-4" />
-              Déconnexion
-            </Button>
-            <Badge variant="secondary" className="px-4 py-2">
+          
+          {/* Mobile action buttons */}
+          <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-4">
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={handleViewPublicPage}
+                className="flex-1 lg:flex-none items-center gap-2 text-sm"
+                size="sm"
+              >
+                <Store className="h-4 w-4" />
+                <span className="hidden sm:inline">Voir la page publique</span>
+                <span className="sm:hidden">Page publique</span>
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleSignOut}
+                className="flex-1 lg:flex-none items-center gap-2 text-sm"
+                size="sm"
+              >
+                <LogOut className="h-4 w-4" />
+                <span className="hidden sm:inline">Déconnexion</span>
+                <span className="sm:hidden">Sortir</span>
+              </Button>
+            </div>
+            <Badge variant="secondary" className="px-3 py-1 text-xs lg:px-4 lg:py-2 self-center lg:self-auto">
               Vendeur Certifié
             </Badge>
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
+        {/* Stats Cards - Mobile optimized */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8">
+          <Card className="border-0 shadow-md">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Produits Total</CardTitle>
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalProducts}</div>
+              <div className="text-xl lg:text-2xl font-bold">{stats.totalProducts}</div>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="border-0 shadow-md">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Produits Actifs</CardTitle>
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.activeProducts}</div>
+              <div className="text-xl lg:text-2xl font-bold">{stats.activeProducts}</div>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="border-0 shadow-md sm:col-span-2 lg:col-span-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Avis</CardTitle>
               <MessageSquare className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalViews}</div>
+              <div className="text-xl lg:text-2xl font-bold">{stats.totalViews}</div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Main Content */}
+        {/* Main Content - Mobile optimized */}
         <Tabs defaultValue="products" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="products">Mes Produits</TabsTrigger>
-            <TabsTrigger value="messages">Messages</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:grid-cols-none lg:flex">
+            <TabsTrigger value="products" className="text-sm">Mes Produits</TabsTrigger>
+            <TabsTrigger value="messages" className="text-sm">Messages</TabsTrigger>
           </TabsList>
 
           <TabsContent value="products" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Gestion des Produits</h2>
+            <div className="flex flex-col gap-3 lg:flex-row lg:justify-between lg:items-center">
+              <h2 className="text-lg lg:text-xl font-semibold">Gestion des Produits</h2>
               <Button 
                 onClick={() => setShowProductForm(true)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 w-full lg:w-auto"
+                size="sm"
               >
                 <Plus className="h-4 w-4" />
                 Ajouter un Produit
@@ -214,16 +224,16 @@ const SellerDashboard = () => {
             </div>
 
             {showProductForm && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>
+              <Card className="border-0 shadow-md">
+                <CardHeader className="px-4 lg:px-6">
+                  <CardTitle className="text-lg lg:text-xl">
                     {editingProduct ? 'Modifier le Produit' : 'Ajouter un Nouveau Produit'}
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-sm">
                     Remplissez les informations de votre produit
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="px-4 lg:px-6">
                   <ProductForm
                     product={editingProduct}
                     onSave={handleProductSaved}

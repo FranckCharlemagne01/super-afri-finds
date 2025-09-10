@@ -202,7 +202,8 @@ const ProductDetail = () => {
 
             {/* Action Buttons */}
             <div className="space-y-3">
-              <div className="flex gap-3">
+              {/* Desktop: Full layout */}
+              <div className="hidden sm:flex gap-3">
                 <Button 
                   variant="outline" 
                   size="icon"
@@ -221,6 +222,28 @@ const ProductDetail = () => {
                 >
                   <ShoppingCart className="w-5 h-5 mr-2" />
                   Ajouter au panier ({(product.salePrice * quantity).toLocaleString()} FCFA)
+                </Button>
+              </div>
+
+              {/* Mobile: Icon layout */}
+              <div className="flex sm:hidden gap-2">
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  onClick={handleToggleFavorite}
+                  className="shrink-0"
+                >
+                  <Heart className={`w-5 h-5 ${
+                    isFavorite(product.id) ? 'fill-current text-promo' : ''
+                  }`} />
+                </Button>
+                
+                <Button 
+                  onClick={handleAddToCart}
+                  className="flex-1 bg-primary hover:bg-primary/90"
+                  size="lg"
+                >
+                  <ShoppingCart className="w-5 h-5" />
                 </Button>
               </div>
               

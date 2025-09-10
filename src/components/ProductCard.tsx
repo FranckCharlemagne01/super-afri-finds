@@ -128,30 +128,62 @@ export const ProductCard = ({
 
         {/* Action Buttons */}
         <div className="space-y-2">
-          <Button 
-            variant="promo" 
-            size="sm" 
-            className="w-full"
-            onClick={handleAddToCart}
-          >
-            <ShoppingCart className="w-4 h-4" />
-            Ajouter au panier
-          </Button>
-          
-          <div onClick={(e) => e.stopPropagation()}>
-            <QuickOrderDialog
+          {/* Desktop: Full buttons */}
+          <div className="hidden sm:flex flex-col space-y-2">
+            <Button 
+              variant="promo" 
+              size="sm" 
+              className="w-full"
+              onClick={handleAddToCart}
+            >
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              Ajouter au panier
+            </Button>
+            
+            <div onClick={(e) => e.stopPropagation()}>
+              <QuickOrderDialog
+                productId={id}
+                productTitle={title}
+                productPrice={salePrice}
+                sellerId={seller_id}
+              />
+            </div>
+            
+            <ContactSellerButton
               productId={id}
-              productTitle={title}
-              productPrice={salePrice}
               sellerId={seller_id}
+              productTitle={title}
             />
           </div>
-          
-          <ContactSellerButton
-            productId={id}
-            sellerId={seller_id}
-            productTitle={title}
-          />
+
+          {/* Mobile: Icon buttons */}
+          <div className="flex sm:hidden justify-between gap-2">
+            <Button 
+              variant="promo" 
+              size="sm" 
+              className="flex-1"
+              onClick={handleAddToCart}
+            >
+              <ShoppingCart className="w-4 h-4" />
+            </Button>
+            
+            <div onClick={(e) => e.stopPropagation()} className="flex-1">
+              <QuickOrderDialog
+                productId={id}
+                productTitle={title}
+                productPrice={salePrice}
+                sellerId={seller_id}
+                iconOnly={true}
+              />
+            </div>
+            
+            <ContactSellerButton
+              productId={id}
+              sellerId={seller_id}
+              productTitle={title}
+              iconOnly={true}
+            />
+          </div>
         </div>
       </div>
     </Card>

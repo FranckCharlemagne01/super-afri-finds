@@ -20,9 +20,10 @@ interface ContactSellerButtonProps {
   productId: string;
   sellerId: string;
   productTitle: string;
+  iconOnly?: boolean;
 }
 
-export const ContactSellerButton = ({ productId, sellerId, productTitle }: ContactSellerButtonProps) => {
+export const ContactSellerButton = ({ productId, sellerId, productTitle, iconOnly = false }: ContactSellerButtonProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -87,9 +88,9 @@ export const ContactSellerButton = ({ productId, sellerId, productTitle }: Conta
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="flex items-center gap-2">
-          <MessageSquare className="h-4 w-4" />
-          Contacter le vendeur
+        <Button variant="outline" className="w-full" size="sm">
+          <MessageSquare className="w-4 h-4" />
+          {!iconOnly && <span className="ml-2">Contacter le vendeur</span>}
         </Button>
       </DialogTrigger>
       <DialogContent>

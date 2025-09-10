@@ -17,13 +17,15 @@ interface QuickOrderDialogProps {
   productTitle: string;
   productPrice: number;
   sellerId: string;
+  iconOnly?: boolean;
 }
 
 export const QuickOrderDialog = ({ 
   productId, 
   productTitle, 
   productPrice, 
-  sellerId 
+  sellerId,
+  iconOnly = false
 }: QuickOrderDialogProps) => {
   const [open, setOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -86,9 +88,9 @@ export const QuickOrderDialog = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="default" className="w-full">
-          <ShoppingCart className="w-4 h-4 mr-2" />
-          Passer la commande
+        <Button variant="outline" className="w-full" size="sm">
+          <ShoppingCart className="w-4 h-4" />
+          {!iconOnly && <span className="ml-2">Passer la commande</span>}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">

@@ -162,8 +162,13 @@ const Index = () => {
             </div>
             
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" onClick={handleFavoritesClick}>
+              <Button variant="ghost" size="icon" className="relative" onClick={handleFavoritesClick}>
                 <Heart className={`w-5 h-5 ${favoriteIds.length > 0 ? 'fill-current text-promo' : ''}`} />
+                {favoriteIds.length > 0 && (
+                  <Badge className="absolute -top-1 -right-1 bg-promo text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                    {favoriteIds.length}
+                  </Badge>
+                )}
               </Button>
               <Button variant="ghost" size="icon" className="relative" onClick={handleCartClick}>
                 <ShoppingCart className="w-5 h-5" />

@@ -67,8 +67,8 @@ export function useFavorites() {
         setLocalFavorites(updatedFavorites);
         setFavoriteIds(updatedFavorites);
         toast({
-          title: "Ajouté aux favoris",
-          description: "Le produit a été ajouté à vos favoris locaux",
+          title: "Ajouté aux favoris ❤️",
+          description: "Le produit a été ajouté à vos favoris",
         });
       }
       return;
@@ -98,7 +98,7 @@ export function useFavorites() {
         
         setFavoriteIds(prev => [...prev, productId]);
         toast({
-          title: "Ajouté aux favoris",
+          title: "Ajouté aux favoris ❤️",
           description: "Le produit a été ajouté à vos favoris",
         });
       }

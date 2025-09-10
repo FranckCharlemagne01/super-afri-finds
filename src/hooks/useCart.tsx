@@ -126,7 +126,7 @@ export function useCart() {
       
       setLocalCart(localCart);
       toast({
-        title: "Produit ajouté",
+        title: "Produit ajouté au panier ✅",
         description: "Le produit a été ajouté à votre panier",
       });
       
@@ -152,7 +152,7 @@ export function useCart() {
       if (error) throw error;
       
       toast({
-        title: "Produit ajouté",
+        title: "Produit ajouté au panier ✅",
         description: "Le produit a été ajouté à votre panier",
       });
       

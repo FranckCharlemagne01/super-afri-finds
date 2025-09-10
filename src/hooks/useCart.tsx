@@ -251,6 +251,21 @@ export function useCart() {
   };
 
   useEffect(() => {
+    // Clear old incorrect localStorage data immediately on load
+    const currentCart = localStorage.getItem('djassa_cart');
+    if (currentCart) {
+      try {
+        const cartData = JSON.parse(currentCart);
+        const hasOldIds = cartData.some((item: any) => item.product_id && item.product_id.startsWith('prod-'));
+        if (hasOldIds) {
+          console.log('🧹 Clearing old cart data with incorrect IDs');
+          localStorage.removeItem('djassa_cart');
+        }
+      } catch (e) {
+        localStorage.removeItem('djassa_cart');
+      }
+    }
+    
     fetchCartItems();
   }, [user]);
 

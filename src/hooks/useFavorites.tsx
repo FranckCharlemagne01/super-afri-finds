@@ -110,6 +110,21 @@ export function useFavorites() {
   };
 
   useEffect(() => {
+    // Clear old incorrect localStorage data immediately on load
+    const currentFavorites = localStorage.getItem('djassa_favorites');
+    if (currentFavorites) {
+      try {
+        const favoritesData = JSON.parse(currentFavorites);
+        const hasOldIds = favoritesData.some((id: string) => id.startsWith('prod-'));
+        if (hasOldIds) {
+          console.log('🧹 Clearing old favorites data with incorrect IDs');
+          localStorage.removeItem('djassa_favorites');
+        }
+      } catch (e) {
+        localStorage.removeItem('djassa_favorites');
+      }
+    }
+    
     fetchFavorites();
   }, [user]);
 

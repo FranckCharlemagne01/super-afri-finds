@@ -58,18 +58,10 @@ export function useFavorites() {
         const updatedFavorites = localFavorites.filter(id => id !== productId);
         setLocalFavorites(updatedFavorites);
         setFavoriteIds(updatedFavorites);
-        toast({
-          title: "Retiré des favoris",
-          description: "Le produit a été retiré de vos favoris locaux",
-        });
       } else {
         const updatedFavorites = [...localFavorites, productId];
         setLocalFavorites(updatedFavorites);
         setFavoriteIds(updatedFavorites);
-        toast({
-          title: "Ajouté aux favoris ❤️",
-          description: "Le produit a été ajouté à vos favoris",
-        });
       }
       return;
     }
@@ -83,24 +75,14 @@ export function useFavorites() {
           .eq('product_id', productId);
 
         if (error) throw error;
-        
         setFavoriteIds(prev => prev.filter(id => id !== productId));
-        toast({
-          title: "Retiré des favoris",
-          description: "Le produit a été retiré de vos favoris",
-        });
       } else {
         const { error } = await supabase
           .from('favorites')
           .insert({ user_id: user.id, product_id: productId });
 
         if (error) throw error;
-        
         setFavoriteIds(prev => [...prev, productId]);
-        toast({
-          title: "Ajouté aux favoris ❤️",
-          description: "Le produit a été ajouté à vos favoris",
-        });
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);

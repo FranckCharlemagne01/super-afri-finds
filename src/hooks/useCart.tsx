@@ -120,11 +120,6 @@ export function useCart() {
       }
       
       setLocalCart(localCart);
-      toast({
-        title: "Produit ajouté au panier ✅",
-        description: "Le produit a été ajouté à votre panier",
-      });
-      
       fetchCartItems();
       return;
     }
@@ -145,12 +140,6 @@ export function useCart() {
         );
 
       if (error) throw error;
-      
-      toast({
-        title: "Produit ajouté au panier ✅",
-        description: "Le produit a été ajouté à votre panier",
-      });
-      
       fetchCartItems();
     } catch (error) {
       console.error('Error adding to cart:', error);
@@ -202,11 +191,6 @@ export function useCart() {
       const updatedCart = localCart.filter(item => item.product_id !== productId);
       setLocalCart(updatedCart);
       fetchCartItems();
-      
-      toast({
-        title: "Produit retiré",
-        description: "Le produit a été retiré de votre panier",
-      });
       return;
     }
 
@@ -218,11 +202,6 @@ export function useCart() {
 
       if (error) throw error;
       fetchCartItems();
-      
-      toast({
-        title: "Produit retiré",
-        description: "Le produit a été retiré de votre panier",
-      });
     } catch (error) {
       console.error('Error removing from cart:', error);
     }

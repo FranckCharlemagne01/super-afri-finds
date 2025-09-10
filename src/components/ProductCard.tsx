@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, Heart, ShoppingCart } from "lucide-react";
+import { Star, Heart, ShoppingCart, MessageSquare } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
+import { ContactSellerButton } from "@/components/ContactSellerButton";
 
 interface ProductCardProps {
   id?: string;
@@ -16,6 +17,7 @@ interface ProductCardProps {
   reviews: number;
   badge?: string;
   isFlashSale?: boolean;
+  seller_id?: string;
 }
 
 export const ProductCard = ({
@@ -29,6 +31,7 @@ export const ProductCard = ({
   reviews,
   badge,
   isFlashSale = false,
+  seller_id = 'default-seller',
 }: ProductCardProps) => {
   const { addToCart } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
@@ -115,16 +118,24 @@ export const ProductCard = ({
           </span>
         </div>
 
-        {/* Add to Cart Button */}
-        <Button 
-          variant="promo" 
-          size="sm" 
-          className="w-full mt-2"
-          onClick={handleAddToCart}
-        >
-          <ShoppingCart className="w-4 h-4" />
-          Ajouter au panier
-        </Button>
+        {/* Action Buttons */}
+        <div className="space-y-2">
+          <Button 
+            variant="promo" 
+            size="sm" 
+            className="w-full"
+            onClick={handleAddToCart}
+          >
+            <ShoppingCart className="w-4 h-4" />
+            Ajouter au panier
+          </Button>
+          
+          <ContactSellerButton
+            productId={id}
+            sellerId={seller_id}
+            productTitle={title}
+          />
+        </div>
       </div>
     </Card>
   );

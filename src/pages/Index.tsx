@@ -35,8 +35,7 @@ const Index = () => {
 
   const handleProfileClick = () => {
     if (user) {
-      // TODO: Navigate to profile page
-      console.log('Navigate to profile');
+      navigate('/seller');
     } else {
       navigate('/auth');
     }

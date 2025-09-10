@@ -7,12 +7,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Globe } from 'lucide-react';
+import { CountrySelect } from '@/components/CountrySelect';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [country, setCountry] = useState('CI'); // Default to Côte d'Ivoire
   const [loading, setLoading] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const { signIn, signUp } = useAuth();
@@ -59,7 +61,7 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const { error } = await signUp(email, password, fullName);
+      const { error } = await signUp(email, password, fullName, country);
       
       if (error) {
         if (error.message.includes('already registered')) {
@@ -185,6 +187,20 @@ const Auth = () => {
                         onChange={(e) => setEmail(e.target.value)}
                         required
                       />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="country" className="flex items-center gap-2">
+                        <Globe className="w-4 h-4" />
+                        Pays
+                      </Label>
+                      <CountrySelect
+                        value={country}
+                        onValueChange={setCountry}
+                        placeholder="Sélectionnez votre pays"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Ceci nous aide à personnaliser votre expérience et à vous proposer des produits adaptés à votre région.
+                      </p>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="password">Mot de passe</Label>

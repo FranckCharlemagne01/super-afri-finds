@@ -48,20 +48,25 @@ export function useFavorites() {
   };
 
   const toggleFavorite = async (productId: string) => {
+    console.log('❤️ Toggling favorite for product:', productId);
     const isFavorite = favoriteIds.includes(productId);
+    console.log('Current favorite status:', isFavorite);
 
     if (!user) {
       // Handle local favorites for non-authenticated users
       const localFavorites = getLocalFavorites();
+      console.log('📱 Current local favorites:', localFavorites);
       
       if (isFavorite) {
         const updatedFavorites = localFavorites.filter(id => id !== productId);
         setLocalFavorites(updatedFavorites);
         setFavoriteIds(updatedFavorites);
+        console.log('➖ Removed from favorites:', updatedFavorites);
       } else {
         const updatedFavorites = [...localFavorites, productId];
         setLocalFavorites(updatedFavorites);
         setFavoriteIds(updatedFavorites);
+        console.log('➕ Added to favorites:', updatedFavorites);
       }
       return;
     }

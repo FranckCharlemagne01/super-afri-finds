@@ -9,8 +9,27 @@ export function useFavorites() {
   const { user } = useAuth();
   const { toast } = useToast();
 
+  // Local storage functions
+  const getLocalFavorites = (): string[] => {
+    try {
+      const localFavorites = localStorage.getItem('djassa_favorites');
+      return localFavorites ? JSON.parse(localFavorites) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const setLocalFavorites = (ids: string[]) => {
+    localStorage.setItem('djassa_favorites', JSON.stringify(ids));
+  };
+
   const fetchFavorites = async () => {
-    if (!user) return;
+    if (!user) {
+      // Load from localStorage for non-authenticated users
+      const localFavorites = getLocalFavorites();
+      setFavoriteIds(localFavorites);
+      return;
+    }
     
     setLoading(true);
     try {
@@ -29,16 +48,31 @@ export function useFavorites() {
   };
 
   const toggleFavorite = async (productId: string) => {
+    const isFavorite = favoriteIds.includes(productId);
+
     if (!user) {
-      toast({
-        title: "Connexion requise",
-        description: "Veuillez vous connecter pour ajouter des favoris",
-        variant: "destructive",
-      });
+      // Handle local favorites for non-authenticated users
+      const localFavorites = getLocalFavorites();
+      
+      if (isFavorite) {
+        const updatedFavorites = localFavorites.filter(id => id !== productId);
+        setLocalFavorites(updatedFavorites);
+        setFavoriteIds(updatedFavorites);
+        toast({
+          title: "Retiré des favoris",
+          description: "Le produit a été retiré de vos favoris locaux",
+        });
+      } else {
+        const updatedFavorites = [...localFavorites, productId];
+        setLocalFavorites(updatedFavorites);
+        setFavoriteIds(updatedFavorites);
+        toast({
+          title: "Ajouté aux favoris",
+          description: "Le produit a été ajouté à vos favoris locaux",
+        });
+      }
       return;
     }
-
-    const isFavorite = favoriteIds.includes(productId);
 
     try {
       if (isFavorite) {
@@ -79,11 +113,7 @@ export function useFavorites() {
   };
 
   useEffect(() => {
-    if (user) {
-      fetchFavorites();
-    } else {
-      setFavoriteIds([]);
-    }
+    fetchFavorites();
   }, [user]);
 
   return {

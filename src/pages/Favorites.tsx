@@ -30,12 +30,6 @@ const Favorites = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-    }
-  }, [user, navigate]);
-
-  useEffect(() => {
     const fetchFavoriteProducts = async () => {
       if (favoriteIds.length === 0) {
         setFavoriteProducts([]);
@@ -62,10 +56,6 @@ const Favorites = () => {
     fetchFavoriteProducts();
   }, [favoriteIds]);
 
-  if (!user) {
-    return null;
-  }
-
   const handleProductClick = (productId: string) => {
     navigate(`/product/${productId}`);
   };
@@ -81,7 +71,7 @@ const Favorites = () => {
             </Button>
             <h1 className="text-xl font-bold text-foreground">Mes Favoris</h1>
             <Badge className="bg-promo text-promo-foreground">
-              {favoriteIds.length} favori{favoriteIds.length > 1 ? 's' : ''}
+              {favoriteIds.length} favori{favoriteIds.length > 1 ? 's' : ''} {!user && '(local)'}
             </Badge>
           </div>
         </div>
@@ -98,7 +88,9 @@ const Favorites = () => {
           <div className="text-center py-12">
             <Heart className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
             <h2 className="text-xl font-semibold text-foreground mb-2">Aucun favori pour le moment</h2>
-            <p className="text-muted-foreground mb-6">Découvrez nos produits et ajoutez-les à vos favoris</p>
+            <p className="text-muted-foreground mb-6">
+              Découvrez nos produits et ajoutez-les à vos favoris {!user && '(les favoris seront sauvegardés localement)'}
+            </p>
             <Button onClick={() => navigate('/')}>
               Découvrir les produits
             </Button>

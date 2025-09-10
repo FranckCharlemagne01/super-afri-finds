@@ -42,19 +42,11 @@ const Index = () => {
   };
 
   const handleCartClick = () => {
-    if (user) {
-      navigate('/cart');
-    } else {
-      navigate('/auth');
-    }
+    navigate('/cart');
   };
 
   const handleFavoritesClick = () => {
-    if (user) {
-      navigate('/favorites');
-    } else {
-      navigate('/auth');
-    }
+    navigate('/favorites');
   };
   const categories = [
     { icon: Smartphone, title: "Téléphones", itemCount: 1250, bgColor: "gradient-primary" },

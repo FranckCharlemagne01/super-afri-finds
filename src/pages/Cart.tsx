@@ -12,17 +12,16 @@ const Cart = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const totalPrice = cartItems.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+
+  const handleCheckout = () => {
     if (!user) {
       navigate('/auth');
+      return;
     }
-  }, [user, navigate]);
-
-  if (!user) {
-    return null;
-  }
-
-  const totalPrice = cartItems.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+    // TODO: Implement checkout process
+    console.log('Proceed to checkout');
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -137,8 +136,8 @@ const Cart = () => {
                   </div>
                 </div>
                 
-                <Button className="w-full" size="lg">
-                  Procéder au paiement
+                <Button className="w-full" size="lg" onClick={handleCheckout}>
+                  {user ? 'Procéder au paiement' : 'Se connecter pour commander'}
                 </Button>
                 
                 <Button 

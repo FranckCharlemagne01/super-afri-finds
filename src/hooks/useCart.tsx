@@ -15,14 +15,71 @@ interface CartItem {
   };
 }
 
+interface LocalCartItem {
+  product_id: string;
+  quantity: number;
+}
+
 export function useCart() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
+  // Local storage functions
+  const getLocalCart = (): LocalCartItem[] => {
+    try {
+      const localCart = localStorage.getItem('djassa_cart');
+      return localCart ? JSON.parse(localCart) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const setLocalCart = (items: LocalCartItem[]) => {
+    localStorage.setItem('djassa_cart', JSON.stringify(items));
+  };
+
   const fetchCartItems = async () => {
-    if (!user) return;
+    if (!user) {
+      // Load from localStorage for non-authenticated users
+      const localItems = getLocalCart();
+      if (localItems.length > 0) {
+        setLoading(true);
+        try {
+          const productIds = localItems.map(item => item.product_id);
+          const { data: products, error } = await supabase
+            .from('products')
+            .select('id, title, price, images')
+            .in('id', productIds)
+            .eq('is_active', true);
+
+          if (error) throw error;
+
+          const cartData: CartItem[] = localItems.map(localItem => {
+            const product = products?.find(p => p.id === localItem.product_id);
+            return {
+              id: `local-${localItem.product_id}`,
+              product_id: localItem.product_id,
+              quantity: localItem.quantity,
+              product: product || {
+                id: localItem.product_id,
+                title: 'Produit non trouvé',
+                price: 0,
+                images: []
+              }
+            };
+          }).filter(item => item.product.price > 0);
+
+          setCartItems(cartData);
+        } catch (error) {
+          console.error('Error fetching local cart products:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+      return;
+    }
     
     setLoading(true);
     try {
@@ -57,11 +114,23 @@ export function useCart() {
 
   const addToCart = async (productId: string) => {
     if (!user) {
+      // Handle local cart for non-authenticated users
+      const localCart = getLocalCart();
+      const existingItem = localCart.find(item => item.product_id === productId);
+      
+      if (existingItem) {
+        existingItem.quantity += 1;
+      } else {
+        localCart.push({ product_id: productId, quantity: 1 });
+      }
+      
+      setLocalCart(localCart);
       toast({
-        title: "Connexion requise",
-        description: "Veuillez vous connecter pour ajouter des produits au panier",
-        variant: "destructive",
+        title: "Produit ajouté",
+        description: "Le produit a été ajouté à votre panier",
       });
+      
+      fetchCartItems();
       return;
     }
 
@@ -104,6 +173,19 @@ export function useCart() {
       return;
     }
 
+    if (!user) {
+      // Handle local cart
+      const localCart = getLocalCart();
+      const productId = cartItemId.replace('local-', '');
+      const item = localCart.find(item => item.product_id === productId);
+      if (item) {
+        item.quantity = quantity;
+        setLocalCart(localCart);
+        fetchCartItems();
+      }
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('cart_items')
@@ -118,6 +200,21 @@ export function useCart() {
   };
 
   const removeFromCart = async (cartItemId: string) => {
+    if (!user) {
+      // Handle local cart
+      const localCart = getLocalCart();
+      const productId = cartItemId.replace('local-', '');
+      const updatedCart = localCart.filter(item => item.product_id !== productId);
+      setLocalCart(updatedCart);
+      fetchCartItems();
+      
+      toast({
+        title: "Produit retiré",
+        description: "Le produit a été retiré de votre panier",
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('cart_items')
@@ -137,11 +234,7 @@ export function useCart() {
   };
 
   useEffect(() => {
-    if (user) {
-      fetchCartItems();
-    } else {
-      setCartItems([]);
-    }
+    fetchCartItems();
   }, [user]);
 
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);

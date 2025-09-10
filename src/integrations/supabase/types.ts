@@ -122,6 +122,54 @@ export type Database = {
           },
         ]
       }
+      orders: {
+        Row: {
+          created_at: string
+          customer_name: string
+          customer_phone: string
+          delivery_location: string
+          id: string
+          product_id: string
+          product_price: number
+          product_title: string
+          quantity: number
+          seller_id: string
+          status: string
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_name: string
+          customer_phone: string
+          delivery_location: string
+          id?: string
+          product_id: string
+          product_price: number
+          product_title: string
+          quantity?: number
+          seller_id: string
+          status?: string
+          total_amount: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string
+          customer_phone?: string
+          delivery_location?: string
+          id?: string
+          product_id?: string
+          product_price?: number
+          product_title?: string
+          quantity?: number
+          seller_id?: string
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           badge: string | null

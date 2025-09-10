@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { ContactSellerButton } from "@/components/ContactSellerButton";
+import { QuickOrderDialog } from "@/components/QuickOrderDialog";
 import { products } from "@/data/products";
 import { 
   ArrowLeft, 
@@ -200,26 +201,35 @@ const ProductDetail = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3">
-              <Button 
-                variant="outline" 
-                size="icon"
-                onClick={handleToggleFavorite}
-                className="shrink-0"
-              >
-                <Heart className={`w-5 h-5 ${
-                  isFavorite(product.id) ? 'fill-current text-promo' : ''
-                }`} />
-              </Button>
+            <div className="space-y-3">
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  onClick={handleToggleFavorite}
+                  className="shrink-0"
+                >
+                  <Heart className={`w-5 h-5 ${
+                    isFavorite(product.id) ? 'fill-current text-promo' : ''
+                  }`} />
+                </Button>
+                
+                <Button 
+                  onClick={handleAddToCart}
+                  className="flex-1 bg-primary hover:bg-primary/90"
+                  size="lg"
+                >
+                  <ShoppingCart className="w-5 h-5 mr-2" />
+                  Ajouter au panier ({(product.salePrice * quantity).toLocaleString()} FCFA)
+                </Button>
+              </div>
               
-              <Button 
-                onClick={handleAddToCart}
-                className="flex-1 bg-primary hover:bg-primary/90"
-                size="lg"
-              >
-                <ShoppingCart className="w-5 h-5 mr-2" />
-                Ajouter au panier ({(product.salePrice * quantity).toLocaleString()} FCFA)
-              </Button>
+              <QuickOrderDialog
+                productId={product.id}
+                productTitle={product.title}
+                productPrice={product.salePrice}
+                sellerId={product.seller_id}
+              />
               
               <ContactSellerButton
                 productId={product.id}

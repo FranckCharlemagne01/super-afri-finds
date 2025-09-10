@@ -6,6 +6,7 @@ import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useNavigate } from "react-router-dom";
 import { ContactSellerButton } from "@/components/ContactSellerButton";
+import { QuickOrderDialog } from "@/components/QuickOrderDialog";
 
 interface ProductCardProps {
   id?: string;
@@ -136,6 +137,15 @@ export const ProductCard = ({
             <ShoppingCart className="w-4 h-4" />
             Ajouter au panier
           </Button>
+          
+          <div onClick={(e) => e.stopPropagation()}>
+            <QuickOrderDialog
+              productId={id}
+              productTitle={title}
+              productPrice={salePrice}
+              sellerId={seller_id}
+            />
+          </div>
           
           <ContactSellerButton
             productId={id}

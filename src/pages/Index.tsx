@@ -46,6 +46,7 @@ const Index = () => {
   const { cartCount } = useCart();
   const { favoriteIds } = useFavorites();
   const navigate = useNavigate();
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleProfileClick = () => {
     if (user) {
@@ -62,6 +63,17 @@ const Index = () => {
   const handleFavoritesClick = () => {
     navigate('/favorites');
   };
+
+  const handleViewAllCategories = () => {
+    // Pour l'instant, on peut faire défiler vers les produits ou naviguer vers une page de catégories
+    console.log('Navigation vers toutes les catégories');
+    // navigate('/categories'); // À implémenter plus tard
+  };
+
+  const handleRefreshRecommendations = () => {
+    setRefreshKey(prev => prev + 1);
+    console.log('Recommandations actualisées');
+  };
   const categories = [
     { title: "Téléphones & Tablettes", itemCount: 1250, image: categoryPhones },
     { title: "Électroménager / TV & Audio", itemCount: 890, image: categoryElectronics },
@@ -71,9 +83,20 @@ const Index = () => {
     { title: "Épicerie & Produits alimentaires", itemCount: 820, image: categoryGrocery },
     { title: "Auto & Accessoires", itemCount: 340, image: categoryAuto },
   ];
-
+  
   // Use the real products from data file with correct UUIDs
+  // Mélanger les produits pour les recommandations avec refreshKey
+  const shuffleArray = (array: any[]) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
   const displayProducts = products;
+  const shuffledProducts = refreshKey > 0 ? shuffleArray(products) : products;
 
   return (
     <div className="min-h-screen bg-background">
@@ -155,7 +178,7 @@ const Index = () => {
         <section className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-foreground">Catégories populaires</h2>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" onClick={handleViewAllCategories}>
               Voir tout
             </Button>
           </div>
@@ -197,14 +220,14 @@ const Index = () => {
         <section className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-foreground">Recommandés pour vous</h2>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleRefreshRecommendations}>
               Actualiser
             </Button>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-            {displayProducts.map((product) => (
-              <ProductCard key={product.id} {...product} videoUrl={product.videoUrl} />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4" key={refreshKey}>
+            {shuffledProducts.map((product) => (
+              <ProductCard key={`${product.id}-${refreshKey}`} {...product} videoUrl={product.videoUrl} />
             ))}
           </div>
         </section>

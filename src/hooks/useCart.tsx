@@ -45,30 +45,32 @@ export function useCart() {
       // Load from localStorage for non-authenticated users
       const localItems = getLocalCart();
       if (localItems.length > 0) {
-        // Import products locally to avoid Supabase call
-        const { products } = await import('@/data/products');
-        
-        const cartData: CartItem[] = localItems.map(localItem => {
-          const product = products.find(p => p.id === localItem.product_id);
-          return {
-            id: `local-${localItem.product_id}`,
-            product_id: localItem.product_id,
-            quantity: localItem.quantity,
-            product: product ? {
-              id: product.id,
-              title: product.title,
-              price: product.salePrice,
-              images: [product.image]
-            } : {
-              id: localItem.product_id,
-              title: 'Produit non trouvé',
-              price: 0,
-              images: []
-            }
-          };
-        }).filter(item => item.product.price > 0);
+        try {
+          // Import products locally to avoid Supabase call
+          const { products } = await import('@/data/products');
+          
+          const cartData: CartItem[] = localItems.map(localItem => {
+            const product = products.find(p => p.id === localItem.product_id);
+            if (!product) return null;
+            
+            return {
+              id: `local-${localItem.product_id}`,
+              product_id: localItem.product_id,
+              quantity: localItem.quantity,
+              product: {
+                id: product.id,
+                title: product.title,
+                price: product.salePrice,
+                images: [product.image]
+              }
+            };
+          }).filter(Boolean) as CartItem[];
 
-        setCartItems(cartData);
+          setCartItems(cartData);
+        } catch (error) {
+          console.error('Error loading local cart products:', error);
+          setCartItems([]);
+        }
       } else {
         setCartItems([]);
       }
@@ -104,7 +106,6 @@ export function useCart() {
     } finally {
       setLoading(false);
     }
-
   };
 
   const addToCart = async (productId: string) => {
@@ -120,26 +121,42 @@ export function useCart() {
       }
       
       setLocalCart(localCart);
-      fetchCartItems();
+      
+      // Immediately refresh cart display
+      await fetchCartItems();
       return;
     }
 
     try {
-      const { error } = await supabase
+      // Check if item already exists in cart
+      const { data: existingItems } = await supabase
         .from('cart_items')
-        .upsert(
-          { 
+        .select('id, quantity')
+        .eq('user_id', user.id)
+        .eq('product_id', productId)
+        .maybeSingle();
+
+      if (existingItems) {
+        // Update existing item quantity
+        const { error } = await supabase
+          .from('cart_items')
+          .update({ quantity: existingItems.quantity + 1 })
+          .eq('id', existingItems.id);
+        
+        if (error) throw error;
+      } else {
+        // Insert new cart item
+        const { error } = await supabase
+          .from('cart_items')
+          .insert({ 
             user_id: user.id, 
             product_id: productId, 
             quantity: 1 
-          },
-          { 
-            onConflict: 'user_id,product_id',
-            ignoreDuplicates: false 
-          }
-        );
-
-      if (error) throw error;
+          });
+        
+        if (error) throw error;
+      }
+      
       fetchCartItems();
     } catch (error) {
       console.error('Error adding to cart:', error);

@@ -59,80 +59,8 @@ const Index = () => {
     { icon: Gamepad2, title: "Gaming", itemCount: 567, bgColor: "bg-promo" },
   ];
 
-  const products = [
-    {
-      id: "prod-001",
-      image: productPhone,
-      title: "Smartphone 5G Ultra - 128GB - Caméra 48MP",
-      originalPrice: 85000,
-      salePrice: 52000,
-      discount: 39,
-      rating: 4.8,
-      reviews: 234,
-      badge: "Vendeur fiable",
-      isFlashSale: true,
-      seller_id: "seller-001",
-    },
-    {
-      id: "prod-002",
-      image: productClothing,
-      title: "Robe Africaine Traditionnelle - Motifs Wax Premium",
-      originalPrice: 25000,
-      salePrice: 18000,
-      discount: 28,
-      rating: 4.9,
-      reviews: 156,
-      badge: "Top ventes",
-      seller_id: "seller-002",
-    },
-    {
-      id: "prod-003",
-      image: productHeadphones,
-      title: "Casque Audio Sans Fil - Réduction de Bruit Active",
-      originalPrice: 35000,
-      salePrice: 21000,
-      discount: 40,
-      rating: 4.7,
-      reviews: 89,
-      isFlashSale: true,
-      seller_id: "seller-003",
-    },
-    {
-      id: "prod-004",
-      image: productBlender,
-      title: "Blender Multifonction 1500W - 5 Vitesses",
-      originalPrice: 45000,
-      salePrice: 29000,
-      discount: 36,
-      rating: 4.6,
-      reviews: 67,
-      badge: "Nouveau",
-      seller_id: "seller-004",
-    },
-    {
-      id: "prod-005",
-      image: productPhone,
-      title: "Tablette 10 pouces - WiFi + 4G - 64GB",
-      originalPrice: 65000,
-      salePrice: 42000,
-      discount: 35,
-      rating: 4.5,
-      reviews: 123,
-      seller_id: "seller-005",
-    },
-    {
-      id: "prod-006",
-      image: productClothing,
-      title: "Ensemble Bogolan Homme - Coton Premium",
-      originalPrice: 35000,
-      salePrice: 24000,
-      discount: 31,
-      rating: 4.8,
-      reviews: 78,
-      badge: "Vendeur fiable",
-      seller_id: "seller-006",
-    },
-  ];
+  // Use the real products from data file with correct UUIDs
+  const displayProducts = products;
 
   return (
     <div className="min-h-screen bg-background">
@@ -247,7 +175,7 @@ const Index = () => {
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-            {products.slice(0, 6).map((product) => (
+            {displayProducts.slice(0, 6).map((product) => (
               <ProductCard key={product.id} {...product} />
             ))}
           </div>
@@ -263,7 +191,7 @@ const Index = () => {
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-            {products.map((product) => (
+            {displayProducts.map((product) => (
               <ProductCard key={product.id} {...product} />
             ))}
           </div>

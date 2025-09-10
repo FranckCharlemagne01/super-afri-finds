@@ -43,8 +43,7 @@ const Index = () => {
 
   const handleCartClick = () => {
     if (user) {
-      // TODO: Navigate to cart page
-      console.log('Navigate to cart');
+      navigate('/cart');
     } else {
       navigate('/auth');
     }
@@ -52,8 +51,7 @@ const Index = () => {
 
   const handleFavoritesClick = () => {
     if (user) {
-      // TODO: Navigate to favorites page
-      console.log('Navigate to favorites');
+      navigate('/favorites');
     } else {
       navigate('/auth');
     }

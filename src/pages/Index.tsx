@@ -20,7 +20,10 @@ import {
   ShoppingCart,
   Menu,
   User,
-  Heart
+  Heart,
+  Tv,
+  Sparkles,
+  ShoppingBag
 } from "lucide-react";
 
 // Import product images
@@ -28,6 +31,15 @@ import productPhone from "@/assets/product-phone.jpg";
 import productClothing from "@/assets/product-clothing.jpg";
 import productHeadphones from "@/assets/product-headphones.jpg";
 import productBlender from "@/assets/product-blender.jpg";
+
+// Import category images
+import categoryPhones from "@/assets/category-phones.jpg";
+import categoryElectronics from "@/assets/category-electronics.jpg";
+import categoryFashion from "@/assets/category-fashion.jpg";
+import categoryHome from "@/assets/category-home.jpg";
+import categoryBeauty from "@/assets/category-beauty.jpg";
+import categoryGrocery from "@/assets/category-grocery.jpg";
+import categoryAuto from "@/assets/category-auto.jpg";
 
 const Index = () => {
   const { user, signOut } = useAuth();
@@ -51,12 +63,13 @@ const Index = () => {
     navigate('/favorites');
   };
   const categories = [
-    { icon: Smartphone, title: "Téléphones", itemCount: 1250, bgColor: "gradient-primary" },
-    { icon: Shirt, title: "Mode", itemCount: 890, bgColor: "bg-promo" },
-    { icon: Headphones, title: "Audio", itemCount: 456, bgColor: "bg-success" },
-    { icon: Home, title: "Maison", itemCount: 1100, bgColor: "gradient-accent" },
-    { icon: Car, title: "Auto", itemCount: 234, bgColor: "bg-primary" },
-    { icon: Gamepad2, title: "Gaming", itemCount: 567, bgColor: "bg-promo" },
+    { title: "Téléphones & Tablettes", itemCount: 1250, image: categoryPhones },
+    { title: "Électroménager / TV & Audio", itemCount: 890, image: categoryElectronics },
+    { title: "Mode", itemCount: 1450, image: categoryFashion },
+    { title: "Maison & Décoration", itemCount: 1100, image: categoryHome },
+    { title: "Beauté & Soins personnels", itemCount: 675, image: categoryBeauty },
+    { title: "Épicerie & Produits alimentaires", itemCount: 820, image: categoryGrocery },
+    { title: "Auto & Accessoires", itemCount: 340, image: categoryAuto },
   ];
 
   // Use the real products from data file with correct UUIDs
@@ -146,14 +159,13 @@ const Index = () => {
               Voir tout
             </Button>
           </div>
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
             {categories.map((category, index) => (
               <CategoryCard
                 key={index}
-                icon={category.icon}
                 title={category.title}
                 itemCount={category.itemCount}
-                bgColor={category.bgColor}
+                image={category.image}
                 onClick={() => console.log(`Catégorie ${category.title} sélectionnée`)}
               />
             ))}

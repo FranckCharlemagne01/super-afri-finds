@@ -247,8 +247,8 @@ const Index = () => {
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-            {products.slice(0, 6).map((product, index) => (
-              <ProductCard key={index} {...product} />
+            {products.slice(0, 6).map((product) => (
+              <ProductCard key={product.id} {...product} />
             ))}
           </div>
         </section>
@@ -263,8 +263,8 @@ const Index = () => {
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-            {products.map((product, index) => (
-              <ProductCard key={`rec-${index}`} {...product} />
+            {products.map((product) => (
+              <ProductCard key={product.id} {...product} />
             ))}
           </div>
         </section>

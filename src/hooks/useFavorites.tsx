@@ -48,6 +48,16 @@ export function useFavorites() {
   };
 
   const toggleFavorite = async (productId: string) => {
+    // Clear old localStorage data with incorrect IDs
+    if (localStorage.getItem('djassa_favorites')) {
+      const currentFavorites = getLocalFavorites();
+      const hasOldIds = currentFavorites.some(id => id.startsWith('prod-'));
+      if (hasOldIds) {
+        localStorage.removeItem('djassa_favorites');
+        setFavoriteIds([]);
+      }
+    }
+    
     console.log('❤️ Toggling favorite for product:', productId);
     const isFavorite = favoriteIds.includes(productId);
     console.log('Current favorite status:', isFavorite);

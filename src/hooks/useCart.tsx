@@ -118,6 +118,16 @@ export function useCart() {
   };
 
   const addToCart = async (productId: string) => {
+    // Clear old localStorage data with incorrect IDs
+    if (localStorage.getItem('djassa_cart')) {
+      const currentCart = getLocalCart();
+      const hasOldIds = currentCart.some(item => item.product_id.startsWith('prod-'));
+      if (hasOldIds) {
+        localStorage.removeItem('djassa_cart');
+        setCartItems([]);
+      }
+    }
+    
     console.log('🛒 Adding to cart:', productId);
     
     if (!user) {

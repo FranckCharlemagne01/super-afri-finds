@@ -135,11 +135,6 @@ const ProductDetail = () => {
   }
 
   const handleAddToCart = () => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-    
     // Add to cart with the selected quantity
     for (let i = 0; i < quantity; i++) {
       addToCart(product.id);
@@ -154,10 +149,6 @@ const ProductDetail = () => {
   };
 
   const handleToggleFavorite = () => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
     toggleFavorite(product.id);
   };
 

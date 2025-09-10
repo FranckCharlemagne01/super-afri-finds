@@ -106,8 +106,8 @@ const Index = () => {
               <Button variant="ghost" size="icon" className="md:hidden">
                 <Menu className="w-5 h-5" />
               </Button>
-              <h1 className="text-xl md:text-2xl font-bold gradient-primary bg-clip-text text-transparent">
-                AfriMarket
+              <h1 className="text-xl md:text-2xl font-bold gradient-text-primary">
+                Djassa
               </h1>
               <Badge className="gradient-accent text-xs px-2 py-1 hidden sm:inline-flex">
                 Côte d'Ivoire
@@ -257,7 +257,7 @@ const Index = () => {
             </div>
           </div>
           <div className="text-sm text-muted-foreground">
-            © 2024 AfriMarket - Votre marketplace de confiance en Côte d'Ivoire
+            © 2024 Djassa - Votre marketplace de confiance en Côte d'Ivoire
           </div>
         </div>
       </footer>

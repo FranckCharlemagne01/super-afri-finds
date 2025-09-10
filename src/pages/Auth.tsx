@@ -51,28 +51,55 @@ const Auth = () => {
       const { error } = await signIn(email, password);
       
       if (error) {
-        if (error.message.includes('Invalid login credentials')) {
+        // Handle different types of authentication errors
+        if (error.message.includes('Invalid login credentials') || 
+            error.message.includes('Invalid email or password') ||
+            error.message.includes('Email not confirmed') ||
+            error.message.includes('Invalid password')) {
           toast({
-            title: "Erreur de connexion",
-            description: "Email ou mot de passe incorrect",
+            title: "❌ Erreur de connexion",
+            description: "Email ou mot de passe incorrect. Vérifiez vos informations et réessayez.",
             variant: "destructive",
+            duration: 5000,
+          });
+        } else if (error.message.includes('Email not confirmed')) {
+          toast({
+            title: "⚠️ Email non confirmé",
+            description: "Veuillez confirmer votre email avant de vous connecter.",
+            variant: "destructive",
+            duration: 5000,
+          });
+        } else if (error.message.includes('Too many requests')) {
+          toast({
+            title: "⏳ Trop de tentatives",
+            description: "Trop de tentatives de connexion. Veuillez patienter quelques minutes.",
+            variant: "destructive",
+            duration: 6000,
           });
         } else {
           toast({
-            title: "Erreur",
-            description: error.message,
+            title: "❌ Erreur de connexion",
+            description: "Email ou mot de passe incorrect. Vérifiez vos informations et réessayez.",
             variant: "destructive",
+            duration: 5000,
           });
         }
       } else {
         toast({
-          title: "Connexion réussie",
+          title: "✅ Connexion réussie",
           description: "Bienvenue sur Djassa !",
+          duration: 3000,
         });
         navigate('/');
       }
     } catch (error) {
       console.error('Login error:', error);
+      toast({
+        title: "❌ Erreur de connexion",
+        description: "Email ou mot de passe incorrect. Vérifiez vos informations et réessayez.",
+        variant: "destructive",
+        duration: 5000,
+      });
     } finally {
       setLoading(false);
     }
@@ -86,24 +113,51 @@ const Auth = () => {
       const { error } = await signUp(email, password, fullName, country);
       
       if (error) {
-        if (error.message.includes('already registered')) {
+        if (error.message.includes('already registered') || error.message.includes('already been registered')) {
           toast({
-            title: "Compte existant",
-            description: "Un compte avec cet email existe déjà",
+            title: "⚠️ Compte existant",
+            description: "Un compte avec cet email existe déjà. Essayez de vous connecter.",
             variant: "destructive",
+            duration: 5000,
+          });
+        } else if (error.message.includes('Password should be at least')) {
+          toast({
+            title: "⚠️ Mot de passe trop court",
+            description: "Le mot de passe doit contenir au moins 6 caractères.",
+            variant: "destructive",
+            duration: 5000,
+          });
+        } else if (error.message.includes('Invalid email')) {
+          toast({
+            title: "⚠️ Email invalide",
+            description: "Veuillez saisir une adresse email valide.",
+            variant: "destructive",
+            duration: 5000,
           });
         } else {
           toast({
-            title: "Erreur",
+            title: "❌ Erreur d'inscription",
             description: error.message,
             variant: "destructive",
+            duration: 5000,
           });
         }
       } else {
         setRegistrationSuccess(true);
+        toast({
+          title: "✅ Inscription réussie",
+          description: "Consultez votre email pour confirmer votre compte.",
+          duration: 4000,
+        });
       }
     } catch (error) {
       console.error('Signup error:', error);
+      toast({
+        title: "❌ Erreur d'inscription",
+        description: "Une erreur est survenue. Veuillez réessayer.",
+        variant: "destructive",
+        duration: 5000,
+      });
     } finally {
       setLoading(false);
     }
@@ -117,20 +171,37 @@ const Auth = () => {
       const { error } = await resetPassword(resetEmail);
       
       if (error) {
-        toast({
-          title: "Erreur",
-          description: error.message,
-          variant: "destructive",
-        });
+        if (error.message.includes('Unable to validate email address')) {
+          toast({
+            title: "⚠️ Email introuvable",
+            description: "Aucun compte n'est associé à cette adresse email.",
+            variant: "destructive",
+            duration: 5000,
+          });
+        } else {
+          toast({
+            title: "❌ Erreur",
+            description: error.message,
+            variant: "destructive",
+            duration: 5000,
+          });
+        }
       } else {
         setResetSuccess(true);
         toast({
-          title: "Email envoyé",
-          description: "Consultez votre boîte email pour réinitialiser votre mot de passe",
+          title: "📧 Email envoyé",
+          description: "Consultez votre boîte email pour réinitialiser votre mot de passe.",
+          duration: 4000,
         });
       }
     } catch (error) {
       console.error('Reset password error:', error);
+      toast({
+        title: "❌ Erreur",
+        description: "Une erreur est survenue. Veuillez réessayer.",
+        variant: "destructive",
+        duration: 5000,
+      });
     } finally {
       setLoading(false);
     }
@@ -141,18 +212,20 @@ const Auth = () => {
     
     if (newPassword !== confirmPassword) {
       toast({
-        title: "Erreur",
-        description: "Les mots de passe ne correspondent pas",
+        title: "⚠️ Erreur",
+        description: "Les mots de passe ne correspondent pas. Veuillez vérifier.",
         variant: "destructive",
+        duration: 5000,
       });
       return;
     }
 
     if (newPassword.length < 6) {
       toast({
-        title: "Erreur",
-        description: "Le mot de passe doit contenir au moins 6 caractères",
+        title: "⚠️ Mot de passe trop court",
+        description: "Le mot de passe doit contenir au moins 6 caractères.",
         variant: "destructive",
+        duration: 5000,
       });
       return;
     }
@@ -166,19 +239,27 @@ const Auth = () => {
       
       if (error) {
         toast({
-          title: "Erreur",
+          title: "❌ Erreur",
           description: error.message,
           variant: "destructive",
+          duration: 5000,
         });
       } else {
         toast({
-          title: "Succès",
-          description: "Votre mot de passe a été mis à jour avec succès",
+          title: "✅ Mot de passe mis à jour",
+          description: "Votre mot de passe a été mis à jour avec succès !",
+          duration: 4000,
         });
         navigate('/');
       }
     } catch (error) {
       console.error('Update password error:', error);
+      toast({
+        title: "❌ Erreur",
+        description: "Une erreur est survenue. Veuillez réessayer.",
+        variant: "destructive",
+        duration: 5000,
+      });
     } finally {
       setLoading(false);
     }

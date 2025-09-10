@@ -189,6 +189,7 @@ export type Database = {
           stock_quantity: number | null
           title: string
           updated_at: string
+          video_url: string | null
         }
         Insert: {
           badge?: string | null
@@ -208,6 +209,7 @@ export type Database = {
           stock_quantity?: number | null
           title: string
           updated_at?: string
+          video_url?: string | null
         }
         Update: {
           badge?: string | null
@@ -227,6 +229,7 @@ export type Database = {
           stock_quantity?: number | null
           title?: string
           updated_at?: string
+          video_url?: string | null
         }
         Relationships: []
       }

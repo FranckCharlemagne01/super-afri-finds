@@ -27,6 +27,7 @@ const ProductDetail = () => {
 
   const [quantity, setQuantity] = useState(1);
   const [personalMessage, setPersonalMessage] = useState('');
+  const [showVideo, setShowVideo] = useState(false);
 
   const product = products.find(p => p.id === id);
 
@@ -77,21 +78,58 @@ const ProductDetail = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Product Image */}
+          {/* Product Image/Video */}
           <div className="space-y-4">
             <div className="relative">
-              <img
-                src={product.image}
-                alt={product.title}
-                className="w-full h-96 lg:h-[500px] object-cover rounded-lg"
-              />
+              {showVideo && product.videoUrl ? (
+                <div className="relative">
+                  <video
+                    controls
+                    className="w-full h-96 lg:h-[500px] object-cover rounded-lg"
+                    poster={product.image}
+                  >
+                    <source src={product.videoUrl} type="video/mp4" />
+                    Votre navigateur ne supporte pas la lecture vidéo.
+                  </video>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="absolute top-3 right-3 bg-white/90"
+                    onClick={() => setShowVideo(false)}
+                  >
+                    Voir l'image
+                  </Button>
+                </div>
+              ) : (
+                <div className="relative">
+                  <img
+                    src={product.image}
+                    alt={product.title}
+                    className="w-full h-96 lg:h-[500px] object-cover rounded-lg"
+                  />
+                  {product.videoUrl && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="absolute top-3 right-3 bg-white/90 flex items-center gap-2"
+                      onClick={() => setShowVideo(true)}
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M8 5v10l7-5-7-5z"/>
+                      </svg>
+                      Voir la vidéo
+                    </Button>
+                  )}
+                </div>
+              )}
+              
               {product.badge && (
                 <Badge className="absolute top-3 left-3 bg-promo text-promo-foreground">
                   {product.badge}
                 </Badge>
               )}
               {product.isFlashSale && (
-                <Badge className="absolute top-3 right-3 bg-primary text-primary-foreground animate-pulse-promo">
+                <Badge className="absolute top-3 left-3 bg-primary text-primary-foreground animate-pulse-promo">
                   ⚡ Flash Sale
                 </Badge>
               )}

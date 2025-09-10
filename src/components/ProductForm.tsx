@@ -18,6 +18,7 @@ interface Product {
   discount_percentage?: number;
   category: string;
   images?: string[];
+  video_url?: string;
   badge?: string;
   stock_quantity?: number;
   is_active?: boolean;
@@ -57,7 +58,46 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
     is_flash_sale: product?.is_flash_sale || false,
     badge: product?.badge || '',
     images: product?.images?.[0] || '',
+    video_url: product?.video_url || '',
   });
+
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+
+  const uploadVideo = async (): Promise<string | null> => {
+    if (!videoFile || !user) return null;
+
+    setUploadingVideo(true);
+    try {
+      const fileExt = videoFile.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      
+      const { data, error } = await supabase.storage
+        .from('product-videos')
+        .upload(fileName, videoFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-videos')
+        .getPublicUrl(data.path);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading video:', error);
+      toast({
+        title: "Erreur d'upload",
+        description: "Impossible d'uploader la vidéo",
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setUploadingVideo(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +106,15 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
     setLoading(true);
 
     try {
+      // Upload video if present
+      let videoUrl = formData.video_url;
+      if (videoFile) {
+        const uploadedVideoUrl = await uploadVideo();
+        if (uploadedVideoUrl) {
+          videoUrl = uploadedVideoUrl;
+        }
+      }
+
       // Calculate discount percentage
       const discount_percentage = formData.original_price > 0 
         ? Math.round(((formData.original_price - formData.price) / formData.original_price) * 100)
@@ -83,6 +132,7 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
         is_flash_sale: formData.is_flash_sale,
         badge: formData.badge || null,
         images: formData.images ? [formData.images] : [],
+        video_url: videoUrl || null,
         seller_id: user.id,
       };
 
@@ -231,6 +281,48 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
         />
       </div>
 
+      {/* Video Upload Section */}
+      <div className="space-y-2">
+        <Label htmlFor="video">Vidéo du produit (optionnel)</Label>
+        <div className="space-y-2">
+          <Input
+            id="video"
+            type="file"
+            accept="video/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                // Vérification de la taille (max 50MB)
+                if (file.size > 50 * 1024 * 1024) {
+                  toast({
+                    title: "Fichier trop volumineux",
+                    description: "La vidéo doit faire moins de 50MB",
+                    variant: "destructive",
+                  });
+                  e.target.value = '';
+                  return;
+                }
+                setVideoFile(file);
+              }
+            }}
+            className="cursor-pointer"
+          />
+          {formData.video_url && (
+            <div className="text-sm text-muted-foreground">
+              Vidéo actuelle: <span className="text-success">✓ Vidéo ajoutée</span>
+            </div>
+          )}
+          {videoFile && (
+            <div className="text-sm text-success">
+              Nouvelle vidéo sélectionnée: {videoFile.name}
+            </div>
+          )}
+          <p className="text-xs text-muted-foreground">
+            Formats acceptés: MP4, MOV, AVI. Taille max: 50MB
+          </p>
+        </div>
+      </div>
+
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
@@ -257,8 +349,8 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
         <Button type="button" variant="outline" onClick={onCancel}>
           Annuler
         </Button>
-        <Button type="submit" disabled={loading}>
-          {loading ? 'Sauvegarde...' : (product?.id ? 'Modifier' : 'Créer')}
+        <Button type="submit" disabled={loading || uploadingVideo}>
+          {loading ? 'Sauvegarde...' : uploadingVideo ? 'Upload vidéo...' : (product?.id ? 'Modifier' : 'Créer')}
         </Button>
       </div>
     </form>

@@ -20,6 +20,7 @@ interface ProductCardProps {
   badge?: string;
   isFlashSale?: boolean;
   seller_id?: string;
+  videoUrl?: string;
 }
 
 export const ProductCard = ({
@@ -34,6 +35,7 @@ export const ProductCard = ({
   badge,
   isFlashSale = false,
   seller_id = 'default-seller',
+  videoUrl,
 }: ProductCardProps) => {
   const { addToCart } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
@@ -91,6 +93,16 @@ export const ProductCard = ({
           alt={title}
           className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
         />
+        {videoUrl && (
+          <div className="absolute bottom-2 right-2 z-10">
+            <div className="bg-black/70 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M8 5v10l7-5-7-5z"/>
+              </svg>
+              <span>Video</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Product Info */}

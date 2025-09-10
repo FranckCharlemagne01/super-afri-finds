@@ -19,6 +19,7 @@ export interface Product {
   seller_id: string;
   stock: number;
   specifications: string[];
+  videoUrl?: string;
 }
 
 export const products: Product[] = [

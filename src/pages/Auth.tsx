@@ -7,9 +7,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Globe, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Globe, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { CountrySelect } from '@/components/CountrySelect';
 import { supabase } from '@/integrations/supabase/client';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -28,6 +29,9 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [resetFormError, setResetFormError] = useState('');
+  const [updatePasswordError, setUpdatePasswordError] = useState('');
   const { signIn, signUp, resetPassword } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -46,6 +50,7 @@ const Auth = () => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setFormError(''); // Clear any previous errors
 
     try {
       const { error } = await signIn(email, password);
@@ -54,35 +59,14 @@ const Auth = () => {
         // Handle different types of authentication errors
         if (error.message.includes('Invalid login credentials') || 
             error.message.includes('Invalid email or password') ||
-            error.message.includes('Email not confirmed') ||
             error.message.includes('Invalid password')) {
-          toast({
-            title: "❌ Erreur de connexion",
-            description: "Email ou mot de passe incorrect. Vérifiez vos informations et réessayez.",
-            variant: "destructive",
-            duration: 5000,
-          });
+          setFormError('Email ou mot de passe incorrect. Vérifiez vos informations et réessayez.');
         } else if (error.message.includes('Email not confirmed')) {
-          toast({
-            title: "⚠️ Email non confirmé",
-            description: "Veuillez confirmer votre email avant de vous connecter.",
-            variant: "destructive",
-            duration: 5000,
-          });
+          setFormError('Veuillez confirmer votre email avant de vous connecter.');
         } else if (error.message.includes('Too many requests')) {
-          toast({
-            title: "⏳ Trop de tentatives",
-            description: "Trop de tentatives de connexion. Veuillez patienter quelques minutes.",
-            variant: "destructive",
-            duration: 6000,
-          });
+          setFormError('Trop de tentatives de connexion. Veuillez patienter quelques minutes.');
         } else {
-          toast({
-            title: "❌ Erreur de connexion",
-            description: "Email ou mot de passe incorrect. Vérifiez vos informations et réessayez.",
-            variant: "destructive",
-            duration: 5000,
-          });
+          setFormError('Email ou mot de passe incorrect. Vérifiez vos informations et réessayez.');
         }
       } else {
         toast({
@@ -94,12 +78,7 @@ const Auth = () => {
       }
     } catch (error) {
       console.error('Login error:', error);
-      toast({
-        title: "❌ Erreur de connexion",
-        description: "Email ou mot de passe incorrect. Vérifiez vos informations et réessayez.",
-        variant: "destructive",
-        duration: 5000,
-      });
+      setFormError('Email ou mot de passe incorrect. Vérifiez vos informations et réessayez.');
     } finally {
       setLoading(false);
     }
@@ -166,25 +145,16 @@ const Auth = () => {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setResetFormError(''); // Clear any previous errors
 
     try {
       const { error } = await resetPassword(resetEmail);
       
       if (error) {
         if (error.message.includes('Unable to validate email address')) {
-          toast({
-            title: "⚠️ Email introuvable",
-            description: "Aucun compte n'est associé à cette adresse email.",
-            variant: "destructive",
-            duration: 5000,
-          });
+          setResetFormError('Aucun compte n\'est associé à cette adresse email.');
         } else {
-          toast({
-            title: "❌ Erreur",
-            description: error.message,
-            variant: "destructive",
-            duration: 5000,
-          });
+          setResetFormError('Une erreur est survenue. Veuillez réessayer.');
         }
       } else {
         setResetSuccess(true);
@@ -196,12 +166,7 @@ const Auth = () => {
       }
     } catch (error) {
       console.error('Reset password error:', error);
-      toast({
-        title: "❌ Erreur",
-        description: "Une erreur est survenue. Veuillez réessayer.",
-        variant: "destructive",
-        duration: 5000,
-      });
+      setResetFormError('Une erreur est survenue. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
@@ -209,24 +174,15 @@ const Auth = () => {
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    setUpdatePasswordError(''); // Clear any previous errors
     
     if (newPassword !== confirmPassword) {
-      toast({
-        title: "⚠️ Erreur",
-        description: "Les mots de passe ne correspondent pas. Veuillez vérifier.",
-        variant: "destructive",
-        duration: 5000,
-      });
+      setUpdatePasswordError('Les mots de passe ne correspondent pas. Veuillez vérifier.');
       return;
     }
 
     if (newPassword.length < 6) {
-      toast({
-        title: "⚠️ Mot de passe trop court",
-        description: "Le mot de passe doit contenir au moins 6 caractères.",
-        variant: "destructive",
-        duration: 5000,
-      });
+      setUpdatePasswordError('Le mot de passe doit contenir au moins 6 caractères.');
       return;
     }
 
@@ -238,12 +194,7 @@ const Auth = () => {
       });
       
       if (error) {
-        toast({
-          title: "❌ Erreur",
-          description: error.message,
-          variant: "destructive",
-          duration: 5000,
-        });
+        setUpdatePasswordError('Une erreur est survenue. Veuillez réessayer.');
       } else {
         toast({
           title: "✅ Mot de passe mis à jour",
@@ -254,12 +205,7 @@ const Auth = () => {
       }
     } catch (error) {
       console.error('Update password error:', error);
-      toast({
-        title: "❌ Erreur",
-        description: "Une erreur est survenue. Veuillez réessayer.",
-        variant: "destructive",
-        duration: 5000,
-      });
+      setUpdatePasswordError('Une erreur est survenue. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
@@ -298,6 +244,14 @@ const Auth = () => {
                     Choisissez un mot de passe sécurisé d'au moins 6 caractères
                   </p>
                 </div>
+                
+                {/* Error Alert for Update Password */}
+                {updatePasswordError && (
+                  <Alert variant="destructive" className="mb-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{updatePasswordError}</AlertDescription>
+                  </Alert>
+                )}
                 
                 <div className="space-y-2">
                   <Label htmlFor="newPassword">Nouveau mot de passe</Label>
@@ -388,6 +342,14 @@ const Auth = () => {
                 
                 <TabsContent value="signin">
                   <form onSubmit={handleSignIn} className="space-y-4">
+                    {/* Error Alert */}
+                    {formError && (
+                      <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>{formError}</AlertDescription>
+                      </Alert>
+                    )}
+                    
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
                       <Input
@@ -395,7 +357,10 @@ const Auth = () => {
                         type="email"
                         placeholder="votre.email@exemple.com"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                          if (formError) setFormError(''); // Clear error when user types
+                        }}
                         required
                       />
                     </div>
@@ -407,7 +372,10 @@ const Auth = () => {
                           type={showPassword ? "text" : "password"}
                           placeholder="••••••••"
                           value={password}
-                          onChange={(e) => setPassword(e.target.value)}
+                          onChange={(e) => {
+                            setPassword(e.target.value);
+                            if (formError) setFormError(''); // Clear error when user types
+                          }}
                           required
                         />
                         <button
@@ -545,6 +513,14 @@ const Auth = () => {
                 </div>
               ) : (
                 <form onSubmit={handleResetPassword} className="space-y-4">
+                  {/* Error Alert for Reset Password */}
+                  {resetFormError && (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>{resetFormError}</AlertDescription>
+                    </Alert>
+                  )}
+                  
                   <div className="space-y-2">
                     <Label htmlFor="resetEmail">Adresse email</Label>
                     <Input
@@ -552,7 +528,10 @@ const Auth = () => {
                       type="email"
                       placeholder="votre.email@exemple.com"
                       value={resetEmail}
-                      onChange={(e) => setResetEmail(e.target.value)}
+                      onChange={(e) => {
+                        setResetEmail(e.target.value);
+                        if (resetFormError) setResetFormError(''); // Clear error when user types
+                      }}
                       required
                     />
                   </div>

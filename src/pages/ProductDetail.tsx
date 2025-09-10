@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { ContactSellerButton } from "@/components/ContactSellerButton";
+import { products } from "@/data/products";
 import { 
   ArrowLeft, 
   Heart, 
@@ -16,111 +17,15 @@ import {
   Minus
 } from "lucide-react";
 
-// Import product images (simulating data)
-import productPhone from "@/assets/product-phone.jpg";
-import productClothing from "@/assets/product-clothing.jpg";
-import productHeadphones from "@/assets/product-headphones.jpg";
-import productBlender from "@/assets/product-blender.jpg";
-
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { addToCart } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
-  
+
   const [quantity, setQuantity] = useState(1);
   const [personalMessage, setPersonalMessage] = useState('');
-
-  // Simulated product data
-  const products = [
-    {
-      id: "prod-001",
-      image: productPhone,
-      title: "Smartphone 5G Ultra - 128GB - Caméra 48MP",
-      description: "Un smartphone haut de gamme avec écran AMOLED 6.7 pouces, processeur octa-core, caméra triple 48MP + 12MP + 5MP, batterie 5000mAh avec charge rapide 65W. Compatible 5G pour une connectivité ultra-rapide.",
-      originalPrice: 85000,
-      salePrice: 52000,
-      discount: 39,
-      rating: 4.8,
-      reviews: 234,
-      badge: "Vendeur fiable",
-      isFlashSale: true,
-      seller_id: "seller-001",
-      stock: 15,
-      specifications: [
-        "Écran: AMOLED 6.7 pouces",
-        "Processeur: Snapdragon 888",
-        "RAM: 8GB",
-        "Stockage: 128GB",
-        "Caméra: 48MP + 12MP + 5MP",
-        "Batterie: 5000mAh"
-      ]
-    },
-    {
-      id: "prod-002",
-      image: productClothing,
-      title: "Robe Africaine Traditionnelle - Motifs Wax Premium",
-      description: "Magnifique robe traditionnelle confectionnée en tissu wax authentique. Coupe élégante et confortable, parfaite pour les occasions spéciales ou le quotidien. Taille ajustable.",
-      originalPrice: 25000,
-      salePrice: 18000,
-      discount: 28,
-      rating: 4.9,
-      reviews: 156,
-      badge: "Top ventes",
-      seller_id: "seller-002",
-      stock: 8,
-      specifications: [
-        "Matière: 100% coton wax",
-        "Tailles: S, M, L, XL",
-        "Motifs: Authentiques africains",
-        "Entretien: Lavage à 30°C",
-        "Origine: Côte d'Ivoire"
-      ]
-    },
-    {
-      id: "prod-003",
-      image: productHeadphones,
-      title: "Casque Audio Sans Fil - Réduction de Bruit Active",
-      description: "Casque audio premium avec réduction de bruit active, autonomie 30h, bluetooth 5.0. Son haute définition avec basses profondes et aigus cristallins.",
-      originalPrice: 35000,
-      salePrice: 21000,
-      discount: 40,
-      rating: 4.7,
-      reviews: 89,
-      isFlashSale: true,
-      seller_id: "seller-003",
-      stock: 12,
-      specifications: [
-        "Autonomie: 30 heures",
-        "Bluetooth: 5.0",
-        "Réduction de bruit: Active",
-        "Drivers: 40mm",
-        "Charge rapide: 10min = 3h d'écoute"
-      ]
-    },
-    {
-      id: "prod-004",
-      image: productBlender,
-      title: "Blender Multifonction 1500W - 5 Vitesses",
-      description: "Blender puissant 1500W avec 5 vitesses, bol en verre 2L, lames en acier inoxydable. Parfait pour smoothies, soupes, sauces et bien plus.",
-      originalPrice: 45000,
-      salePrice: 29000,
-      discount: 36,
-      rating: 4.6,
-      reviews: 67,
-      badge: "Nouveau",
-      seller_id: "seller-004",
-      stock: 5,
-      specifications: [
-        "Puissance: 1500W",
-        "Bol: Verre 2L",
-        "Vitesses: 5 + pulse",
-        "Lames: Acier inoxydable",
-        "Garantie: 2 ans"
-      ]
-    }
-  ];
 
   const product = products.find(p => p.id === id);
 

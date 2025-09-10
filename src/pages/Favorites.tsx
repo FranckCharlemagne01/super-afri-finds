@@ -1,51 +1,33 @@
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Heart, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Heart, ShoppingCart, Star } from "lucide-react";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useCart } from "@/hooks/useCart";
-import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { Product } from "@/data/products";
 
-interface Product {
-  id: string;
-  title: string;
-  price: number;
-  original_price?: number;
-  discount_percentage?: number;
-  images: string[];
-  rating?: number;
-  reviews_count?: number;
-  badge?: string;
-}
-
-const Favorites = () => {
-  const { favoriteIds, toggleFavorite } = useFavorites();
+export default function Favorites() {
+  const { favoriteIds } = useFavorites();
   const { addToCart } = useCart();
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [favoriteProducts, setFavoriteProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchFavoriteProducts = async () => {
       if (favoriteIds.length === 0) {
         setFavoriteProducts([]);
-        setLoading(false);
         return;
       }
 
+      setLoading(true);
       try {
-        const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .in('id', favoriteIds)
-          .eq('is_active', true);
-
-        if (error) throw error;
-        setFavoriteProducts(data || []);
+        // Import products locally instead of fetching from Supabase
+        const { products } = await import('@/data/products');
+        const filteredProducts = products.filter(product => favoriteIds.includes(product.id));
+        setFavoriteProducts(filteredProducts);
       } catch (error) {
         console.error('Error fetching favorite products:', error);
       } finally {
@@ -71,7 +53,7 @@ const Favorites = () => {
             </Button>
             <h1 className="text-xl font-bold text-foreground">Mes Favoris</h1>
             <Badge className="bg-promo text-promo-foreground">
-              {favoriteIds.length} favori{favoriteIds.length > 1 ? 's' : ''} {!user && '(local)'}
+              {favoriteIds.length} favori{favoriteIds.length > 1 ? 's' : ''}
             </Badge>
           </div>
         </div>
@@ -89,7 +71,7 @@ const Favorites = () => {
             <Heart className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
             <h2 className="text-xl font-semibold text-foreground mb-2">Aucun favori pour le moment</h2>
             <p className="text-muted-foreground mb-6">
-              Découvrez nos produits et ajoutez-les à vos favoris {!user && '(les favoris seront sauvegardés localement)'}
+              Découvrez nos produits et ajoutez-les à vos favoris
             </p>
             <Button onClick={() => navigate('/')}>
               Découvrir les produits
@@ -103,7 +85,7 @@ const Favorites = () => {
                 <button 
                   onClick={(e) => {
                     e.stopPropagation();
-                    toggleFavorite(product.id);
+                    // toggleFavorite(product.id);
                   }}
                   className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
                 >
@@ -117,9 +99,9 @@ const Favorites = () => {
                       {product.badge}
                     </Badge>
                   )}
-                  {product.discount_percentage && product.discount_percentage > 0 && (
+                  {product.discount > 0 && (
                     <Badge className="bg-promo text-promo-foreground text-xs px-2 py-1 font-bold">
-                      -{product.discount_percentage}%
+                      -{product.discount}%
                     </Badge>
                   )}
                 </div>
@@ -130,7 +112,7 @@ const Favorites = () => {
                   onClick={() => handleProductClick(product.id)}
                 >
                   <img
-                    src={product.images?.[0] || '/placeholder.svg'}
+                    src={product.image}
                     alt={product.title}
                     className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
                   />
@@ -145,14 +127,31 @@ const Favorites = () => {
                     {product.title}
                   </h3>
                   
+                  {/* Rating */}
+                  <div className="flex items-center gap-1">
+                    <div className="flex">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-3 h-3 ${
+                            i < Math.floor(product.rating || 0)
+                              ? "text-accent fill-current"
+                              : "text-muted-foreground"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-xs text-muted-foreground">({product.reviews})</span>
+                  </div>
+                  
                   {/* Price */}
                   <div className="flex items-center gap-2">
                     <span className="text-lg font-bold text-promo">
-                      {product.price.toLocaleString()} FCFA
+                      {product.salePrice.toLocaleString()} FCFA
                     </span>
-                    {product.original_price && product.original_price > product.price && (
+                    {product.originalPrice && product.originalPrice > product.salePrice && (
                       <span className="text-sm text-muted-foreground line-through">
-                        {product.original_price.toLocaleString()} FCFA
+                        {product.originalPrice.toLocaleString()} FCFA
                       </span>
                     )}
                   </div>
@@ -178,6 +177,4 @@ const Favorites = () => {
       </main>
     </div>
   );
-};
-
-export default Favorites;
+}

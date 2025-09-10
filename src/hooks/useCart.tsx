@@ -45,38 +45,32 @@ export function useCart() {
       // Load from localStorage for non-authenticated users
       const localItems = getLocalCart();
       if (localItems.length > 0) {
-        setLoading(true);
-        try {
-          const productIds = localItems.map(item => item.product_id);
-          const { data: products, error } = await supabase
-            .from('products')
-            .select('id, title, price, images')
-            .in('id', productIds)
-            .eq('is_active', true);
+        // Import products locally to avoid Supabase call
+        const { products } = await import('@/data/products');
+        
+        const cartData: CartItem[] = localItems.map(localItem => {
+          const product = products.find(p => p.id === localItem.product_id);
+          return {
+            id: `local-${localItem.product_id}`,
+            product_id: localItem.product_id,
+            quantity: localItem.quantity,
+            product: product ? {
+              id: product.id,
+              title: product.title,
+              price: product.salePrice,
+              images: [product.image]
+            } : {
+              id: localItem.product_id,
+              title: 'Produit non trouvé',
+              price: 0,
+              images: []
+            }
+          };
+        }).filter(item => item.product.price > 0);
 
-          if (error) throw error;
-
-          const cartData: CartItem[] = localItems.map(localItem => {
-            const product = products?.find(p => p.id === localItem.product_id);
-            return {
-              id: `local-${localItem.product_id}`,
-              product_id: localItem.product_id,
-              quantity: localItem.quantity,
-              product: product || {
-                id: localItem.product_id,
-                title: 'Produit non trouvé',
-                price: 0,
-                images: []
-              }
-            };
-          }).filter(item => item.product.price > 0);
-
-          setCartItems(cartData);
-        } catch (error) {
-          console.error('Error fetching local cart products:', error);
-        } finally {
-          setLoading(false);
-        }
+        setCartItems(cartData);
+      } else {
+        setCartItems([]);
       }
       return;
     }
@@ -110,6 +104,7 @@ export function useCart() {
     } finally {
       setLoading(false);
     }
+
   };
 
   const addToCart = async (productId: string) => {

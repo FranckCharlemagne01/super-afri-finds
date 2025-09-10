@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Star, Heart, ShoppingCart, MessageSquare } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useNavigate } from "react-router-dom";
 import { ContactSellerButton } from "@/components/ContactSellerButton";
 
 interface ProductCardProps {
@@ -35,6 +36,7 @@ export const ProductCard = ({
 }: ProductCardProps) => {
   const { addToCart } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
+  const navigate = useNavigate();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -45,8 +47,13 @@ export const ProductCard = ({
     e.stopPropagation();
     toggleFavorite(id);
   };
+
+  const handleProductClick = () => {
+    navigate(`/product/${id}`);
+  };
+
   return (
-    <Card className="relative overflow-hidden hover-lift cursor-pointer border-0 shadow-lg">
+    <Card className="relative overflow-hidden hover-lift cursor-pointer border-0 shadow-lg" onClick={handleProductClick}>
       {/* Badges */}
       <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
         {badge && (

@@ -79,6 +79,7 @@ const Index = () => {
       reviews: 234,
       badge: "Vendeur fiable",
       isFlashSale: true,
+      seller_id: "seller-001",
     },
     {
       id: "prod-002",
@@ -90,6 +91,7 @@ const Index = () => {
       rating: 4.9,
       reviews: 156,
       badge: "Top ventes",
+      seller_id: "seller-002",
     },
     {
       id: "prod-003",
@@ -101,6 +103,7 @@ const Index = () => {
       rating: 4.7,
       reviews: 89,
       isFlashSale: true,
+      seller_id: "seller-003",
     },
     {
       id: "prod-004",
@@ -112,6 +115,7 @@ const Index = () => {
       rating: 4.6,
       reviews: 67,
       badge: "Nouveau",
+      seller_id: "seller-004",
     },
     {
       id: "prod-005",
@@ -122,6 +126,7 @@ const Index = () => {
       discount: 35,
       rating: 4.5,
       reviews: 123,
+      seller_id: "seller-005",
     },
     {
       id: "prod-006",
@@ -133,6 +138,7 @@ const Index = () => {
       rating: 4.8,
       reviews: 78,
       badge: "Vendeur fiable",
+      seller_id: "seller-006",
     },
   ];
 

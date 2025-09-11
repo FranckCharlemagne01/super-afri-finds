@@ -243,10 +243,12 @@ const SuperAdmin = () => {
 
   const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
+      // Utiliser la fonction sécurisée pour mettre à jour le statut
       const { error } = await supabase
-        .from('orders')
-        .update({ status: newStatus })
-        .eq('id', orderId);
+        .rpc('update_order_status', {
+          order_id: orderId,
+          new_status: newStatus
+        });
 
       if (error) throw error;
 

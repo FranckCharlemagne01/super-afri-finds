@@ -77,7 +77,7 @@ interface Order {
 
 const SuperAdmin = () => {
   const { isSuperAdmin, loading: roleLoading } = useRole();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -367,7 +367,10 @@ const SuperAdmin = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+              <Button variant="ghost" size="icon" onClick={async () => {
+                await signOut();
+                window.location.href = '/';
+              }}>
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div>

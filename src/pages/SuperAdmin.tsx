@@ -85,9 +85,10 @@ const SuperAdmin = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [initializing, setInitializing] = useState(true);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
+  // Premier useEffect : gérer l'initialisation
   useEffect(() => {
-    // Délai pour éviter le flash initial
     const timer = setTimeout(() => {
       setInitializing(false);
     }, 100);
@@ -95,18 +96,32 @@ const SuperAdmin = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // Deuxième useEffect : gérer la vérification du rôle et la redirection
   useEffect(() => {
-    if (!roleLoading && !initializing) {
+    if (!initializing && !roleLoading) {
+      if (!user) {
+        navigate('/', { replace: true });
+        return;
+      }
+      
       if (!isSuperAdmin()) {
         navigate('/', { replace: true });
         return;
       }
-      // Si c'est bien un superadmin, charger les données
-      fetchData();
+      
+      // Si on arrive ici, l'utilisateur est bien un superadmin
+      if (!dataLoaded) {
+        fetchData();
+      }
     }
-  }, [isSuperAdmin, roleLoading, initializing, navigate]);
+  }, [user, isSuperAdmin, roleLoading, initializing, navigate, dataLoaded]);
 
   const fetchData = async () => {
+    if (!user || !isSuperAdmin()) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       
@@ -114,35 +129,42 @@ const SuperAdmin = () => {
       const [
         statisticsResult,
         productsData,
-        ordersData,
-        profilesData
+        ordersData
       ] = await Promise.all([
         supabase.rpc('get_admin_statistics'),
         supabase.from('products').select('*').order('created_at', { ascending: false }).limit(50),
-        supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(100),
-        supabase.from('profiles').select(`
-          *,
-          user_roles!inner(role)
-        `).order('created_at', { ascending: false })
+        supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(100)
       ]);
 
-      // Extract statistics from the secure function result
-      const stats = statisticsResult.data?.[0];
-      if (!stats) {
-        throw new Error('Unable to fetch admin statistics - insufficient permissions');
+      // Handle statistics result
+      if (statisticsResult.error) {
+        console.error('Error fetching statistics:', statisticsResult.error);
+        // Fallback: set default stats if the secure function fails
+        setStats({
+          total_users: 0,
+          total_sellers: 0,
+          total_buyers: 0,
+          total_active_products: 0,
+          total_orders: 0,
+          total_revenue: 0,
+          orders_today: 0,
+          new_users_today: 0
+        });
+      } else {
+        const stats = statisticsResult.data?.[0];
+        if (stats) {
+          setStats({
+            total_users: Number(stats.total_users) || 0,
+            total_sellers: Number(stats.total_sellers) || 0,
+            total_buyers: Number(stats.total_buyers) || 0,
+            total_active_products: Number(stats.total_active_products) || 0,
+            total_orders: Number(stats.total_orders) || 0,
+            total_revenue: Number(stats.total_revenue) || 0,
+            orders_today: Number(stats.orders_today) || 0,
+            new_users_today: Number(stats.new_users_today) || 0
+          });
+        }
       }
-
-      // Set statistics from the secure function
-      setStats({
-        total_users: Number(stats.total_users) || 0,
-        total_sellers: Number(stats.total_sellers) || 0,
-        total_buyers: Number(stats.total_buyers) || 0,
-        total_active_products: Number(stats.total_active_products) || 0,
-        total_orders: Number(stats.total_orders) || 0,
-        total_revenue: Number(stats.total_revenue) || 0,
-        orders_today: Number(stats.orders_today) || 0,
-        new_users_today: Number(stats.new_users_today) || 0
-      });
 
       setProducts(productsData.data || []);
       setOrders(ordersData.data || []);
@@ -168,12 +190,13 @@ const SuperAdmin = () => {
       }) || [];
       
       setUsers(transformedUsers);
+      setDataLoaded(true);
 
     } catch (error: any) {
       console.error('Error fetching admin data:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de charger les données administrateur.",
+        description: "Impossible de charger certaines données. Accès partiel accordé.",
         variant: "destructive",
       });
     } finally {
@@ -315,7 +338,7 @@ const SuperAdmin = () => {
   };
 
   // Afficher le loader pendant l'initialisation, la vérification du rôle, ou si ce n'est pas un superadmin
-  if (initializing || roleLoading || (!roleLoading && !isSuperAdmin())) {
+  if (initializing || roleLoading || !user || (!roleLoading && !isSuperAdmin())) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -324,10 +347,11 @@ const SuperAdmin = () => {
             <p className="text-lg font-medium text-foreground">
               {initializing ? "Initialisation..." : 
                roleLoading ? "Vérification des permissions..." : 
-               "Redirection en cours..."}
+               !user ? "Authentification requise..." :
+               "Accès refusé"}
             </p>
             <p className="text-sm text-muted-foreground">
-              Accès au tableau de bord administrateur
+              {!user ? "Redirection vers la page de connexion..." : "Accès au tableau de bord administrateur"}
             </p>
           </div>
         </div>
@@ -347,7 +371,7 @@ const SuperAdmin = () => {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Dashboard SuperAdmin</h1>
+                <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
                 <p className="text-sm text-muted-foreground">Gestion complète de la plateforme</p>
               </div>
             </div>

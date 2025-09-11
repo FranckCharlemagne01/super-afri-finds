@@ -94,6 +94,9 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
 
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [previewImages, setPreviewImages] = useState<string[]>([]);
 
   // Pré-remplir les champs selon la catégorie sélectionnée
   useEffect(() => {
@@ -105,6 +108,46 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
       }
     }
   }, [formData.category, product?.id]);
+
+  const uploadImages = async (): Promise<string[]> => {
+    if (imageFiles.length === 0 || !user) return [];
+
+    setUploadingImages(true);
+    try {
+      const uploadPromises = imageFiles.map(async (file) => {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}-${Math.random()}.${fileExt}`;
+        
+        const { data, error } = await supabase.storage
+          .from('product-images')
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (error) throw error;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(data.path);
+
+        return publicUrl;
+      });
+
+      const uploadedUrls = await Promise.all(uploadPromises);
+      return uploadedUrls;
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      toast({
+        title: "Erreur d'upload",
+        description: "Impossible d'uploader les images",
+        variant: "destructive",
+      });
+      return [];
+    } finally {
+      setUploadingImages(false);
+    }
+  };
 
   const uploadVideo = async (): Promise<string | null> => {
     if (!videoFile || !user) return null;
@@ -148,6 +191,18 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
     setLoading(true);
 
     try {
+      // Upload images if present
+      let imageUrls: string[] = [];
+      if (imageFiles.length > 0) {
+        imageUrls = await uploadImages();
+      }
+      
+      // Combine uploaded images with URL image
+      const allImages = [...imageUrls];
+      if (formData.images && formData.images.trim()) {
+        allImages.push(formData.images);
+      }
+
       // Upload video if present
       let videoUrl = formData.video_url;
       if (videoFile) {
@@ -173,7 +228,7 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
         is_active: formData.is_active,
         is_flash_sale: formData.is_flash_sale,
         badge: formData.badge || null,
-        images: formData.images ? [formData.images] : [],
+        images: allImages,
         video_url: videoUrl || null,
         seller_id: user.id,
       };
@@ -219,6 +274,61 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    
+    // Validation des fichiers
+    const validFiles = files.filter(file => {
+      // Vérifier le type de fichier
+      if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type)) {
+        toast({
+          title: "Format non supporté",
+          description: `Le fichier ${file.name} n'est pas dans un format supporté (JPEG, PNG, WebP)`,
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      // Vérifier la taille (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Fichier trop volumineux",
+          description: `Le fichier ${file.name} doit faire moins de 5MB`,
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      return true;
+    });
+
+    if (validFiles.length > 5) {
+      toast({
+        title: "Trop d'images",
+        description: "Vous ne pouvez pas uploader plus de 5 images",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setImageFiles(validFiles);
+    
+    // Créer les aperçus
+    const previews = validFiles.map(file => URL.createObjectURL(file));
+    setPreviewImages(previews);
+  };
+
+  const removePreviewImage = (index: number) => {
+    const newFiles = imageFiles.filter((_, i) => i !== index);
+    const newPreviews = previewImages.filter((_, i) => i !== index);
+    
+    // Libérer l'URL de l'objet supprimé
+    URL.revokeObjectURL(previewImages[index]);
+    
+    setImageFiles(newFiles);
+    setPreviewImages(newPreviews);
   };
 
   return (
@@ -315,14 +425,60 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="images">URL de l'image</Label>
-        <Input
-          id="images"
-          value={formData.images}
-          onChange={(e) => handleInputChange('images', e.target.value)}
-          placeholder="https://exemple.com/image.jpg"
-        />
+      <div className="space-y-4">
+        <Label>Images du produit</Label>
+        
+        {/* Upload d'images */}
+        <div className="space-y-2">
+          <Label htmlFor="imageFiles">Uploader des images (recommandé)</Label>
+          <Input
+            id="imageFiles"
+            type="file"
+            accept="image/jpeg,image/jpg,image/png,image/webp"
+            multiple
+            onChange={handleImageFileChange}
+            className="cursor-pointer"
+          />
+          <p className="text-xs text-muted-foreground">
+            Formats acceptés: JPEG, PNG, WebP. Taille max: 5MB par image. Maximum 5 images.
+          </p>
+        </div>
+
+        {/* Aperçu des images uploadées */}
+        {previewImages.length > 0 && (
+          <div className="space-y-2">
+            <Label>Aperçu des images</Label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {previewImages.map((preview, index) => (
+                <div key={index} className="relative group">
+                  <img
+                    src={preview}
+                    alt={`Aperçu ${index + 1}`}
+                    className="w-full h-32 object-cover rounded-lg border"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removePreviewImage(index)}
+                    className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Alternative: URL d'image */}
+        <div className="space-y-2">
+          <Label htmlFor="images">Ou ajouter une image par URL (optionnel)</Label>
+          <Input
+            id="images"
+            value={formData.images}
+            onChange={(e) => handleInputChange('images', e.target.value)}
+            placeholder="https://exemple.com/image.jpg"
+          />
+        </div>
       </div>
 
       {/* Video Upload Section */}
@@ -393,8 +549,8 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
         <Button type="button" variant="outline" onClick={onCancel}>
           Annuler
         </Button>
-        <Button type="submit" disabled={loading || uploadingVideo}>
-          {loading ? 'Sauvegarde...' : uploadingVideo ? 'Upload vidéo...' : (product?.id ? 'Modifier' : 'Créer')}
+        <Button type="submit" disabled={loading || uploadingVideo || uploadingImages}>
+          {loading ? 'Sauvegarde...' : uploadingImages ? 'Upload images...' : uploadingVideo ? 'Upload vidéo...' : (product?.id ? 'Modifier' : 'Créer')}
         </Button>
       </div>
     </form>

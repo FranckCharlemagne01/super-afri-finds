@@ -1,8 +1,8 @@
-import { products } from "@/data/products";
 import { HeroSection } from "@/components/HeroSection";
 import { ProductCard } from "@/components/ProductCard";
 import { CategoryCard } from "@/components/CategoryCard";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
@@ -42,6 +42,24 @@ import categoryBeauty from "@/assets/category-beauty.jpg";
 import categoryGrocery from "@/assets/category-grocery.jpg";
 import categoryAuto from "@/assets/category-auto.jpg";
 
+interface Product {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  original_price?: number;
+  discount_percentage?: number;
+  category: string;
+  images?: string[];
+  seller_id: string;
+  rating?: number;
+  reviews_count?: number;
+  badge?: string;
+  is_flash_sale?: boolean;
+  stock_quantity?: number;
+  video_url?: string;
+}
+
 const Index = () => {
   const { user, signOut } = useAuth();
   const { cartCount } = useCart();
@@ -49,6 +67,8 @@ const Index = () => {
   const { isSuperAdmin } = useRole();
   const navigate = useNavigate();
   const [refreshKey, setRefreshKey] = useState(0);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const handleProfileClick = () => {
     if (user) {
@@ -74,6 +94,32 @@ const Index = () => {
     // Pour l'instant, on peut faire défiler vers les produits ou naviguer vers une page de catégories
     console.log('Navigation vers toutes les catégories');
     // navigate('/categories'); // À implémenter plus tard
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching products:', error);
+        return;
+      }
+      
+      setProducts(data || []);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRefreshRecommendations = () => {
@@ -103,6 +149,33 @@ const Index = () => {
 
   const displayProducts = products;
   const shuffledProducts = refreshKey > 0 ? shuffleArray(products) : products;
+
+  // Convert Supabase product to ProductCard props
+  const convertToProductCardProps = (product: Product) => ({
+    id: product.id,
+    image: product.images?.[0] || "/placeholder.svg",
+    title: product.title,
+    originalPrice: product.original_price || product.price,
+    salePrice: product.price,
+    discount: product.discount_percentage || 0,
+    rating: product.rating || 0,
+    reviews: product.reviews_count || 0,
+    badge: product.badge,
+    isFlashSale: product.is_flash_sale || false,
+    seller_id: product.seller_id,
+    videoUrl: product.video_url
+  });
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Chargement des produits...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -227,7 +300,7 @@ const Index = () => {
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
             {displayProducts.slice(0, 6).map((product) => (
-              <ProductCard key={product.id} {...product} videoUrl={product.videoUrl} />
+              <ProductCard key={product.id} {...convertToProductCardProps(product)} />
             ))}
           </div>
         </section>
@@ -243,7 +316,7 @@ const Index = () => {
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4" key={refreshKey}>
             {shuffledProducts.map((product) => (
-              <ProductCard key={`${product.id}-${refreshKey}`} {...product} videoUrl={product.videoUrl} />
+              <ProductCard key={`${product.id}-${refreshKey}`} {...convertToProductCardProps(product)} />
             ))}
           </div>
         </section>

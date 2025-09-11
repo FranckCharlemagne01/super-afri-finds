@@ -8,7 +8,7 @@ import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { ContactSellerButton } from "@/components/ContactSellerButton";
 import { QuickOrderDialog } from "@/components/QuickOrderDialog";
-import { products } from "@/data/products";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   ArrowLeft, 
   Heart, 
@@ -17,6 +17,24 @@ import {
   Plus,
   Minus
 } from "lucide-react";
+
+interface Product {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  original_price?: number;
+  discount_percentage?: number;
+  category: string;
+  images?: string[];
+  seller_id: string;
+  rating?: number;
+  reviews_count?: number;
+  badge?: string;
+  is_flash_sale?: boolean;
+  stock_quantity?: number;
+  video_url?: string;
+}
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -28,14 +46,50 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [personalMessage, setPersonalMessage] = useState('');
   const [showVideo, setShowVideo] = useState(false);
-
-  const product = products.find(p => p.id === id);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!product) {
-      navigate('/');
+    if (id) {
+      fetchProduct(id);
     }
-  }, [product, navigate]);
+  }, [id]);
+
+  const fetchProduct = async (productId: string) => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', productId)
+        .eq('is_active', true)
+        .single();
+      
+      if (error || !data) {
+        console.error('Error fetching product:', error);
+        navigate('/');
+        return;
+      }
+      
+      setProduct(data);
+    } catch (error) {
+      console.error('Error fetching product:', error);
+      navigate('/');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Chargement du produit...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
     return null;
@@ -48,9 +102,8 @@ const ProductDetail = () => {
     }
   };
 
-  const handleQuantityChange = (change: number) => {
-    const newQuantity = quantity + change;
-    if (newQuantity >= 1 && newQuantity <= product.stock) {
+  const handleQuantityChange = (newQuantity: number) => {
+    if (newQuantity >= 1 && newQuantity <= (product.stock_quantity || 0)) {
       setQuantity(newQuantity);
     }
   };
@@ -59,18 +112,32 @@ const ProductDetail = () => {
     toggleFavorite(product.id);
   };
 
+  const productImage = product.images?.[0] || "/placeholder.svg";
+  const originalPrice = product.original_price || product.price;
+  const salePrice = product.price;
+  const discount = product.discount_percentage || 0;
+  const rating = product.rating || 0;
+  const reviewsCount = product.reviews_count || 0;
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white shadow-lg border-b">
+      <header className="sticky top-0 z-50 bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <h1 className="text-xl font-bold gradient-text-primary">
-              Détails du produit
-            </h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => navigate('/')}
+                className="hover:bg-secondary"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <h1 className="text-lg font-semibold text-foreground">
+                Détails du produit
+              </h1>
+            </div>
           </div>
         </div>
       </header>
@@ -81,14 +148,14 @@ const ProductDetail = () => {
           {/* Product Image/Video */}
           <div className="space-y-4">
             <div className="relative">
-              {showVideo && product.videoUrl ? (
+              {showVideo && product.video_url ? (
                 <div className="relative">
                   <video
                     controls
                     className="w-full h-96 lg:h-[500px] object-cover rounded-lg"
-                    poster={product.image}
+                    poster={productImage}
                   >
-                    <source src={product.videoUrl} type="video/mp4" />
+                    <source src={product.video_url} type="video/mp4" />
                     Votre navigateur ne supporte pas la lecture vidéo.
                   </video>
                   <Button
@@ -103,11 +170,11 @@ const ProductDetail = () => {
               ) : (
                 <div className="relative">
                   <img
-                    src={product.image}
+                    src={productImage}
                     alt={product.title}
                     className="w-full h-96 lg:h-[500px] object-cover rounded-lg"
                   />
-                  {product.videoUrl && (
+                  {product.video_url && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -128,14 +195,14 @@ const ProductDetail = () => {
                   {product.badge}
                 </Badge>
               )}
-              {product.isFlashSale && (
+              {product.is_flash_sale && (
                 <Badge className="absolute top-3 left-3 bg-primary text-primary-foreground animate-pulse-promo">
                   ⚡ Flash Sale
                 </Badge>
               )}
-              {product.discount && (
+              {discount > 0 && (
                 <Badge className="absolute bottom-3 left-3 bg-success text-success-foreground">
-                  -{product.discount}%
+                  -{discount}%
                 </Badge>
               )}
             </div>
@@ -144,163 +211,157 @@ const ProductDetail = () => {
           {/* Product Info */}
           <div className="space-y-6">
             <div>
-              <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
+              <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-3">
                 {product.title}
               </h1>
               
+              {/* Rating */}
               <div className="flex items-center gap-2 mb-4">
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`w-4 h-4 ${
-                        i < Math.floor(product.rating) 
-                          ? 'fill-yellow-400 text-yellow-400' 
+                      className={`w-5 h-5 ${
+                        i < Math.floor(rating)
+                          ? 'text-yellow-400 fill-current'
                           : 'text-gray-300'
                       }`}
                     />
                   ))}
-                  <span className="text-sm text-muted-foreground ml-2">
-                    {product.rating} ({product.reviews} avis)
-                  </span>
                 </div>
+                <span className="text-sm text-muted-foreground">
+                  {rating.toFixed(1)} ({reviewsCount} avis)
+                </span>
               </div>
 
-              <div className="flex items-center gap-4 mb-6">
-                <span className="text-3xl font-bold text-primary">
-                  {product.salePrice.toLocaleString()} FCFA
+              {/* Price */}
+              <div className="flex items-center gap-3 mb-6">
+                <span className="text-2xl lg:text-3xl font-bold text-primary">
+                  {salePrice.toLocaleString()} FCFA
                 </span>
-                {product.originalPrice && (
+                {originalPrice > salePrice && (
                   <span className="text-lg text-muted-foreground line-through">
-                    {product.originalPrice.toLocaleString()} FCFA
+                    {originalPrice.toLocaleString()} FCFA
                   </span>
                 )}
               </div>
-            </div>
 
-            {/* Description */}
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Description</h3>
-              <p className="text-muted-foreground">
-                {product.description}
-              </p>
-            </div>
-
-            {/* Specifications */}
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Caractéristiques</h3>
-              <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                {product.specifications.map((spec, index) => (
-                  <li key={index}>{spec}</li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Stock */}
-            <div>
-              <p className="text-sm text-muted-foreground">
-                Stock disponible: <span className="font-semibold text-foreground">{product.stock} unités</span>
-              </p>
-            </div>
-
-            {/* Quantity Selector */}
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Quantité</h3>
-              <div className="flex items-center gap-3">
-                <Button 
-                  variant="outline" 
-                  size="icon"
-                  onClick={() => handleQuantityChange(-1)}
-                  disabled={quantity <= 1}
-                >
-                  <Minus className="w-4 h-4" />
-                </Button>
-                <span className="text-lg font-semibold px-4">{quantity}</span>
-                <Button 
-                  variant="outline" 
-                  size="icon"
-                  onClick={() => handleQuantityChange(1)}
-                  disabled={quantity >= product.stock}
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
+              {/* Description */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-2">Description</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {product.description}
+                </p>
               </div>
-            </div>
 
-            {/* Personal Message */}
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Message pour le vendeur (optionnel)</h3>
-              <Textarea
-                placeholder="Ajoutez un message personnalisé pour le vendeur..."
-                value={personalMessage}
-                onChange={(e) => setPersonalMessage(e.target.value)}
-                className="min-h-[100px]"
-              />
-            </div>
+              {/* Category */}
+              <div className="mb-6">
+                <span className="text-sm text-muted-foreground">Catégorie: </span>
+                <Badge variant="secondary">{product.category}</Badge>
+              </div>
 
-            {/* Action Buttons */}
-            <div className="space-y-3">
-              {/* Desktop: Full layout */}
-              <div className="hidden sm:flex gap-3">
-                <Button 
-                  variant="outline" 
-                  size="icon"
-                  onClick={handleToggleFavorite}
-                  className="shrink-0"
-                >
-                  <Heart className={`w-5 h-5 ${
-                    isFavorite(product.id) ? 'fill-current text-promo' : ''
-                  }`} />
-                </Button>
-                
-                <Button 
+              {/* Stock */}
+              <div className="mb-6">
+                <span className="text-sm text-muted-foreground">
+                  Stock disponible: {product.stock_quantity || 0} unités
+                </span>
+              </div>
+
+              {/* Quantity Selector */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">Quantité</label>
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleQuantityChange(quantity - 1)}
+                    disabled={quantity <= 1}
+                  >
+                    <Minus className="w-4 h-4" />
+                  </Button>
+                  <span className="w-12 text-center font-medium">{quantity}</span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleQuantityChange(quantity + 1)}
+                    disabled={quantity >= (product.stock_quantity || 0)}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Personal Message */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">
+                  Message personnalisé (optionnel)
+                </label>
+                <Textarea
+                  placeholder="Ajoutez un message pour le vendeur..."
+                  value={personalMessage}
+                  onChange={(e) => setPersonalMessage(e.target.value)}
+                  rows={3}
+                />
+              </div>
+
+              {/* Action Buttons - Desktop */}
+              <div className="hidden lg:flex gap-3 mb-6">
+                <Button
                   onClick={handleAddToCart}
-                  className="flex-1 bg-primary hover:bg-primary/90"
-                  size="lg"
+                  className="flex-1 h-12"
+                  disabled={!product.stock_quantity || product.stock_quantity === 0}
                 >
                   <ShoppingCart className="w-5 h-5 mr-2" />
-                  Ajouter au panier ({(product.salePrice * quantity).toLocaleString()} FCFA)
+                  Ajouter au panier - {salePrice.toLocaleString()} FCFA
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleToggleFavorite}
+                  className="h-12 px-4"
+                >
+                  <Heart className={`w-5 h-5 ${isFavorite(product.id) ? 'fill-current text-red-500' : ''}`} />
                 </Button>
               </div>
 
-              {/* Mobile: Icon layout */}
-              <div className="flex sm:hidden gap-2">
-                <Button 
-                  variant="outline" 
-                  size="icon"
-                  onClick={handleToggleFavorite}
-                  className="shrink-0"
-                >
-                  <Heart className={`w-5 h-5 ${
-                    isFavorite(product.id) ? 'fill-current text-promo' : ''
-                  }`} />
-                </Button>
-                
-                <Button 
-                  onClick={handleAddToCart}
-                  className="flex-1 bg-primary hover:bg-primary/90"
-                  size="lg"
-                >
-                  <ShoppingCart className="w-5 h-5" />
-                </Button>
+              {/* Quick Order and Contact Seller */}
+              <div className="flex gap-3">
+                <QuickOrderDialog
+                  productId={product.id}
+                  productTitle={product.title}
+                  productPrice={salePrice}
+                  sellerId={product.seller_id}
+                />
+                <ContactSellerButton
+                  productId={product.id}
+                  sellerId={product.seller_id}
+                  productTitle={product.title}
+                />
               </div>
-              
-              <QuickOrderDialog
-                productId={product.id}
-                productTitle={product.title}
-                productPrice={product.salePrice}
-                sellerId={product.seller_id}
-              />
-              
-              <ContactSellerButton
-                productId={product.id}
-                sellerId={product.seller_id}
-                productTitle={product.title}
-              />
             </div>
           </div>
         </div>
       </main>
+
+      {/* Mobile Action Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-4">
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            onClick={handleToggleFavorite}
+            className="px-4"
+          >
+            <Heart className={`w-5 h-5 ${isFavorite(product.id) ? 'fill-current text-red-500' : ''}`} />
+          </Button>
+          <Button
+            onClick={handleAddToCart}
+            className="flex-1"
+            disabled={!product.stock_quantity || product.stock_quantity === 0}
+          >
+            <ShoppingCart className="w-5 h-5 mr-2" />
+            {salePrice.toLocaleString()} FCFA
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };

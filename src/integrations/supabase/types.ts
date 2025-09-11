@@ -299,6 +299,48 @@ export type Database = {
         }
         Relationships: []
       }
+      user_security_settings: {
+        Row: {
+          account_locked_until: string | null
+          backup_codes: string[] | null
+          created_at: string
+          failed_login_attempts: number | null
+          id: string
+          last_login_attempt: string | null
+          recovery_codes_used: number | null
+          totp_secret: string | null
+          two_factor_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_locked_until?: string | null
+          backup_codes?: string[] | null
+          created_at?: string
+          failed_login_attempts?: number | null
+          id?: string
+          last_login_attempt?: string | null
+          recovery_codes_used?: number | null
+          totp_secret?: string | null
+          two_factor_enabled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_locked_until?: string | null
+          backup_codes?: string[] | null
+          created_at?: string
+          failed_login_attempts?: number | null
+          id?: string
+          last_login_attempt?: string | null
+          recovery_codes_used?: number | null
+          totp_secret?: string | null
+          two_factor_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       users_with_profiles: {

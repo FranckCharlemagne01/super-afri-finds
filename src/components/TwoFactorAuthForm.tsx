@@ -28,16 +28,9 @@ export const TwoFactorAuthForm = () => {
     if (!user) return;
 
     try {
-      // Check if user has 2FA enabled (this would be in a custom table)
-      const { data, error } = await supabase
-        .from('user_security_settings')
-        .select('two_factor_enabled')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (!error && data) {
-        setIs2FAEnabled(data.two_factor_enabled);
-      }
+      // For demo purposes, we'll simulate 2FA status
+      // In a real implementation, this would query the user_security_settings table
+      setIs2FAEnabled(false); // Default to disabled for demo
     } catch (error) {
       console.error('Error checking 2FA status:', error);
     }
@@ -62,15 +55,9 @@ export const TwoFactorAuthForm = () => {
         'BACKUP-005-456'
       ];
 
-      // Save 2FA settings
-      await supabase
-        .from('user_security_settings')
-        .upsert({
-          user_id: user.id,
-          two_factor_enabled: true,
-          backup_codes: demoBackupCodes,
-          created_at: new Date().toISOString()
-        });
+      // Save 2FA settings (simulated for demo)
+      // In a real implementation, you would save to user_security_settings table
+      console.log('2FA would be enabled with backup codes:', demoBackupCodes);
 
       setIs2FAEnabled(true);
       setBackupCodes(demoBackupCodes);
@@ -96,13 +83,9 @@ export const TwoFactorAuthForm = () => {
 
     setLoading(true);
     try {
-      await supabase
-        .from('user_security_settings')
-        .update({
-          two_factor_enabled: false,
-          backup_codes: null
-        })
-        .eq('user_id', user.id);
+      // Simulate disabling 2FA
+      // In a real implementation, you would update user_security_settings table
+      console.log('2FA would be disabled for user:', user.id);
 
       setIs2FAEnabled(false);
       setBackupCodes([]);

@@ -64,7 +64,7 @@ const Index = () => {
   const { user, signOut } = useAuth();
   const { cartCount } = useCart();
   const { favoriteIds } = useFavorites();
-  const { isSuperAdmin } = useRole();
+  const { role, isSuperAdmin } = useRole();
   const navigate = useNavigate();
   const [refreshKey, setRefreshKey] = useState(0);
   const [products, setProducts] = useState<Product[]>([]);
@@ -74,9 +74,10 @@ const Index = () => {
     if (user) {
       if (isSuperAdmin()) {
         navigate('/superadmin');
-      } else {
-        // Navigate to seller dashboard for sellers, or create a buyer profile page for buyers
+      } else if (role === 'seller') {
         navigate('/seller');
+      } else {
+        navigate('/buyer');
       }
     } else {
       navigate('/auth');

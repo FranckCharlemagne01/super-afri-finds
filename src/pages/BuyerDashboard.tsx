@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { BuyerMessages } from '@/components/BuyerMessages';
 import { 
   ArrowLeft, 
   User, 
@@ -247,9 +248,10 @@ const BuyerDashboard = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="profile" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:grid-cols-none lg:flex">
+          <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:grid-cols-none lg:flex">
             <TabsTrigger value="profile" className="text-sm">Mon Profil</TabsTrigger>
             <TabsTrigger value="orders" className="text-sm">Mes Commandes</TabsTrigger>
+            <TabsTrigger value="messages" className="text-sm">Messages</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile" className="space-y-4">
@@ -427,6 +429,10 @@ const BuyerDashboard = () => {
                 })}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="messages" className="space-y-4">
+            <BuyerMessages />
           </TabsContent>
         </Tabs>
       </div>

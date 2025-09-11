@@ -75,6 +75,7 @@ const Index = () => {
       if (isSuperAdmin()) {
         navigate('/superadmin');
       } else {
+        // Navigate to seller dashboard for sellers, or create a buyer profile page for buyers
         navigate('/seller');
       }
     } else {

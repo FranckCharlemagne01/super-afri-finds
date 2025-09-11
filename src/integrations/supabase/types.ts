@@ -343,23 +343,7 @@ export type Database = {
       }
     }
     Views: {
-      users_with_profiles: {
-        Row: {
-          address: string | null
-          avatar_url: string | null
-          city: string | null
-          country: string | null
-          created_at: string | null
-          email: string | null
-          full_name: string | null
-          id: string | null
-          phone: string | null
-          role: Database["public"]["Enums"]["user_role"] | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       assign_current_user_superadmin: {
@@ -390,6 +374,23 @@ export type Database = {
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["user_role"]
+      }
+      get_users_with_profiles: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          address: string
+          avatar_url: string
+          city: string
+          country: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          phone: string
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string
+          user_id: string
+        }[]
       }
       has_role: {
         Args: {

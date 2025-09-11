@@ -11,6 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ShoppingCart, Plus, Minus } from 'lucide-react';
 import { useOrders, OrderData } from '@/hooks/useOrders';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from '@/hooks/use-toast';
 
 interface QuickOrderDialogProps {
   productId: string;
@@ -36,6 +38,7 @@ export const QuickOrderDialog = ({
   });
 
   const { createOrder, loading } = useOrders();
+  const { user } = useAuth();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -56,6 +59,15 @@ export const QuickOrderDialog = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!user) {
+      toast({
+        title: "Connexion requise",
+        description: "Vous devez être connecté pour passer une commande",
+        variant: "destructive",
+      });
+      return;
+    }
     
     if (!formData.customerName || !formData.customerPhone || !formData.deliveryLocation) {
       return;

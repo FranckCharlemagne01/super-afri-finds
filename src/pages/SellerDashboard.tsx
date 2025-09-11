@@ -11,6 +11,7 @@ import { Plus, Package, MessageSquare, BarChart3, LogOut, Store } from 'lucide-r
 import { ProductForm } from '@/components/ProductForm';
 import { SellerProducts } from '@/components/SellerProducts';
 import { SellerMessages } from '@/components/SellerMessages';
+import { SellerOrders } from '@/components/SellerOrders';
 import { useNavigate } from 'react-router-dom';
 
 interface Product {
@@ -230,8 +231,9 @@ const SellerDashboard = () => {
 
         {/* Main Content - Mobile optimized */}
         <Tabs defaultValue="products" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:grid-cols-none lg:flex">
+          <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:grid-cols-none lg:flex">
             <TabsTrigger value="products" className="text-sm">Mes Produits</TabsTrigger>
+            <TabsTrigger value="orders" className="text-sm">Commandes</TabsTrigger>
             <TabsTrigger value="messages" className="text-sm">Messages</TabsTrigger>
           </TabsList>
 
@@ -277,6 +279,10 @@ const SellerDashboard = () => {
               onEdit={handleEditProduct}
               onDelete={handleDeleteProduct}
             />
+          </TabsContent>
+
+          <TabsContent value="orders">
+            <SellerOrders />
           </TabsContent>
 
           <TabsContent value="messages">

@@ -445,25 +445,23 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
             /* Interface mobile optimisée */
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <Button 
+                <button 
                   type="button" 
-                  variant="outline" 
                   onClick={() => imageInputRef.current?.click()}
-                  className="h-24 flex-col space-y-2 bg-white border-2 hover:bg-gray-50"
+                  className="h-24 flex flex-col items-center justify-center space-y-2 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors touch-manipulation"
                 >
                   <ImageIcon className="h-8 w-8 text-primary" />
-                  <span className="text-sm font-medium">Galerie</span>
-                </Button>
+                  <span className="text-sm font-medium text-gray-700">Galerie</span>
+                </button>
                 
-                <Button 
+                <button 
                   type="button" 
-                  variant="outline" 
                   onClick={() => cameraInputRef.current?.click()}
-                  className="h-24 flex-col space-y-2 bg-white border-2 hover:bg-gray-50"
+                  className="h-24 flex flex-col items-center justify-center space-y-2 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors touch-manipulation"
                 >
                   <Camera className="h-8 w-8 text-primary" />
-                  <span className="text-sm font-medium">Appareil photo</span>
-                </Button>
+                  <span className="text-sm font-medium text-gray-700">Appareil photo</span>
+                </button>
               </div>
               
               <p className="text-sm text-gray-600">
@@ -499,11 +497,11 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
             </div>
           )}
           
-          {/* Inputs cachés pour galerie et caméra */}
+          {/* Inputs cachés pour galerie et caméra - optimisés mobile */}
           <input
             ref={imageInputRef}
             type="file"
-            accept="image/jpeg,image/jpg,image/png,image/webp"
+            accept="image/*"
             multiple
             onChange={handleImageFileChange}
             className="hidden"

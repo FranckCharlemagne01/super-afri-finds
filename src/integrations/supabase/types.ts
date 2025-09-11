@@ -348,6 +348,10 @@ export type Database = {
       }
     }
     Functions: {
+      assign_current_user_superadmin: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       assign_superadmin_role: {
         Args: { _email: string }
         Returns: string

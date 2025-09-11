@@ -34,6 +34,7 @@ import { ProfileUpdateForm } from '@/components/ProfileUpdateForm';
 import { PasswordUpdateForm } from '@/components/PasswordUpdateForm';
 import { ProductEditDialog } from '@/components/ProductEditDialog';
 import { UserDetailDialog } from '@/components/UserDetailDialog';
+import { SuperAdminSettingsDialog } from '@/components/SuperAdminSettingsDialog';
 
 interface AdminStats {
   total_users: number;
@@ -95,6 +96,7 @@ const SuperAdmin = () => {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [showUserDetail, setShowUserDetail] = useState(false);
   const [showProductEdit, setShowProductEdit] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Premier useEffect : gérer l'initialisation
   useEffect(() => {
@@ -391,7 +393,9 @@ const SuperAdmin = () => {
               <Badge variant="destructive" className="text-xs">
                 SuperAdmin
               </Badge>
-              <Settings className="w-5 h-5 text-muted-foreground" />
+              <Button variant="ghost" size="icon" onClick={() => setShowSettings(true)}>
+                <Settings className="w-5 h-5 text-muted-foreground" />
+              </Button>
             </div>
           </div>
         </div>
@@ -953,6 +957,11 @@ const SuperAdmin = () => {
         userId={selectedUserId}
         open={showUserDetail}
         onOpenChange={setShowUserDetail}
+      />
+
+      <SuperAdminSettingsDialog
+        open={showSettings}
+        onOpenChange={setShowSettings}
       />
     </div>
   );

@@ -30,6 +30,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from '@/hooks/use-toast';
+import { ProfileUpdateForm } from '@/components/ProfileUpdateForm';
+import { PasswordUpdateForm } from '@/components/PasswordUpdateForm';
 
 interface AdminStats {
   total_users: number;
@@ -464,11 +466,12 @@ const SuperAdmin = () => {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="users" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="users">Utilisateurs</TabsTrigger>
             <TabsTrigger value="products">Produits</TabsTrigger>
             <TabsTrigger value="orders">Commandes</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="settings">Paramètres</TabsTrigger>
           </TabsList>
 
           {/* Users Tab */}
@@ -881,6 +884,35 @@ const SuperAdmin = () => {
                       <div className="text-sm text-muted-foreground">Transactions totales</div>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Settings Tab */}
+          <TabsContent value="settings">
+            <div className="grid gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Informations du profil</CardTitle>
+                  <CardDescription>
+                    Modifiez vos informations personnelles
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <ProfileUpdateForm />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Sécurité</CardTitle>
+                  <CardDescription>
+                    Modifiez votre mot de passe pour sécuriser votre compte
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <PasswordUpdateForm />
                 </CardContent>
               </Card>
             </div>

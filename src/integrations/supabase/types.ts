@@ -374,6 +374,25 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["user_role"]
       }
+      get_seller_orders: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          customer_id: string
+          customer_name: string
+          customer_phone: string
+          delivery_location: string
+          id: string
+          product_id: string
+          product_price: number
+          product_title: string
+          quantity: number
+          seller_id: string
+          status: string
+          total_amount: number
+          updated_at: string
+        }[]
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["user_role"]
@@ -400,6 +419,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["user_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      update_order_status: {
+        Args: { new_status: string; order_id: string }
         Returns: boolean
       }
     }

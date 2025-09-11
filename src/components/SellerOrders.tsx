@@ -59,11 +59,9 @@ export const SellerOrders = () => {
 
   const fetchOrders = async () => {
     try {
+      // Utiliser la nouvelle fonction sécurisée qui masque les données sensibles
       const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('seller_id', user?.id)
-        .order('created_at', { ascending: false });
+        .rpc('get_seller_orders');
 
       if (error) throw error;
       setOrders(data || []);
@@ -82,10 +80,12 @@ export const SellerOrders = () => {
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     setUpdatingStatus(orderId);
     try {
-      const { error } = await supabase
-        .from('orders')
-        .update({ status: newStatus })
-        .eq('id', orderId);
+      // Utiliser la fonction sécurisée pour mettre à jour le statut
+      const { data, error } = await supabase
+        .rpc('update_order_status', {
+          order_id: orderId,
+          new_status: newStatus
+        });
 
       if (error) throw error;
 
@@ -94,11 +94,8 @@ export const SellerOrders = () => {
         description: `La commande a été marquée comme "${statusLabels[newStatus as keyof typeof statusLabels]}"`,
       });
 
-      setOrders(prev => 
-        prev.map(order => 
-          order.id === orderId ? { ...order, status: newStatus } : order
-        )
-      );
+      // Rafraîchir les données depuis le serveur pour obtenir les données masquées
+      await fetchOrders();
     } catch (error) {
       console.error('Error updating order status:', error);
       toast({

@@ -361,6 +361,10 @@ export type Database = {
       }
     }
     Functions: {
+      assign_superadmin_role: {
+        Args: { _email: string }
+        Returns: string
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["user_role"]

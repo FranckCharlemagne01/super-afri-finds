@@ -105,7 +105,11 @@ Merci d'avance pour votre réponse.`;
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full" size="sm">
+        <Button 
+          variant="outline" 
+          className={iconOnly ? "px-4" : "w-full"} 
+          size="sm"
+        >
           <MessageSquare className="w-4 h-4" />
           {!iconOnly && <span className="ml-2">Contacter le vendeur</span>}
         </Button>

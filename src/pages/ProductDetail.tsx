@@ -305,37 +305,40 @@ const ProductDetail = () => {
               </div>
 
               {/* Action Buttons - Desktop */}
-              <div className="hidden lg:flex gap-3 mb-6">
-                <Button
-                  onClick={handleAddToCart}
-                  className="flex-1 h-12"
-                  disabled={!product.stock_quantity || product.stock_quantity === 0}
-                >
-                  <ShoppingCart className="w-5 h-5 mr-2" />
-                  Ajouter au panier - {salePrice.toLocaleString()} FCFA
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleToggleFavorite}
-                  className="h-12 px-4"
-                >
-                  <Heart className={`w-5 h-5 ${isFavorite(product.id) ? 'fill-current text-red-500' : ''}`} />
-                </Button>
-              </div>
+              <div className="hidden lg:block space-y-4">
+                {/* Primary Action - Add to Cart */}
+                <div className="flex gap-3">
+                  <Button
+                    onClick={handleAddToCart}
+                    className="flex-1 h-12 text-base font-semibold"
+                    disabled={!product.stock_quantity || product.stock_quantity === 0}
+                  >
+                    <ShoppingCart className="w-5 h-5 mr-2" />
+                    Ajouter au panier - {salePrice.toLocaleString()} FCFA
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleToggleFavorite}
+                    className="h-12 px-4 hover:scale-105 transition-transform"
+                  >
+                    <Heart className={`w-5 h-5 ${isFavorite(product.id) ? 'fill-current text-red-500' : ''}`} />
+                  </Button>
+                </div>
 
-              {/* Quick Order and Contact Seller */}
-              <div className="flex gap-3">
-                <QuickOrderDialog
-                  productId={product.id}
-                  productTitle={product.title}
-                  productPrice={salePrice}
-                  sellerId={product.seller_id}
-                />
-                <ContactSellerButton
-                  productId={product.id}
-                  sellerId={product.seller_id}
-                  productTitle={product.title}
-                />
+                {/* Secondary Actions */}
+                <div className="flex gap-3">
+                  <QuickOrderDialog
+                    productId={product.id}
+                    productTitle={product.title}
+                    productPrice={salePrice}
+                    sellerId={product.seller_id}
+                  />
+                  <ContactSellerButton
+                    productId={product.id}
+                    sellerId={product.seller_id}
+                    productTitle={product.title}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -343,25 +346,46 @@ const ProductDetail = () => {
       </main>
 
       {/* Mobile Action Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-4">
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
-            onClick={handleToggleFavorite}
-            className="px-4"
-          >
-            <Heart className={`w-5 h-5 ${isFavorite(product.id) ? 'fill-current text-red-500' : ''}`} />
-          </Button>
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-4 z-50">
+        <div className="space-y-3">
+          {/* Quick Actions Row */}
+          <div className="flex gap-2">
+            <QuickOrderDialog
+              productId={product.id}
+              productTitle={product.title}
+              productPrice={salePrice}
+              sellerId={product.seller_id}
+              iconOnly={true}
+            />
+            <ContactSellerButton
+              productId={product.id}
+              sellerId={product.seller_id}
+              productTitle={product.title}
+              iconOnly={true}
+            />
+            <Button
+              variant="outline"
+              onClick={handleToggleFavorite}
+              className="px-4 hover:scale-105 transition-transform"
+            >
+              <Heart className={`w-5 h-5 ${isFavorite(product.id) ? 'fill-current text-red-500' : ''}`} />
+            </Button>
+          </div>
+          
+          {/* Primary Add to Cart Button */}
           <Button
             onClick={handleAddToCart}
-            className="flex-1"
+            className="w-full h-12 text-base font-semibold shadow-lg"
             disabled={!product.stock_quantity || product.stock_quantity === 0}
           >
             <ShoppingCart className="w-5 h-5 mr-2" />
-            {salePrice.toLocaleString()} FCFA
+            Ajouter au panier - {salePrice.toLocaleString()} FCFA
           </Button>
         </div>
       </div>
+
+      {/* Mobile padding to prevent content being hidden behind action bar */}
+      <div className="lg:hidden h-32"></div>
     </div>
   );
 };

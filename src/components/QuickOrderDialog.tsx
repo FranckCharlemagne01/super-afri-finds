@@ -88,7 +88,11 @@ export const QuickOrderDialog = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full" size="sm">
+        <Button 
+          variant="outline" 
+          className={iconOnly ? "px-4" : "w-full"} 
+          size="sm"
+        >
           <ShoppingCart className="w-4 h-4" />
           {!iconOnly && <span className="ml-2">Passer la commande</span>}
         </Button>

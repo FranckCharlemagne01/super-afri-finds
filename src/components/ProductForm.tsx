@@ -439,61 +439,83 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
       <div className="space-y-4">
         <Label>Images du produit</Label>
         
-        {/* Upload d'images avec interface améliorée */}
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-          <div className="flex justify-center mb-4">
-            {isMobile ? (
-              <Camera className="h-12 w-12 text-gray-400" />
-            ) : (
-              <ImageIcon className="h-12 w-12 text-gray-400" />
-            )}
-          </div>
-          <div className="mb-4 space-y-2">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => imageInputRef.current?.click()}
-              className={`${isMobile ? 'w-full' : 'w-auto'}`}
-            >
-              <ImageIcon className="h-4 w-4 mr-2" />
-              📤 Ajouter une image
-            </Button>
-            {isMobile && (
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => cameraInputRef.current?.click()}
-                className="w-full"
-              >
-                <Camera className="h-4 w-4 mr-2" />
-                📸 Prendre une photo
-              </Button>
-            )}
-            <input
-              ref={imageInputRef}
-              type="file"
-              accept="image/jpeg,image/jpg,image/png,image/webp"
-              multiple
-              onChange={handleImageFileChange}
-              className="hidden"
-            />
-            {isMobile && (
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={handleImageFileChange}
-                className="hidden"
-              />
-            )}
-          </div>
-          <p className="text-sm text-gray-500">
-            {isMobile ? "Prenez une photo ou choisissez depuis la galerie" : "Glissez vos images ici ou cliquez pour les sélectionner"}
-          </p>
-          <p className="text-xs text-gray-400 mt-2">
-            PNG, JPG, WebP jusqu'à 5MB chacune. Maximum 5 images.
-          </p>
+        {/* Upload d'images optimisé mobile */}
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center bg-gray-50/50">
+          {isMobile ? (
+            /* Interface mobile optimisée */
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => imageInputRef.current?.click()}
+                  className="h-24 flex-col space-y-2 bg-white border-2 hover:bg-gray-50"
+                >
+                  <ImageIcon className="h-8 w-8 text-primary" />
+                  <span className="text-sm font-medium">Galerie</span>
+                </Button>
+                
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => cameraInputRef.current?.click()}
+                  className="h-24 flex-col space-y-2 bg-white border-2 hover:bg-gray-50"
+                >
+                  <Camera className="h-8 w-8 text-primary" />
+                  <span className="text-sm font-medium">Appareil photo</span>
+                </Button>
+              </div>
+              
+              <p className="text-sm text-gray-600">
+                Choisissez une image depuis votre galerie ou prenez une photo
+              </p>
+              <p className="text-xs text-gray-500">
+                PNG, JPG, WebP jusqu'à 5MB chacune. Max 5 images.
+              </p>
+            </div>
+          ) : (
+            /* Interface desktop */
+            <div>
+              <div className="flex justify-center mb-4">
+                <ImageIcon className="h-12 w-12 text-gray-400" />
+              </div>
+              <div className="mb-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => imageInputRef.current?.click()}
+                  className="w-auto"
+                >
+                  <ImageIcon className="h-4 w-4 mr-2" />
+                  📤 Ajouter des images
+                </Button>
+              </div>
+              <p className="text-sm text-gray-500">
+                Glissez vos images ici ou cliquez pour les sélectionner
+              </p>
+              <p className="text-xs text-gray-400 mt-2">
+                PNG, JPG, WebP jusqu'à 5MB chacune. Maximum 5 images.
+              </p>
+            </div>
+          )}
+          
+          {/* Inputs cachés pour galerie et caméra */}
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/jpeg,image/jpg,image/png,image/webp"
+            multiple
+            onChange={handleImageFileChange}
+            className="hidden"
+          />
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handleImageFileChange}
+            className="hidden"
+          />
         </div>
 
         {/* Aperçu des images uploadées */}

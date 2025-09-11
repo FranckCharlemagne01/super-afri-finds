@@ -32,6 +32,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from '@/hooks/use-toast';
 import { ProfileUpdateForm } from '@/components/ProfileUpdateForm';
 import { PasswordUpdateForm } from '@/components/PasswordUpdateForm';
+import { ProductEditDialog } from '@/components/ProductEditDialog';
+import { UserDetailDialog } from '@/components/UserDetailDialog';
 
 interface AdminStats {
   total_users: number;
@@ -59,6 +61,7 @@ interface UserProfile {
 interface Product {
   id: string;
   title: string;
+  description?: string;
   price: number;
   category: string;
   stock_quantity: number;
@@ -88,6 +91,10 @@ const SuperAdmin = () => {
   const [loading, setLoading] = useState(true);
   const [initializing, setInitializing] = useState(true);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [showUserDetail, setShowUserDetail] = useState(false);
+  const [showProductEdit, setShowProductEdit] = useState(false);
 
   // Premier useEffect : gérer l'initialisation
   useEffect(() => {
@@ -537,10 +544,13 @@ const SuperAdmin = () => {
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => navigate(`/user/${user.user_id}`)}>
-                                    <Eye className="w-4 h-4 mr-2" />
-                                    Voir profil
-                                  </DropdownMenuItem>
+                                   <DropdownMenuItem onClick={() => {
+                                     setSelectedUserId(user.user_id);
+                                     setShowUserDetail(true);
+                                   }}>
+                                     <Eye className="w-4 h-4 mr-2" />
+                                     Voir profil
+                                   </DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => handleChangeUserRole(user.user_id, user.role === 'seller' ? 'buyer' : 'seller')}>
                                     <UserCheck className="w-4 h-4 mr-2" />
                                     Changer en {user.role === 'seller' ? 'Acheteur' : 'Vendeur'}
@@ -643,10 +653,17 @@ const SuperAdmin = () => {
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => navigate(`/product/${product.id}`)}>
-                                    <Eye className="w-4 h-4 mr-2" />
-                                    Voir détails
-                                  </DropdownMenuItem>
+                                   <DropdownMenuItem onClick={() => navigate(`/product/${product.id}`)}>
+                                     <Eye className="w-4 h-4 mr-2" />
+                                     Voir détails
+                                   </DropdownMenuItem>
+                                   <DropdownMenuItem onClick={() => {
+                                     setEditingProduct(product);
+                                     setShowProductEdit(true);
+                                   }}>
+                                     <Edit className="w-4 h-4 mr-2" />
+                                     Modifier
+                                   </DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => handleToggleProductStatus(product.id, product.is_active)}>
                                     {product.is_active ? <XCircle className="w-4 h-4 mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
                                     {product.is_active ? 'Désactiver' : 'Activer'}
@@ -919,6 +936,24 @@ const SuperAdmin = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Dialogs */}
+      <ProductEditDialog
+        product={editingProduct}
+        open={showProductEdit}
+        onOpenChange={setShowProductEdit}
+        onProductUpdated={(updatedProduct) => {
+          setProducts(products.map(p => 
+            p.id === updatedProduct.id ? { ...p, ...updatedProduct } : p
+          ));
+        }}
+      />
+
+      <UserDetailDialog
+        userId={selectedUserId}
+        open={showUserDetail}
+        onOpenChange={setShowUserDetail}
+      />
     </div>
   );
 };

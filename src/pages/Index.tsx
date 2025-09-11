@@ -52,7 +52,11 @@ const Index = () => {
 
   const handleProfileClick = () => {
     if (user) {
-      navigate('/seller');
+      if (isSuperAdmin()) {
+        navigate('/superadmin');
+      } else {
+        navigate('/seller');
+      }
     } else {
       navigate('/auth');
     }

@@ -377,7 +377,7 @@ const SuperAdmin = () => {
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="destructive" className="text-xs">
-                SUPER ADMIN
+                SuperAdmin
               </Badge>
               <Settings className="w-5 h-5 text-muted-foreground" />
             </div>

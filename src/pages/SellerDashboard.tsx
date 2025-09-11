@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useRole } from '@/hooks/useRole';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,6 +33,7 @@ interface Product {
 
 const SellerDashboard = () => {
   const { user, signOut } = useAuth();
+  const { isSuperAdmin, loading: roleLoading } = useRole();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
@@ -49,10 +51,16 @@ const SellerDashboard = () => {
   };
 
   useEffect(() => {
-    if (user) {
+    // Rediriger les SuperAdmin vers leur dashboard
+    if (!roleLoading && isSuperAdmin()) {
+      navigate('/superadmin');
+      return;
+    }
+    
+    if (user && !roleLoading) {
       fetchSellerProducts();
     }
-  }, [user]);
+  }, [user, isSuperAdmin, roleLoading, navigate]);
 
   const fetchSellerProducts = async () => {
     try {
@@ -118,6 +126,18 @@ const SellerDashboard = () => {
     totalViews: products.reduce((sum, p) => sum + (p.reviews_count || 0), 0),
   };
 
+  if (roleLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card>
+          <CardContent className="p-6">
+            <p>Chargement...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -128,6 +148,11 @@ const SellerDashboard = () => {
         </Card>
       </div>
     );
+  }
+
+  // Les SuperAdmin sont automatiquement redirigés dans useEffect
+  if (isSuperAdmin()) {
+    return null;
   }
 
   return (

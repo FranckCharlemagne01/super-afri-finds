@@ -1,16 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Minus, Trash2, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Plus, Minus, Trash2, ShoppingCart, Package } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useState } from "react";
+import { CheckoutDialog } from "@/components/CheckoutDialog";
 
 const Cart = () => {
   const { cartItems, cartCount, loading, updateQuantity, removeFromCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [showCheckout, setShowCheckout] = useState(false);
 
   const totalPrice = cartItems.reduce((total, item) => total + (item.product.price * item.quantity), 0);
 
@@ -19,8 +21,7 @@ const Cart = () => {
       navigate('/auth');
       return;
     }
-    // TODO: Implement checkout process
-    console.log('Proceed to checkout');
+    setShowCheckout(true);
   };
 
   return (
@@ -36,6 +37,15 @@ const Cart = () => {
             <Badge className="bg-primary text-primary-foreground">
               {cartCount} article{cartCount > 1 ? 's' : ''}
             </Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/my-orders')}
+              className="ml-auto flex items-center gap-1"
+            >
+              <Package className="w-4 h-4" />
+              Mes commandes
+            </Button>
           </div>
         </div>
       </header>
@@ -152,6 +162,13 @@ const Cart = () => {
           </div>
         )}
       </main>
+      
+      <CheckoutDialog
+        open={showCheckout}
+        onOpenChange={setShowCheckout}
+        cartItems={cartItems}
+        totalPrice={totalPrice}
+      />
     </div>
   );
 };

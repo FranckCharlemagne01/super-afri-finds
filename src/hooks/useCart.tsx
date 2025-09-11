@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
-import { useToast } from './use-toast';
+import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
-interface CartItem {
+export interface CartItem {
   id: string;
-  product_id: string;
   quantity: number;
   product: {
     id: string;
     title: string;
     price: number;
+    seller_id: string;
     images: string[];
   };
 }
@@ -20,17 +20,15 @@ interface LocalCartItem {
   quantity: number;
 }
 
-export function useCart() {
+export const useCart = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
-  const { toast } = useToast();
 
-  // Local storage functions
   const getLocalCart = (): LocalCartItem[] => {
     try {
-      const localCart = localStorage.getItem('djassa_cart');
-      return localCart ? JSON.parse(localCart) : [];
+      const stored = localStorage.getItem('djassa_cart');
+      return stored ? JSON.parse(stored) : [];
     } catch {
       return [];
     }
@@ -41,114 +39,106 @@ export function useCart() {
   };
 
   const fetchCartItems = async () => {
-    console.log('🔄 Fetching cart items, user:', user ? 'authenticated' : 'not authenticated');
-    
-    if (!user) {
-      // Load from localStorage for non-authenticated users
-      const localItems = getLocalCart();
-      console.log('📱 Local cart items:', localItems);
-      
-      if (localItems.length > 0) {
-        try {
-          // Import products locally to avoid Supabase call
-          const { products } = await import('@/data/products');
-          console.log('📦 Available products:', products.length);
-          
-          const cartData: CartItem[] = localItems.map(localItem => {
-            const product = products.find(p => p.id === localItem.product_id);
-            console.log(`🔍 Looking for product ${localItem.product_id}:`, product ? 'found' : 'not found');
-            
+    setLoading(true);
+    try {
+      if (!user) {
+        // Handle unauthenticated users with localStorage
+        const localCartItems = getLocalCart();
+        
+        if (localCartItems.length === 0) {
+          setCartItems([]);
+          setLoading(false);
+          return;
+        }
+
+        // Fetch product details for local cart items
+        const productIds = localCartItems.map(item => item.product_id);
+        const { data: products, error } = await supabase
+          .from('products')
+          .select('*')
+          .in('id', productIds)
+          .eq('is_active', true);
+
+        if (error) throw error;
+
+        // Map to CartItem format
+        const mappedItems: CartItem[] = localCartItems
+          .map(localItem => {
+            const product = products?.find(p => p.id === localItem.product_id);
             if (!product) return null;
-            
+
             return {
               id: `local-${localItem.product_id}`,
-              product_id: localItem.product_id,
               quantity: localItem.quantity,
               product: {
                 id: product.id,
                 title: product.title,
-                price: product.salePrice,
-                images: [product.image]
+                price: product.price,
+                seller_id: product.seller_id,
+                images: product.images || []
               }
             };
-          }).filter(Boolean) as CartItem[];
+          })
+          .filter(Boolean) as CartItem[];
 
-          console.log('✅ Final cart data:', cartData);
-          setCartItems(cartData);
-        } catch (error) {
-          console.error('❌ Error loading local cart products:', error);
-          setCartItems([]);
-        }
+        setCartItems(mappedItems);
       } else {
-        console.log('📦 No local cart items');
-        setCartItems([]);
-      }
-      return;
-    }
-    
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('cart_items')
-        .select(`
-          id,
-          product_id,
-          quantity,
-          products (
+        // Handle authenticated users with Supabase
+        const { data, error } = await supabase
+          .from('cart_items')
+          .select(`
             id,
-            title,
-            price,
-            images
-          )
-        `)
-        .eq('user_id', user.id);
+            quantity,
+            product_id,
+            products!inner (
+              id,
+              title,
+              price,
+              seller_id,
+              images,
+              is_active
+            )
+          `)
+          .eq('user_id', user.id)
+          .eq('products.is_active', true);
 
-      if (error) throw error;
-      
-      const transformedData = (data || []).map(item => ({
-        ...item,
-        product: item.products
-      }));
-      setCartItems(transformedData);
+        if (error) throw error;
+
+        const mappedItems: CartItem[] = data?.map(item => ({
+          id: item.id,
+          quantity: item.quantity,
+          product: {
+            id: item.products.id,
+            title: item.products.title,
+            price: item.products.price,
+            seller_id: item.products.seller_id,
+            images: item.products.images || []
+          }
+        })) || [];
+
+        setCartItems(mappedItems);
+      }
     } catch (error) {
-      console.error('Error fetching cart:', error);
+      console.error('Error fetching cart items:', error);
+      setCartItems([]);
     } finally {
       setLoading(false);
     }
   };
 
   const addToCart = async (productId: string) => {
-    // Clear old localStorage data with incorrect IDs
-    if (localStorage.getItem('djassa_cart')) {
-      const currentCart = getLocalCart();
-      const hasOldIds = currentCart.some(item => item.product_id.startsWith('prod-'));
-      if (hasOldIds) {
-        localStorage.removeItem('djassa_cart');
-        setCartItems([]);
-      }
-    }
-    
-    console.log('🛒 Adding to cart:', productId);
-    
     if (!user) {
-      // Handle local cart for non-authenticated users
+      // For unauthenticated users, store in localStorage
       const localCart = getLocalCart();
-      console.log('📦 Current local cart:', localCart);
-      
       const existingItem = localCart.find(item => item.product_id === productId);
       
       if (existingItem) {
         existingItem.quantity += 1;
-        console.log('➕ Updated existing item quantity:', existingItem.quantity);
       } else {
         localCart.push({ product_id: productId, quantity: 1 });
-        console.log('🆕 Added new item to cart');
       }
       
       setLocalCart(localCart);
-      console.log('💾 Saved local cart:', localCart);
-      
-      // Immediately refresh cart display
       await fetchCartItems();
       return;
     }
@@ -250,6 +240,27 @@ export function useCart() {
     }
   };
 
+  const clearCart = async () => {
+    if (!user) {
+      setLocalCart([]);
+      await fetchCartItems();
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('cart_items')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      await fetchCartItems();
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+    }
+  };
+
   useEffect(() => {
     // Clear old incorrect localStorage data immediately on load
     const currentCart = localStorage.getItem('djassa_cart');
@@ -279,5 +290,6 @@ export function useCart() {
     updateQuantity,
     removeFromCart,
     fetchCartItems,
+    clearCart,
   };
-}
+};

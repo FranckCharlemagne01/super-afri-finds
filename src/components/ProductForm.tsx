@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -32,15 +32,46 @@ interface ProductFormProps {
 }
 
 const categories = [
-  'Électronique',
-  'Mode & Vêtements',
-  'Maison & Jardin',
-  'Beauté & Santé',
-  'Sports & Loisirs',
-  'Auto & Moto',
-  'Livres & Médias',
-  'Jouets & Enfants',
+  'Téléphones & Tablettes',
+  'Électroménager / TV & Audio',
+  'Mode',
+  'Maison & Décoration',
+  'Beauté & Soins personnels',
+  'Épicerie & Produits alimentaires',
+  'Auto & Accessoires',
 ];
+
+// Suggestions de contenu par catégorie
+const categoryDefaults = {
+  'Téléphones & Tablettes': {
+    title: 'iPhone 13 Pro 128 Go',
+    description: 'iPhone 13 Pro, 128 Go, très bon état. Livré avec son chargeur, coque incluse.'
+  },
+  'Électroménager / TV & Audio': {
+    title: 'TV Samsung 55" 4K Ultra HD',
+    description: 'TV Samsung 55" 4K Ultra HD. Très bonne qualité d\'image, télécommande incluse.'
+  },
+  'Mode': {
+    title: 'Veste en jean Levi\'s taille M',
+    description: 'Veste en jean Levi\'s taille M. Excellent état, très peu portée.'
+  },
+  'Maison & Décoration': {
+    title: 'Canapé 3 places en tissu gris',
+    description: 'Canapé 3 places en tissu gris. Propre, confortable, idéal pour salon moderne.'
+  },
+  'Beauté & Soins personnels': {
+    title: 'Sèche-cheveux Dyson Supersonic',
+    description: 'Sèche-cheveux Dyson Supersonic, neuf dans son emballage d\'origine.'
+  },
+  'Épicerie & Produits alimentaires': {
+    title: 'Huile d\'olive extra vierge 1L',
+    description: 'Huile d\'olive extra vierge 1L. Produit artisanal, première pression à froid.'
+  },
+  'Auto & Accessoires': {
+    title: 'Tapis de sol universels pour voiture',
+    description: 'Tapis de sol universels pour voiture. Antidérapants, faciles à nettoyer.'
+  }
+};
 
 export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => {
   const { user } = useAuth();
@@ -63,6 +94,17 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
 
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [uploadingVideo, setUploadingVideo] = useState(false);
+
+  // Pré-remplir les champs selon la catégorie sélectionnée
+  useEffect(() => {
+    if (formData.category && !product?.id && categoryDefaults[formData.category as keyof typeof categoryDefaults]) {
+      const defaults = categoryDefaults[formData.category as keyof typeof categoryDefaults];
+      // Ne pré-remplir que si les champs sont vides pour ne pas écraser les modifications de l'utilisateur
+      if (!formData.title) {
+        setFormData(prev => ({ ...prev, title: defaults.title }));
+      }
+    }
+  }, [formData.category, product?.id]);
 
   const uploadVideo = async (): Promise<string | null> => {
     if (!videoFile || !user) return null;
@@ -266,7 +308,9 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
           id="description"
           value={formData.description}
           onChange={(e) => handleInputChange('description', e.target.value)}
-          placeholder="Décrivez votre produit en détail..."
+          placeholder={formData.category && categoryDefaults[formData.category as keyof typeof categoryDefaults] 
+            ? categoryDefaults[formData.category as keyof typeof categoryDefaults].description
+            : "Décrivez votre produit en détail..."}
           rows={4}
         />
       </div>

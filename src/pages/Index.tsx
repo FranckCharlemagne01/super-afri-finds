@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useNavigate } from "react-router-dom";
 import { 
   Smartphone, 
@@ -45,6 +46,7 @@ const Index = () => {
   const { user, signOut } = useAuth();
   const { cartCount } = useCart();
   const { favoriteIds } = useFavorites();
+  const { isSuperAdmin } = useUserRole();
   const navigate = useNavigate();
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -147,6 +149,11 @@ const Index = () => {
               <Button variant="ghost" size="icon" onClick={handleProfileClick}>
                 <User className={`w-5 h-5 ${user ? 'text-primary' : ''}`} />
               </Button>
+              {isSuperAdmin && (
+                <Button variant="ghost" size="sm" onClick={() => navigate('/superadmin')}>
+                  Admin
+                </Button>
+              )}
               {user && (
                 <Button variant="ghost" size="sm" onClick={signOut}>
                   Déconnexion

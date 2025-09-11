@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 
 interface AdminStats {
@@ -92,43 +93,81 @@ const SuperAdmin = () => {
     try {
       setLoading(true);
       
-      // Fetch statistics
-      const { data: statsData, error: statsError } = await supabase
-        .from('admin_statistics')
-        .select('*')
-        .single();
-      
-      if (statsError) throw statsError;
-      setStats(statsData);
+      // Fetch statistics manually from existing tables
+      const [
+        { count: totalUsers },
+        { count: totalOrders },
+        { count: totalProducts },
+        productsData,
+        ordersData,
+        profilesData
+      ] = await Promise.all([
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('orders').select('*', { count: 'exact', head: true }),
+        supabase.from('products').select('*', { count: 'exact', head: true }),
+        supabase.from('products').select('*').order('created_at', { ascending: false }).limit(50),
+        supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(100),
+        supabase.from('profiles').select(`
+          *,
+          user_roles!inner(role)
+        `).order('created_at', { ascending: false })
+      ]);
 
-      // Fetch users
-      const { data: usersData, error: usersError } = await supabase
-        .from('users_with_profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (usersError) throw usersError;
-      setUsers(usersData || []);
-
-      // Fetch products
-      const { data: productsData, error: productsError } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
-      
-      if (productsError) throw productsError;
-      setProducts(productsData || []);
-
-      // Fetch orders
-      const { data: ordersData, error: ordersError } = await supabase
+      // Calculate revenue from completed orders
+      const { data: completedOrders } = await supabase
         .from('orders')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(100);
+        .select('total_amount')
+        .eq('status', 'completed');
+
+      const totalRevenue = completedOrders?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0;
+
+      // Count active products
+      const { count: activeProducts } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_active', true);
+
+      // Count sellers and buyers from user_roles table
+      const { data: userRoles } = await supabase.from('user_roles').select('role');
+      const sellers = userRoles?.filter(ur => ur.role === 'seller').length || 0;
+      const buyers = userRoles?.filter(ur => ur.role === 'buyer').length || 0;
+
+      // Set calculated statistics
+      setStats({
+        total_users: totalUsers || 0,
+        total_sellers: sellers,
+        total_buyers: buyers,
+        total_active_products: activeProducts || 0,
+        total_orders: totalOrders || 0,
+        total_revenue: totalRevenue,
+        orders_today: 0, // Can be calculated if needed
+        new_users_today: 0 // Can be calculated if needed
+      });
+
+      setProducts(productsData.data || []);
+      setOrders(ordersData.data || []);
       
-      if (ordersError) throw ordersError;
-      setOrders(ordersData || []);
+      // Get users with roles separately for better control
+      const { data: allProfiles } = await supabase.from('profiles').select('*');
+      const { data: allUserRoles } = await supabase.from('user_roles').select('user_id, role');
+      
+      // Transform profiles data to match expected format
+      const transformedUsers = allProfiles?.map(profile => {
+        const userRole = allUserRoles?.find(ur => ur.user_id === profile.user_id);
+        return {
+          id: profile.id,
+          user_id: profile.user_id,
+          email: profile.email || '',
+          full_name: profile.full_name || '',
+          phone: profile.phone || '',
+          city: profile.city || '',
+          country: profile.country || '',
+          created_at: profile.created_at,
+          role: userRole?.role || 'buyer'
+        };
+      }) || [];
+      
+      setUsers(transformedUsers);
 
     } catch (error: any) {
       console.error('Error fetching admin data:', error);
@@ -194,12 +233,12 @@ const SuperAdmin = () => {
     }
   };
 
-  if (roleLoading || loading) {
+  if (roleLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Chargement...</p>
+          <p className="mt-4 text-muted-foreground">Vérification des permissions...</p>
         </div>
       </div>
     );
@@ -236,14 +275,18 @@ const SuperAdmin = () => {
 
       <div className="container mx-auto px-4 py-6">
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Utilisateurs Total</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats?.total_users || 0}</div>
+              {loading ? (
+                <Skeleton className="h-8 w-16 mb-2" />
+              ) : (
+                <div className="text-2xl font-bold">{stats?.total_users || 0}</div>
+              )}
               <p className="text-xs text-muted-foreground">
                 +{stats?.new_users_today || 0} aujourd'hui
               </p>
@@ -256,7 +299,11 @@ const SuperAdmin = () => {
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats?.total_active_products || 0}</div>
+              {loading ? (
+                <Skeleton className="h-8 w-16 mb-2" />
+              ) : (
+                <div className="text-2xl font-bold">{stats?.total_active_products || 0}</div>
+              )}
               <p className="text-xs text-muted-foreground">
                 Vendeurs: {stats?.total_sellers || 0}
               </p>
@@ -269,7 +316,11 @@ const SuperAdmin = () => {
               <ShoppingBag className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats?.total_orders || 0}</div>
+              {loading ? (
+                <Skeleton className="h-8 w-16 mb-2" />
+              ) : (
+                <div className="text-2xl font-bold">{stats?.total_orders || 0}</div>
+              )}
               <p className="text-xs text-muted-foreground">
                 +{stats?.orders_today || 0} aujourd'hui
               </p>
@@ -282,9 +333,13 @@ const SuperAdmin = () => {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {new Intl.NumberFormat('fr-FR').format(stats?.total_revenue || 0)} FCFA
-              </div>
+              {loading ? (
+                <Skeleton className="h-8 w-20 mb-2" />
+              ) : (
+                <div className="text-2xl font-bold">
+                  {new Intl.NumberFormat('fr-FR').format(stats?.total_revenue || 0)} FCFA
+                </div>
+              )}
               <p className="text-xs text-muted-foreground">
                 Commandes terminées
               </p>
@@ -310,47 +365,67 @@ const SuperAdmin = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nom</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Rôle</TableHead>
-                      <TableHead>Ville</TableHead>
-                      <TableHead>Date d'inscription</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell className="font-medium">
-                          {user.full_name || 'Non renseigné'}
-                        </TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>
-                          <Badge variant={user.role === 'seller' ? 'default' : 'secondary'}>
-                            {user.role}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{user.city || 'Non renseignée'}</TableCell>
-                        <TableCell>
-                          {new Date(user.created_at).toLocaleDateString('fr-FR')}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button variant="ghost" size="sm">
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nom</TableHead>
+                        <TableHead className="hidden md:table-cell">Email</TableHead>
+                        <TableHead>Rôle</TableHead>
+                        <TableHead className="hidden lg:table-cell">Ville</TableHead>
+                        <TableHead className="hidden md:table-cell">Date d'inscription</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {loading ? (
+                        [...Array(5)].map((_, i) => (
+                          <TableRow key={i}>
+                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                            <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-32" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                            <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-20" /></TableCell>
+                            <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-20" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        users.map((user) => (
+                          <TableRow key={user.id}>
+                            <TableCell className="font-medium">
+                              <div>
+                                <div>{user.full_name || 'Non renseigné'}</div>
+                                <div className="text-xs text-muted-foreground md:hidden">
+                                  {user.email}
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">{user.email}</TableCell>
+                            <TableCell>
+                              <Badge variant={user.role === 'seller' ? 'default' : 'secondary'}>
+                                {user.role}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="hidden lg:table-cell">{user.city || 'Non renseignée'}</TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              {new Date(user.created_at).toLocaleDateString('fr-FR')}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-1">
+                                <Button variant="ghost" size="sm">
+                                  <Eye className="w-4 h-4" />
+                                </Button>
+                                <Button variant="ghost" size="sm" className="hidden sm:flex">
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -365,51 +440,72 @@ const SuperAdmin = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Titre</TableHead>
-                      <TableHead>Prix</TableHead>
-                      <TableHead>Catégorie</TableHead>
-                      <TableHead>Stock</TableHead>
-                      <TableHead>Statut</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {products.map((product) => (
-                      <TableRow key={product.id}>
-                        <TableCell className="font-medium">
-                          {product.title}
-                        </TableCell>
-                        <TableCell>
-                          {new Intl.NumberFormat('fr-FR').format(product.price)} FCFA
-                        </TableCell>
-                        <TableCell>{product.category}</TableCell>
-                        <TableCell>{product.stock_quantity}</TableCell>
-                        <TableCell>
-                          <Badge variant={product.is_active ? 'default' : 'secondary'}>
-                            {product.is_active ? 'Actif' : 'Inactif'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => handleToggleProductStatus(product.id, product.is_active)}
-                            >
-                              {product.is_active ? 'Désactiver' : 'Activer'}
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Titre</TableHead>
+                        <TableHead className="hidden md:table-cell">Prix</TableHead>
+                        <TableHead className="hidden lg:table-cell">Catégorie</TableHead>
+                        <TableHead className="hidden md:table-cell">Stock</TableHead>
+                        <TableHead>Statut</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {loading ? (
+                        [...Array(5)].map((_, i) => (
+                          <TableRow key={i}>
+                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                            <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-20" /></TableCell>
+                            <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
+                            <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-12" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        products.map((product) => (
+                          <TableRow key={product.id}>
+                            <TableCell className="font-medium">
+                              <div>
+                                <div className="truncate max-w-[200px]">{product.title}</div>
+                                <div className="text-xs text-muted-foreground md:hidden">
+                                  {new Intl.NumberFormat('fr-FR').format(product.price)} FCFA
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              {new Intl.NumberFormat('fr-FR').format(product.price)} FCFA
+                            </TableCell>
+                            <TableCell className="hidden lg:table-cell">{product.category}</TableCell>
+                            <TableCell className="hidden md:table-cell">{product.stock_quantity}</TableCell>
+                            <TableCell>
+                              <Badge variant={product.is_active ? 'default' : 'secondary'}>
+                                {product.is_active ? 'Actif' : 'Inactif'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-1">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => handleToggleProductStatus(product.id, product.is_active)}
+                                  className="text-xs"
+                                >
+                                  {product.is_active ? 'Désact.' : 'Activer'}
+                                </Button>
+                                <Button variant="ghost" size="sm" className="hidden sm:flex">
+                                  <Eye className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -424,59 +520,82 @@ const SuperAdmin = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Client</TableHead>
-                      <TableHead>Produit</TableHead>
-                      <TableHead>Montant</TableHead>
-                      <TableHead>Statut</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {orders.map((order) => (
-                      <TableRow key={order.id}>
-                        <TableCell className="font-medium">
-                          {order.customer_name}
-                        </TableCell>
-                        <TableCell>{order.product_title}</TableCell>
-                        <TableCell>
-                          {new Intl.NumberFormat('fr-FR').format(Number(order.total_amount))} FCFA
-                        </TableCell>
-                        <TableCell>
-                          <Badge 
-                            variant={
-                              order.status === 'completed' ? 'default' : 
-                              order.status === 'pending' ? 'secondary' : 'destructive'
-                            }
-                          >
-                            {order.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {new Date(order.created_at).toLocaleDateString('fr-FR')}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => handleUpdateOrderStatus(order.id, 'completed')}
-                              disabled={order.status === 'completed'}
-                            >
-                              Valider
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Client</TableHead>
+                        <TableHead className="hidden md:table-cell">Produit</TableHead>
+                        <TableHead>Montant</TableHead>
+                        <TableHead>Statut</TableHead>
+                        <TableHead className="hidden lg:table-cell">Date</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {loading ? (
+                        [...Array(5)].map((_, i) => (
+                          <TableRow key={i}>
+                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                            <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-32" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                            <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-20" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        orders.map((order) => (
+                          <TableRow key={order.id}>
+                            <TableCell className="font-medium">
+                              <div>
+                                <div>{order.customer_name}</div>
+                                <div className="text-xs text-muted-foreground md:hidden truncate max-w-[150px]">
+                                  {order.product_title}
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              <div className="truncate max-w-[200px]">{order.product_title}</div>
+                            </TableCell>
+                            <TableCell>
+                              {new Intl.NumberFormat('fr-FR').format(Number(order.total_amount))} FCFA
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant={
+                                  order.status === 'completed' ? 'default' : 
+                                  order.status === 'pending' ? 'secondary' : 'destructive'
+                                }
+                              >
+                                {order.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="hidden lg:table-cell">
+                              {new Date(order.created_at).toLocaleDateString('fr-FR')}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-1">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => handleUpdateOrderStatus(order.id, 'completed')}
+                                  disabled={order.status === 'completed'}
+                                  className="text-xs"
+                                >
+                                  Valider
+                                </Button>
+                                <Button variant="ghost" size="sm" className="hidden sm:flex">
+                                  <Eye className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

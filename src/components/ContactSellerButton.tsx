@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -30,6 +30,23 @@ export const ContactSellerButton = ({ productId, sellerId, productTitle, iconOnl
   const [loading, setLoading] = useState(false);
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
+
+  // Pré-remplir les champs quand le dialogue s'ouvre
+  useEffect(() => {
+    if (open) {
+      const defaultSubject = `Question sur le produit : ${productTitle}`;
+      const defaultMessage = `Bonjour,
+
+Je suis intéressé(e) par votre article "${productTitle}".
+Pourriez-vous me dire s'il est toujours disponible ?
+J'aimerais aussi avoir plus d'informations à son sujet.
+
+Merci d'avance pour votre réponse.`;
+      
+      setSubject(defaultSubject);
+      setMessage(defaultMessage);
+    }
+  }, [open, productTitle]);
 
   const handleSendMessage = async () => {
     if (!user) {

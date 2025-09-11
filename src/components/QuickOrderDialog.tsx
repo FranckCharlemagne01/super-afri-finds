@@ -61,11 +61,8 @@ export const QuickOrderDialog = ({
     e.preventDefault();
     
     if (!user) {
-      toast({
-        title: "Connexion requise",
-        description: "Vous devez être connecté pour passer une commande",
-        variant: "destructive",
-      });
+      setOpen(false);
+      window.location.href = '/auth';
       return;
     }
     

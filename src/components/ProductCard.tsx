@@ -43,13 +43,9 @@ export const ProductCard = ({
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const handleOrder = (e: React.MouseEvent) => {
+  const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-    navigate(`/product/${id}`);
+    addToCart(id);
   };
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
@@ -152,10 +148,10 @@ export const ProductCard = ({
               variant="promo" 
               size="sm" 
               className="w-full"
-              onClick={handleOrder}
+              onClick={handleAddToCart}
             >
               <ShoppingCart className="w-4 h-4 mr-2" />
-              Commander
+              Ajouter au panier
             </Button>
             
             <div onClick={(e) => e.stopPropagation()}>
@@ -180,7 +176,7 @@ export const ProductCard = ({
               variant="promo" 
               size="sm" 
               className="flex-1"
-              onClick={handleOrder}
+              onClick={handleAddToCart}
             >
               <ShoppingCart className="w-4 h-4" />
             </Button>

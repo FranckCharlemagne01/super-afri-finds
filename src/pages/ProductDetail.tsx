@@ -97,6 +97,19 @@ const ProductDetail = () => {
     return null;
   }
 
+  const handleAddToCart = () => {
+    // Add to cart with the selected quantity
+    for (let i = 0; i < quantity; i++) {
+      addToCart(product.id);
+    }
+    
+    // Show success message
+    toast({
+      title: "Produit ajouté au panier",
+      description: `${quantity} ${quantity > 1 ? 'articles ajoutés' : 'article ajouté'} avec succès`,
+    });
+  };
+
   const handleOrder = () => {
     if (!user) {
       navigate('/auth');
@@ -107,14 +120,6 @@ const ProductDetail = () => {
     if (quickOrderButton) {
       quickOrderButton.click();
     }
-  };
-
-  const handleContactSeller = () => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-    // Contact seller functionality already implemented
   };
 
   const handleQuantityChange = (newQuantity: number) => {
@@ -321,15 +326,15 @@ const ProductDetail = () => {
 
               {/* Action Buttons - Desktop */}
               <div className="hidden lg:block space-y-4">
-                {/* Primary Action - Order */}
+                {/* Primary Action - Add to Cart */}
                 <div className="flex gap-3">
                   <Button
-                    onClick={handleOrder}
+                    onClick={handleAddToCart}
                     className="flex-1 h-12 text-base font-semibold"
                     disabled={!product.stock_quantity || product.stock_quantity === 0}
                   >
                     <ShoppingCart className="w-5 h-5 mr-2" />
-                    Commander - {salePrice.toLocaleString()} FCFA
+                    Ajouter au panier - {salePrice.toLocaleString()} FCFA
                   </Button>
                   <Button
                     variant="outline"
@@ -342,21 +347,18 @@ const ProductDetail = () => {
 
                 {/* Secondary Actions */}
                 <div className="flex gap-3">
-                  <div data-quick-order-trigger>
-                    <QuickOrderDialog
-                      productId={product.id}
-                      productTitle={product.title}
-                      productPrice={salePrice}
-                      sellerId={product.seller_id}
-                    />
-                  </div>
-                  <div onClick={handleContactSeller}>
-                    <ContactSellerButton
-                      productId={product.id}
-                      sellerId={product.seller_id}
-                      productTitle={product.title}
-                    />
-                  </div>
+                  <Button
+                    onClick={handleOrder}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Commander directement
+                  </Button>
+                  <ContactSellerButton
+                    productId={product.id}
+                    sellerId={product.seller_id}
+                    productTitle={product.title}
+                  />
                 </div>
               </div>
             </div>
@@ -369,13 +371,13 @@ const ProductDetail = () => {
         <div className="space-y-3">
           {/* Quick Actions Row */}
           <div className="flex gap-2">
-            <QuickOrderDialog
-              productId={product.id}
-              productTitle={product.title}
-              productPrice={salePrice}
-              sellerId={product.seller_id}
-              iconOnly={true}
-            />
+            <Button
+              onClick={handleOrder}
+              variant="outline"
+              className="px-4"
+            >
+              Commander
+            </Button>
             <ContactSellerButton
               productId={product.id}
               sellerId={product.seller_id}
@@ -391,14 +393,14 @@ const ProductDetail = () => {
             </Button>
           </div>
           
-          {/* Primary Order Button */}
+          {/* Primary Add to Cart Button */}
           <Button
-            onClick={handleOrder}
+            onClick={handleAddToCart}
             className="w-full h-12 text-base font-semibold shadow-lg"
             disabled={!product.stock_quantity || product.stock_quantity === 0}
           >
             <ShoppingCart className="w-5 h-5 mr-2" />
-            Commander - {salePrice.toLocaleString()} FCFA
+            Ajouter au panier - {salePrice.toLocaleString()} FCFA
           </Button>
         </div>
       </div>

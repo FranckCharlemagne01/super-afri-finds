@@ -50,11 +50,8 @@ Merci d'avance pour votre réponse.`;
 
   const handleSendMessage = async () => {
     if (!user) {
-      toast({
-        title: "Connexion requise",
-        description: "Vous devez être connecté pour contacter le vendeur",
-        variant: "destructive",
-      });
+      setOpen(false);
+      window.location.href = '/auth';
       return;
     }
 

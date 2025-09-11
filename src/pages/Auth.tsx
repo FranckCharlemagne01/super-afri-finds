@@ -7,10 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Globe, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Globe, Eye, EyeOff, AlertCircle, ShoppingCart, Store } from 'lucide-react';
 import { CountrySelect } from '@/components/CountrySelect';
 import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -21,6 +22,7 @@ const Auth = () => {
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [country, setCountry] = useState('CI'); // Default to Côte d'Ivoire
+  const [userRole, setUserRole] = useState<'buyer' | 'seller'>('buyer'); // Default to buyer
   const [loginIdentifier, setLoginIdentifier] = useState(''); // Email ou téléphone pour la connexion
   const [loading, setLoading] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
@@ -91,7 +93,7 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const { error } = await signUp(email, password, fullName, phone, country);
+      const { error } = await signUp(email, password, fullName, phone, country, userRole);
       
       if (error) {
         if (error.message.includes('already registered') || error.message.includes('already been registered')) {
@@ -456,8 +458,37 @@ const Auth = () => {
                         placeholder="Sélectionnez votre pays"
                       />
                       <p className="text-xs text-muted-foreground">
-                        Ceci nous aide à personnaliser votre expérience et à vous proposer des produits adaptés à votre région.
+                       Ceci nous aide à personnaliser votre expérience et à vous proposer des produits adaptés à votre région.
                       </p>
+                    </div>
+                    <div className="space-y-4">
+                      <Label className="text-base font-medium">Je souhaite</Label>
+                      <RadioGroup
+                        value={userRole}
+                        onValueChange={(value: 'buyer' | 'seller') => setUserRole(value)}
+                        className="grid grid-cols-1 gap-4"
+                      >
+                        <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors">
+                          <RadioGroupItem value="buyer" id="buyer" />
+                          <Label htmlFor="buyer" className="flex items-center gap-3 cursor-pointer flex-1">
+                            <ShoppingCart className="w-5 h-5 text-primary" />
+                            <div>
+                              <div className="font-medium">Acheter des produits</div>
+                              <div className="text-sm text-muted-foreground">Accès au panier, commandes et favoris</div>
+                            </div>
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors">
+                          <RadioGroupItem value="seller" id="seller" />
+                          <Label htmlFor="seller" className="flex items-center gap-3 cursor-pointer flex-1">
+                            <Store className="w-5 h-5 text-primary" />
+                            <div>
+                              <div className="font-medium">Vendre mes produits</div>
+                              <div className="text-sm text-muted-foreground">Gérer mes produits et recevoir des commandes</div>
+                            </div>
+                          </Label>
+                        </div>
+                      </RadioGroup>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="password">Mot de passe</Label>

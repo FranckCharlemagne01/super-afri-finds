@@ -7,7 +7,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signIn: (emailOrPhone: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, fullName: string, phone: string, country?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName: string, phone: string, country?: string, role?: 'buyer' | 'seller') => Promise<{ error: any }>;
   resetPassword: (email: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error };
   };
 
-  const signUp = async (email: string, password: string, fullName: string, phone: string, country?: string) => {
+  const signUp = async (email: string, password: string, fullName: string, phone: string, country?: string, role?: 'buyer' | 'seller') => {
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
@@ -64,6 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           full_name: fullName,
           phone: phone,
           country: country || 'CI', // Default to Côte d'Ivoire
+          user_role: role || 'buyer', // Default to buyer
         }
       }
     });

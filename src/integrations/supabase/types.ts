@@ -246,7 +246,6 @@ export type Database = {
           phone: string | null
           updated_at: string
           user_id: string
-          user_type: string | null
         }
         Insert: {
           address?: string | null
@@ -260,7 +259,6 @@ export type Database = {
           phone?: string | null
           updated_at?: string
           user_id: string
-          user_type?: string | null
         }
         Update: {
           address?: string | null
@@ -274,19 +272,109 @@ export type Database = {
           phone?: string | null
           updated_at?: string
           user_id?: string
-          user_type?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id?: string
         }
         Relationships: []
       }
     }
     Views: {
-      [_ in never]: never
+      admin_statistics: {
+        Row: {
+          new_users_today: number | null
+          orders_today: number | null
+          total_active_products: number | null
+          total_buyers: number | null
+          total_orders: number | null
+          total_revenue: number | null
+          total_sellers: number | null
+          total_users: number | null
+        }
+        Relationships: []
+      }
+      users_with_profiles: {
+        Row: {
+          address: string | null
+          avatar_url: string | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string | null
+          phone: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          avatar_url?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string | null
+          phone?: string | null
+          role?: never
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          avatar_url?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string | null
+          phone?: string | null
+          role?: never
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["user_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["user_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      user_role: "buyer" | "seller" | "admin" | "superadmin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -413,6 +501,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_role: ["buyer", "seller", "admin", "superadmin"],
+    },
   },
 } as const

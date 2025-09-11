@@ -105,8 +105,8 @@ const SellerDashboard = () => {
       if (error) throw error;
 
       toast({
-        title: "Produit supprimé",
-        description: "Le produit a été supprimé avec succès",
+        title: "✅ Produit supprimé",
+        description: "Le produit a été supprimé définitivement de la plateforme",
       });
       
       fetchSellerProducts();

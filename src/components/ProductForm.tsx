@@ -253,10 +253,10 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
       if (error) throw error;
 
       toast({
-        title: product?.id ? "Produit modifié" : "Produit créé",
+        title: product?.id ? "✅ Produit modifié" : "✅ Produit créé",
         description: product?.id 
-          ? "Le produit a été modifié avec succès"
-          : "Le produit a été créé avec succès",
+          ? "Les modifications ont été enregistrées et sont maintenant visibles sur la plateforme"
+          : "Votre produit a été publié et est maintenant visible sur la plateforme",
       });
 
       onSave();

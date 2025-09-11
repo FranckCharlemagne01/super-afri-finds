@@ -155,10 +155,12 @@ export const SellerProducts = ({ products, loading, onEdit, onDelete, title, emp
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Supprimer le produit</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Êtes-vous sûr de vouloir supprimer "{product.title}" ? 
-                      Cette action est irréversible.
+                    <AlertDialogTitle>⚠️ Supprimer le produit</AlertDialogTitle>
+                    <AlertDialogDescription className="space-y-2">
+                      <p>Êtes-vous sûr de vouloir supprimer <strong>"{product.title}"</strong> ?</p>
+                      <p className="text-destructive text-sm">
+                        ⚠️ Cette action est <strong>irréversible</strong> et le produit sera définitivement retiré de la plateforme.
+                      </p>
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -167,7 +169,8 @@ export const SellerProducts = ({ products, loading, onEdit, onDelete, title, emp
                       onClick={() => onDelete(product.id)}
                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
-                      Supprimer
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      Supprimer définitivement
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>

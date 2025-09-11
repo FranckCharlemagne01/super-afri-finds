@@ -149,6 +149,10 @@ const Index = () => {
 
   const displayProducts = products;
   const shuffledProducts = refreshKey > 0 ? shuffleArray(products) : products;
+  
+  // Filtrer les produits en vente flash
+  const flashSaleProducts = products.filter(product => product.is_flash_sale);
+  const regularProducts = products.filter(product => !product.is_flash_sale);
 
   // Convert Supabase product to ProductCard props
   const convertToProductCardProps = (product: Product) => ({
@@ -285,25 +289,32 @@ const Index = () => {
         </section>
 
         {/* Flash Sales */}
-        <section className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 gradient-primary rounded-full flex items-center justify-center">
-                <span className="text-white text-lg">⚡</span>
+        {flashSaleProducts.length > 0 && (
+          <section className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 gradient-primary rounded-full flex items-center justify-center">
+                  <span className="text-white text-lg">⚡</span>
+                </div>
+                <h2 className="text-xl font-bold text-foreground">Ventes Flash</h2>
               </div>
-              <h2 className="text-xl font-bold text-foreground">Ventes Flash</h2>
+              <Badge className="bg-promo text-promo-foreground animate-pulse-promo">
+                Limitées dans le temps
+              </Badge>
+              <div className="ml-auto">
+                <Button variant="outline" size="sm" onClick={() => navigate('/flash-sales')}>
+                  Voir tout
+                </Button>
+              </div>
             </div>
-            <Badge className="bg-promo text-promo-foreground animate-pulse-promo">
-              Limitées dans le temps
-            </Badge>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-            {displayProducts.slice(0, 6).map((product) => (
-              <ProductCard key={product.id} {...convertToProductCardProps(product)} />
-            ))}
-          </div>
-        </section>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+              {flashSaleProducts.slice(0, 6).map((product) => (
+                <ProductCard key={product.id} {...convertToProductCardProps(product)} />
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Recommended Products */}
         <section className="mb-8">
@@ -315,7 +326,7 @@ const Index = () => {
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4" key={refreshKey}>
-            {shuffledProducts.map((product) => (
+            {shuffledProducts.slice(0, 12).map((product) => (
               <ProductCard key={`${product.id}-${refreshKey}`} {...convertToProductCardProps(product)} />
             ))}
           </div>

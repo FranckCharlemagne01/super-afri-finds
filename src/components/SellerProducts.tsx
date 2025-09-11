@@ -37,9 +37,11 @@ interface SellerProductsProps {
   loading: boolean;
   onEdit: (product: Product) => void;
   onDelete: (productId: string) => void;
+  title?: string;
+  emptyMessage?: string;
 }
 
-export const SellerProducts = ({ products, loading, onEdit, onDelete }: SellerProductsProps) => {
+export const SellerProducts = ({ products, loading, onEdit, onDelete, title, emptyMessage }: SellerProductsProps) => {
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -54,7 +56,9 @@ export const SellerProducts = ({ products, loading, onEdit, onDelete }: SellerPr
     return (
       <Card>
         <CardContent className="p-8 text-center">
-          <p className="text-muted-foreground">Aucun produit trouvé.</p>
+          <p className="text-muted-foreground">
+            {emptyMessage || "Aucun produit trouvé."}
+          </p>
           <p className="text-sm text-muted-foreground mt-2">
             Commencez par ajouter votre premier produit !
           </p>

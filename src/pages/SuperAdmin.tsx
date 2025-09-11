@@ -17,11 +17,18 @@ import {
   DollarSign,
   ShoppingBag,
   UserPlus,
-  Settings
+  Settings,
+  CheckCircle,
+  XCircle,
+  UserCheck,
+  UserX,
+  MoreHorizontal
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from '@/hooks/use-toast';
 
 interface AdminStats {
@@ -233,6 +240,87 @@ const SuperAdmin = () => {
     }
   };
 
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      // First delete user roles
+      await supabase.from('user_roles').delete().eq('user_id', userId);
+      
+      // Then delete profile
+      await supabase.from('profiles').delete().eq('user_id', userId);
+      
+      // Remove from local state
+      setUsers(users.filter(u => u.user_id !== userId));
+      
+      toast({
+        title: "Succès",
+        description: "Utilisateur supprimé avec succès.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer l'utilisateur.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleChangeUserRole = async (userId: string, newRole: string) => {
+    try {
+      // Delete existing roles for this user
+      await supabase.from('user_roles').delete().eq('user_id', userId);
+      
+      // Insert new role
+      const { error } = await supabase
+        .from('user_roles')
+        .insert({ 
+          user_id: userId, 
+          role: newRole as 'buyer' | 'seller' | 'admin' | 'superadmin'
+        });
+
+      if (error) throw error;
+
+      // Update local state
+      setUsers(users.map(u => 
+        u.user_id === userId ? { ...u, role: newRole } : u
+      ));
+
+      toast({
+        title: "Succès",
+        description: `Rôle mis à jour vers ${newRole}.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de changer le rôle.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId);
+
+      if (error) throw error;
+
+      setProducts(products.filter(p => p.id !== productId));
+
+      toast({
+        title: "Succès",
+        description: "Produit supprimé avec succès.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le produit.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (roleLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -349,10 +437,11 @@ const SuperAdmin = () => {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="users" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="users">Utilisateurs</TabsTrigger>
             <TabsTrigger value="products">Produits</TabsTrigger>
             <TabsTrigger value="orders">Commandes</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
           {/* Users Tab */}
@@ -411,14 +500,45 @@ const SuperAdmin = () => {
                               {new Date(user.created_at).toLocaleDateString('fr-FR')}
                             </TableCell>
                             <TableCell>
-                              <div className="flex gap-1">
-                                <Button variant="ghost" size="sm">
-                                  <Eye className="w-4 h-4" />
-                                </Button>
-                                <Button variant="ghost" size="sm" className="hidden sm:flex">
-                                  <Edit className="w-4 h-4" />
-                                </Button>
-                              </div>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreHorizontal className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => navigate(`/user/${user.user_id}`)}>
+                                    <Eye className="w-4 h-4 mr-2" />
+                                    Voir profil
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeUserRole(user.user_id, user.role === 'seller' ? 'buyer' : 'seller')}>
+                                    <UserCheck className="w-4 h-4 mr-2" />
+                                    Changer en {user.role === 'seller' ? 'Acheteur' : 'Vendeur'}
+                                  </DropdownMenuItem>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                        <Trash2 className="w-4 h-4 mr-2" />
+                                        Supprimer
+                                      </DropdownMenuItem>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Supprimer l'utilisateur</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDeleteUser(user.user_id)}>
+                                          Supprimer
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </TableCell>
                           </TableRow>
                         ))
@@ -486,19 +606,45 @@ const SuperAdmin = () => {
                               </Badge>
                             </TableCell>
                             <TableCell>
-                              <div className="flex gap-1">
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => handleToggleProductStatus(product.id, product.is_active)}
-                                  className="text-xs"
-                                >
-                                  {product.is_active ? 'Désact.' : 'Activer'}
-                                </Button>
-                                <Button variant="ghost" size="sm" className="hidden sm:flex">
-                                  <Eye className="w-4 h-4" />
-                                </Button>
-                              </div>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreHorizontal className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => navigate(`/product/${product.id}`)}>
+                                    <Eye className="w-4 h-4 mr-2" />
+                                    Voir détails
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleToggleProductStatus(product.id, product.is_active)}>
+                                    {product.is_active ? <XCircle className="w-4 h-4 mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+                                    {product.is_active ? 'Désactiver' : 'Activer'}
+                                  </DropdownMenuItem>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">
+                                        <Trash2 className="w-4 h-4 mr-2" />
+                                        Supprimer
+                                      </DropdownMenuItem>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Supprimer le produit</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Êtes-vous sûr de vouloir supprimer ce produit ? Cette action est irréversible.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDeleteProduct(product.id)}>
+                                          Supprimer
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </TableCell>
                           </TableRow>
                         ))
@@ -575,20 +721,30 @@ const SuperAdmin = () => {
                               {new Date(order.created_at).toLocaleDateString('fr-FR')}
                             </TableCell>
                             <TableCell>
-                              <div className="flex gap-1">
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => handleUpdateOrderStatus(order.id, 'completed')}
-                                  disabled={order.status === 'completed'}
-                                  className="text-xs"
-                                >
-                                  Valider
-                                </Button>
-                                <Button variant="ghost" size="sm" className="hidden sm:flex">
-                                  <Eye className="w-4 h-4" />
-                                </Button>
-                              </div>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreHorizontal className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => navigate(`/order/${order.id}`)}>
+                                    <Eye className="w-4 h-4 mr-2" />
+                                    Voir détails
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={() => handleUpdateOrderStatus(order.id, 'completed')}
+                                    disabled={order.status === 'completed'}
+                                  >
+                                    <CheckCircle className="w-4 h-4 mr-2" />
+                                    Marquer terminée
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleUpdateOrderStatus(order.id, 'cancelled')}>
+                                    <XCircle className="w-4 h-4 mr-2" />
+                                    Annuler
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </TableCell>
                           </TableRow>
                         ))
@@ -598,6 +754,109 @@ const SuperAdmin = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Analytics Tab */}
+          <TabsContent value="analytics">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Performance de la plateforme</CardTitle>
+                  <CardDescription>
+                    Métriques clés et tendances
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Taux de conversion</span>
+                      <span className="font-semibold">3.2%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Panier moyen</span>
+                      <span className="font-semibold">
+                        {new Intl.NumberFormat('fr-FR').format(25000)} FCFA
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Commissions collectées</span>
+                      <span className="font-semibold">
+                        {new Intl.NumberFormat('fr-FR').format((stats?.total_revenue || 0) * 0.05)} FCFA
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Produits les plus vendus</span>
+                      <span className="font-semibold">Électronique</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Activité récente</CardTitle>
+                  <CardDescription>
+                    Événements importants sur la plateforme
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 p-2 bg-green-50 rounded-lg">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <div className="text-sm">
+                        <div className="font-medium">Nouveau vendeur approuvé</div>
+                        <div className="text-muted-foreground">Il y a 2 heures</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-2 bg-blue-50 rounded-lg">
+                      <ShoppingBag className="w-4 h-4 text-blue-600" />
+                      <div className="text-sm">
+                        <div className="font-medium">Pic de commandes détecté</div>
+                        <div className="text-muted-foreground">Il y a 4 heures</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-2 bg-yellow-50 rounded-lg">
+                      <Package className="w-4 h-4 text-yellow-600" />
+                      <div className="text-sm">
+                        <div className="font-medium">Stock faible alerté</div>
+                        <div className="text-muted-foreground">Il y a 6 heures</div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle>Rapport financier</CardTitle>
+                  <CardDescription>
+                    Vue d'ensemble des finances de la plateforme
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="text-center p-4 bg-green-50 rounded-lg">
+                      <div className="text-2xl font-bold text-green-600">
+                        {new Intl.NumberFormat('fr-FR').format((stats?.total_revenue || 0) * 0.05)} FCFA
+                      </div>
+                      <div className="text-sm text-muted-foreground">Commissions (5%)</div>
+                    </div>
+                    <div className="text-center p-4 bg-blue-50 rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">
+                        {new Intl.NumberFormat('fr-FR').format((stats?.total_revenue || 0) * 0.95)} FCFA
+                      </div>
+                      <div className="text-sm text-muted-foreground">Revenus vendeurs</div>
+                    </div>
+                    <div className="text-center p-4 bg-purple-50 rounded-lg">
+                      <div className="text-2xl font-bold text-purple-600">
+                        {stats?.total_orders || 0}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Transactions totales</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

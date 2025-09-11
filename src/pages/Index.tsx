@@ -156,7 +156,7 @@ const Index = () => {
                   onClick={() => navigate('/superadmin')}
                   className="text-xs"
                 >
-                  Admin
+                  Dashboard
                 </Button>
               )}
               {user && (

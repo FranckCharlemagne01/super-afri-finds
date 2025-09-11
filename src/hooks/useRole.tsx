@@ -10,10 +10,15 @@ export const useRole = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Éviter les appels multiples pendant le chargement
+    let mounted = true;
+
     const fetchUserRole = async () => {
       if (!user) {
-        setRole(null);
-        setLoading(false);
+        if (mounted) {
+          setRole(null);
+          setLoading(false);
+        }
         return;
       }
 
@@ -21,22 +26,31 @@ export const useRole = () => {
         const { data, error } = await supabase
           .rpc('get_user_role', { _user_id: user.id });
 
-        if (error) {
-          console.error('Error fetching user role:', error);
-          setRole('buyer'); // Default role
-        } else {
-          setRole(data || 'buyer');
+        if (mounted) {
+          if (error) {
+            console.error('Error fetching user role:', error);
+            setRole('buyer'); // Default role
+          } else {
+            setRole(data || 'buyer');
+          }
+          setLoading(false);
         }
       } catch (error) {
-        console.error('Error:', error);
-        setRole('buyer');
-      } finally {
-        setLoading(false);
+        if (mounted) {
+          console.error('Error:', error);
+          setRole('buyer');
+          setLoading(false);
+        }
       }
     };
 
     fetchUserRole();
-  }, [user]);
+
+    // Cleanup function pour éviter les memory leaks
+    return () => {
+      mounted = false;
+    };
+  }, [user?.id]); // Dépendance uniquement sur user.id pour éviter les re-renders
 
   const hasRole = (requiredRole: UserRole): boolean => {
     if (!role) return false;

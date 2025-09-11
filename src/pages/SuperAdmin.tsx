@@ -84,17 +84,27 @@ const SuperAdmin = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
-    if (!roleLoading && !isSuperAdmin()) {
-      navigate('/');
-      return;
-    }
+    // Délai pour éviter le flash initial
+    const timer = setTimeout(() => {
+      setInitializing(false);
+    }, 100);
 
-    if (isSuperAdmin()) {
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!roleLoading && !initializing) {
+      if (!isSuperAdmin()) {
+        navigate('/', { replace: true });
+        return;
+      }
+      // Si c'est bien un superadmin, charger les données
       fetchData();
     }
-  }, [isSuperAdmin, roleLoading, navigate]);
+  }, [isSuperAdmin, roleLoading, initializing, navigate]);
 
   const fetchData = async () => {
     try {
@@ -321,21 +331,28 @@ const SuperAdmin = () => {
     }
   };
 
-  if (roleLoading) {
+  // Afficher le loader pendant l'initialisation, la vérification du rôle, ou si ce n'est pas un superadmin
+  if (initializing || roleLoading || (!roleLoading && !isSuperAdmin())) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Vérification des permissions...</p>
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <div className="space-y-2">
+            <p className="text-lg font-medium text-foreground">
+              {initializing ? "Initialisation..." : 
+               roleLoading ? "Vérification des permissions..." : 
+               "Redirection en cours..."}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Accès au tableau de bord administrateur
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
-  if (!isSuperAdmin()) {
-    return null;
-  }
-
+  // À ce stade, on est sûr que l'utilisateur est un superadmin
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -347,7 +364,7 @@ const SuperAdmin = () => {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">SuperAdmin Dashboard</h1>
+                <h1 className="text-2xl font-bold text-foreground">Dashboard SuperAdmin</h1>
                 <p className="text-sm text-muted-foreground">Gestion complète de la plateforme</p>
               </div>
             </div>

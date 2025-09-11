@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useToast } from "@/hooks/use-toast";
 import { ContactSellerButton } from "@/components/ContactSellerButton";
 import { QuickOrderDialog } from "@/components/QuickOrderDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,6 +43,7 @@ const ProductDetail = () => {
   const { user } = useAuth();
   const { addToCart } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
+  const { toast } = useToast();
 
   const [quantity, setQuantity] = useState(1);
   const [personalMessage, setPersonalMessage] = useState('');
@@ -100,6 +102,12 @@ const ProductDetail = () => {
     for (let i = 0; i < quantity; i++) {
       addToCart(product.id);
     }
+    
+    // Show success message
+    toast({
+      title: "Produit ajouté au panier",
+      description: `${quantity} ${quantity > 1 ? 'articles ajoutés' : 'article ajouté'} avec succès`,
+    });
   };
 
   const handleQuantityChange = (newQuantity: number) => {

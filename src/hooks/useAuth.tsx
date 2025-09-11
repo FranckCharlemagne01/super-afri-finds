@@ -6,8 +6,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, fullName: string, country?: string) => Promise<{ error: any }>;
+  signIn: (emailOrPhone: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName: string, phone: string, country?: string) => Promise<{ error: any }>;
   resetPassword: (email: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
@@ -39,24 +39,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (emailOrPhone: string, password: string) => {
+    // Déterminer si l'identifiant est un email ou un téléphone
+    const isEmail = emailOrPhone.includes('@');
+    
     const { error } = await supabase.auth.signInWithPassword({
-      email,
+      email: isEmail ? emailOrPhone : undefined,
+      phone: !isEmail ? emailOrPhone : undefined,
       password,
     });
     return { error };
   };
 
-  const signUp = async (email: string, password: string, fullName: string, country?: string) => {
+  const signUp = async (email: string, password: string, fullName: string, phone: string, country?: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
       email,
+      phone,
       password,
       options: {
         emailRedirectTo: redirectUrl,
         data: {
           full_name: fullName,
+          phone: phone,
           country: country || 'CI', // Default to Côte d'Ivoire
         }
       }

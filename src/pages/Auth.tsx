@@ -19,7 +19,9 @@ const Auth = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
   const [country, setCountry] = useState('CI'); // Default to Côte d'Ivoire
+  const [loginIdentifier, setLoginIdentifier] = useState(''); // Email ou téléphone pour la connexion
   const [loading, setLoading] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [resetMode, setResetMode] = useState(false);
@@ -53,7 +55,7 @@ const Auth = () => {
     setFormError(''); // Clear any previous errors
 
     try {
-      const { error } = await signIn(email, password);
+      const { error } = await signIn(loginIdentifier, password);
       
       if (error) {
         // Handle different types of authentication errors
@@ -89,7 +91,7 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const { error } = await signUp(email, password, fullName, country);
+      const { error } = await signUp(email, password, fullName, phone, country);
       
       if (error) {
         if (error.message.includes('already registered') || error.message.includes('already been registered')) {
@@ -351,14 +353,14 @@ const Auth = () => {
                     )}
                     
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
+                      <Label htmlFor="loginIdentifier">Email ou numéro de téléphone</Label>
                       <Input
-                        id="email"
-                        type="email"
-                        placeholder="votre.email@exemple.com"
-                        value={email}
+                        id="loginIdentifier"
+                        type="text"
+                        placeholder="email@exemple.com ou +225XXXXXXXX"
+                        value={loginIdentifier}
                         onChange={(e) => {
-                          setEmail(e.target.value);
+                          setLoginIdentifier(e.target.value);
                           if (formError) setFormError(''); // Clear error when user types
                         }}
                         required
@@ -429,6 +431,17 @@ const Auth = () => {
                         placeholder="votre.email@exemple.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Numéro de téléphone</Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="+225XXXXXXXX"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
                         required
                       />
                     </div>

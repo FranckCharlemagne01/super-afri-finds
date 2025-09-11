@@ -110,18 +110,14 @@ const SuperAdmin = () => {
     try {
       setLoading(true);
       
-      // Fetch statistics manually from existing tables
+      // Fetch statistics using the secure function and other data
       const [
-        { count: totalUsers },
-        { count: totalOrders },
-        { count: totalProducts },
+        statisticsResult,
         productsData,
         ordersData,
         profilesData
       ] = await Promise.all([
-        supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase.from('orders').select('*', { count: 'exact', head: true }),
-        supabase.from('products').select('*', { count: 'exact', head: true }),
+        supabase.rpc('get_admin_statistics'),
         supabase.from('products').select('*').order('created_at', { ascending: false }).limit(50),
         supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(100),
         supabase.from('profiles').select(`
@@ -130,35 +126,22 @@ const SuperAdmin = () => {
         `).order('created_at', { ascending: false })
       ]);
 
-      // Calculate revenue from completed orders
-      const { data: completedOrders } = await supabase
-        .from('orders')
-        .select('total_amount')
-        .eq('status', 'completed');
+      // Extract statistics from the secure function result
+      const stats = statisticsResult.data?.[0];
+      if (!stats) {
+        throw new Error('Unable to fetch admin statistics - insufficient permissions');
+      }
 
-      const totalRevenue = completedOrders?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0;
-
-      // Count active products
-      const { count: activeProducts } = await supabase
-        .from('products')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_active', true);
-
-      // Count sellers and buyers from user_roles table
-      const { data: userRoles } = await supabase.from('user_roles').select('role');
-      const sellers = userRoles?.filter(ur => ur.role === 'seller').length || 0;
-      const buyers = userRoles?.filter(ur => ur.role === 'buyer').length || 0;
-
-      // Set calculated statistics
+      // Set statistics from the secure function
       setStats({
-        total_users: totalUsers || 0,
-        total_sellers: sellers,
-        total_buyers: buyers,
-        total_active_products: activeProducts || 0,
-        total_orders: totalOrders || 0,
-        total_revenue: totalRevenue,
-        orders_today: 0, // Can be calculated if needed
-        new_users_today: 0 // Can be calculated if needed
+        total_users: Number(stats.total_users) || 0,
+        total_sellers: Number(stats.total_sellers) || 0,
+        total_buyers: Number(stats.total_buyers) || 0,
+        total_active_products: Number(stats.total_active_products) || 0,
+        total_orders: Number(stats.total_orders) || 0,
+        total_revenue: Number(stats.total_revenue) || 0,
+        orders_today: Number(stats.orders_today) || 0,
+        new_users_today: Number(stats.new_users_today) || 0
       });
 
       setProducts(productsData.data || []);

@@ -301,19 +301,6 @@ export type Database = {
       }
     }
     Views: {
-      admin_statistics: {
-        Row: {
-          new_users_today: number | null
-          orders_today: number | null
-          total_active_products: number | null
-          total_buyers: number | null
-          total_orders: number | null
-          total_revenue: number | null
-          total_sellers: number | null
-          total_users: number | null
-        }
-        Relationships: []
-      }
       users_with_profiles: {
         Row: {
           address: string | null
@@ -364,6 +351,19 @@ export type Database = {
       assign_superadmin_role: {
         Args: { _email: string }
         Returns: string
+      }
+      get_admin_statistics: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          new_users_today: number
+          orders_today: number
+          total_active_products: number
+          total_buyers: number
+          total_orders: number
+          total_revenue: number
+          total_sellers: number
+          total_users: number
+        }[]
       }
       get_user_role: {
         Args: { _user_id: string }

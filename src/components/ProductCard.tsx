@@ -5,6 +5,7 @@ import { Star, Heart, ShoppingCart, MessageSquare } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { ContactSellerButton } from "@/components/ContactSellerButton";
 import { QuickOrderDialog } from "@/components/QuickOrderDialog";
 
@@ -39,11 +40,16 @@ export const ProductCard = ({
 }: ProductCardProps) => {
   const { addToCart } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleOrder = (e: React.MouseEvent) => {
     e.stopPropagation();
-    addToCart(id);
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    navigate(`/product/${id}`);
   };
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
@@ -146,10 +152,10 @@ export const ProductCard = ({
               variant="promo" 
               size="sm" 
               className="w-full"
-              onClick={handleAddToCart}
+              onClick={handleOrder}
             >
               <ShoppingCart className="w-4 h-4 mr-2" />
-              Ajouter au panier
+              Commander
             </Button>
             
             <div onClick={(e) => e.stopPropagation()}>
@@ -174,7 +180,7 @@ export const ProductCard = ({
               variant="promo" 
               size="sm" 
               className="flex-1"
-              onClick={handleAddToCart}
+              onClick={handleOrder}
             >
               <ShoppingCart className="w-4 h-4" />
             </Button>

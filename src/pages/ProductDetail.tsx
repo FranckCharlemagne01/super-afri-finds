@@ -97,17 +97,24 @@ const ProductDetail = () => {
     return null;
   }
 
-  const handleAddToCart = () => {
-    // Add to cart with the selected quantity
-    for (let i = 0; i < quantity; i++) {
-      addToCart(product.id);
+  const handleOrder = () => {
+    if (!user) {
+      navigate('/auth');
+      return;
     }
-    
-    // Show success message
-    toast({
-      title: "Produit ajouté au panier",
-      description: `${quantity} ${quantity > 1 ? 'articles ajoutés' : 'article ajouté'} avec succès`,
-    });
+    // Open quick order dialog (functionality already implemented)
+    const quickOrderButton = document.querySelector('[data-quick-order-trigger]') as HTMLButtonElement;
+    if (quickOrderButton) {
+      quickOrderButton.click();
+    }
+  };
+
+  const handleContactSeller = () => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    // Contact seller functionality already implemented
   };
 
   const handleQuantityChange = (newQuantity: number) => {
@@ -314,15 +321,15 @@ const ProductDetail = () => {
 
               {/* Action Buttons - Desktop */}
               <div className="hidden lg:block space-y-4">
-                {/* Primary Action - Add to Cart */}
+                {/* Primary Action - Order */}
                 <div className="flex gap-3">
                   <Button
-                    onClick={handleAddToCart}
+                    onClick={handleOrder}
                     className="flex-1 h-12 text-base font-semibold"
                     disabled={!product.stock_quantity || product.stock_quantity === 0}
                   >
                     <ShoppingCart className="w-5 h-5 mr-2" />
-                    Ajouter au panier - {salePrice.toLocaleString()} FCFA
+                    Commander - {salePrice.toLocaleString()} FCFA
                   </Button>
                   <Button
                     variant="outline"
@@ -335,17 +342,21 @@ const ProductDetail = () => {
 
                 {/* Secondary Actions */}
                 <div className="flex gap-3">
-                  <QuickOrderDialog
-                    productId={product.id}
-                    productTitle={product.title}
-                    productPrice={salePrice}
-                    sellerId={product.seller_id}
-                  />
-                  <ContactSellerButton
-                    productId={product.id}
-                    sellerId={product.seller_id}
-                    productTitle={product.title}
-                  />
+                  <div data-quick-order-trigger>
+                    <QuickOrderDialog
+                      productId={product.id}
+                      productTitle={product.title}
+                      productPrice={salePrice}
+                      sellerId={product.seller_id}
+                    />
+                  </div>
+                  <div onClick={handleContactSeller}>
+                    <ContactSellerButton
+                      productId={product.id}
+                      sellerId={product.seller_id}
+                      productTitle={product.title}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -380,14 +391,14 @@ const ProductDetail = () => {
             </Button>
           </div>
           
-          {/* Primary Add to Cart Button */}
+          {/* Primary Order Button */}
           <Button
-            onClick={handleAddToCart}
+            onClick={handleOrder}
             className="w-full h-12 text-base font-semibold shadow-lg"
             disabled={!product.stock_quantity || product.stock_quantity === 0}
           >
             <ShoppingCart className="w-5 h-5 mr-2" />
-            Ajouter au panier - {salePrice.toLocaleString()} FCFA
+            Commander - {salePrice.toLocaleString()} FCFA
           </Button>
         </div>
       </div>

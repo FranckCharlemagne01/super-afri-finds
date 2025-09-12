@@ -175,54 +175,59 @@ export const SellerOrders = () => {
                   </div>
                 </div>
 
-                {/* Customer Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm">
-                      <User className="h-4 w-4" />
-                      <span className="font-medium">{order.customer_name}</span>
+                {/* Informations client bien visibles */}
+                <div className="border-t pt-4">
+                  <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Informations Client
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-3 bg-muted/50 rounded-lg">
+                      <label className="text-sm font-medium text-muted-foreground">Nom du client</label>
+                      <p className="font-semibold text-foreground">{order.customer_name}</p>
                     </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Phone className="h-4 w-4" />
-                      <span>{order.customer_phone}</span>
+                    <div className="p-3 bg-muted/50 rounded-lg">
+                      <label className="text-sm font-medium text-muted-foreground">Téléphone</label>
+                      <p className="font-semibold text-foreground">{order.customer_phone}</p>
                     </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <MapPin className="h-4 w-4" />
-                      <span>{order.delivery_location}</span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm">
-                      <DollarSign className="h-4 w-4" />
-                      <span className="font-bold text-lg">
-                        {order.total_amount.toLocaleString()} FCFA
-                      </span>
-                    </div>
-                    
-                    {/* Status Update */}
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Statut:</label>
-                      <Select
-                        value={order.status}
-                        onValueChange={(value) => updateOrderStatus(order.id, value)}
-                        disabled={updatingStatus === order.id}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">En attente</SelectItem>
-                          <SelectItem value="confirmed">Confirmée</SelectItem>
-                          <SelectItem value="processing">En préparation</SelectItem>
-                          <SelectItem value="shipped">Expédiée</SelectItem>
-                          <SelectItem value="delivered">Livrée</SelectItem>
-                          <SelectItem value="cancelled">Annulée</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="md:col-span-2 p-3 bg-muted/50 rounded-lg">
+                      <label className="text-sm font-medium text-muted-foreground">Adresse de livraison</label>
+                      <p className="font-semibold text-foreground">{order.delivery_location}</p>
                     </div>
                   </div>
                 </div>
+
+                 {/* Total avec mise en évidence */}
+                 <div className="border-t pt-4">
+                   <div className="flex items-center justify-between">
+                     <span className="text-lg font-medium">Total de la commande</span>
+                     <span className="text-2xl font-bold text-promo">
+                       {order.total_amount.toLocaleString()} FCFA
+                     </span>
+                   </div>
+                 </div>
+                     
+                 {/* Status Update */}
+                 <div className="border-t pt-4 space-y-2">
+                   <label className="text-sm font-medium">Statut:</label>
+                   <Select
+                     value={order.status}
+                     onValueChange={(value) => updateOrderStatus(order.id, value)}
+                     disabled={updatingStatus === order.id}
+                   >
+                     <SelectTrigger className="w-full">
+                       <SelectValue />
+                     </SelectTrigger>
+                     <SelectContent>
+                       <SelectItem value="pending">En attente</SelectItem>
+                       <SelectItem value="confirmed">Confirmée</SelectItem>
+                       <SelectItem value="processing">En préparation</SelectItem>
+                       <SelectItem value="shipped">Expédiée</SelectItem>
+                       <SelectItem value="delivered">Livrée</SelectItem>
+                       <SelectItem value="cancelled">Annulée</SelectItem>
+                     </SelectContent>
+                   </Select>
+                 </div>
               </CardContent>
             </Card>
           ))}

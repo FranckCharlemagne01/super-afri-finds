@@ -96,6 +96,151 @@ const SellerDashboard = () => {
     setShowProductForm(true);
   };
 
+  // Notification components
+  const MessageNotificationBadge = () => {
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    useEffect(() => {
+      if (!user) return;
+
+      const fetchUnreadCount = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('messages')
+            .select('id')
+            .eq('recipient_id', user.id)
+            .eq('is_read', false);
+
+          if (error) throw error;
+          setUnreadCount(data?.length || 0);
+        } catch (error) {
+          console.error('Error fetching unread count:', error);
+        }
+      };
+
+      fetchUnreadCount();
+
+      // Set up real-time subscription
+      const channel = supabase
+        .channel('seller-message-notifications')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: `recipient_id=eq.${user.id}`
+          },
+          () => {
+            fetchUnreadCount();
+            toast({
+              title: "💬 Nouveau message",
+              description: "Vous avez reçu un nouveau message d'un client",
+            });
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'messages',
+            filter: `recipient_id=eq.${user.id}`
+          },
+          () => {
+            fetchUnreadCount();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }, [user]);
+
+    if (unreadCount === 0) return null;
+
+    return (
+      <Badge 
+        variant="destructive" 
+        className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center animate-pulse"
+      >
+        {unreadCount > 9 ? '9+' : unreadCount}
+      </Badge>
+    );
+  };
+
+  const OrderNotificationBadge = () => {
+    const [newOrdersCount, setNewOrdersCount] = useState(0);
+
+    useEffect(() => {
+      if (!user) return;
+
+      const fetchNewOrdersCount = async () => {
+        try {
+          const { data, error } = await supabase.rpc('get_seller_orders');
+          if (error) throw error;
+          
+          const sellerOrders = data?.filter(order => order.seller_id === user.id) || [];
+          const pendingOrders = sellerOrders.filter(order => order.status === 'pending');
+          setNewOrdersCount(pendingOrders.length);
+        } catch (error) {
+          console.error('Error fetching new orders count:', error);
+        }
+      };
+
+      fetchNewOrdersCount();
+
+      // Set up real-time subscription for new orders
+      const channel = supabase
+        .channel('seller-order-notifications')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'orders',
+            filter: `seller_id=eq.${user.id}`
+          },
+          () => {
+            fetchNewOrdersCount();
+            toast({
+              title: "🛒 Nouvelle commande",
+              description: "Vous avez reçu une nouvelle commande !",
+            });
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'orders',
+            filter: `seller_id=eq.${user.id}`
+          },
+          () => {
+            fetchNewOrdersCount();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }, [user]);
+
+    if (newOrdersCount === 0) return null;
+
+    return (
+      <Badge 
+        variant="destructive" 
+        className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center animate-pulse"
+      >
+        {newOrdersCount > 9 ? '9+' : newOrdersCount}
+      </Badge>
+    );
+  };
+
   const handleDeleteProduct = async (productId: string) => {
     try {
       const { error } = await supabase
@@ -233,8 +378,14 @@ const SellerDashboard = () => {
         <Tabs defaultValue="products" className="space-y-4">
           <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:grid-cols-none lg:flex">
             <TabsTrigger value="products" className="text-sm">Mes Produits</TabsTrigger>
-            <TabsTrigger value="orders" className="text-sm">Commandes</TabsTrigger>
-            <TabsTrigger value="messages" className="text-sm">Messages</TabsTrigger>
+            <TabsTrigger value="orders" className="text-sm relative">
+              Commandes
+              <OrderNotificationBadge />
+            </TabsTrigger>
+            <TabsTrigger value="messages" className="text-sm relative">
+              Messages
+              <MessageNotificationBadge />
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="products" className="space-y-4">

@@ -49,7 +49,7 @@ export const useOrders = () => {
       }
 
       toast({
-        title: "Commande créée avec succès!",
+        title: "✅ Commande créée avec succès!",
         description: "Votre commande a été envoyée au vendeur.",
       });
 

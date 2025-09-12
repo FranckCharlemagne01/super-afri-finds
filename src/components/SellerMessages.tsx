@@ -166,8 +166,8 @@ export const SellerMessages = () => {
       <div className="flex items-center gap-4">
         <h2 className="text-xl font-semibold">Messages Clients</h2>
         {unreadCount > 0 && (
-          <Badge variant="destructive">
-            {unreadCount} nouveau{unreadCount > 1 ? 'x' : ''}
+          <Badge variant="destructive" className="animate-pulse">
+            🔔 {unreadCount} nouveau{unreadCount > 1 ? 'x' : ''}
           </Badge>
         )}
       </div>

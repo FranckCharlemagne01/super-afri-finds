@@ -18,7 +18,8 @@ import {
   Store,
   Edit,
   Save,
-  X
+  X,
+  Bell
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -49,6 +50,77 @@ const statusConfig = {
   shipped: { label: "Expédiée", color: "text-purple-500", bgColor: "bg-purple-100" },
   delivered: { label: "Livrée", color: "text-green-500", bgColor: "bg-green-100" },
   cancelled: { label: "Annulée", color: "text-red-500", bgColor: "bg-red-100" },
+};
+
+// Message notification component
+const MessageNotificationBadge = () => {
+  const { user } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchUnreadCount = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .select('id')
+          .eq('recipient_id', user.id)
+          .eq('is_read', false);
+
+        if (error) throw error;
+        setUnreadCount(data?.length || 0);
+      } catch (error) {
+        console.error('Error fetching unread count:', error);
+      }
+    };
+
+    fetchUnreadCount();
+
+    // Set up real-time subscription for new messages
+    const channel = supabase
+      .channel('message-notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `recipient_id=eq.${user.id}`
+        },
+        () => {
+          fetchUnreadCount();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `recipient_id=eq.${user.id}`
+        },
+        () => {
+          fetchUnreadCount();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  if (unreadCount === 0) return null;
+
+  return (
+    <Badge 
+      variant="destructive" 
+      className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
+    >
+      {unreadCount > 9 ? '9+' : unreadCount}
+    </Badge>
+  );
 };
 
 const BuyerDashboard = () => {
@@ -251,7 +323,10 @@ const BuyerDashboard = () => {
           <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:grid-cols-none lg:flex">
             <TabsTrigger value="profile" className="text-sm">Mon Profil</TabsTrigger>
             <TabsTrigger value="orders" className="text-sm">Mes Commandes</TabsTrigger>
-            <TabsTrigger value="messages" className="text-sm">Messages</TabsTrigger>
+            <TabsTrigger value="messages" className="text-sm relative">
+              Messages
+              <MessageNotificationBadge />
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile" className="space-y-4">

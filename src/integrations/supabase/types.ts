@@ -179,8 +179,11 @@ export type Database = {
           created_at: string
           currency: string
           id: string
+          is_product_published: boolean | null
           payment_date: string | null
+          payment_type: string | null
           paystack_reference: string
+          product_data: Json | null
           status: string
           updated_at: string
           user_id: string
@@ -190,8 +193,11 @@ export type Database = {
           created_at?: string
           currency?: string
           id?: string
+          is_product_published?: boolean | null
           payment_date?: string | null
+          payment_type?: string | null
           paystack_reference: string
+          product_data?: Json | null
           status?: string
           updated_at?: string
           user_id: string
@@ -201,8 +207,11 @@ export type Database = {
           created_at?: string
           currency?: string
           id?: string
+          is_product_published?: boolean | null
           payment_date?: string | null
+          payment_type?: string | null
           paystack_reference?: string
+          product_data?: Json | null
           status?: string
           updated_at?: string
           user_id?: string
@@ -458,6 +467,15 @@ export type Database = {
           updated_at: string
           user_id: string
         }[]
+      }
+      handle_article_payment_success: {
+        Args: {
+          _amount: number
+          _paystack_reference: string
+          _product_data: Json
+          _user_id: string
+        }
+        Returns: undefined
       }
       handle_premium_payment_success: {
         Args: { _amount: number; _paystack_reference: string; _user_id: string }

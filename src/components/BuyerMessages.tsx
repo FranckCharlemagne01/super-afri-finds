@@ -4,11 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { MessageSquare, Send, Store, Package } from 'lucide-react';
+import { MessageSquare, Store, Package, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { ChatDialog } from './ChatDialog';
 
 interface Message {
   id: string;
@@ -49,9 +49,8 @@ export const BuyerMessages = () => {
   const { toast } = useToast();
   const [threads, setThreads] = useState<MessageThread[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedThread, setSelectedThread] = useState<MessageThread | null>(null);
-  const [replyContent, setReplyContent] = useState('');
-  const [replying, setReplying] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState<any>(null);
+  const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -139,51 +138,28 @@ export const BuyerMessages = () => {
     }
   };
 
-  const sendReply = async () => {
-    if (!selectedThread || !replyContent.trim()) return;
-
-    setReplying(true);
-
-    try {
-      const { error } = await supabase
-        .from('messages')
-        .insert([{
-          sender_id: user?.id,
-          recipient_id: selectedThread.seller_id,
-          product_id: selectedThread.product_id || null,
-          subject: `Re: ${selectedThread.latest_message.subject || 'Message'}`,
-          content: replyContent,
-        }]);
-
-      if (error) throw error;
-
-      toast({
-        title: "Message envoyé",
-        description: "Votre message a été envoyé au vendeur",
-      });
-
-      setReplyContent('');
-      fetchMessages(); // Refresh messages
-    } catch (error) {
-      console.error('Error sending reply:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'envoyer le message",
-        variant: "destructive",
-      });
-    } finally {
-      setReplying(false);
-    }
-  };
-
   const handleThreadClick = (thread: MessageThread) => {
-    setSelectedThread(thread);
+    // Create a message object compatible with ChatDialog
+    const messageForChat = {
+      id: thread.latest_message.id,
+      sender_id: thread.latest_message.sender_id,
+      recipient_id: thread.latest_message.recipient_id,
+      product_id: thread.product_id,
+      subject: thread.latest_message.subject,
+      content: thread.latest_message.content,
+      product: thread.product,
+      sender_profile: thread.seller_profile
+    };
+    
+    setSelectedMessage(messageForChat);
+    setChatOpen(true);
     
     // Mark unread messages as read
     thread.messages
       .filter(msg => msg.recipient_id === user?.id && !msg.is_read)
       .forEach(msg => markAsRead(msg.id));
   };
+
 
   const getUnreadCount = (thread: MessageThread) => {
     return thread.messages.filter(msg => 
@@ -221,130 +197,64 @@ export const BuyerMessages = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Conversations List */}
-          <div className="space-y-4">
-            {threads.map((thread) => {
-              const unreadCount = getUnreadCount(thread);
-              return (
-                <Card
-                  key={`${thread.product_id}-${thread.seller_id}`}
-                  className={`cursor-pointer transition-colors hover:bg-muted/50 ${
-                    selectedThread?.product_id === thread.product_id && 
-                    selectedThread?.seller_id === thread.seller_id ? 'ring-2 ring-primary' : ''
-                  } ${unreadCount > 0 ? 'border-primary' : ''}`}
-                  onClick={() => handleThreadClick(thread)}
-                >
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Store className="h-4 w-4" />
-                        <span className="font-medium">
-                          {thread.seller_profile?.full_name || 
-                           thread.seller_profile?.email || 
-                           'Vendeur'}
-                        </span>
-                        {unreadCount > 0 && (
-                          <Badge variant="destructive" className="text-xs">
-                            {unreadCount} nouveau{unreadCount > 1 ? 'x' : ''}
-                          </Badge>
-                        )}
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {format(new Date(thread.latest_message.created_at), 'dd MMM', { locale: fr })}
+        <div className="space-y-4">
+          {threads.map((thread) => {
+            const unreadCount = getUnreadCount(thread);
+            return (
+              <Card
+                key={`${thread.product_id}-${thread.seller_id}`}
+                className={`cursor-pointer transition-colors hover:bg-muted/50 hover:shadow-md ${
+                  unreadCount > 0 ? 'border-primary' : ''
+                }`}
+                onClick={() => handleThreadClick(thread)}
+              >
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Store className="h-4 w-4" />
+                      <span className="font-medium">
+                        {thread.seller_profile?.full_name || 
+                         thread.seller_profile?.email || 
+                         'Vendeur'}
                       </span>
+                      {unreadCount > 0 && (
+                        <Badge variant="destructive" className="text-xs">
+                          {unreadCount} nouveau{unreadCount > 1 ? 'x' : ''}
+                        </Badge>
+                      )}
                     </div>
-                    {thread.product && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Package className="h-3 w-3" />
-                        <span className="truncate">{thread.product.title}</span>
-                      </div>
-                    )}
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {thread.latest_message.content}
-                    </p>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-
-          {/* Conversation Detail */}
-          {selectedThread && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Store className="h-5 w-5" />
-                  {selectedThread.seller_profile?.full_name || 
-                   selectedThread.seller_profile?.email || 
-                   'Vendeur'}
-                </CardTitle>
-                {selectedThread.product && (
-                  <div className="flex items-center gap-2 p-2 bg-muted rounded">
-                    {selectedThread.product.images?.[0] && (
-                      <img
-                        src={selectedThread.product.images[0]}
-                        alt={selectedThread.product.title}
-                        className="w-10 h-10 object-cover rounded"
-                      />
-                    )}
-                    <span className="text-sm font-medium">
-                      {selectedThread.product.title}
+                    <span className="text-xs text-muted-foreground">
+                      {format(new Date(thread.latest_message.created_at), 'dd MMM', { locale: fr })}
                     </span>
                   </div>
-                )}
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Messages */}
-                <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {selectedThread.messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`p-3 rounded-lg ${
-                        message.sender_id === user?.id
-                          ? 'bg-primary text-primary-foreground ml-8'
-                          : 'bg-muted mr-8'
-                      }`}
-                    >
-                      <p className="text-sm whitespace-pre-wrap">
-                        {message.content}
-                      </p>
-                      <p className={`text-xs mt-1 ${
-                        message.sender_id === user?.id
-                          ? 'text-primary-foreground/70'
-                          : 'text-muted-foreground'
-                      }`}>
-                        {format(new Date(message.created_at), 'dd MMM yyyy à HH:mm', { locale: fr })}
-                      </p>
+                  {thread.product && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Package className="h-3 w-3" />
+                      <span className="truncate">{thread.product.title}</span>
                     </div>
-                  ))}
-                </div>
-
-                {/* Reply */}
-                <div className="space-y-2 border-t pt-4">
-                  <label className="text-sm font-medium">Votre message:</label>
-                  <Textarea
-                    value={replyContent}
-                    onChange={(e) => setReplyContent(e.target.value)}
-                    placeholder="Tapez votre message..."
-                    rows={3}
-                  />
-                  <Button
-                    onClick={sendReply}
-                    disabled={!replyContent.trim() || replying}
-                    className="w-full"
-                  >
-                    <Send className="h-4 w-4 mr-2" />
-                    {replying ? 'Envoi...' : 'Envoyer'}
+                  )}
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                    {thread.latest_message.content}
+                  </p>
+                  <Button variant="outline" size="sm" className="w-full">
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    Ouvrir le chat
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
+      
+      <ChatDialog
+        initialMessage={selectedMessage}
+        open={chatOpen}
+        onOpenChange={setChatOpen}
+        userType="buyer"
+      />
     </div>
   );
 };

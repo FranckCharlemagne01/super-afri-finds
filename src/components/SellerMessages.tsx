@@ -4,11 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { MessageSquare, Send, User } from 'lucide-react';
+import { MessageSquare, User, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { ChatDialog } from './ChatDialog';
 
 interface Message {
   id: string;
@@ -35,8 +35,7 @@ export const SellerMessages = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
-  const [replyContent, setReplyContent] = useState('');
-  const [replying, setReplying] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -105,49 +104,14 @@ export const SellerMessages = () => {
     }
   };
 
-  const sendReply = async () => {
-    if (!selectedMessage || !replyContent.trim()) return;
-
-    setReplying(true);
-
-    try {
-      const { error } = await supabase
-        .from('messages')
-        .insert([{
-          sender_id: user?.id,
-          recipient_id: selectedMessage.sender_id,
-          product_id: selectedMessage.product_id,
-          subject: `Re: ${selectedMessage.subject || 'Message'}`,
-          content: replyContent,
-        }]);
-
-      if (error) throw error;
-
-      toast({
-        title: "Réponse envoyée",
-        description: "Votre réponse a été envoyée avec succès",
-      });
-
-      setReplyContent('');
-      setSelectedMessage(null);
-    } catch (error) {
-      console.error('Error sending reply:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'envoyer la réponse",
-        variant: "destructive",
-      });
-    } finally {
-      setReplying(false);
-    }
-  };
-
   const handleMessageClick = (message: Message) => {
     setSelectedMessage(message);
+    setChatOpen(true);
     if (!message.is_read) {
       markAsRead(message.id);
     }
   };
+
 
   const unreadCount = messages.filter(m => !m.is_read).length;
 
@@ -166,7 +130,7 @@ export const SellerMessages = () => {
       <div className="flex items-center gap-4">
         <h2 className="text-xl font-semibold">Messages Clients</h2>
         {unreadCount > 0 && (
-          <Badge variant="destructive" className="animate-pulse">
+          <Badge variant="destructive">
             🔔 {unreadCount} nouveau{unreadCount > 1 ? 'x' : ''}
           </Badge>
         )}
@@ -183,113 +147,61 @@ export const SellerMessages = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Messages List */}
-          <div className="space-y-4">
-            {messages.map((message) => (
-              <Card
-                key={message.id}
-                className={`cursor-pointer transition-colors hover:bg-muted/50 ${
-                  selectedMessage?.id === message.id ? 'ring-2 ring-primary' : ''
-                } ${!message.is_read ? 'border-primary' : ''}`}
-                onClick={() => handleMessageClick(message)}
-              >
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                      <span className="font-medium">
-                        {message.sender_profile?.full_name || message.sender_profile?.email || 'Client'}
-                      </span>
-                      {!message.is_read && (
-                        <Badge variant="destructive" className="text-xs">
-                          Nouveau
-                        </Badge>
-                      )}
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {format(new Date(message.created_at), 'dd MMM yyyy', { locale: fr })}
+        <div className="space-y-4">
+          {messages.map((message) => (
+            <Card
+              key={message.id}
+              className={`cursor-pointer transition-colors hover:bg-muted/50 hover:shadow-md ${
+                !message.is_read ? 'border-primary' : ''
+              }`}
+              onClick={() => handleMessageClick(message)}
+            >
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    <span className="font-medium">
+                      {message.sender_profile?.full_name || message.sender_profile?.email || 'Client'}
                     </span>
+                    {!message.is_read && (
+                      <Badge variant="destructive" className="text-xs">
+                        Nouveau
+                      </Badge>
+                    )}
                   </div>
-                  {message.subject && (
-                    <h4 className="text-sm font-medium">{message.subject}</h4>
-                  )}
-                  {message.product && (
-                    <p className="text-xs text-muted-foreground">
-                      Produit: {message.product.title}
-                    </p>
-                  )}
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {message.content}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Message Detail & Reply */}
-          {selectedMessage && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">
-                  {selectedMessage.subject || 'Message'}
-                </CardTitle>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <User className="h-4 w-4" />
-                  <span>
-                    {selectedMessage.sender_profile?.full_name || 
-                     selectedMessage.sender_profile?.email || 
-                     'Client'}
-                  </span>
-                  <span>•</span>
-                  <span>
-                    {format(new Date(selectedMessage.created_at), 'dd MMMM yyyy à HH:mm', { locale: fr })}
+                  <span className="text-xs text-muted-foreground">
+                    {format(new Date(message.created_at), 'dd MMM yyyy', { locale: fr })}
                   </span>
                 </div>
-                {selectedMessage.product && (
-                  <div className="flex items-center gap-2 p-2 bg-muted rounded">
-                    {selectedMessage.product.images?.[0] && (
-                      <img
-                        src={selectedMessage.product.images[0]}
-                        alt={selectedMessage.product.title}
-                        className="w-10 h-10 object-cover rounded"
-                      />
-                    )}
-                    <span className="text-sm font-medium">
-                      {selectedMessage.product.title}
-                    </span>
-                  </div>
+                {message.subject && (
+                  <h4 className="text-sm font-medium">{message.subject}</h4>
+                )}
+                {message.product && (
+                  <p className="text-xs text-muted-foreground">
+                    Produit: {message.product.title}
+                  </p>
                 )}
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 bg-muted rounded-lg">
-                  <p className="whitespace-pre-wrap">{selectedMessage.content}</p>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Répondre au client:</label>
-                  <Textarea
-                    value={replyContent}
-                    onChange={(e) => setReplyContent(e.target.value)}
-                    placeholder="Tapez votre réponse..."
-                    rows={4}
-                  />
-                  <Button
-                    onClick={sendReply}
-                    disabled={!replyContent.trim() || replying}
-                    className="w-full"
-                  >
-                    <Send className="h-4 w-4 mr-2" />
-                    {replying ? 'Envoi...' : 'Envoyer la réponse'}
-                  </Button>
-                </div>
+              <CardContent className="pt-0">
+                <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                  {message.content}
+                </p>
+                <Button variant="outline" size="sm" className="w-full">
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  Ouvrir le chat
+                </Button>
               </CardContent>
             </Card>
-          )}
+          ))}
         </div>
       )}
+      
+      <ChatDialog
+        initialMessage={selectedMessage}
+        open={chatOpen}
+        onOpenChange={setChatOpen}
+        userType="seller"
+      />
     </div>
   );
 };

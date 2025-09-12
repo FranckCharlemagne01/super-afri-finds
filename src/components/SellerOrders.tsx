@@ -4,11 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Package, User, MapPin, Phone, Calendar, DollarSign } from 'lucide-react';
+import { Package, Eye, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { OrderDetailDialog } from './OrderDetailDialog';
 
 interface Order {
   id: string;
@@ -49,7 +49,8 @@ export const SellerOrders = () => {
   const { toast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [orderDetailOpen, setOrderDetailOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -77,35 +78,13 @@ export const SellerOrders = () => {
     }
   };
 
-  const updateOrderStatus = async (orderId: string, newStatus: string) => {
-    setUpdatingStatus(orderId);
-    try {
-      // Utiliser la fonction sécurisée pour mettre à jour le statut
-      const { data, error } = await supabase
-        .rpc('update_order_status', {
-          order_id: orderId,
-          new_status: newStatus
-        });
+  const handleOrderClick = (order: Order) => {
+    setSelectedOrder(order);
+    setOrderDetailOpen(true);
+  };
 
-      if (error) throw error;
-
-      toast({
-        title: "Statut mis à jour",
-        description: `La commande a été marquée comme "${statusLabels[newStatus as keyof typeof statusLabels]}"`,
-      });
-
-      // Rafraîchir les données depuis le serveur pour obtenir les données masquées
-      await fetchOrders();
-    } catch (error) {
-      console.error('Error updating order status:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour le statut",
-        variant: "destructive",
-      });
-    } finally {
-      setUpdatingStatus(null);
-    }
+  const handleOrderUpdated = () => {
+    fetchOrders();
   };
 
   const getStatusBadgeVariant = (status: string) => {
@@ -144,7 +123,7 @@ export const SellerOrders = () => {
       ) : (
         <div className="space-y-4">
           {orders.map((order) => (
-            <Card key={order.id} className="border-0 shadow-md">
+            <Card key={order.id} className="border-0 shadow-md hover:shadow-lg transition-shadow cursor-pointer">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">
@@ -171,128 +150,39 @@ export const SellerOrders = () => {
                   </div>
                   <div className="flex justify-between text-sm text-muted-foreground">
                     <span>Quantité: {order.quantity}</span>
-                    <span>Prix unitaire: {order.product_price.toLocaleString()} FCFA</span>
+                    <span>Total: {order.total_amount.toLocaleString()} FCFA</span>
                   </div>
                 </div>
 
-                {/* Informations client complètes pour préparation et livraison */}
-                <div className="border-t pt-6">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="p-3 bg-primary/10 rounded-lg">
-                      <User className="h-6 w-6 text-primary" />
-                    </div>
-                    <h4 className="text-2xl font-bold text-foreground">Informations Client</h4>
-                  </div>
-                  
-                  {/* Grille d'informations complètes et organisées */}
-                  <div className="space-y-6">
-                    {/* Client - Nom et Prénom complets */}
-                    <div className="p-6 bg-gradient-to-r from-primary/5 to-primary/10 border-l-4 border-primary rounded-xl shadow-sm">
-                      <div className="flex items-start gap-4">
-                        <div className="p-3 bg-primary/20 rounded-lg">
-                          <User className="h-6 w-6 text-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <label className="block text-sm font-bold text-primary uppercase tracking-wider mb-2">
-                            Nom et Prénom du Client
-                          </label>
-                          <p className="text-2xl font-bold text-foreground break-words leading-tight">
-                            {order.customer_name}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Contact et Total - Grid responsive */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {/* Numéro de téléphone complet */}
-                      <div className="p-6 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-xl shadow-sm">
-                        <div className="flex items-start gap-4">
-                          <div className="p-3 bg-green-200 rounded-lg">
-                            <Phone className="h-6 w-6 text-green-700" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <label className="block text-sm font-bold text-green-700 uppercase tracking-wider mb-2">
-                              Numéro de Téléphone
-                            </label>
-                            <p className="text-xl font-bold text-green-900 break-all leading-tight">
-                              {order.customer_phone}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Total de la commande */}
-                      <div className="p-6 bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-xl shadow-sm">
-                        <div className="flex items-start gap-4">
-                          <div className="p-3 bg-orange-200 rounded-lg">
-                            <DollarSign className="h-6 w-6 text-orange-700" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <label className="block text-sm font-bold text-orange-700 uppercase tracking-wider mb-2">
-                              Total de la Commande
-                            </label>
-                            <div className="space-y-2">
-                              <p className="text-sm text-orange-600 font-medium">
-                                {order.quantity} × {order.product_price.toLocaleString()} FCFA
-                              </p>
-                              <p className="text-3xl font-bold text-orange-900 leading-tight">
-                                {order.total_amount.toLocaleString()} FCFA
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Adresse de livraison complète et non tronquée */}
-                    <div className="p-6 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl shadow-sm">
-                      <div className="flex items-start gap-4">
-                        <div className="p-3 bg-blue-200 rounded-lg">
-                          <MapPin className="h-6 w-6 text-blue-700" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <label className="block text-sm font-bold text-blue-700 uppercase tracking-wider mb-3">
-                            Adresse de Livraison Complète
-                          </label>
-                          <div className="bg-white/50 p-4 rounded-lg border border-blue-300/30">
-                            <p className="text-lg font-semibold text-blue-900 leading-relaxed whitespace-pre-wrap break-words">
-                              {order.delivery_location}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                {/* Client preview */}
+                <div className="p-3 bg-primary/5 rounded-lg">
+                  <p className="font-medium">Client: {order.customer_name}</p>
+                  <p className="text-sm text-muted-foreground truncate">
+                    Livraison: {order.delivery_location.substring(0, 50)}...
+                  </p>
                 </div>
 
-                     
-                 {/* Status Update */}
-                 <div className="border-t pt-4 space-y-2">
-                   <label className="text-sm font-medium">Statut:</label>
-                   <Select
-                     value={order.status}
-                     onValueChange={(value) => updateOrderStatus(order.id, value)}
-                     disabled={updatingStatus === order.id}
-                   >
-                     <SelectTrigger className="w-full">
-                       <SelectValue />
-                     </SelectTrigger>
-                     <SelectContent>
-                       <SelectItem value="pending">En attente</SelectItem>
-                       <SelectItem value="confirmed">Confirmée</SelectItem>
-                       <SelectItem value="processing">En préparation</SelectItem>
-                       <SelectItem value="shipped">Expédiée</SelectItem>
-                       <SelectItem value="delivered">Livrée</SelectItem>
-                       <SelectItem value="cancelled">Annulée</SelectItem>
-                     </SelectContent>
-                   </Select>
-                 </div>
+                {/* Action button */}
+                <Button 
+                  onClick={() => handleOrderClick(order)}
+                  className="w-full"
+                  variant="outline"
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  Voir les détails et gérer
+                </Button>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+      
+      <OrderDetailDialog
+        order={selectedOrder}
+        open={orderDetailOpen}
+        onOpenChange={setOrderDetailOpen}
+        onOrderUpdated={handleOrderUpdated}
+      />
     </div>
   );
 };

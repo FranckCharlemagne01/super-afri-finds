@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
+import { useTrialStatus } from '@/hooks/useTrialStatus';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +13,7 @@ import { ProductForm } from '@/components/ProductForm';
 import { SellerProducts } from '@/components/SellerProducts';
 import { SellerMessages } from '@/components/SellerMessages';
 import { SellerOrders } from '@/components/SellerOrders';
+import { TrialCountdown } from '@/components/TrialCountdown';
 import { useNavigate } from 'react-router-dom';
 
 interface Product {
@@ -35,6 +37,7 @@ interface Product {
 const SellerDashboard = () => {
   const { user, signOut } = useAuth();
   const { isSuperAdmin, loading: roleLoading } = useRole();
+  const trialStatus = useTrialStatus();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
@@ -381,6 +384,15 @@ const SellerDashboard = () => {
                 <span className="hidden sm:inline">Voir la page publique</span>
                 <span className="sm:hidden">Page publique</span>
               </Button>
+              <Button 
+                variant="outline" 
+                disabled={trialStatus.isInTrial}
+                className={`flex-1 lg:flex-none items-center gap-2 text-sm ${trialStatus.isInTrial ? "opacity-50 cursor-not-allowed" : ""}`}
+                size="sm"
+              >
+                <Package className="h-4 w-4" />
+                {trialStatus.isInTrial ? "Premium (bientôt)" : "Passer au Premium"}
+              </Button>
               <Button
                 variant="destructive"
                 onClick={handleSignOut}
@@ -400,6 +412,16 @@ const SellerDashboard = () => {
             </div>
           </div>
         </div>
+
+        {/* Trial Status Component */}
+        {!trialStatus.loading && trialStatus.trialEndDate && (
+          <div className="mb-6">
+            <TrialCountdown 
+              trialEndDate={trialStatus.trialEndDate}
+              onExpire={() => window.location.reload()}
+            />
+          </div>
+        )}
 
         {/* Stats Cards - Mobile optimized */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8">
@@ -453,11 +475,16 @@ const SellerDashboard = () => {
               <h2 className="text-lg lg:text-xl font-semibold">Gestion des Produits</h2>
               <Button 
                 onClick={() => setShowProductForm(true)}
-                className="flex items-center gap-2 w-full lg:w-auto"
+                disabled={!trialStatus.canPublish}
+                className={`flex items-center gap-2 w-full lg:w-auto ${!trialStatus.canPublish ? "opacity-50 cursor-not-allowed" : ""}`}
                 size="sm"
               >
                 <Plus className="h-4 w-4" />
-                Publier un Article (1000 FCFA)
+                {trialStatus.isInTrial 
+                  ? "Publier un Article (Gratuit - Essai)" 
+                  : trialStatus.canPublish 
+                    ? "Publier un Article (1000 FCFA)" 
+                    : "Période d'essai expirée"}
               </Button>
             </div>
 

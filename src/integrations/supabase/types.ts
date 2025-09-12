@@ -295,6 +295,9 @@ export type Database = {
           paystack_reference: string | null
           phone: string | null
           premium_expires_at: string | null
+          trial_end_date: string | null
+          trial_start_date: string | null
+          trial_used: boolean | null
           updated_at: string
           user_id: string
         }
@@ -311,6 +314,9 @@ export type Database = {
           paystack_reference?: string | null
           phone?: string | null
           premium_expires_at?: string | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
+          trial_used?: boolean | null
           updated_at?: string
           user_id: string
         }
@@ -327,6 +333,9 @@ export type Database = {
           paystack_reference?: string | null
           phone?: string | null
           premium_expires_at?: string | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
+          trial_used?: boolean | null
           updated_at?: string
           user_id?: string
         }
@@ -411,6 +420,10 @@ export type Database = {
         Args: { _email: string }
         Returns: string
       }
+      can_publish_products: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       get_admin_statistics: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -486,6 +499,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["user_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_in_trial_period: {
+        Args: { _user_id: string }
         Returns: boolean
       }
       update_order_status: {

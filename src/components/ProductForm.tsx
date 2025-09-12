@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useTrialStatus } from '@/hooks/useTrialStatus';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -77,6 +78,7 @@ const categoryDefaults = {
 
 export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => {
   const { user } = useAuth();
+  const trialStatus = useTrialStatus();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [loading, setLoading] = useState(false);
@@ -255,8 +257,34 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
 
         onSave();
       } else {
-        // New product - initiate payment process
-        handlePublishWithPayment(productData);
+        // New product - check trial status
+        if (!trialStatus.canPublish) {
+          toast({
+            title: "Période d'essai expirée",
+            description: "Vous devez passer au Premium pour publier de nouveaux articles.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // If in trial period, save directly without payment
+        if (trialStatus.isInTrial) {
+          const { error: insertError } = await supabase
+            .from('products')
+            .insert(productData);
+          
+          if (insertError) throw insertError;
+
+          toast({
+            title: "✅ Article publié gratuitement",
+            description: "Votre article a été publié pendant votre période d'essai !",
+          });
+
+          onSave();
+        } else {
+          // Not in trial and not premium - initiate payment process
+          handlePublishWithPayment(productData);
+        }
       }
     } catch (error) {
       console.error('Error saving product:', error);
@@ -686,10 +714,16 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
         </Button>
         <Button 
           type="submit" 
-          disabled={loading || uploadingVideo || uploadingImages}
+          disabled={loading || uploadingVideo || uploadingImages || (!product?.id && !trialStatus.canPublish)}
           className={isMobile ? "w-full" : ""}
         >
-          {loading ? 'Sauvegarde...' : uploadingImages ? 'Upload images...' : uploadingVideo ? 'Upload vidéo...' : (product?.id ? 'Modifier' : 'Publier (1000 FCFA)')}
+          {loading ? 'Sauvegarde...' : 
+           uploadingImages ? 'Upload images...' : 
+           uploadingVideo ? 'Upload vidéo...' : 
+           product?.id ? 'Modifier' : 
+           trialStatus.isInTrial ? 'Publier (Gratuit - Essai)' :
+           trialStatus.canPublish ? 'Publier (1000 FCFA)' :
+           'Période d\'essai expirée'}
         </Button>
       </div>
     </form>

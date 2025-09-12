@@ -78,7 +78,15 @@ const Auth = () => {
           description: "Bienvenue sur Djassa !",
           duration: 3000,
         });
-        navigate('/');
+        
+        // Check if there's a redirect URL stored after login
+        const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
+        if (redirectUrl) {
+          sessionStorage.removeItem('redirectAfterLogin');
+          navigate(redirectUrl);
+        } else {
+          navigate('/');
+        }
       }
     } catch (error) {
       console.error('Login error:', error);

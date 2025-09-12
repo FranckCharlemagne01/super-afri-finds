@@ -62,6 +62,8 @@ export const QuickOrderDialog = ({
     
     if (!user) {
       setOpen(false);
+      // Store current URL for redirect after login
+      sessionStorage.setItem('redirectAfterLogin', window.location.pathname);
       window.location.href = '/auth';
       return;
     }

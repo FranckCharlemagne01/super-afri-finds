@@ -1,6 +1,8 @@
 import { HeroSection } from "@/components/HeroSection";
 import { ProductCard } from "@/components/ProductCard";
 import { CategoryCard } from "@/components/CategoryCard";
+import { PromoBanner } from "@/components/PromoBanner";
+import { FeaturedProducts } from "@/components/FeaturedProducts";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -265,9 +267,15 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
+      {/* Promotional Banner */}
+      <PromoBanner />
+      
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Hero Section */}
         <HeroSection />
+
+        {/* Featured Products Section */}
+        <FeaturedProducts />
 
         {/* Categories */}
         <section className="mb-6 sm:mb-8">

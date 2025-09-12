@@ -22,7 +22,8 @@ import {
   XCircle,
   UserCheck,
   UserX,
-  MoreHorizontal
+  MoreHorizontal,
+  LogOut
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -380,10 +381,7 @@ const SuperAdmin = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={async () => {
-                await signOut();
-                window.location.href = '/';
-              }}>
+              <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div>
@@ -397,6 +395,12 @@ const SuperAdmin = () => {
               </Badge>
               <Button variant="ghost" size="icon" onClick={() => setShowSettings(true)}>
                 <Settings className="w-5 h-5 text-muted-foreground" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={async () => {
+                await signOut();
+                navigate('/');
+              }}>
+                <LogOut className="w-5 h-5 text-muted-foreground" />
               </Button>
             </div>
           </div>

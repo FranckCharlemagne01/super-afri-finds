@@ -175,72 +175,84 @@ export const SellerOrders = () => {
                   </div>
                 </div>
 
-                {/* Informations client - présentation professionnelle */}
-                <div className="border-t pt-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <User className="h-5 w-5 text-primary" />
-                    <h4 className="font-bold text-lg text-foreground">Informations Client</h4>
+                {/* Informations client - présentation professionnelle et claire */}
+                <div className="border-t pt-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-primary/10 rounded-md">
+                      <User className="h-5 w-5 text-primary" />
+                    </div>
+                    <h4 className="text-xl font-bold text-foreground">Informations de Contact Client</h4>
                   </div>
                   
-                  {/* Nom complet */}
-                  <div className="mb-4 p-4 bg-card border-l-4 border-primary rounded-lg shadow-sm">
-                    <div className="flex items-start gap-3">
-                      <div className="p-2 bg-primary/10 rounded-md">
-                        <User className="h-4 w-4 text-primary" />
-                      </div>
-                      <div className="flex-1">
-                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                          Nom et Prénom
-                        </label>
-                        <p className="text-lg font-bold text-foreground mt-1">{order.customer_name}</p>
+                  {/* Grille d'informations organisée */}
+                  <div className="space-y-4">
+                    {/* Nom complet */}
+                    <div className="p-5 bg-gradient-to-r from-primary/5 to-primary/10 border-l-4 border-primary rounded-lg">
+                      <div className="flex items-start gap-4">
+                        <div className="p-3 bg-primary/15 rounded-lg">
+                          <User className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <label className="block text-sm font-bold text-primary uppercase tracking-wide mb-1">
+                            Nom et Prénom Complet
+                          </label>
+                          <p className="text-xl font-bold text-foreground break-words">{order.customer_name}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Contact */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div className="p-4 bg-card border border-border rounded-lg shadow-sm">
-                      <div className="flex items-start gap-3">
-                        <div className="p-2 bg-secondary/10 rounded-md">
-                          <Phone className="h-4 w-4 text-secondary" />
+                    {/* Téléphone et Total */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div className="p-5 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg">
+                        <div className="flex items-start gap-4">
+                          <div className="p-3 bg-green-200 rounded-lg">
+                            <Phone className="h-5 w-5 text-green-700" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <label className="block text-sm font-bold text-green-700 uppercase tracking-wide mb-1">
+                              Numéro de Téléphone
+                            </label>
+                            <p className="text-lg font-bold text-green-900 break-all">{order.customer_phone}</p>
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                            Téléphone
-                          </label>
-                          <p className="text-base font-semibold text-foreground mt-1 break-all">{order.customer_phone}</p>
+                      </div>
+                      
+                      <div className="p-5 bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-lg">
+                        <div className="flex items-start gap-4">
+                          <div className="p-3 bg-orange-200 rounded-lg">
+                            <DollarSign className="h-5 w-5 text-orange-700" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <label className="block text-sm font-bold text-orange-700 uppercase tracking-wide mb-1">
+                              Total de la Commande
+                            </label>
+                            <div className="space-y-1">
+                              <p className="text-sm text-orange-600">
+                                {order.quantity} × {order.product_price.toLocaleString()} FCFA
+                              </p>
+                              <p className="text-2xl font-bold text-orange-900">
+                                {order.total_amount.toLocaleString()} FCFA
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
-                    
-                    <div className="p-4 bg-card border border-border rounded-lg shadow-sm">
-                      <div className="flex items-start gap-3">
-                        <div className="p-2 bg-accent/10 rounded-md">
-                          <DollarSign className="h-4 w-4 text-accent" />
+
+                    {/* Adresse de livraison complète */}
+                    <div className="p-5 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg">
+                      <div className="flex items-start gap-4">
+                        <div className="p-3 bg-blue-200 rounded-lg">
+                          <MapPin className="h-5 w-5 text-blue-700" />
                         </div>
-                        <div className="flex-1">
-                          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                            Total Commande
+                        <div className="flex-1 min-w-0">
+                          <label className="block text-sm font-bold text-blue-700 uppercase tracking-wide mb-2">
+                            Adresse de Livraison Complète
                           </label>
-                          <p className="text-lg font-bold text-primary mt-1">
-                            {order.total_amount.toLocaleString()} FCFA
+                          <p className="text-lg font-semibold text-blue-900 leading-relaxed whitespace-pre-wrap break-words">
+                            {order.delivery_location}
                           </p>
                         </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Adresse de livraison */}
-                  <div className="p-4 bg-card border border-border rounded-lg shadow-sm">
-                    <div className="flex items-start gap-3">
-                      <div className="p-2 bg-destructive/10 rounded-md">
-                        <MapPin className="h-4 w-4 text-destructive" />
-                      </div>
-                      <div className="flex-1">
-                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                          Adresse de Livraison
-                        </label>
-                        <p className="text-base font-semibold text-foreground mt-1 leading-relaxed">{order.delivery_location}</p>
                       </div>
                     </div>
                   </div>

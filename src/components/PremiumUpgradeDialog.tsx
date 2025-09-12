@@ -43,7 +43,7 @@ export function PremiumUpgradeDialog({ open, onOpenChange }: PremiumUpgradeDialo
           action: 'initialize_payment',
           user_id: user.id,
           email: user.email,
-          amount: 50000 // 500 NGN
+          amount: 500 // 500 XOF (FCFA)
         },
       });
 
@@ -98,7 +98,7 @@ export function PremiumUpgradeDialog({ open, onOpenChange }: PremiumUpgradeDialo
                   Premium
                 </Badge>
                 <div className="mt-3">
-                  <span className="text-3xl font-bold text-gray-900">500 NGN</span>
+                  <span className="text-3xl font-bold text-gray-900">500 FCFA</span>
                   <span className="text-lg text-gray-600">/an</span>
                 </div>
               </div>

@@ -29,7 +29,7 @@ serve(async (req) => {
     const { action, ...payload } = await req.json();
 
     if (action === 'initialize_payment') {
-      const { user_id, email, amount = 50000 } = payload; // 500 NGN default
+      const { user_id, email, amount = 500 } = payload; // 500 XOF default (FCFA)
       
       console.log('Initializing payment for user:', user_id);
 
@@ -43,7 +43,7 @@ serve(async (req) => {
           user_id,
           paystack_reference: reference,
           amount,
-          currency: 'NGN',
+          currency: 'XOF',
           status: 'pending'
         });
 
@@ -64,9 +64,9 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           email,
-          amount: amount * 100, // Paystack expects kobo
+          amount: amount * 100, // Paystack expects smallest currency unit
           reference,
-          currency: 'NGN',
+          currency: 'XOF',
           callback_url: `${req.headers.get('origin')}/seller?payment=success&reference=${reference}`,
           metadata: {
             user_id,
@@ -137,13 +137,13 @@ serve(async (req) => {
         });
       }
 
-      // Update premium status
-      const { error: updateError } = await supabase
-        .rpc('handle_premium_payment_success', {
-          _user_id: paymentRecord.user_id,
-          _paystack_reference: reference,
-          _amount: paystackData.data.amount / 100 // Convert from kobo
-        });
+        // Update premium status
+        const { error: updateError } = await supabase
+          .rpc('handle_premium_payment_success', {
+            _user_id: paymentRecord.user_id,
+            _paystack_reference: reference,
+            _amount: paystackData.data.amount / 100 // Convert from smallest currency unit
+          });
 
       if (updateError) {
         console.error('Failed to update premium status:', updateError);

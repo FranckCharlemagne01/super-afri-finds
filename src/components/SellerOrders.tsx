@@ -175,37 +175,77 @@ export const SellerOrders = () => {
                   </div>
                 </div>
 
-                {/* Informations client bien visibles */}
+                {/* Informations client - présentation professionnelle */}
                 <div className="border-t pt-4">
-                  <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    Informations Client
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-3 bg-muted/50 rounded-lg">
-                      <label className="text-sm font-medium text-muted-foreground">Nom du client</label>
-                      <p className="font-semibold text-foreground">{order.customer_name}</p>
+                  <div className="flex items-center gap-2 mb-4">
+                    <User className="h-5 w-5 text-primary" />
+                    <h4 className="font-bold text-lg text-foreground">Informations Client</h4>
+                  </div>
+                  
+                  {/* Nom complet */}
+                  <div className="mb-4 p-4 bg-card border-l-4 border-primary rounded-lg shadow-sm">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-primary/10 rounded-md">
+                        <User className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          Nom et Prénom
+                        </label>
+                        <p className="text-lg font-bold text-foreground mt-1">{order.customer_name}</p>
+                      </div>
                     </div>
-                    <div className="p-3 bg-muted/50 rounded-lg">
-                      <label className="text-sm font-medium text-muted-foreground">Téléphone</label>
-                      <p className="font-semibold text-foreground">{order.customer_phone}</p>
+                  </div>
+
+                  {/* Contact */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="p-4 bg-card border border-border rounded-lg shadow-sm">
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 bg-secondary/10 rounded-md">
+                          <Phone className="h-4 w-4 text-secondary" />
+                        </div>
+                        <div className="flex-1">
+                          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                            Téléphone
+                          </label>
+                          <p className="text-base font-semibold text-foreground mt-1 break-all">{order.customer_phone}</p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="md:col-span-2 p-3 bg-muted/50 rounded-lg">
-                      <label className="text-sm font-medium text-muted-foreground">Adresse de livraison</label>
-                      <p className="font-semibold text-foreground">{order.delivery_location}</p>
+                    
+                    <div className="p-4 bg-card border border-border rounded-lg shadow-sm">
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 bg-accent/10 rounded-md">
+                          <DollarSign className="h-4 w-4 text-accent" />
+                        </div>
+                        <div className="flex-1">
+                          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                            Total Commande
+                          </label>
+                          <p className="text-lg font-bold text-primary mt-1">
+                            {order.total_amount.toLocaleString()} FCFA
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Adresse de livraison */}
+                  <div className="p-4 bg-card border border-border rounded-lg shadow-sm">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-destructive/10 rounded-md">
+                        <MapPin className="h-4 w-4 text-destructive" />
+                      </div>
+                      <div className="flex-1">
+                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          Adresse de Livraison
+                        </label>
+                        <p className="text-base font-semibold text-foreground mt-1 leading-relaxed">{order.delivery_location}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                 {/* Total avec mise en évidence */}
-                 <div className="border-t pt-4">
-                   <div className="flex items-center justify-between">
-                     <span className="text-lg font-medium">Total de la commande</span>
-                     <span className="text-2xl font-bold text-promo">
-                       {order.total_amount.toLocaleString()} FCFA
-                     </span>
-                   </div>
-                 </div>
                      
                  {/* Status Update */}
                  <div className="border-t pt-4 space-y-2">

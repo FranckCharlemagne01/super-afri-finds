@@ -181,9 +181,12 @@ const SellerDashboard = () => {
           const { data, error } = await supabase.rpc('get_seller_orders');
           if (error) throw error;
           
-          const sellerOrders = data?.filter(order => order.seller_id === user.id) || [];
-          const pendingOrders = sellerOrders.filter(order => order.status === 'pending');
-          setNewOrdersCount(pendingOrders.length);
+          // Filtrer les commandes non traitées (pending et confirmed)
+          const unprocessedOrders = data?.filter(order => 
+            order.seller_id === user.id && 
+            (order.status === 'pending' || order.status === 'confirmed')
+          ) || [];
+          setNewOrdersCount(unprocessedOrders.length);
         } catch (error) {
           console.error('Error fetching new orders count:', error);
         }

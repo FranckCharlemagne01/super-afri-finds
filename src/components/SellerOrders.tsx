@@ -175,62 +175,68 @@ export const SellerOrders = () => {
                   </div>
                 </div>
 
-                {/* Informations client - présentation professionnelle et claire */}
+                {/* Informations client complètes pour préparation et livraison */}
                 <div className="border-t pt-6">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-primary/10 rounded-md">
-                      <User className="h-5 w-5 text-primary" />
+                    <div className="p-3 bg-primary/10 rounded-lg">
+                      <User className="h-6 w-6 text-primary" />
                     </div>
-                    <h4 className="text-xl font-bold text-foreground">Informations de Contact Client</h4>
+                    <h4 className="text-2xl font-bold text-foreground">Informations Client</h4>
                   </div>
                   
-                  {/* Grille d'informations organisée */}
-                  <div className="space-y-4">
-                    {/* Nom complet */}
-                    <div className="p-5 bg-gradient-to-r from-primary/5 to-primary/10 border-l-4 border-primary rounded-lg">
+                  {/* Grille d'informations complètes et organisées */}
+                  <div className="space-y-6">
+                    {/* Client - Nom et Prénom complets */}
+                    <div className="p-6 bg-gradient-to-r from-primary/5 to-primary/10 border-l-4 border-primary rounded-xl shadow-sm">
                       <div className="flex items-start gap-4">
-                        <div className="p-3 bg-primary/15 rounded-lg">
-                          <User className="h-5 w-5 text-primary" />
+                        <div className="p-3 bg-primary/20 rounded-lg">
+                          <User className="h-6 w-6 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <label className="block text-sm font-bold text-primary uppercase tracking-wide mb-1">
-                            Nom et Prénom Complet
+                          <label className="block text-sm font-bold text-primary uppercase tracking-wider mb-2">
+                            Nom et Prénom du Client
                           </label>
-                          <p className="text-xl font-bold text-foreground break-words">{order.customer_name}</p>
+                          <p className="text-2xl font-bold text-foreground break-words leading-tight">
+                            {order.customer_name}
+                          </p>
                         </div>
                       </div>
                     </div>
 
-                    {/* Téléphone et Total */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                      <div className="p-5 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg">
+                    {/* Contact et Total - Grid responsive */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Numéro de téléphone complet */}
+                      <div className="p-6 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-xl shadow-sm">
                         <div className="flex items-start gap-4">
                           <div className="p-3 bg-green-200 rounded-lg">
-                            <Phone className="h-5 w-5 text-green-700" />
+                            <Phone className="h-6 w-6 text-green-700" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <label className="block text-sm font-bold text-green-700 uppercase tracking-wide mb-1">
+                            <label className="block text-sm font-bold text-green-700 uppercase tracking-wider mb-2">
                               Numéro de Téléphone
                             </label>
-                            <p className="text-lg font-bold text-green-900 break-all">{order.customer_phone}</p>
+                            <p className="text-xl font-bold text-green-900 break-all leading-tight">
+                              {order.customer_phone}
+                            </p>
                           </div>
                         </div>
                       </div>
                       
-                      <div className="p-5 bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-lg">
+                      {/* Total de la commande */}
+                      <div className="p-6 bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-xl shadow-sm">
                         <div className="flex items-start gap-4">
                           <div className="p-3 bg-orange-200 rounded-lg">
-                            <DollarSign className="h-5 w-5 text-orange-700" />
+                            <DollarSign className="h-6 w-6 text-orange-700" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <label className="block text-sm font-bold text-orange-700 uppercase tracking-wide mb-1">
+                            <label className="block text-sm font-bold text-orange-700 uppercase tracking-wider mb-2">
                               Total de la Commande
                             </label>
-                            <div className="space-y-1">
-                              <p className="text-sm text-orange-600">
+                            <div className="space-y-2">
+                              <p className="text-sm text-orange-600 font-medium">
                                 {order.quantity} × {order.product_price.toLocaleString()} FCFA
                               </p>
-                              <p className="text-2xl font-bold text-orange-900">
+                              <p className="text-3xl font-bold text-orange-900 leading-tight">
                                 {order.total_amount.toLocaleString()} FCFA
                               </p>
                             </div>
@@ -239,19 +245,21 @@ export const SellerOrders = () => {
                       </div>
                     </div>
 
-                    {/* Adresse de livraison complète */}
-                    <div className="p-5 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg">
+                    {/* Adresse de livraison complète et non tronquée */}
+                    <div className="p-6 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl shadow-sm">
                       <div className="flex items-start gap-4">
                         <div className="p-3 bg-blue-200 rounded-lg">
-                          <MapPin className="h-5 w-5 text-blue-700" />
+                          <MapPin className="h-6 w-6 text-blue-700" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <label className="block text-sm font-bold text-blue-700 uppercase tracking-wide mb-2">
+                          <label className="block text-sm font-bold text-blue-700 uppercase tracking-wider mb-3">
                             Adresse de Livraison Complète
                           </label>
-                          <p className="text-lg font-semibold text-blue-900 leading-relaxed whitespace-pre-wrap break-words">
-                            {order.delivery_location}
-                          </p>
+                          <div className="bg-white/50 p-4 rounded-lg border border-blue-300/30">
+                            <p className="text-lg font-semibold text-blue-900 leading-relaxed whitespace-pre-wrap break-words">
+                              {order.delivery_location}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>

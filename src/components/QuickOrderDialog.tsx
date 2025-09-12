@@ -101,11 +101,12 @@ export const QuickOrderDialog = ({
       <DialogTrigger asChild>
         <Button 
           variant="outline" 
-          className={iconOnly ? "px-4" : "w-full"} 
+          className={iconOnly ? "px-4" : "flex-1"} 
           size="sm"
         >
           <ShoppingCart className="w-4 h-4" />
-          {!iconOnly && <span className="ml-2">Passer la commande</span>}
+          {!iconOnly && <span className="ml-2">Commander directement</span>}
+          {iconOnly && <span className="ml-2">Commander</span>}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">

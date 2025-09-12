@@ -112,14 +112,12 @@ const ProductDetail = () => {
 
   const handleOrder = () => {
     if (!user) {
+      // Store current URL for redirect after login
+      sessionStorage.setItem('redirectAfterLogin', window.location.pathname);
       navigate('/auth');
       return;
     }
-    // Open quick order dialog (functionality already implemented)
-    const quickOrderButton = document.querySelector('[data-quick-order-trigger]') as HTMLButtonElement;
-    if (quickOrderButton) {
-      quickOrderButton.click();
-    }
+    // Open quick order dialog will be handled by the QuickOrderDialog component
   };
 
   const handleQuantityChange = (newQuantity: number) => {
@@ -347,13 +345,12 @@ const ProductDetail = () => {
 
                 {/* Secondary Actions */}
                 <div className="flex gap-3">
-                  <Button
-                    onClick={handleOrder}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    Commander directement
-                  </Button>
+                  <QuickOrderDialog
+                    productId={product.id}
+                    productTitle={product.title}
+                    productPrice={salePrice}
+                    sellerId={product.seller_id}
+                  />
                   <ContactSellerButton
                     productId={product.id}
                     sellerId={product.seller_id}
@@ -371,13 +368,13 @@ const ProductDetail = () => {
         <div className="space-y-3">
           {/* Quick Actions Row */}
           <div className="flex gap-2">
-            <Button
-              onClick={handleOrder}
-              variant="outline"
-              className="px-4"
-            >
-              Commander
-            </Button>
+            <QuickOrderDialog
+              productId={product.id}
+              productTitle={product.title}
+              productPrice={salePrice}
+              sellerId={product.seller_id}
+              iconOnly={true}
+            />
             <ContactSellerButton
               productId={product.id}
               sellerId={product.seller_id}

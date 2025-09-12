@@ -7,11 +7,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Package, MessageSquare, BarChart3, LogOut, Store } from 'lucide-react';
+import { Plus, Package, MessageSquare, BarChart3, LogOut, Store, Crown } from 'lucide-react';
 import { ProductForm } from '@/components/ProductForm';
 import { SellerProducts } from '@/components/SellerProducts';
 import { SellerMessages } from '@/components/SellerMessages';
 import { SellerOrders } from '@/components/SellerOrders';
+import { PremiumUpgradeDialog } from '@/components/PremiumUpgradeDialog';
+import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useNavigate } from 'react-router-dom';
 
 interface Product {
@@ -35,12 +37,14 @@ interface Product {
 const SellerDashboard = () => {
   const { user, signOut } = useAuth();
   const { isSuperAdmin, loading: roleLoading } = useRole();
+  const { isPremium, refreshPremiumStatus } = usePremiumStatus();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [showPremiumUpgrade, setShowPremiumUpgrade] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
@@ -60,8 +64,61 @@ const SellerDashboard = () => {
     
     if (user && !roleLoading) {
       fetchSellerProducts();
+      
+      // Check for payment success in URL params
+      const urlParams = new URLSearchParams(window.location.search);
+      const paymentStatus = urlParams.get('payment');
+      const reference = urlParams.get('reference');
+      
+      if (paymentStatus === 'success' && reference) {
+        verifyPayment(reference);
+        // Clean URL
+        window.history.replaceState({}, document.title, '/seller');
+      }
     }
   }, [user, isSuperAdmin, roleLoading, navigate]);
+
+  const verifyPayment = async (reference: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('paystack-payment', {
+        body: {
+          action: 'verify_payment',
+          reference
+        },
+      });
+
+      if (error) {
+        console.error('Payment verification error:', error);
+        toast({
+          title: "Erreur de vérification",
+          description: "Impossible de vérifier le paiement",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data?.status === 'success') {
+        toast({
+          title: "🎉 Paiement réussi !",
+          description: "Votre accès Premium a été activé avec succès",
+        });
+        refreshPremiumStatus();
+      } else {
+        toast({
+          title: "Échec du paiement",
+          description: "Le paiement n'a pas pu être traité",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Payment verification error:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la vérification du paiement",
+        variant: "destructive",
+      });
+    }
+  };
 
   const fetchSellerProducts = async () => {
     try {
@@ -338,9 +395,24 @@ const SellerDashboard = () => {
                 <span className="sm:hidden">Sortir</span>
               </Button>
             </div>
-            <Badge variant="secondary" className="px-3 py-1 text-xs lg:px-4 lg:py-2 self-center lg:self-auto">
-              Vendeur Certifié
-            </Badge>
+            <div className="flex items-center gap-2">
+              {isPremium ? (
+                <Badge variant="secondary" className="px-3 py-1 text-xs lg:px-4 lg:py-2 bg-yellow-100 text-yellow-800">
+                  <Crown className="w-3 h-3 mr-1" />
+                  Vendeur Premium
+                </Badge>
+              ) : (
+                <Button
+                  onClick={() => setShowPremiumUpgrade(true)}
+                  variant="outline"
+                  size="sm"
+                  className="px-3 py-1 text-xs lg:px-4 lg:py-2 border-yellow-500 text-yellow-600 hover:bg-yellow-50"
+                >
+                  <Crown className="w-3 h-3 mr-1" />
+                  Passer Premium
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -394,14 +466,30 @@ const SellerDashboard = () => {
           <TabsContent value="products" className="space-y-4">
             <div className="flex flex-col gap-3 lg:flex-row lg:justify-between lg:items-center">
               <h2 className="text-lg lg:text-xl font-semibold">Gestion des Produits</h2>
-              <Button 
-                onClick={() => setShowProductForm(true)}
-                className="flex items-center gap-2 w-full lg:w-auto"
-                size="sm"
-              >
-                <Plus className="h-4 w-4" />
-                Ajouter un Produit
-              </Button>
+              {isPremium ? (
+                <Button 
+                  onClick={() => setShowProductForm(true)}
+                  className="flex items-center gap-2 w-full lg:w-auto"
+                  size="sm"
+                >
+                  <Plus className="h-4 w-4" />
+                  Ajouter un Produit
+                </Button>
+              ) : (
+                <div className="flex flex-col gap-2 w-full lg:w-auto">
+                  <Button 
+                    onClick={() => setShowPremiumUpgrade(true)}
+                    className="flex items-center gap-2 w-full lg:w-auto bg-yellow-500 hover:bg-yellow-600"
+                    size="sm"
+                  >
+                    <Crown className="h-4 w-4" />
+                    Passer Premium pour publier
+                  </Button>
+                  <p className="text-xs text-muted-foreground text-center lg:text-left">
+                    Vous devez être Premium pour publier des produits
+                  </p>
+                </div>
+              )}
             </div>
 
             {showProductForm && (
@@ -444,6 +532,11 @@ const SellerDashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <PremiumUpgradeDialog 
+        open={showPremiumUpgrade}
+        onOpenChange={setShowPremiumUpgrade}
+      />
     </div>
   );
 };

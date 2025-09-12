@@ -5,7 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ProfileUpdateForm } from '@/components/ProfileUpdateForm';
 import { PasswordUpdateForm } from '@/components/PasswordUpdateForm';
 import { TwoFactorAuthForm } from '@/components/TwoFactorAuthForm';
-import { User, Lock, Shield, Bell } from 'lucide-react';
+import { PaystackSettingsDialog } from '@/components/PaystackSettingsDialog';
+import { User, Lock, Shield, Bell, CreditCard } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface SuperAdminSettingsDialogProps {
   open: boolean;
@@ -13,6 +15,7 @@ interface SuperAdminSettingsDialogProps {
 }
 
 export const SuperAdminSettingsDialog = ({ open, onOpenChange }: SuperAdminSettingsDialogProps) => {
+  const [showPaystackSettings, setShowPaystackSettings] = useState(false);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
@@ -27,7 +30,7 @@ export const SuperAdminSettingsDialog = ({ open, onOpenChange }: SuperAdminSetti
         </DialogHeader>
 
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <User className="w-4 h-4" />
               Profil
@@ -43,6 +46,10 @@ export const SuperAdminSettingsDialog = ({ open, onOpenChange }: SuperAdminSetti
             <TabsTrigger value="notifications" className="flex items-center gap-2">
               <Bell className="w-4 h-4" />
               Notifications
+            </TabsTrigger>
+            <TabsTrigger value="paystack" className="flex items-center gap-2">
+              <CreditCard className="w-4 h-4" />
+              Paystack
             </TabsTrigger>
           </TabsList>
 
@@ -141,8 +148,38 @@ export const SuperAdminSettingsDialog = ({ open, onOpenChange }: SuperAdminSetti
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="paystack" className="space-y-4 mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Configuration Paystack</CardTitle>
+                <CardDescription>
+                  Configurez votre clé secrète Paystack pour activer les paiements Premium des vendeurs
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Votre clé secrète Paystack sera stockée de manière sécurisée et utilisée pour traiter les paiements Premium.
+                  </p>
+                  <Button 
+                    onClick={() => setShowPaystackSettings(true)}
+                    className="w-full"
+                  >
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Configurer Paystack
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </DialogContent>
+
+      <PaystackSettingsDialog 
+        open={showPaystackSettings}
+        onOpenChange={setShowPaystackSettings}
+      />
     </Dialog>
   );
 };

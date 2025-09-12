@@ -173,6 +173,42 @@ export type Database = {
         }
         Relationships: []
       }
+      premium_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          payment_date: string | null
+          paystack_reference: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          payment_date?: string | null
+          paystack_reference: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          payment_date?: string | null
+          paystack_reference?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           badge: string | null
@@ -246,7 +282,10 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          is_premium: boolean | null
+          paystack_reference: string | null
           phone: string | null
+          premium_expires_at: string | null
           updated_at: string
           user_id: string
         }
@@ -259,7 +298,10 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          is_premium?: boolean | null
+          paystack_reference?: string | null
           phone?: string | null
+          premium_expires_at?: string | null
           updated_at?: string
           user_id: string
         }
@@ -272,7 +314,10 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          is_premium?: boolean | null
+          paystack_reference?: string | null
           phone?: string | null
+          premium_expires_at?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -413,6 +458,10 @@ export type Database = {
           updated_at: string
           user_id: string
         }[]
+      }
+      handle_premium_payment_success: {
+        Args: { _amount: number; _paystack_reference: string; _user_id: string }
+        Returns: boolean
       }
       has_role: {
         Args: {

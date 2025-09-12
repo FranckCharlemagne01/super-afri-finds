@@ -6,12 +6,27 @@ import { ArrowLeft, Heart, ShoppingCart, Star } from "lucide-react";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useCart } from "@/hooks/useCart";
 import { useNavigate } from "react-router-dom";
-import { Product } from "@/data/products";
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+
+interface Product {
+  id: string;
+  title: string;
+  price: number;
+  original_price?: number;
+  discount_percentage?: number;
+  category: string;
+  images?: string[];
+  rating?: number;
+  reviews_count?: number;
+  badge?: string;
+}
 
 export default function Favorites() {
-  const { favoriteIds } = useFavorites();
+  const { favoriteIds, toggleFavorite } = useFavorites();
   const { addToCart } = useCart();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [favoriteProducts, setFavoriteProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -24,19 +39,29 @@ export default function Favorites() {
 
       setLoading(true);
       try {
-        // Import products locally instead of fetching from Supabase
-        const { products } = await import('@/data/products');
-        const filteredProducts = products.filter(product => favoriteIds.includes(product.id));
-        setFavoriteProducts(filteredProducts);
+        // Fetch real products from Supabase database
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .in('id', favoriteIds)
+          .eq('is_active', true);
+
+        if (error) throw error;
+        setFavoriteProducts(data || []);
       } catch (error) {
         console.error('Error fetching favorite products:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger vos favoris",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchFavoriteProducts();
-  }, [favoriteIds]);
+  }, [favoriteIds, toast]);
 
   const handleProductClick = (productId: string) => {
     navigate(`/product/${productId}`);
@@ -85,7 +110,7 @@ export default function Favorites() {
                 <button 
                   onClick={(e) => {
                     e.stopPropagation();
-                    // toggleFavorite(product.id);
+                    toggleFavorite(product.id);
                   }}
                   className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
                 >
@@ -99,9 +124,9 @@ export default function Favorites() {
                       {product.badge}
                     </Badge>
                   )}
-                  {product.discount > 0 && (
+                  {product.discount_percentage && product.discount_percentage > 0 && (
                     <Badge className="bg-promo text-promo-foreground text-xs px-2 py-1 font-bold">
-                      -{product.discount}%
+                      -{product.discount_percentage}%
                     </Badge>
                   )}
                 </div>
@@ -112,7 +137,7 @@ export default function Favorites() {
                   onClick={() => handleProductClick(product.id)}
                 >
                   <img
-                    src={product.image}
+                    src={product.images?.[0] || "/placeholder.svg"}
                     alt={product.title}
                     className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
                   />
@@ -141,17 +166,17 @@ export default function Favorites() {
                         />
                       ))}
                     </div>
-                    <span className="text-xs text-muted-foreground">({product.reviews})</span>
+                    <span className="text-xs text-muted-foreground">({product.reviews_count || 0})</span>
                   </div>
                   
                   {/* Price */}
                   <div className="flex items-center gap-2">
                     <span className="text-lg font-bold text-promo">
-                      {product.salePrice.toLocaleString()} FCFA
+                      {product.price.toLocaleString()} FCFA
                     </span>
-                    {product.originalPrice && product.originalPrice > product.salePrice && (
+                    {product.original_price && product.original_price > product.price && (
                       <span className="text-sm text-muted-foreground line-through">
-                        {product.originalPrice.toLocaleString()} FCFA
+                        {product.original_price.toLocaleString()} FCFA
                       </span>
                     )}
                   </div>
@@ -164,6 +189,10 @@ export default function Favorites() {
                     onClick={(e) => {
                       e.stopPropagation();
                       addToCart(product.id);
+                      toast({
+                        title: "🛒 Ajouté au panier",
+                        description: "Le produit a été ajouté à votre panier",
+                      });
                     }}
                   >
                     <ShoppingCart className="w-4 h-4" />

@@ -60,18 +60,18 @@ export const ProductCard = ({
   return (
     <Card className="relative overflow-hidden hover-lift cursor-pointer border-0 shadow-lg" onClick={handleProductClick}>
       {/* Badges */}
-      <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
+      <div className="absolute top-1 sm:top-2 left-1 sm:left-2 z-10 flex flex-col gap-1">
         {badge && (
-          <Badge className="bg-success text-success-foreground text-xs px-2 py-1">
+          <Badge className="bg-success text-success-foreground text-xs px-1.5 sm:px-2 py-0.5 sm:py-1">
             {badge}
           </Badge>
         )}
         {isFlashSale && (
-          <Badge className="gradient-primary text-white text-xs px-2 py-1 animate-pulse-promo">
+          <Badge className="gradient-primary text-white text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 animate-pulse-promo">
             ⚡ FLASH
           </Badge>
         )}
-        <Badge className="bg-promo text-promo-foreground text-xs px-2 py-1 font-bold">
+        <Badge className="bg-promo text-promo-foreground text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 font-bold">
           -{discount}%
         </Badge>
       </div>
@@ -79,9 +79,9 @@ export const ProductCard = ({
       {/* Heart Icon */}
       <button 
         onClick={handleToggleFavorite}
-        className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
+        className="absolute top-1 sm:top-2 right-1 sm:right-2 z-10 p-1 sm:p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
       >
-        <Heart className={`w-4 h-4 transition-colors ${
+        <Heart className={`w-3 h-3 sm:w-4 sm:h-4 transition-colors ${
           isFavorite(id) 
             ? 'text-promo fill-current' 
             : 'text-muted-foreground hover:text-promo'
@@ -96,20 +96,20 @@ export const ProductCard = ({
           className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
         />
         {videoUrl && (
-          <div className="absolute bottom-2 right-2 z-10">
-            <div className="bg-black/70 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
-              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+          <div className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 z-10">
+            <div className="bg-black/70 text-white text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full flex items-center gap-1">
+              <svg className="w-2 h-2 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M8 5v10l7-5-7-5z"/>
               </svg>
-              <span>Video</span>
+              <span className="hidden sm:inline">Video</span>
             </div>
           </div>
         )}
       </div>
 
       {/* Product Info */}
-      <div className="p-3 space-y-2">
-        <h3 className="text-sm font-medium text-foreground line-clamp-2 leading-tight">
+      <div className="p-2 sm:p-3 space-y-1 sm:space-y-2">
+        <h3 className="text-xs sm:text-sm font-medium text-foreground line-clamp-2 leading-tight">
           {title}
         </h3>
         
@@ -119,7 +119,7 @@ export const ProductCard = ({
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
-                className={`w-3 h-3 ${
+                className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${
                   i < Math.floor(rating)
                     ? "text-accent fill-current"
                     : "text-muted-foreground"
@@ -131,26 +131,26 @@ export const ProductCard = ({
         </div>
 
         {/* Price */}
-        <div className="flex items-center gap-2">
-          <span className="text-lg font-bold text-promo">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+          <span className="text-sm sm:text-lg font-bold text-promo">
             {salePrice.toLocaleString()} FCFA
           </span>
-          <span className="text-sm text-muted-foreground line-through">
+          <span className="text-xs sm:text-sm text-muted-foreground line-through">
             {originalPrice.toLocaleString()} FCFA
           </span>
         </div>
 
         {/* Action Buttons */}
-        <div className="space-y-2">
+        <div className="space-y-1 sm:space-y-2">
           {/* Desktop: Full buttons */}
           <div className="hidden sm:flex flex-col space-y-2">
             <Button 
               variant="promo" 
               size="sm" 
-              className="w-full"
+              className="w-full text-xs"
               onClick={handleAddToCart}
             >
-              <ShoppingCart className="w-4 h-4 mr-2" />
+              <ShoppingCart className="w-3 h-3 mr-1" />
               Ajouter au panier
             </Button>
             
@@ -170,15 +170,15 @@ export const ProductCard = ({
             />
           </div>
 
-          {/* Mobile: Icon buttons */}
-          <div className="flex sm:hidden justify-between gap-2">
+          {/* Mobile: Compact buttons */}
+          <div className="flex sm:hidden gap-1">
             <Button 
               variant="promo" 
               size="sm" 
-              className="flex-1"
+              className="flex-1 text-xs p-1.5"
               onClick={handleAddToCart}
             >
-              <ShoppingCart className="w-4 h-4" />
+              <ShoppingCart className="w-3 h-3" />
             </Button>
             
             <div onClick={(e) => e.stopPropagation()} className="flex-1">

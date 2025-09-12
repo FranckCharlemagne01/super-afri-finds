@@ -21,7 +21,7 @@ export const CategoryCard = ({
     // New image-based design for realistic product presentation
     return (
       <div 
-        className="relative overflow-hidden rounded-xl hover-lift cursor-pointer transition-all duration-300 hover:scale-105 group"
+        className="relative overflow-hidden rounded-lg sm:rounded-xl hover-lift cursor-pointer transition-all duration-300 hover:scale-105 group"
         onClick={onClick}
       >
         <div className="aspect-square relative">
@@ -31,8 +31,8 @@ export const CategoryCard = ({
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-3 text-center">
-            <h3 className="text-sm font-semibold text-white mb-1">{title}</h3>
+          <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 text-center">
+            <h3 className="text-xs sm:text-sm font-semibold text-white mb-1 line-clamp-2">{title}</h3>
             <p className="text-xs text-white/80">{itemCount} articles</p>
           </div>
         </div>

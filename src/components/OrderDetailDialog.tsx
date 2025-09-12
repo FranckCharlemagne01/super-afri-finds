@@ -92,34 +92,34 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-xs sm:max-w-2xl max-h-[90vh] overflow-y-auto mx-4">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <span>Détails de la Commande #{order.id.slice(-8)}</span>
+          <DialogTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <span className="text-sm sm:text-base">Commande #{order.id.slice(-8)}</span>
             <Badge variant={getStatusBadgeVariant(order.status)}>
               {statusLabels[order.status as keyof typeof statusLabels]}
             </Badge>
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Date de commande */}
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Calendar className="h-4 w-4" />
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+            <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
             <span>
               Commande passée le {format(new Date(order.created_at), 'dd MMMM yyyy à HH:mm', { locale: fr })}
             </span>
           </div>
 
           {/* Informations produit */}
-          <div className="p-4 bg-muted rounded-lg">
-            <div className="flex items-center gap-2 mb-3">
-              <Package className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold text-lg">Produit Commandé</h3>
+          <div className="p-3 sm:p-4 bg-muted rounded-lg">
+            <div className="flex items-center gap-2 mb-2 sm:mb-3">
+              <Package className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <h3 className="font-semibold text-sm sm:text-lg">Produit Commandé</h3>
             </div>
             <div className="space-y-2">
-              <p className="font-medium text-base">{order.product_title}</p>
-              <div className="flex justify-between text-sm text-muted-foreground">
+              <p className="font-medium text-sm sm:text-base">{order.product_title}</p>
+              <div className="flex justify-between text-xs sm:text-sm text-muted-foreground">
                 <span>Quantité: {order.quantity}</span>
                 <span>Prix unitaire: {order.product_price.toLocaleString()} FCFA</span>
               </div>
@@ -127,12 +127,12 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
           </div>
 
           {/* Informations client */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <User className="h-5 w-5 text-primary" />
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+              <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+                <User className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold">Informations Client</h3>
+              <h3 className="text-sm sm:text-lg font-semibold">Informations Client</h3>
             </div>
 
             {/* Nom et prénom */}

@@ -211,25 +211,25 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl h-[80vh] flex flex-col">
+      <DialogContent className="max-w-xs sm:max-w-2xl h-[80vh] flex flex-col mx-4">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-sm sm:text-base">
             {userType === 'seller' ? (
               <>
-                <User className="h-5 w-5" />
+                <User className="h-4 w-4 sm:h-5 sm:w-5" />
                 Chat avec {otherUserName}
               </>
             ) : (
               <>
-                <Store className="h-5 w-5" />
+                <Store className="h-4 w-4 sm:h-5 sm:w-5" />
                 Chat avec {otherUserName}
               </>
             )}
           </DialogTitle>
           
           {initialMessage.product && (
-            <div className="flex items-center gap-2 p-2 bg-muted rounded text-sm">
-              <Package className="h-4 w-4" />
+            <div className="flex items-center gap-2 p-2 bg-muted rounded text-xs sm:text-sm">
+              <Package className="h-3 w-3 sm:h-4 sm:w-4" />
               <span>Produit: {initialMessage.product.title}</span>
             </div>
           )}

@@ -189,11 +189,11 @@ const Index = () => {
       <header className="sticky top-0 z-50 bg-white shadow-lg border-b">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="md:hidden">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Button variant="ghost" size="icon" className="md:hidden p-2">
                 <Menu className="w-5 h-5" />
               </Button>
-              <h1 className="text-xl md:text-2xl font-bold gradient-text-primary">
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold gradient-text-primary">
                 Djassa
               </h1>
               <Badge className="gradient-accent text-xs px-2 py-1 hidden sm:inline-flex">
@@ -207,43 +207,43 @@ const Index = () => {
                 <input
                   type="text"
                   placeholder="Rechercher des produits..."
-                  className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
                 />
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="relative" onClick={handleFavoritesClick}>
-                <Heart className={`w-5 h-5 ${favoriteIds.length > 0 ? 'fill-current text-promo' : ''}`} />
+            <div className="flex items-center gap-1 sm:gap-2">
+              <Button variant="ghost" size="icon" className="relative p-2" onClick={handleFavoritesClick}>
+                <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${favoriteIds.length > 0 ? 'fill-current text-promo' : ''}`} />
                 {favoriteIds.length > 0 && (
-                  <Badge className="absolute -top-1 -right-1 bg-promo text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                    {favoriteIds.length}
+                  <Badge className="absolute -top-1 -right-1 bg-promo text-white text-xs w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center min-w-0 p-0">
+                    <span className="text-xs leading-none">{favoriteIds.length > 9 ? '9+' : favoriteIds.length}</span>
                   </Badge>
                 )}
               </Button>
-              <Button variant="ghost" size="icon" className="relative" onClick={handleCartClick}>
-                <ShoppingCart className="w-5 h-5" />
+              <Button variant="ghost" size="icon" className="relative p-2" onClick={handleCartClick}>
+                <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
                 {cartCount > 0 && (
-                  <Badge className="absolute -top-1 -right-1 bg-promo text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                    {cartCount}
+                  <Badge className="absolute -top-1 -right-1 bg-promo text-white text-xs w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center min-w-0 p-0">
+                    <span className="text-xs leading-none">{cartCount > 9 ? '9+' : cartCount}</span>
                   </Badge>
                 )}
               </Button>
-              <Button variant="ghost" size="icon" onClick={handleProfileClick}>
-                <User className={`w-5 h-5 ${user ? 'text-primary' : ''}`} />
+              <Button variant="ghost" size="icon" className="p-2" onClick={handleProfileClick}>
+                <User className={`w-4 h-4 sm:w-5 sm:h-5 ${user ? 'text-primary' : ''}`} />
               </Button>
               {isSuperAdmin() && (
                 <Button 
                   variant="outline" 
                   size="sm" 
                   onClick={() => navigate('/superadmin')}
-                  className="text-xs"
+                  className="text-xs hidden sm:flex"
                 >
                   Dashboard
                 </Button>
               )}
               {user && (
-                <Button variant="ghost" size="sm" onClick={signOut}>
+                <Button variant="ghost" size="sm" onClick={signOut} className="hidden sm:flex text-xs">
                   Déconnexion
                 </Button>
               )}
@@ -257,7 +257,7 @@ const Index = () => {
               <input
                 type="text"
                 placeholder="Rechercher..."
-                className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
               />
             </div>
           </div>
@@ -265,19 +265,19 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Hero Section */}
         <HeroSection />
 
         {/* Categories */}
-        <section className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-foreground">Catégories populaires</h2>
-            <Button variant="ghost" size="sm" onClick={handleViewAllCategories}>
+        <section className="mb-6 sm:mb-8">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h2 className="text-lg sm:text-xl font-bold text-foreground">Catégories populaires</h2>
+            <Button variant="ghost" size="sm" onClick={handleViewAllCategories} className="text-xs sm:text-sm">
               Voir tout
             </Button>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 sm:gap-3">
             {categories.map((category, index) => (
               <CategoryCard
                 key={index}
@@ -292,25 +292,25 @@ const Index = () => {
 
         {/* Flash Sales */}
         {flashSaleProducts.length > 0 && (
-          <section className="mb-8">
-            <div className="flex items-center gap-3 mb-4">
+          <section className="mb-6 sm:mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 gradient-primary rounded-full flex items-center justify-center">
-                  <span className="text-white text-lg">⚡</span>
+                <div className="w-6 h-6 sm:w-8 sm:h-8 gradient-primary rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm sm:text-lg">⚡</span>
                 </div>
-                <h2 className="text-xl font-bold text-foreground">Ventes Flash</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-foreground">Ventes Flash</h2>
               </div>
-              <Badge className="bg-promo text-promo-foreground animate-pulse-promo">
+              <Badge className="bg-promo text-promo-foreground animate-pulse-promo w-fit">
                 Limitées dans le temps
               </Badge>
-              <div className="ml-auto">
-                <Button variant="outline" size="sm" onClick={() => navigate('/flash-sales')}>
+              <div className="sm:ml-auto">
+                <Button variant="outline" size="sm" onClick={() => navigate('/flash-sales')} className="text-xs sm:text-sm">
                   Voir tout
                 </Button>
               </div>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
               {flashSaleProducts.slice(0, 6).map((product) => (
                 <ProductCard key={product.id} {...convertToProductCardProps(product)} />
               ))}
@@ -319,15 +319,15 @@ const Index = () => {
         )}
 
         {/* Recommended Products */}
-        <section className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-foreground">Recommandés pour vous</h2>
-            <Button variant="outline" size="sm" onClick={handleRefreshRecommendations}>
+        <section className="mb-6 sm:mb-8">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h2 className="text-lg sm:text-xl font-bold text-foreground">Recommandés pour vous</h2>
+            <Button variant="outline" size="sm" onClick={handleRefreshRecommendations} className="text-xs sm:text-sm">
               Actualiser
             </Button>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4" key={refreshKey}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4" key={refreshKey}>
             {shuffledProducts.slice(0, 12).map((product) => (
               <ProductCard key={`${product.id}-${refreshKey}`} {...convertToProductCardProps(product)} />
             ))}
@@ -335,15 +335,15 @@ const Index = () => {
         </section>
 
         {/* Promotional Banner */}
-        <section className="mb-8">
-          <div className="gradient-accent rounded-2xl p-6 text-center">
-            <h3 className="text-2xl font-bold text-foreground mb-2">
+        <section className="mb-6 sm:mb-8">
+          <div className="gradient-accent rounded-xl sm:rounded-2xl p-4 sm:p-6 text-center">
+            <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
               🎁 Parrainez vos amis et gagnez !
             </h3>
-            <p className="text-muted-foreground mb-4">
+            <p className="text-sm sm:text-base text-muted-foreground mb-4">
               Recevez 5,000 FCFA pour chaque ami qui passe sa première commande
             </p>
-            <Button variant="default" size="lg">
+            <Button variant="default" size="lg" className="w-full sm:w-auto">
               Commencer à parrainer
             </Button>
           </div>
@@ -351,27 +351,27 @@ const Index = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-secondary mt-12 py-8">
-        <div className="container mx-auto px-4 text-center">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+      <footer className="bg-secondary mt-8 sm:mt-12 py-6 sm:py-8">
+        <div className="container mx-auto px-3 sm:px-4 text-center">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 mb-4 sm:mb-6">
             <div>
-              <h4 className="font-semibold mb-2">Service Client</h4>
-              <p className="text-sm text-muted-foreground">Support 24/7</p>
+              <h4 className="font-semibold mb-2 text-sm sm:text-base">Service Client</h4>
+              <p className="text-xs sm:text-sm text-muted-foreground">Support 24/7</p>
             </div>
             <div>
-              <h4 className="font-semibold mb-2">Livraison</h4>
-              <p className="text-sm text-muted-foreground">2-5 jours en CI</p>
+              <h4 className="font-semibold mb-2 text-sm sm:text-base">Livraison</h4>
+              <p className="text-xs sm:text-sm text-muted-foreground">2-5 jours en CI</p>
             </div>
             <div>
-              <h4 className="font-semibold mb-2">Paiement</h4>
-              <p className="text-sm text-muted-foreground">Mobile Money, CB</p>
+              <h4 className="font-semibold mb-2 text-sm sm:text-base">Paiement</h4>
+              <p className="text-xs sm:text-sm text-muted-foreground">Mobile Money, CB</p>
             </div>
             <div>
-              <h4 className="font-semibold mb-2">Garantie</h4>
-              <p className="text-sm text-muted-foreground">Satisfait ou remboursé</p>
+              <h4 className="font-semibold mb-2 text-sm sm:text-base">Garantie</h4>
+              <p className="text-xs sm:text-sm text-muted-foreground">Satisfait ou remboursé</p>
             </div>
           </div>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-xs sm:text-sm text-muted-foreground">
             © 2024 Djassa - Votre marketplace de confiance en Côte d'Ivoire
           </div>
         </div>

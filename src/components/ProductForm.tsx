@@ -239,33 +239,25 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
         seller_id: user.id,
       };
 
-      let error;
-
       if (product?.id) {
-        // Update existing product
+        // Update existing product (no payment required)
         const { error: updateError } = await supabase
           .from('products')
           .update(productData)
           .eq('id', product.id);
-        error = updateError;
+        
+        if (updateError) throw updateError;
+
+        toast({
+          title: "✅ Produit modifié",
+          description: "Les modifications ont été enregistrées et sont maintenant visibles sur la plateforme",
+        });
+
+        onSave();
       } else {
-        // Create new product
-        const { error: insertError } = await supabase
-          .from('products')
-          .insert([productData]);
-        error = insertError;
+        // New product - initiate payment process
+        handlePublishWithPayment(productData);
       }
-
-      if (error) throw error;
-
-      toast({
-        title: product?.id ? "✅ Produit modifié" : "✅ Produit créé",
-        description: product?.id 
-          ? "Les modifications ont été enregistrées et sont maintenant visibles sur la plateforme"
-          : "Votre produit a été publié et est maintenant visible sur la plateforme",
-      });
-
-      onSave();
     } catch (error) {
       console.error('Error saving product:', error);
       toast({
@@ -275,6 +267,70 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePublishWithPayment = async (productData: any) => {
+    if (!user) return;
+
+    try {
+      // Get user profile for email
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profileError || !profile?.email) {
+        toast({
+          title: "Erreur",
+          description: "Impossible de récupérer votre email. Veuillez mettre à jour votre profil.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Initialize payment for article publication
+      const { data, error } = await supabase.functions.invoke('paystack-payment', {
+        body: {
+          action: 'initialize_payment',
+          user_id: user.id,
+          email: profile.email,
+          amount: 1000, // 1000 FCFA per article
+          payment_type: 'article_publication',
+          product_data: productData
+        }
+      });
+
+      if (error) {
+        console.error('Error initializing payment:', error);
+        toast({
+          title: "Erreur de paiement",
+          description: "Impossible d'initialiser le paiement. Veuillez réessayer.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!data?.data?.authorization_url) {
+        toast({
+          title: "Erreur de paiement",
+          description: "URL de paiement non disponible",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Redirect to Paystack payment page
+      window.location.href = data.data.authorization_url;
+      
+    } catch (error) {
+      console.error('Error initiating payment:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors du processus de paiement",
+        variant: "destructive",
+      });
     }
   };
 
@@ -633,7 +689,7 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
           disabled={loading || uploadingVideo || uploadingImages}
           className={isMobile ? "w-full" : ""}
         >
-          {loading ? 'Sauvegarde...' : uploadingImages ? 'Upload images...' : uploadingVideo ? 'Upload vidéo...' : (product?.id ? 'Modifier' : 'Créer')}
+          {loading ? 'Sauvegarde...' : uploadingImages ? 'Upload images...' : uploadingVideo ? 'Upload vidéo...' : (product?.id ? 'Modifier' : 'Publier (1000 FCFA)')}
         </Button>
       </div>
     </form>

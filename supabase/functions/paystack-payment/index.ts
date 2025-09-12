@@ -29,7 +29,7 @@ serve(async (req) => {
     const { action, ...payload } = await req.json();
 
     if (action === 'initialize_payment') {
-      const { user_id, email, amount = 500 } = payload; // 500 XOF default (FCFA)
+      const { user_id, email, amount = 1000, payment_type = 'article_publication', product_data } = payload; // 1000 XOF pour publication d'article
       
       console.log('Initializing payment for user:', user_id);
 
@@ -44,7 +44,9 @@ serve(async (req) => {
           paystack_reference: reference,
           amount,
           currency: 'XOF',
-          status: 'pending'
+          status: 'pending',
+          payment_type,
+          product_data
         });
 
       if (dbError) {
@@ -70,7 +72,8 @@ serve(async (req) => {
           callback_url: `${req.headers.get('origin')}/seller?payment=success&reference=${reference}`,
           metadata: {
             user_id,
-            product: 'Premium Seller Access'
+            payment_type,
+            product: payment_type === 'article_publication' ? 'Publication d\'article' : 'Premium Seller Access'
           }
         }),
       });
@@ -137,13 +140,26 @@ serve(async (req) => {
         });
       }
 
-        // Update premium status
-        const { error: updateError } = await supabase
-          .rpc('handle_premium_payment_success', {
-            _user_id: paymentRecord.user_id,
-            _paystack_reference: reference,
-            _amount: paystackData.data.amount / 100 // Convert from smallest currency unit
-          });
+        // Handle payment based on type
+        let updateError;
+        if (paymentRecord.payment_type === 'article_publication') {
+          // Publication d'article
+          updateError = (await supabase
+            .rpc('handle_article_payment_success', {
+              _user_id: paymentRecord.user_id,
+              _paystack_reference: reference,
+              _amount: paystackData.data.amount / 100,
+              _product_data: paymentRecord.product_data
+            })).error;
+        } else {
+          // Abonnement premium (legacy)
+          updateError = (await supabase
+            .rpc('handle_premium_payment_success', {
+              _user_id: paymentRecord.user_id,
+              _paystack_reference: reference,
+              _amount: paystackData.data.amount / 100
+            })).error;
+        }
 
       if (updateError) {
         console.error('Failed to update premium status:', updateError);
@@ -155,7 +171,9 @@ serve(async (req) => {
 
       return new Response(JSON.stringify({
         status: 'success',
-        message: 'Payment verified and premium access granted',
+        message: paymentRecord.payment_type === 'article_publication' 
+          ? 'Paiement vérifié et article publié avec succès' 
+          : 'Payment verified and premium access granted',
         data: paystackData.data
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

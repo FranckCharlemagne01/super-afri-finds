@@ -112,23 +112,33 @@ Mon compte > Abonnement > Choisir votre formule`
     for (const item of knowledgeBase) {
       const triggers = item.trigger.split('|');
       if (triggers.some(trigger => message.includes(trigger))) {
-        return item.response;
+        // Ajouter une question de relance
+        const followUpQuestions = [
+          '\n\n💡 Puis-je vous aider avec autre chose ?',
+          '\n\n🤔 Avez-vous d\'autres questions sur Djassa ?',
+          '\n\n✨ Souhaitez-vous que je vous guide sur une autre fonctionnalité ?',
+          '\n\n📱 Y a-t-il autre chose que vous aimeriez savoir ?'
+        ];
+        const randomFollowUp = followUpQuestions[Math.floor(Math.random() * followUpQuestions.length)];
+        return item.response + randomFollowUp;
       }
     }
 
     // Réponse par défaut si aucune correspondance
-    return `Merci pour votre question ! 🤔
+    return `Je n'ai pas encore cette réponse dans ma base de données. 🤔
 
-Je n'ai pas trouvé de réponse précise dans ma base de données. Pour une assistance personnalisée, vous pouvez :
+Voulez-vous contacter le support Djassa ?
 
-📧 Contacter notre équipe support par email
-💬 Nous écrire sur WhatsApp
-📞 Utiliser le bouton "Assistance" dans votre espace client
+📞 Support WhatsApp : +225 XX XX XX XX
+📧 Email : support@djassa.com
+💬 Chat en direct via votre espace client
 
-Notre équipe vous répondra rapidement ! 😊`;
+Notre équipe vous répondra rapidement ! 😊
+
+💡 Ou posez-moi une autre question, je serai ravi de vous aider !`;
   };
 
-  const simulateTyping = (callback: () => void, delay = 1500) => {
+  const simulateTyping = (callback: () => void, delay = 1200) => {
     setIsTyping(true);
     setTimeout(() => {
       setIsTyping(false);

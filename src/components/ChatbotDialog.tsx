@@ -18,6 +18,7 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
   const { messages, isTyping, sendMessage, selectQuickOption } = useChatbot();
   const { user } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const quickOptions = [
     { id: 'acheter', icon: ShoppingCart, label: 'Comment acheter', color: 'bg-primary' },
@@ -34,6 +35,16 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Autofocus sur l'input quand le dialog s'ouvre
+  useEffect(() => {
+    if (open && inputRef.current) {
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
 
   const handleSend = () => {
     if (message.trim()) {
@@ -83,6 +94,9 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
                   <p className="text-sm text-muted-foreground">
                     Bonjour {userName} ! 👋 Comment puis-je vous aider aujourd'hui ?
                   </p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    💬 Tapez votre question ou choisissez une option ci-dessous
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -114,11 +128,11 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
                     }`}>
                       {msg.sender === 'user' ? <User className="h-3 w-3 md:h-4 md:w-4" /> : <Bot className="h-3 w-3 md:h-4 md:w-4" />}
                     </div>
-                    <div className={`rounded-lg px-3 py-2 md:px-4 md:py-2 ${
-                      msg.sender === 'user'
-                        ? 'bg-primary text-primary-foreground ml-1 md:ml-2'
-                        : 'bg-secondary mr-1 md:mr-2'
-                    }`}>
+                     <div className={`rounded-lg px-3 py-2 md:px-4 md:py-2 ${
+                       msg.sender === 'user'
+                         ? 'bg-primary text-primary-foreground ml-1 md:ml-2'
+                         : 'bg-orange-100 border border-orange-200 mr-1 md:mr-2'
+                     }`}>
                       <p className="text-xs md:text-sm whitespace-pre-wrap leading-relaxed">{msg.text}</p>
                       {msg.timestamp && (
                         <p className={`text-xs mt-1 ${
@@ -156,11 +170,13 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
           <div className="p-3 md:p-4 border-t bg-background">
             <div className="flex gap-2">
               <Input
+                ref={inputRef}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Tapez votre message..."
                 className="flex-1 text-sm md:text-base"
+                autoComplete="off"
               />
               <Button onClick={handleSend} size="icon" disabled={!message.trim()} className="h-9 w-9 md:h-10 md:w-10">
                 <Send className="h-4 w-4" />

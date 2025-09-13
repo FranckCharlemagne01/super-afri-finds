@@ -53,12 +53,12 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md h-[600px] flex flex-col p-0 gap-0">
-        <DialogHeader className="bg-primary text-primary-foreground p-4 rounded-t-lg">
+      <DialogContent className="max-w-md md:max-w-sm lg:max-w-md h-[85vh] md:h-[500px] w-[95vw] md:w-auto flex flex-col p-0 gap-0 mx-auto">
+        <DialogHeader className="bg-primary text-primary-foreground p-3 md:p-4 rounded-t-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Bot className="h-6 w-6" />
-              <DialogTitle className="text-lg font-semibold">Assistant Djassa</DialogTitle>
+              <Bot className="h-5 w-5 md:h-6 md:w-6" />
+              <DialogTitle className="text-base md:text-lg font-semibold">Assistant Djassa</DialogTitle>
             </div>
             <Button
               variant="ghost"
@@ -72,13 +72,13 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
         </DialogHeader>
 
         <div className="flex-1 flex flex-col">
-          <ScrollArea className="flex-1 p-4">
+          <ScrollArea className="flex-1 p-3 md:p-4">
             {messages.length === 0 && (
-              <div className="space-y-4">
-                <div className="bg-card border rounded-lg p-4">
+              <div className="space-y-3 md:space-y-4">
+                <div className="bg-card border rounded-lg p-3 md:p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Bot className="h-5 w-5 text-primary" />
-                    <span className="font-medium">Assistant Djassa</span>
+                    <Bot className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+                    <span className="text-sm md:text-base font-medium">Assistant Djassa</span>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     Bonjour {userName} ! 👋 Comment puis-je vous aider aujourd'hui ?
@@ -86,7 +86,7 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-muted-foreground">Questions fréquentes :</p>
+                  <p className="text-xs md:text-sm font-medium text-muted-foreground">Questions fréquentes :</p>
                   <div className="grid grid-cols-1 gap-2">
                     {quickOptions.map((option) => (
                       <Button
@@ -94,10 +94,10 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
                         variant="outline"
                         size="sm"
                         onClick={() => selectQuickOption(option.id)}
-                        className="justify-start gap-2 h-auto p-3"
+                        className="justify-start gap-2 h-auto p-2 md:p-3 text-left"
                       >
-                        <option.icon className="h-4 w-4 text-primary" />
-                        <span className="text-sm">{option.label}</span>
+                        <option.icon className="h-3 w-3 md:h-4 md:w-4 text-primary flex-shrink-0" />
+                        <span className="text-xs md:text-sm">{option.label}</span>
                       </Button>
                     ))}
                   </div>
@@ -106,20 +106,20 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
             )}
 
             {messages.map((msg, index) => (
-              <div key={index} className={`mb-4 flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] ${msg.sender === 'user' ? 'order-2' : 'order-1'}`}>
+              <div key={index} className={`mb-3 md:mb-4 flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[85%] md:max-w-[80%] ${msg.sender === 'user' ? 'order-2' : 'order-1'}`}>
                   <div className={`flex items-start gap-2 ${msg.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      msg.sender === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                    <div className={`w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      msg.sender === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'
                     }`}>
-                      {msg.sender === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+                      {msg.sender === 'user' ? <User className="h-3 w-3 md:h-4 md:w-4" /> : <Bot className="h-3 w-3 md:h-4 md:w-4" />}
                     </div>
-                    <div className={`rounded-lg px-4 py-2 ${
+                    <div className={`rounded-lg px-3 py-2 md:px-4 md:py-2 ${
                       msg.sender === 'user'
-                        ? 'bg-primary text-primary-foreground ml-2'
-                        : 'bg-muted mr-2'
+                        ? 'bg-primary text-primary-foreground ml-1 md:ml-2'
+                        : 'bg-secondary mr-1 md:mr-2'
                     }`}>
-                      <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
+                      <p className="text-xs md:text-sm whitespace-pre-wrap leading-relaxed">{msg.text}</p>
                       {msg.timestamp && (
                         <p className={`text-xs mt-1 ${
                           msg.sender === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'
@@ -134,16 +134,16 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
             ))}
 
             {isTyping && (
-              <div className="mb-4 flex justify-start">
+              <div className="mb-3 md:mb-4 flex justify-start">
                 <div className="flex items-start gap-2">
-                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                    <Bot className="h-4 w-4" />
+                  <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-secondary flex items-center justify-center">
+                    <Bot className="h-3 w-3 md:h-4 md:w-4" />
                   </div>
-                  <div className="bg-muted rounded-lg px-4 py-2">
+                  <div className="bg-secondary rounded-lg px-3 py-2 md:px-4 md:py-2">
                     <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-muted-foreground rounded-full animate-bounce"></div>
+                      <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                     </div>
                   </div>
                 </div>
@@ -153,16 +153,16 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
             <div ref={messagesEndRef} />
           </ScrollArea>
 
-          <div className="p-4 border-t">
+          <div className="p-3 md:p-4 border-t bg-background">
             <div className="flex gap-2">
               <Input
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Tapez votre message..."
-                className="flex-1"
+                className="flex-1 text-sm md:text-base"
               />
-              <Button onClick={handleSend} size="icon" disabled={!message.trim()}>
+              <Button onClick={handleSend} size="icon" disabled={!message.trim()} className="h-9 w-9 md:h-10 md:w-10">
                 <Send className="h-4 w-4" />
               </Button>
             </div>

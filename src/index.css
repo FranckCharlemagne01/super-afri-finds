@@ -29,6 +29,10 @@ All colors MUST be HSL.
     --promo: 0 84% 60%; /* Red for urgent deals #E53E3E */
     --promo-foreground: 0 0% 100%;
     
+    /* Orange dark background for banner */
+    --orange-dark: 18 100% 35%; /* Dark orange background */
+    --orange-dark-foreground: 0 0% 100%;
+    
     /* Success/Trust colors */
     --success: 134 61% 41%; /* Green for trust badges #38A169 */
     --success-foreground: 0 0% 100%;
@@ -36,6 +40,10 @@ All colors MUST be HSL.
     /* Accent colors */
     --accent: 51 100% 50%; /* Gold yellow #FFD700 */
     --accent-foreground: 20 14.3% 4.1%;
+    
+    /* Gold for countdown */
+    --gold: 45 100% 55%; /* Bright gold for countdown */
+    --gold-foreground: 20 14.3% 4.1%;
 
     /* Secondary colors */
     --secondary: 20 5.9% 90%;
@@ -174,6 +182,19 @@ All colors MUST be HSL.
     50% { opacity: 0.8; }
   }
   
+  @keyframes countdown-flash {
+    0%, 100% { 
+      background-color: hsl(45 100% 55%);
+      color: hsl(20 14.3% 4.1%);
+      transform: scale(1);
+    }
+    50% { 
+      background-color: hsl(20 14.3% 4.1%);
+      color: hsl(45 100% 55%);
+      transform: scale(1.05);
+    }
+  }
+  
   @keyframes shake {
     0%, 100% { transform: translateX(0); }
     25% { transform: translateX(-2px); }
@@ -190,6 +211,10 @@ All colors MUST be HSL.
   
   .animate-shake {
     animation: shake 0.5s ease-in-out;
+  }
+  
+  .animate-countdown-flash {
+    animation: countdown-flash 1.5s ease-in-out infinite;
   }
   
   .hover-lift {

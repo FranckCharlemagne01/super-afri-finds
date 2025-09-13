@@ -31,7 +31,7 @@ export const PromoBanner = () => {
   }, []);
 
   return (
-    <div className="bg-gradient-primary text-white relative overflow-hidden">
+    <div className="bg-orange-dark text-white relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-0 left-0 w-20 h-20 bg-white rounded-full animate-bounce-subtle transform -translate-x-10 -translate-y-10"></div>
@@ -55,21 +55,21 @@ export const PromoBanner = () => {
 
           {/* Center - Trial message for sellers */}
           <div className="flex items-center gap-3 bg-white/10 rounded-xl px-6 py-4 backdrop-blur-sm border border-white/20">
-            <Gift className="w-8 h-8 text-amber-300 animate-pulse-promo" />
+            <Gift className="w-8 h-8 text-gold animate-pulse-promo" />
             <div className="text-center">
-              <p className="font-bold text-lg">
-                🎁 Vendeurs : Essai gratuit de 28 jours
+              <p className="font-bold text-lg text-white">
+                🎁 Vendeurs : Profitez de 28 jours d'essai gratuit
               </p>
               <div className="flex items-center gap-2 mt-1">
-                <Clock className="w-4 h-4" />
-                <span className="text-sm">Il vous reste</span>
-                <Badge variant="secondary" className="bg-amber-500 text-black font-bold px-2 py-1 animate-pulse-promo">
+                <Clock className="w-4 h-4 text-white" />
+                <span className="text-sm text-white">Il vous reste</span>
+                <Badge className="bg-gold text-black font-bold px-3 py-1 animate-countdown-flash border-0">
                   {timeLeft.days} jours
                 </Badge>
-                <span className="text-xs opacity-80">
+                <span className="text-xs text-white/80 animate-countdown-flash">
                   {String(timeLeft.hours).padStart(2, "0")}:
                   {String(timeLeft.minutes).padStart(2, "0")}:
-                  {String(timeLeft.seconds).padStart(2, "0")}
+                  {String(timeLeft.seconds).padStart(2, "0")} ⏳
                 </span>
               </div>
             </div>

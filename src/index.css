@@ -53,8 +53,6 @@ All colors MUST be HSL.
 
     --radius: 0.5rem;
 
-    --radius: 0.5rem;
-
     --sidebar-background: 0 0% 98%;
 
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -190,6 +188,21 @@ All colors MUST be HSL.
   
   .animate-shake {
     animation: shake 0.5s ease-in-out;
+  }
+  
+  @keyframes flash-gold-black {
+    0%, 100% { 
+      color: hsl(51 100% 50%); 
+      text-shadow: 0 0 10px hsl(51 100% 50% / 0.5);
+    }
+    50% { 
+      color: hsl(0 0% 0%); 
+      text-shadow: 0 0 10px hsl(0 0% 0% / 0.3);
+    }
+  }
+  
+  .animate-flash-gold-black {
+    animation: flash-gold-black 1.5s ease-in-out infinite;
   }
   
   .hover-lift {

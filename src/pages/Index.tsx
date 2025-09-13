@@ -2,6 +2,7 @@ import { HeroSection } from "@/components/HeroSection";
 import { ProductCard } from "@/components/ProductCard";
 import { CategoryCard } from "@/components/CategoryCard";
 import PromoBanner from "@/components/PromoBanner";
+import { FloatingChatButton } from "@/components/FloatingChatButton";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -353,6 +354,9 @@ const Index = () => {
           </div>
         </section>
       </main>
+
+      {/* Floating Chat Button */}
+      <FloatingChatButton />
 
       {/* Footer */}
       <footer className="bg-secondary mt-8 sm:mt-12 py-6 sm:py-8">

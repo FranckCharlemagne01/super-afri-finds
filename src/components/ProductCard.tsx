@@ -109,7 +109,7 @@ export const ProductCard = ({
 
       {/* Product Info */}
       <div className="p-2 sm:p-3 space-y-1 sm:space-y-2">
-        <h3 className="text-xs sm:text-sm font-medium text-foreground line-clamp-2 leading-tight">
+        <h3 className="text-xs sm:text-sm md:text-base font-medium text-foreground line-clamp-2 leading-tight min-h-[2.5rem] sm:min-h-[3rem]">
           {title}
         </h3>
         
@@ -131,8 +131,8 @@ export const ProductCard = ({
         </div>
 
         {/* Price */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-          <span className="text-sm sm:text-lg font-bold text-promo">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-1 md:gap-2">
+          <span className="text-sm sm:text-base md:text-lg font-bold text-promo">
             {salePrice.toLocaleString()} FCFA
           </span>
           <span className="text-xs sm:text-sm text-muted-foreground line-through">

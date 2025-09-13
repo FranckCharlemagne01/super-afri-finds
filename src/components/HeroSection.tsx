@@ -13,7 +13,7 @@ export const HeroSection = () => {
       <img 
         src={heroBanner} 
         alt="Promotions exceptionnelles" 
-        className="w-full h-40 sm:h-48 md:h-64 object-cover"
+        className="w-full h-32 sm:h-40 md:h-48 lg:h-64 object-cover"
       />
       
       <div className="absolute inset-0 flex flex-col justify-center p-4 sm:p-6 text-white">
@@ -25,11 +25,11 @@ export const HeroSection = () => {
             </span>
           </div>
           
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 leading-tight">
-            Jusqu'à <span className="text-accent text-2xl sm:text-3xl md:text-4xl">85%</span> de réduction
+          <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-2 leading-tight">
+            Jusqu'à <span className="text-accent text-xl sm:text-2xl md:text-3xl lg:text-4xl">85%</span> de réduction
           </h1>
           
-          <p className="text-white/90 mb-3 sm:mb-4 text-xs sm:text-sm">
+          <p className="text-white/90 mb-3 sm:mb-4 text-xs sm:text-sm md:text-base line-clamp-2 sm:line-clamp-none">
             Des milliers de produits à prix incroyables !
             Livraison rapide en Côte d'Ivoire.
           </p>

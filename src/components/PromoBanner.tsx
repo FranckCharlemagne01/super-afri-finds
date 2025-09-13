@@ -1,37 +1,16 @@
-import { useState, useEffect } from "react";
-import { Clock, ShoppingCart, Gift } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Clock, ShoppingCart, Gift, Zap } from "lucide-react";
+import { CountdownTimer } from "@/components/CountdownTimer";
+import { Button } from "@/components/ui/button";
 
 export const PromoBanner = () => {
-  const [timeLeft, setTimeLeft] = useState({
-    days: 28,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
-
-  // Simuler un compte à rebours (en production, cela devrait être basé sur une vraie date)
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev.seconds > 0) {
-          return { ...prev, seconds: prev.seconds - 1 };
-        } else if (prev.minutes > 0) {
-          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
-        } else if (prev.hours > 0) {
-          return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        } else if (prev.days > 0) {
-          return { ...prev, days: prev.days - 1, hours: 23, minutes: 59, seconds: 59 };
-        }
-        return prev;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
+  // Set countdown to 28 days from now for trial period
+  const endTime = new Date(Date.now() + 28 * 24 * 60 * 60 * 1000);
 
   return (
     <div className="bg-orange-dark text-white relative overflow-hidden">
+      {/* Gradient overlay for depth */}
+      <div className="absolute inset-0 bg-gradient-to-r from-orange-dark via-orange-dark/95 to-orange-dark opacity-95" />
+      
       {/* Animated background elements */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-0 left-0 w-20 h-20 bg-white rounded-full animate-bounce-subtle transform -translate-x-10 -translate-y-10"></div>
@@ -40,53 +19,58 @@ export const PromoBanner = () => {
       </div>
       
       <div className="container mx-auto px-4 py-6 relative">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
           
           {/* Left side - Main message */}
           <div className="flex-1 text-center lg:text-left">
-            <div className="flex items-center justify-center lg:justify-start gap-2 mb-2">
-              <ShoppingCart className="w-6 h-6 animate-bounce-subtle" />
-              <span className="text-xl font-bold">Le Djassa</span>
+            <div className="flex items-center justify-center lg:justify-start gap-2 mb-3">
+              <ShoppingCart className="w-6 h-6 text-accent animate-bounce-subtle" />
+              <span className="text-xl font-bold text-white">Le Djassa</span>
             </div>
-            <p className="text-lg lg:text-xl font-semibold mb-2">
-              Achetez et revendez en toute simplicité, sécurité et sans bouger de chez vous !
-            </p>
+            <h1 className="text-lg lg:text-xl font-bold mb-4 text-white leading-tight">
+              🛒 Achetez et revendez en toute simplicité, sécurité et sans bouger de chez vous !
+            </h1>
           </div>
 
-          {/* Center - Trial message for sellers */}
-          <div className="flex items-center gap-3 bg-white/10 rounded-xl px-6 py-4 backdrop-blur-sm border border-white/20">
-            <Gift className="w-8 h-8 text-gold animate-pulse-promo" />
+          {/* Center - Professional trial message */}
+          <div className="bg-white/15 rounded-xl px-6 py-4 backdrop-blur-sm border border-white/30 shadow-lg">
             <div className="text-center">
-              <p className="font-bold text-lg text-white">
-                🎁 Vendeurs : Profitez de 28 jours d'essai gratuit
-              </p>
-              <div className="flex items-center gap-2 mt-1">
-                <Clock className="w-4 h-4 text-white" />
-                <span className="text-sm text-white">Il vous reste</span>
-                <Badge className="bg-gold text-black font-bold px-3 py-1 animate-countdown-flash border-0">
-                  {timeLeft.days} jours
-                </Badge>
-                <span className="text-xs text-white/80 animate-countdown-flash">
-                  {String(timeLeft.hours).padStart(2, "0")}:
-                  {String(timeLeft.minutes).padStart(2, "0")}:
-                  {String(timeLeft.seconds).padStart(2, "0")} ⏳
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Zap className="w-5 h-5 text-accent animate-bounce-subtle" />
+                <span className="text-accent font-bold text-sm uppercase tracking-wider">
+                  OFFRE EXCLUSIVE
                 </span>
+              </div>
+              
+              <p className="font-bold text-lg text-white mb-3">
+                🎁 Vendeurs : <span className="text-accent">28 jours d'essai gratuit</span>
+              </p>
+              
+              <div className="scale-90 origin-center">
+                <CountdownTimer 
+                  endTime={endTime}
+                  onExpire={() => console.log("Période d'essai expirée!")}
+                />
               </div>
             </div>
           </div>
 
           {/* Right side - Call to action */}
           <div className="text-center lg:text-right">
-            <div className="inline-flex items-center gap-2 bg-white text-primary px-6 py-3 rounded-full font-bold hover-lift transition-all duration-300 cursor-pointer">
-              <span>Commencer maintenant</span>
-              <ShoppingCart className="w-5 h-5" />
-            </div>
+            <Button 
+              variant="accent" 
+              size="lg" 
+              className="shadow-lg hover-lift transition-all duration-300"
+            >
+              <ShoppingCart className="w-5 h-5 mr-2" />
+              Commencer maintenant
+            </Button>
           </div>
         </div>
       </div>
       
       {/* Bottom accent line */}
-      <div className="h-1 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+      <div className="h-1 bg-gradient-to-r from-transparent via-accent/60 to-transparent"></div>
     </div>
   );
 };

@@ -3,6 +3,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { CategoryCard } from "@/components/CategoryCard";
 import PromoBanner from "@/components/PromoBanner";
 import { FloatingChatButton } from "@/components/FloatingChatButton";
+import FAQ from "@/components/FAQ";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -357,6 +358,9 @@ const Index = () => {
 
       {/* Floating Chat Button */}
       <FloatingChatButton />
+
+      {/* FAQ Section */}
+      <FAQ />
 
       {/* Footer */}
       <footer className="bg-secondary mt-8 sm:mt-12 py-6 sm:py-8">

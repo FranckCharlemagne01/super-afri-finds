@@ -4,6 +4,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 
 const FAQ = () => {
   const faqCategories = [
@@ -136,30 +142,41 @@ const FAQ = () => {
           </p>
         </div>
         
-        <div className="max-w-4xl mx-auto">
-          <Accordion type="single" collapsible className="space-y-4">
-            {faqCategories.map((category, categoryIndex) => (
-              <div key={category.category} className="space-y-2">
-                <h3 className="text-lg font-semibold text-primary mb-3 border-l-4 border-primary pl-4">
+        <div className="max-w-6xl mx-auto">
+          <Tabs defaultValue="Commandes" className="w-full">
+            <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 mb-8 h-auto p-1 bg-muted/50">
+              {faqCategories.map((category) => (
+                <TabsTrigger
+                  key={category.category}
+                  value={category.category}
+                  className="text-xs sm:text-sm font-medium py-2 px-2 sm:px-4 data-[state=active]:bg-background data-[state=active]:text-foreground"
+                >
                   {category.category}
-                </h3>
-                {category.questions.map((faq, index) => (
-                  <AccordionItem
-                    key={`${categoryIndex}-${index}`}
-                    value={`${categoryIndex}-${index}`}
-                    className="border rounded-lg px-4 bg-card hover:bg-accent/5 transition-colors"
-                  >
-                    <AccordionTrigger className="text-left font-medium hover:no-underline">
-                      {faq.question}
-                    </AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground leading-relaxed pb-4">
-                      {faq.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </div>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            
+            {faqCategories.map((category) => (
+              <TabsContent key={category.category} value={category.category} className="mt-0">
+                <Accordion type="single" collapsible className="space-y-3">
+                  {category.questions.map((faq, index) => (
+                    <AccordionItem
+                      key={index}
+                      value={`${category.category}-${index}`}
+                      className="border rounded-lg bg-card hover:bg-accent/5 transition-colors"
+                    >
+                      <AccordionTrigger className="text-left font-medium hover:no-underline px-4 py-3">
+                        {faq.question}
+                      </AccordionTrigger>
+                      <AccordionContent className="text-muted-foreground leading-relaxed px-4 pb-4">
+                        {faq.answer}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </TabsContent>
             ))}
-          </Accordion>
+          </Tabs>
         </div>
 
         <div className="text-center mt-8 pt-6 border-t">

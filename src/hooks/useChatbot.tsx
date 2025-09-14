@@ -109,6 +109,19 @@ Mon compte > Abonnement > Choisir votre formule`
   const findAnswer = (userMessage: string): string => {
     const message = userMessage.toLowerCase();
     
+    // Détecter les remerciements
+    const thankYouTriggers = ['merci', 'thanks', 'thank you', 'merci beaucoup', 'merci infiniment', 'merci bien'];
+    if (thankYouTriggers.some(trigger => message.includes(trigger))) {
+      const politeResponses = [
+        'Avec plaisir 😊 ! Je suis là pour vous aider à profiter pleinement de Djassa.',
+        'Merci à vous 🙏. N\'hésitez pas à revenir vers moi si vous avez d\'autres questions.',
+        'Toujours à votre service 💡 ! Bonne visite sur Djassa.',
+        'C\'est un plaisir de vous aider 🌟 ! Djassa est là pour faciliter vos achats et ventes.',
+        'Je vous en prie 😊 ! L\'équipe Djassa et moi sommes ravis de vous accompagner.'
+      ];
+      return politeResponses[Math.floor(Math.random() * politeResponses.length)];
+    }
+    
     for (const item of knowledgeBase) {
       const triggers = item.trigger.split('|');
       if (triggers.some(trigger => message.includes(trigger))) {

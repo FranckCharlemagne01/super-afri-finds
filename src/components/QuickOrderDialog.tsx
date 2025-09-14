@@ -105,13 +105,13 @@ export const QuickOrderDialog = ({
           size="sm"
         >
           <ShoppingCart className="w-4 h-4" />
-          {!iconOnly && <span className="ml-2">Commander directement</span>}
+          {!iconOnly && <span className="ml-2">Commander</span>}
           {iconOnly && <span className="ml-2">Commander</span>}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Commander directement</DialogTitle>
+          <DialogTitle>Commander</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">

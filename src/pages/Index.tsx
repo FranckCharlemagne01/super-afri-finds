@@ -132,14 +132,14 @@ const Index = () => {
     console.log('Recommandations actualisées');
   };
   const categories = [
-    { title: "Téléphones & Tablettes", itemCount: 1250, image: categoryPhones, slug: "telephones-tablettes" },
-    { title: "Électroménager / TV & Audio", itemCount: 890, image: categoryElectronics, slug: "electromenager-tv-audio" },
-    { title: "Mode", itemCount: 1450, image: categoryFashion, slug: "mode" },
-    { title: "Maison & Décoration", itemCount: 1100, image: categoryHome, slug: "maison-decoration" },
-    { title: "Beauté & Soins personnels", itemCount: 675, image: categoryBeauty, slug: "beaute-soins" },
-    { title: "Épicerie & Produits alimentaires", itemCount: 820, image: categoryGrocery, slug: "epicerie-alimentaire" },
-    { title: "Auto & Accessoires", itemCount: 340, image: categoryAuto, slug: "auto-accessoires" },
-    { title: "Chaussures", itemCount: 540, image: categoryFashion, slug: "chaussures" },
+    { title: "Téléphones & Tablettes", itemCount: 1250, image: categoryPhones, slug: "Téléphones & Tablettes" },
+    { title: "Électroménager / TV & Audio", itemCount: 890, image: categoryElectronics, slug: "Électroménager" },
+    { title: "Vêtements & Chaussures", itemCount: 1450, image: categoryFashion, slug: "Mode" },
+    { title: "Maison & Décoration", itemCount: 1100, image: categoryHome, slug: "Maison" },
+    { title: "Beauté & Soins personnels", itemCount: 675, image: categoryBeauty, slug: "Beauté" },
+    { title: "Épicerie & Produits alimentaires", itemCount: 820, image: categoryGrocery, slug: "Épicerie" },
+    { title: "Auto & Accessoires", itemCount: 340, image: categoryAuto, slug: "Auto" },
+    { title: "Sport & Loisirs", itemCount: 540, image: categoryElectronics, slug: "Sport" },
   ];
   
   // Use the real products from data file with correct UUIDs

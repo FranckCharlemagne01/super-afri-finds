@@ -39,11 +39,15 @@ const CategoryPage = () => {
   const fetchCategoryProducts = async () => {
     try {
       setLoading(true);
+      
+      // Decode the URL parameter
+      const decodedCategoryName = decodeURIComponent(categoryName || '');
+      
       const { data, error } = await supabase
         .from('products')
         .select('*')
         .eq('is_active', true)
-        .ilike('category', `%${categoryName}%`)
+        .ilike('category', `%${decodedCategoryName}%`)
         .order('created_at', { ascending: false });
       
       if (error) {

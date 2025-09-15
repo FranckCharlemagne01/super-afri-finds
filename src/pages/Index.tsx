@@ -3,6 +3,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { CategoryCard } from "@/components/CategoryCard";
 import PromoBanner from "@/components/PromoBanner";
 import { FloatingChatButton } from "@/components/FloatingChatButton";
+import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 import FAQ from "@/components/FAQ";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -197,7 +198,13 @@ const Index = () => {
               <Button variant="ghost" size="icon" className="md:hidden p-1.5 sm:p-2">
                 <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
-              <h1 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold gradient-text-primary">
+              <h1 
+                className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold gradient-text-primary cursor-pointer transition-transform hover:scale-105" 
+                onClick={() => {
+                  navigate('/');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              >
                 Djassa
               </h1>
               <Badge className="gradient-accent text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 hidden sm:inline-flex">
@@ -357,8 +364,6 @@ const Index = () => {
         </section>
       </main>
 
-      {/* Floating Chat Button */}
-      <FloatingChatButton />
 
       {/* FAQ Section */}
       <FAQ />
@@ -389,6 +394,10 @@ const Index = () => {
           </div>
         </div>
       </footer>
+      
+      {/* Floating Buttons */}
+      <FloatingChatButton />
+      <ScrollToTopButton />
     </div>
   );
 };

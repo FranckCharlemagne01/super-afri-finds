@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard } from "@/components/ProductCard";
+import { SearchBar } from "@/components/SearchBar";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Search } from "lucide-react";
 
@@ -78,10 +79,77 @@ const CategoryPage = () => {
     videoUrl: product.video_url
   });
 
-  const filteredProducts = products.filter(product =>
-    product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.description?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Fonction pour normaliser le text et tolérer les fautes d'orthographe
+  const normalizeText = (text: string) => {
+    return text
+      .toLowerCase()
+      .replace(/[àáâãäå]/g, 'a')
+      .replace(/[èéêë]/g, 'e')
+      .replace(/[ìíîï]/g, 'i')
+      .replace(/[òóôõö]/g, 'o')
+      .replace(/[ùúûü]/g, 'u')
+      .replace(/[ç]/g, 'c')
+      .replace(/[ñ]/g, 'n');
+  };
+
+  // Fonction pour calculer la distance de Levenshtein (tolérance aux fautes)
+  const levenshteinDistance = (str1: string, str2: string): number => {
+    const matrix = [];
+    for (let i = 0; i <= str2.length; i++) {
+      matrix[i] = [i];
+    }
+    for (let j = 0; j <= str1.length; j++) {
+      matrix[0][j] = j;
+    }
+    for (let i = 1; i <= str2.length; i++) {
+      for (let j = 1; j <= str1.length; j++) {
+        if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1,
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j] + 1
+          );
+        }
+      }
+    }
+    return matrix[str2.length][str1.length];
+  };
+
+  const filteredProducts = products.filter(product => {
+    if (!searchTerm.trim()) return true;
+
+    const normalizedQuery = normalizeText(searchTerm);
+    const queryWords = normalizedQuery.split(' ').filter(word => word.length > 0);
+    
+    const normalizedTitle = normalizeText(product.title);
+    const normalizedDescription = normalizeText(product.description || '');
+    
+    // Recherche exacte d'abord
+    for (const word of queryWords) {
+      if (normalizedTitle.includes(word) || normalizedDescription.includes(word)) {
+        return true;
+      }
+    }
+
+    // Recherche avec tolérance aux fautes (distance max de 2)
+    const titleWords = normalizedTitle.split(' ');
+    const descWords = normalizedDescription.split(' ');
+    
+    for (const queryWord of queryWords) {
+      if (queryWord.length < 3) continue; // Skip très courts mots
+      
+      const allWords = [...titleWords, ...descWords];
+      for (const word of allWords) {
+        if (word.length >= 3 && levenshteinDistance(queryWord, word) <= 2) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  });
 
   if (loading) {
     return (
@@ -119,14 +187,11 @@ const CategoryPage = () => {
       <main className="container mx-auto px-4 py-6">
         {/* Search Bar */}
         <div className="mb-6">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <input
-              type="text"
+          <div className="max-w-md">
+            <SearchBar 
               placeholder="Rechercher dans cette catégorie..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              onSearch={(term) => setSearchTerm(term)}
+              showResults={false}
             />
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { HeroSection } from "@/components/HeroSection";
 import { ProductCard } from "@/components/ProductCard";
 import { CategoryCard } from "@/components/CategoryCard";
+import { SearchBar } from "@/components/SearchBar";
 import PromoBanner from "@/components/PromoBanner";
 import { FloatingChatButton } from "@/components/FloatingChatButton";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
@@ -213,14 +214,7 @@ const Index = () => {
             </div>
             
             <div className="flex-1 max-w-md mx-4 hidden md:block">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <input
-                  type="text"
-                  placeholder="Rechercher des produits..."
-                  className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-                />
-              </div>
+              <SearchBar placeholder="Rechercher des produits..." />
             </div>
             
             <div className="flex items-center gap-0.5 sm:gap-1 md:gap-2">
@@ -263,14 +257,7 @@ const Index = () => {
           
           {/* Mobile search */}
           <div className="mt-3 md:hidden">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <input
-                type="text"
-                placeholder="Rechercher..."
-                className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-              />
-            </div>
+            <SearchBar placeholder="Rechercher..." />
           </div>
         </div>
       </header>
@@ -284,7 +271,7 @@ const Index = () => {
         <PromoBanner />
 
         {/* Categories */}
-        <section className="mb-6 sm:mb-8">
+        <section id="popular-categories" className="mb-6 sm:mb-8">
           <div className="flex items-center justify-between mb-3 sm:mb-4">
             <h2 className="text-lg sm:text-xl font-bold text-foreground">Catégories populaires</h2>
             <Button variant="ghost" size="sm" onClick={handleViewAllCategories} className="text-xs sm:text-sm">

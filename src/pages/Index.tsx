@@ -132,13 +132,14 @@ const Index = () => {
     console.log('Recommandations actualisées');
   };
   const categories = [
-    { title: "Téléphones & Tablettes", itemCount: 1250, image: categoryPhones },
-    { title: "Électroménager / TV & Audio", itemCount: 890, image: categoryElectronics },
-    { title: "Mode", itemCount: 1450, image: categoryFashion },
-    { title: "Maison & Décoration", itemCount: 1100, image: categoryHome },
-    { title: "Beauté & Soins personnels", itemCount: 675, image: categoryBeauty },
-    { title: "Épicerie & Produits alimentaires", itemCount: 820, image: categoryGrocery },
-    { title: "Auto & Accessoires", itemCount: 340, image: categoryAuto },
+    { title: "Téléphones & Tablettes", itemCount: 1250, image: categoryPhones, slug: "telephones-tablettes" },
+    { title: "Électroménager / TV & Audio", itemCount: 890, image: categoryElectronics, slug: "electromenager-tv-audio" },
+    { title: "Mode", itemCount: 1450, image: categoryFashion, slug: "mode" },
+    { title: "Maison & Décoration", itemCount: 1100, image: categoryHome, slug: "maison-decoration" },
+    { title: "Beauté & Soins personnels", itemCount: 675, image: categoryBeauty, slug: "beaute-soins" },
+    { title: "Épicerie & Produits alimentaires", itemCount: 820, image: categoryGrocery, slug: "epicerie-alimentaire" },
+    { title: "Auto & Accessoires", itemCount: 340, image: categoryAuto, slug: "auto-accessoires" },
+    { title: "Chaussures", itemCount: 540, image: categoryFashion, slug: "chaussures" },
   ];
   
   // Use the real products from data file with correct UUIDs
@@ -290,7 +291,7 @@ const Index = () => {
                 title={category.title}
                 itemCount={category.itemCount}
                 image={category.image}
-                onClick={() => console.log(`Catégorie ${category.title} sélectionnée`)}
+                onClick={() => navigate(`/category/${category.slug}`)}
               />
             ))}
           </div>

@@ -14,6 +14,7 @@ import Cart from "./pages/Cart";
 import Favorites from "./pages/Favorites";
 import FlashSales from "./pages/FlashSales";
 import MyOrders from "./pages/MyOrders";
+import CategoryPage from "./pages/CategoryPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/favorites" element={<Favorites />} />
             <Route path="/flash-sales" element={<FlashSales />} />
             <Route path="/my-orders" element={<MyOrders />} />
+            <Route path="/category/:categoryName" element={<CategoryPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

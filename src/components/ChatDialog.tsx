@@ -3,10 +3,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Send, User, Store, Package } from 'lucide-react';
+import { Send, User, Store, Package, Paperclip, Image as ImageIcon, Video, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -17,6 +18,9 @@ interface Message {
   product_id?: string;
   subject?: string;
   content: string;
+  media_url?: string;
+  media_type?: 'image' | 'video';
+  media_name?: string;
   is_read: boolean;
   created_at: string;
 }
@@ -49,8 +53,11 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [otherUserInfo, setOtherUserInfo] = useState<{ full_name?: string; email?: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open && initialMessage) {
@@ -78,7 +85,10 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
           filter: `or(and(sender_id.eq.${user?.id},recipient_id.eq.${getOtherUserId()}),and(sender_id.eq.${getOtherUserId()},recipient_id.eq.${user?.id}))`
         },
         (payload) => {
-          const newMsg = payload.new as Message;
+          const newMsg = {
+            ...payload.new,
+            media_type: payload.new.media_type as 'image' | 'video' | undefined
+          } as Message;
           setMessages(prev => [...prev, newMsg]);
           
           // Mark as read if I'm the recipient
@@ -113,7 +123,10 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      setMessages(data || []);
+      setMessages((data || []).map(msg => ({
+        ...msg,
+        media_type: msg.media_type as 'image' | 'video' | undefined
+      })));
 
       // Mark unread messages as read
       const unreadMessages = data?.filter(msg => 
@@ -158,11 +171,57 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
     }
   };
 
-  const sendMessage = async () => {
-    if (!newMessage.trim() || !initialMessage || !user) return;
+  const uploadFile = async (file: File): Promise<string | null> => {
+    if (!user) return null;
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      
+      const { data, error } = await supabase.storage
+        .from('chat-media')
+        .upload(fileName, file);
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('chat-media')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'uploader le fichier",
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const sendMessage = async (mediaFile?: File) => {
+    if ((!newMessage.trim() && !mediaFile) || !initialMessage || !user) return;
 
     setSending(true);
     try {
+      let mediaUrl = null;
+      let mediaType = null;
+      let mediaName = null;
+
+      if (mediaFile) {
+        mediaUrl = await uploadFile(mediaFile);
+        if (!mediaUrl) {
+          setSending(false);
+          return;
+        }
+        mediaType = mediaFile.type.startsWith('image/') ? 'image' : 'video';
+        mediaName = mediaFile.name;
+      }
+
       const { error } = await supabase
         .from('messages')
         .insert([{
@@ -170,12 +229,16 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
           recipient_id: getOtherUserId(),
           product_id: initialMessage.product_id || null,
           subject: `Re: ${initialMessage.subject || 'Message'}`,
-          content: newMessage.trim(),
+          content: newMessage.trim() || (mediaFile ? `📎 ${mediaFile.name}` : ''),
+          media_url: mediaUrl,
+          media_type: mediaType,
+          media_name: mediaName,
         }]);
 
       if (error) throw error;
 
       setNewMessage('');
+      setSelectedFile(null);
       toast({
         title: "Message envoyé",
         description: "Votre message a été envoyé avec succès",
@@ -192,6 +255,50 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
     }
   };
 
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Vérifier le type et la taille du fichier
+      const isImage = file.type.startsWith('image/');
+      const isVideo = file.type.startsWith('video/');
+      
+      if (!isImage && !isVideo) {
+        toast({
+          title: "Type de fichier non supporté",
+          description: "Seules les images et vidéos sont acceptées",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (file.size > 50 * 1024 * 1024) { // 50MB max
+        toast({
+          title: "Fichier trop volumineux",
+          description: "La taille maximale est de 50MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setSelectedFile(file);
+    }
+  };
+
+  const removeSelectedFile = () => {
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleSendClick = () => {
+    if (selectedFile) {
+      sendMessage(selectedFile);
+    } else {
+      sendMessage();
+    }
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -199,7 +306,7 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      handleSendClick();
     }
   };
 
@@ -249,9 +356,44 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
                     : 'bg-background border'
                 }`}
               >
-                <p className="whitespace-pre-wrap break-words">
-                  {message.content}
-                </p>
+                {/* Message content */}
+                {message.content && (
+                  <p className="whitespace-pre-wrap break-words mb-2">
+                    {message.content}
+                  </p>
+                )}
+                
+                {/* Media content */}
+                {message.media_url && message.media_type === 'image' && (
+                  <div className="mt-2">
+                    <img 
+                      src={message.media_url} 
+                      alt={message.media_name || 'Image'} 
+                      className="max-w-full h-auto rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => window.open(message.media_url, '_blank')}
+                    />
+                    {message.media_name && (
+                      <p className="text-xs mt-1 opacity-70">{message.media_name}</p>
+                    )}
+                  </div>
+                )}
+                
+                {message.media_url && message.media_type === 'video' && (
+                  <div className="mt-2">
+                    <video 
+                      controls 
+                      className="max-w-full h-auto rounded border"
+                      preload="metadata"
+                    >
+                      <source src={message.media_url} type="video/mp4" />
+                      Votre navigateur ne supporte pas la lecture vidéo.
+                    </video>
+                    {message.media_name && (
+                      <p className="text-xs mt-1 opacity-70">{message.media_name}</p>
+                    )}
+                  </div>
+                )}
+                
                 <p className={`text-xs mt-2 ${
                   message.sender_id === user?.id
                     ? 'text-primary-foreground/70'
@@ -272,6 +414,28 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
 
         {/* Message input */}
         <div className="flex-shrink-0 space-y-2 border-t pt-4">
+          {/* File preview */}
+          {selectedFile && (
+            <div className="flex items-center gap-2 p-2 bg-muted rounded border">
+              {selectedFile.type.startsWith('image/') ? (
+                <ImageIcon className="h-4 w-4 text-blue-500" />
+              ) : (
+                <Video className="h-4 w-4 text-purple-500" />
+              )}
+              <span className="text-sm font-medium flex-1 truncate">
+                {selectedFile.name}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={removeSelectedFile}
+                className="h-6 w-6 p-0"
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          )}
+          
           <Textarea
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
@@ -280,17 +444,38 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
             rows={3}
             className="resize-none"
           />
+          
+          <Input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,video/*"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+          
           <div className="flex justify-between items-center">
-            <p className="text-xs text-muted-foreground">
-              Appuyez sur Entrée pour envoyer, Shift+Entrée pour une nouvelle ligne
-            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading || sending}
+                className="text-xs"
+              >
+                <Paperclip className="h-3 w-3 mr-1" />
+                Média
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Entrée pour envoyer
+              </p>
+            </div>
             <Button
-              onClick={sendMessage}
-              disabled={!newMessage.trim() || sending}
+              onClick={handleSendClick}
+              disabled={(!newMessage.trim() && !selectedFile) || sending || uploading}
               size="sm"
             >
               <Send className="h-4 w-4 mr-2" />
-              {sending ? 'Envoi...' : 'Envoyer'}
+              {sending ? 'Envoi...' : uploading ? 'Upload...' : 'Envoyer'}
             </Button>
           </div>
         </div>

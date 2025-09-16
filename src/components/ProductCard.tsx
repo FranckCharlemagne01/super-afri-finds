@@ -79,9 +79,9 @@ export const ProductCard = ({
       {/* Heart Icon */}
       <button 
         onClick={handleToggleFavorite}
-        className="absolute top-1 sm:top-2 right-1 sm:right-2 z-10 p-1 sm:p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
+        className="absolute top-1 sm:top-2 right-1 sm:right-2 z-10 p-1.5 sm:p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
       >
-        <Heart className={`w-3 h-3 sm:w-4 sm:h-4 transition-colors ${
+        <Heart className={`w-4 h-4 sm:w-4 sm:h-4 transition-colors ${
           isFavorite(id) 
             ? 'text-promo fill-current' 
             : 'text-muted-foreground hover:text-promo'
@@ -147,7 +147,7 @@ export const ProductCard = ({
             <Button 
               variant="promo" 
               size="sm" 
-              className="w-full text-xs"
+              className="w-full text-xs min-h-[44px]"
               onClick={handleAddToCart}
             >
               <ShoppingCart className="w-3 h-3 mr-1" />
@@ -175,10 +175,10 @@ export const ProductCard = ({
             <Button 
               variant="promo" 
               size="sm" 
-              className="flex-1 text-xs p-1.5"
+              className="flex-1 text-xs p-2 min-h-[44px] min-w-[44px]"
               onClick={handleAddToCart}
             >
-              <ShoppingCart className="w-3 h-3" />
+              <ShoppingCart className="w-4 h-4" />
             </Button>
             
             <div onClick={(e) => e.stopPropagation()} className="flex-1">

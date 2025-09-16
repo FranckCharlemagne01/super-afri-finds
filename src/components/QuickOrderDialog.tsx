@@ -101,69 +101,73 @@ export const QuickOrderDialog = ({
       <DialogTrigger asChild>
         <Button 
           variant="outline" 
-          className={iconOnly ? "px-4" : "flex-1"} 
+          className={iconOnly ? "p-2 min-w-[44px] min-h-[44px] flex-1" : "w-full min-h-[44px]"} 
           size="sm"
         >
           <ShoppingCart className="w-4 h-4" />
           {!iconOnly && <span className="ml-2">Commander</span>}
-          {iconOnly && <span className="ml-2">Commander</span>}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md mx-4 sm:mx-auto max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Commander</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">Commander</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="customerName">Nom complet *</Label>
+            <Label htmlFor="customerName" className="text-sm font-medium">Nom complet *</Label>
             <Input
               id="customerName"
               value={formData.customerName}
               onChange={(e) => handleInputChange('customerName', e.target.value)}
               placeholder="Votre nom complet"
+              className="min-h-[44px] text-base"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="customerPhone">Numéro de téléphone *</Label>
+            <Label htmlFor="customerPhone" className="text-sm font-medium">Numéro de téléphone *</Label>
             <Input
               id="customerPhone"
               value={formData.customerPhone}
               onChange={(e) => handleInputChange('customerPhone', e.target.value)}
               placeholder="Votre numéro de téléphone"
+              className="min-h-[44px] text-base"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="deliveryLocation">Lieu de livraison *</Label>
+            <Label htmlFor="deliveryLocation" className="text-sm font-medium">Lieu de livraison *</Label>
             <Input
               id="deliveryLocation"
               value={formData.deliveryLocation}
               onChange={(e) => handleInputChange('deliveryLocation', e.target.value)}
               placeholder="Adresse de livraison"
+              className="min-h-[44px] text-base"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Quantité</Label>
-            <div className="flex items-center space-x-3">
+            <Label className="text-sm font-medium">Quantité</Label>
+            <div className="flex items-center justify-center space-x-4">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
+                className="min-w-[44px] min-h-[44px]"
                 onClick={() => handleQuantityChange(false)}
                 disabled={quantity <= 1}
               >
                 <Minus className="w-4 h-4" />
               </Button>
-              <span className="font-medium w-8 text-center">{quantity}</span>
+              <span className="font-medium text-lg w-12 text-center">{quantity}</span>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
+                className="min-w-[44px] min-h-[44px]"
                 onClick={() => handleQuantityChange(true)}
               >
                 <Plus className="w-4 h-4" />
@@ -172,11 +176,11 @@ export const QuickOrderDialog = ({
           </div>
 
           <div className="border-t pt-4 space-y-2">
-            <div className="flex justify-between">
+            <div className="flex justify-between text-sm">
               <span>Prix unitaire:</span>
               <span>{productPrice.toLocaleString()} FCFA</span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between text-sm">
               <span>Quantité:</span>
               <span>{quantity}</span>
             </div>
@@ -186,19 +190,19 @@ export const QuickOrderDialog = ({
             </div>
           </div>
 
-          <div className="flex space-x-2 pt-4">
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 pt-4">
             <Button 
               type="button" 
               variant="outline" 
               onClick={() => setOpen(false)}
-              className="flex-1"
+              className="flex-1 min-h-[44px]"
             >
               Annuler
             </Button>
             <Button 
               type="submit" 
               disabled={loading}
-              className="flex-1"
+              className="flex-1 min-h-[44px]"
             >
               {loading ? "En cours..." : "Valider la commande"}
             </Button>

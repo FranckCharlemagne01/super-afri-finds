@@ -87,7 +87,7 @@ export const SearchBar = ({
           value={searchTerm}
           onChange={handleInputChange}
           onFocus={() => searchTerm.length >= 2 && setShowSuggestions(true)}
-          className="w-full pl-10 pr-12 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm bg-background"
+          className="w-full pl-9 sm:pl-10 pr-10 sm:pr-12 py-2.5 sm:py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm sm:text-sm bg-background min-h-[44px] transition-all duration-200"
           autoComplete="off"
         />
         {searchTerm && (
@@ -105,19 +105,19 @@ export const SearchBar = ({
 
       {/* Suggestions dropdown */}
       {showSuggestions && suggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 bg-background border border-border rounded-lg shadow-lg mt-1 z-50 max-h-80 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 bg-background border border-border rounded-lg shadow-lg mt-1 z-50 max-h-80 overflow-y-auto md:max-h-64 lg:max-h-80">
           <div className="py-2">
             {suggestions.map((suggestion, index) => (
               <button
                 key={`${suggestion.type}-${suggestion.id}-${index}`}
                 onClick={() => handleSuggestionClick(suggestion)}
-                className="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-3"
+                className="w-full px-3 sm:px-4 py-3 sm:py-2 text-left hover:bg-muted transition-colors flex items-center gap-2 sm:gap-3 min-h-[44px] active:bg-muted-foreground/10"
               >
-                <Search className="w-4 h-4 text-muted-foreground" />
-                <div className="flex-1">
-                  <div className="text-sm font-medium">{suggestion.title}</div>
+                <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm sm:text-sm font-medium truncate">{suggestion.title}</div>
                   {suggestion.type === 'product' && suggestion.category && (
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs text-muted-foreground truncate">
                       dans {suggestion.category}
                     </div>
                   )}
@@ -132,7 +132,7 @@ export const SearchBar = ({
           </div>
           
           {searchTerm.trim() && (
-            <div className="border-t border-border px-4 py-2">
+            <div className="border-t border-border px-3 sm:px-4 py-3 sm:py-2">
               <button
                 onClick={() => {
                   if (showResults) {
@@ -142,9 +142,9 @@ export const SearchBar = ({
                   }
                   setShowSuggestions(false);
                 }}
-                className="text-sm text-primary hover:underline"
+                className="text-sm text-primary hover:underline active:text-primary-hover min-h-[44px] flex items-center"
               >
-                Voir tous les résultats pour "{searchTerm}"
+                Voir tous les résultats pour "{searchTerm.length > 20 ? searchTerm.substring(0, 20) + '...' : searchTerm}"
               </button>
             </div>
           )}

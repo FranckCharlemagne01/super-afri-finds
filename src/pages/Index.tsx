@@ -196,8 +196,8 @@ const Index = () => {
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
-              <Button variant="ghost" size="icon" className="md:hidden p-1.5 sm:p-2">
-                <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Button variant="ghost" size="icon" className="md:hidden p-2 min-w-[44px] min-h-[44px]">
+                <Menu className="w-5 h-5" />
               </Button>
               <h1 
                 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold gradient-text-primary cursor-pointer transition-transform hover:scale-105" 
@@ -218,37 +218,37 @@ const Index = () => {
             </div>
             
             <div className="flex items-center gap-0.5 sm:gap-1 md:gap-2">
-              <Button variant="ghost" size="icon" className="relative p-1.5 sm:p-2" onClick={handleFavoritesClick}>
-                <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 ${favoriteIds.length > 0 ? 'fill-current text-promo' : ''}`} />
+              <Button variant="ghost" size="icon" className="relative p-2 sm:p-2 min-w-[44px] min-h-[44px]" onClick={handleFavoritesClick}>
+                <Heart className={`w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 ${favoriteIds.length > 0 ? 'fill-current text-promo' : ''}`} />
                 {favoriteIds.length > 0 && (
-                  <Badge className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 bg-promo text-white text-xs w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center min-w-0 p-0">
+                  <Badge className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 bg-promo text-white text-xs w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center min-w-0 p-0">
                     <span className="text-xs leading-none">{favoriteIds.length > 9 ? '9+' : favoriteIds.length}</span>
                   </Badge>
                 )}
               </Button>
-              <Button variant="ghost" size="icon" className="relative p-1.5 sm:p-2" onClick={handleCartClick}>
-                <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+              <Button variant="ghost" size="icon" className="relative p-2 sm:p-2 min-w-[44px] min-h-[44px]" onClick={handleCartClick}>
+                <ShoppingCart className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5" />
                 {cartCount > 0 && (
-                  <Badge className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 bg-promo text-white text-xs w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center min-w-0 p-0">
+                  <Badge className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 bg-promo text-white text-xs w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center min-w-0 p-0">
                     <span className="text-xs leading-none">{cartCount > 9 ? '9+' : cartCount}</span>
                   </Badge>
                 )}
               </Button>
-              <Button variant="ghost" size="icon" className="p-1.5 sm:p-2" onClick={handleProfileClick}>
-                <User className={`w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 ${user ? 'text-primary' : ''}`} />
+              <Button variant="ghost" size="icon" className="p-2 sm:p-2 min-w-[44px] min-h-[44px]" onClick={handleProfileClick}>
+                <User className={`w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 ${user ? 'text-primary' : ''}`} />
               </Button>
               {isSuperAdmin() && (
                 <Button 
                   variant="outline" 
                   size="sm" 
                   onClick={() => navigate('/superadmin')}
-                  className="text-xs hidden sm:flex"
+                  className="text-xs hidden sm:flex min-h-[36px]"
                 >
                   Dashboard
                 </Button>
               )}
               {user && (
-                <Button variant="ghost" size="sm" onClick={signOut} className="hidden sm:flex text-xs">
+                <Button variant="ghost" size="sm" onClick={signOut} className="hidden sm:flex text-xs min-h-[36px]">
                   Déconnexion
                 </Button>
               )}

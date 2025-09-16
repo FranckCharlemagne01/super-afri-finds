@@ -347,7 +347,18 @@ const Index = () => {
             <p className="text-base sm:text-lg font-semibold text-foreground mb-4">
               28 jours restants
             </p>
-            <Button variant="default" size="lg" className="w-full sm:w-auto">
+            <Button 
+              variant="default" 
+              size="lg" 
+              className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              onClick={() => {
+                if (user && role === 'seller') {
+                  navigate('/seller');
+                } else {
+                  navigate('/auth?mode=signup&role=seller');
+                }
+              }}
+            >
               Commencez à vendre maintenant
             </Button>
           </div>

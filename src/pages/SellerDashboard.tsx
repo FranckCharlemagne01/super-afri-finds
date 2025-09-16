@@ -34,6 +34,23 @@ interface Product {
   created_at: string;
 }
 
+interface Order {
+  id: string;
+  customer_id: string;
+  customer_name: string;
+  customer_phone: string;
+  delivery_location: string;
+  product_id: string;
+  product_title: string;
+  product_price: number;
+  quantity: number;
+  total_amount: number;
+  status: string;
+  seller_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
 const SellerDashboard = () => {
   const { user, signOut } = useAuth();
   const { isSuperAdmin, loading: roleLoading } = useRole();
@@ -262,12 +279,23 @@ const SellerDashboard = () => {
             table: 'orders',
             filter: `seller_id=eq.${user.id}`
           },
-          () => {
+          (payload) => {
             fetchNewOrdersCount();
+            // Notification plus visible avec son et animation
             toast({
-              title: "🛒 Nouvelle commande",
-              description: "Vous avez reçu une nouvelle commande !",
+              title: "🛒 NOUVELLE COMMANDE !",
+              description: `Commande #${payload.new.id.slice(-8)} - ${payload.new.product_title} (${payload.new.total_amount} FCFA)`,
+              duration: 10000, // 10 secondes pour être sûr que le vendeur la voit
             });
+            
+            // Notification sonore si supportée
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification('Nouvelle commande Djassa !', {
+                body: `${payload.new.product_title} - ${payload.new.total_amount} FCFA`,
+                icon: '/favicon.png',
+                tag: 'new-order'
+              });
+            }
           }
         )
         .on(
@@ -294,10 +322,93 @@ const SellerDashboard = () => {
     return (
       <Badge 
         variant="destructive" 
-        className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center font-bold"
+        className="absolute -top-1 -right-1 h-6 w-6 rounded-full p-0 text-xs flex items-center justify-center font-bold animate-pulse bg-red-500 text-white border-2 border-white shadow-lg"
       >
         {newOrdersCount > 9 ? '9+' : newOrdersCount}
       </Badge>
+    );
+  };
+
+  // Composant pour alerter des nouvelles commandes
+  const NewOrdersAlert = () => {
+    const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
+
+    useEffect(() => {
+      if (!user) return;
+
+      const fetchPendingOrders = async () => {
+        try {
+          const { data, error } = await supabase.rpc('get_seller_orders');
+          if (error) throw error;
+          
+          const pending = data?.filter(order => 
+            order.seller_id === user.id && order.status === 'pending'
+          ) || [];
+          setPendingOrders(pending);
+        } catch (error) {
+          console.error('Error fetching pending orders:', error);
+        }
+      };
+
+      fetchPendingOrders();
+
+      // Écouter les changements en temps réel
+      const channel = supabase
+        .channel('pending-orders-alert')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'orders',
+            filter: `seller_id=eq.${user.id}`
+          },
+          () => {
+            fetchPendingOrders();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }, [user]);
+
+    if (pendingOrders.length === 0) return null;
+
+    return (
+      <div className="mb-6">
+        <Card className="border-orange-200 bg-orange-50 shadow-md">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="h-3 w-3 bg-orange-500 rounded-full animate-pulse"></div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-orange-800 mb-1">
+                  🚨 {pendingOrders.length} nouvelle{pendingOrders.length > 1 ? 's' : ''} commande{pendingOrders.length > 1 ? 's' : ''} en attente !
+                </h3>
+                <p className="text-sm text-orange-700">
+                  {pendingOrders.length === 1 
+                    ? `Commande #${pendingOrders[0].id.slice(-8)} - ${pendingOrders[0].product_title}`
+                    : `Plusieurs commandes nécessitent votre attention.`
+                  } Cliquez sur l'onglet "Commandes" pour les traiter.
+                </p>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  // Simuler un clic sur l'onglet commandes
+                  const ordersTab = document.querySelector('[value="orders"]') as HTMLElement;
+                  if (ordersTab) ordersTab.click();
+                }}
+                className="bg-orange-100 hover:bg-orange-200 text-orange-800 border-orange-300"
+              >
+                Voir les commandes
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   };
 
@@ -423,6 +534,9 @@ const SellerDashboard = () => {
           </div>
         )}
 
+        {/* Nouvelles commandes en attente - Notification persistante */}
+        <NewOrdersAlert />
+
         {/* Stats Cards - Mobile optimized */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8">
           <Card className="border-0 shadow-md">
@@ -457,7 +571,12 @@ const SellerDashboard = () => {
         </div>
 
         {/* Main Content - Mobile optimized */}
-        <Tabs defaultValue="products" className="space-y-4">
+        <Tabs defaultValue="products" className="space-y-4" onValueChange={(value) => {
+          // Demander permission pour les notifications si pas encore accordée
+          if (value === 'orders' && 'Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+          }
+        }}>
           <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:grid-cols-none lg:flex">
             <TabsTrigger value="products" className="text-sm">Mes Produits</TabsTrigger>
             <TabsTrigger value="orders" className="text-sm relative">

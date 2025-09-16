@@ -154,12 +154,29 @@ export const SellerOrders = () => {
                   </div>
                 </div>
 
-                {/* Client preview */}
-                <div className="p-3 bg-primary/5 rounded-lg">
-                  <p className="font-medium">Client: {order.customer_name}</p>
-                  <p className="text-sm text-muted-foreground truncate">
-                    Livraison: {order.delivery_location.substring(0, 50)}...
-                  </p>
+                {/* Client preview - informations complètes */}
+                <div className="p-4 bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-lg space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    <p className="font-semibold text-foreground">Client: {order.customer_name}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <p className="text-sm font-medium text-foreground">📞 {order.customer_phone}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-start gap-2">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full mt-1 flex-shrink-0"></div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1">
+                          📍 Adresse de livraison complète
+                        </p>
+                        <p className="text-sm font-medium text-foreground whitespace-pre-wrap break-words bg-white/60 p-2 rounded border">
+                          {order.delivery_location}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Action button */}

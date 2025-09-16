@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import { SmoothListSkeleton } from '@/components/ui/smooth-skeleton';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,13 +44,7 @@ interface SellerProductsProps {
 
 export const SellerProducts = ({ products, loading, onEdit, onDelete, title, emptyMessage }: SellerProductsProps) => {
   if (loading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[...Array(6)].map((_, i) => (
-          <div key={i} className="h-64 loading-shimmer rounded-lg" />
-        ))}
-      </div>
-    );
+    return <SmoothListSkeleton items={6} variant="card" className="prevent-flash" />;
   }
 
   if (products.length === 0) {
@@ -68,9 +63,9 @@ export const SellerProducts = ({ products, loading, onEdit, onDelete, title, emp
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 prevent-flash">
       {products.map((product) => (
-        <Card key={product.id} className="overflow-hidden">
+        <Card key={product.id} className="overflow-hidden card-hover">
           <div className="relative">
             {product.images?.[0] ? (
               <img

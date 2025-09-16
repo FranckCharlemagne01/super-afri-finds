@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { useOptimizedAuth } from '@/hooks/useOptimizedAuth';
+import { useStableData } from '@/hooks/useStableData';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +10,7 @@ import { Package, Eye, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { OrderDetailDialog } from './OrderDetailDialog';
+import { SmoothListSkeleton } from '@/components/ui/smooth-skeleton';
 
 interface Order {
   id: string;
@@ -45,41 +47,42 @@ const statusLabels = {
 };
 
 export const SellerOrders = () => {
-  const { user } = useAuth();
+  const { user } = useOptimizedAuth();
   const { toast } = useToast();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderDetailOpen, setOrderDetailOpen] = useState(false);
 
-  const fetchOrders = useCallback(async () => {
-    if (!user?.id) return;
-    
-    try {
-      // Utiliser la nouvelle fonction sécurisée qui masque les données sensibles
-      const { data, error } = await supabase
-        .rpc('get_seller_orders');
-
+  // Utiliser useStableData pour les commandes avec gestion d'erreurs silencieuses
+  const { data: orders, loading, error, refetch } = useStableData(
+    async () => {
+      if (!user?.id) return [];
+      
+      const { data, error } = await supabase.rpc('get_seller_orders');
       if (error) throw error;
-      setOrders(data || []);
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-      // Silently fail - ne pas spammer l'utilisateur avec des erreurs
-      // toast({
-      //   title: "Erreur",
-      //   description: "Impossible de charger les commandes",
-      //   variant: "destructive",
-      // });
-    } finally {
-      setLoading(false);
+      return data || [];
+    },
+    [user?.id],
+    {
+      keepPreviousData: true,
+      loadingDelay: 250,
+      debounceMs: 200
     }
-  }, [user?.id]);
+  );
 
+  // Gestion discrète des erreurs
   useEffect(() => {
-    if (!user?.id) return;
-    
-    fetchOrders();
-  }, [fetchOrders]);
+    if (error && !loading) {
+      console.error('Error loading orders:', error);
+      // Ne pas afficher de toast sauf si vraiment nécessaire
+      if (!orders || orders.length === 0) {
+        toast({
+          title: "Chargement...",
+          description: "Connexion en cours, veuillez patienter",
+          variant: "default",
+        });
+      }
+    }
+  }, [error, loading, orders, toast]);
 
   const handleOrderClick = (order: Order) => {
     setSelectedOrder(order);
@@ -87,7 +90,7 @@ export const SellerOrders = () => {
   };
 
   const handleOrderUpdated = () => {
-    fetchOrders();
+    refetch();
   };
 
   const getStatusBadgeVariant = (status: string) => {
@@ -95,13 +98,7 @@ export const SellerOrders = () => {
   };
 
   if (loading) {
-    return (
-      <div className="space-y-4">
-        {[...Array(3)].map((_, i) => (
-          <div key={i} className="h-32 loading-shimmer rounded-lg" />
-        ))}
-      </div>
-    );
+    return <SmoothListSkeleton items={3} variant="list" className="prevent-flash" />;
   }
 
   return (
@@ -109,11 +106,11 @@ export const SellerOrders = () => {
       <div className="flex items-center gap-4">
         <h2 className="text-xl font-semibold">Commandes Clients</h2>
         <Badge variant="secondary">
-          {orders.length} commande{orders.length !== 1 ? 's' : ''}
+          {(orders || []).length} commande{(orders || []).length !== 1 ? 's' : ''}
         </Badge>
       </div>
 
-      {orders.length === 0 ? (
+      {!orders || orders.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
             <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -124,8 +121,8 @@ export const SellerOrders = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
-          {orders.map((order) => (
+        <div className="space-y-4 prevent-flash">
+          {(orders || []).map((order) => (
             <Card key={order.id} className="border-0 shadow-md hover:shadow-lg card-hover cursor-pointer">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">

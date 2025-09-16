@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { useOptimizedAuth } from '@/hooks/useOptimizedAuth';
 import { useRole } from '@/hooks/useRole';
 import { useTrialStatus } from '@/hooks/useTrialStatus';
+import { useStableData } from '@/hooks/useStableData';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -52,15 +53,35 @@ interface Order {
 }
 
 const SellerDashboard = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut } = useOptimizedAuth();
   const { isSuperAdmin, loading: roleLoading } = useRole();
   const trialStatus = useTrialStatus();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  
+  // Utiliser useStableData pour éviter les clignotements
+  const { data: products, loading, error, refetch } = useStableData(
+    async () => {
+      if (!user?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('seller_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+    [user?.id],
+    {
+      keepPreviousData: true,
+      loadingDelay: 200,
+      debounceMs: 150
+    }
+  );
   
 
   const handleSignOut = async () => {
@@ -80,7 +101,7 @@ const SellerDashboard = () => {
     }
     
     if (user && !roleLoading) {
-      fetchSellerProducts();
+      // Le fetching est géré automatiquement par useStableData
       
       // Check for payment success in URL params
       const urlParams = new URLSearchParams(window.location.search);
@@ -119,7 +140,7 @@ const SellerDashboard = () => {
           title: "🎉 Paiement réussi !",
           description: data.message || "Votre article a été publié avec succès !",
         });
-        fetchSellerProducts(); // Refresh products list to show new article
+        refetch(); // Refresh products list to show new article
       } else {
         toast({
           title: "Échec du paiement",
@@ -137,32 +158,23 @@ const SellerDashboard = () => {
     }
   };
 
-  const fetchSellerProducts = useCallback(async () => {
-    if (!user?.id) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('seller_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setProducts(data || []);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger vos produits",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+  // Afficher les erreurs de manière discrète, sans clignotements
+  useEffect(() => {
+    if (error && !loading) {
+      console.error('Error loading products:', error);
+      // Toast discret seulement si c'est une vraie erreur (pas de données en cache)
+      if (!products || products.length === 0) {
+        toast({
+          title: "Connexion instable",
+          description: "Tentative de rechargement en cours...",
+          variant: "default",
+        });
+      }
     }
-  }, [user?.id, toast]);
+  }, [error, loading, products, toast]);
 
   const handleProductSaved = () => {
-    fetchSellerProducts();
+    refetch();
     setShowProductForm(false);
     setEditingProduct(null);
   };
@@ -431,7 +443,7 @@ const SellerDashboard = () => {
         description: "Le produit a été supprimé définitivement de la plateforme",
       });
       
-      fetchSellerProducts();
+      refetch();
     } catch (error) {
       console.error('Error deleting product:', error);
       toast({
@@ -443,9 +455,9 @@ const SellerDashboard = () => {
   };
 
   const stats = {
-    totalProducts: products.length,
-    activeProducts: products.filter(p => p.is_active).length,
-    totalViews: products.reduce((sum, p) => sum + (p.reviews_count || 0), 0),
+    totalProducts: products?.length || 0,
+    activeProducts: products?.filter(p => p.is_active).length || 0,
+    totalViews: products?.reduce((sum, p) => sum + (p.reviews_count || 0), 0) || 0,
   };
 
   if (roleLoading) {

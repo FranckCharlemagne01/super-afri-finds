@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -52,13 +52,9 @@ export const SellerOrders = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderDetailOpen, setOrderDetailOpen] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      fetchOrders();
-    }
-  }, [user]);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
+    if (!user?.id) return;
+    
     try {
       // Utiliser la nouvelle fonction sécurisée qui masque les données sensibles
       const { data, error } = await supabase
@@ -68,15 +64,22 @@ export const SellerOrders = () => {
       setOrders(data || []);
     } catch (error) {
       console.error('Error fetching orders:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les commandes",
-        variant: "destructive",
-      });
+      // Silently fail - ne pas spammer l'utilisateur avec des erreurs
+      // toast({
+      //   title: "Erreur",
+      //   description: "Impossible de charger les commandes",
+      //   variant: "destructive",
+      // });
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    
+    fetchOrders();
+  }, [fetchOrders]);
 
   const handleOrderClick = (order: Order) => {
     setSelectedOrder(order);
@@ -95,7 +98,7 @@ export const SellerOrders = () => {
     return (
       <div className="space-y-4">
         {[...Array(3)].map((_, i) => (
-          <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
+          <div key={i} className="h-32 loading-shimmer rounded-lg" />
         ))}
       </div>
     );
@@ -123,7 +126,7 @@ export const SellerOrders = () => {
       ) : (
         <div className="space-y-4">
           {orders.map((order) => (
-            <Card key={order.id} className="border-0 shadow-md hover:shadow-lg transition-shadow cursor-pointer">
+            <Card key={order.id} className="border-0 shadow-md hover:shadow-lg card-hover cursor-pointer">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">

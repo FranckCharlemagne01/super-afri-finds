@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { useTrialStatus } from '@/hooks/useTrialStatus';
@@ -137,12 +137,14 @@ const SellerDashboard = () => {
     }
   };
 
-  const fetchSellerProducts = async () => {
+  const fetchSellerProducts = useCallback(async () => {
+    if (!user?.id) return;
+    
     try {
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .eq('seller_id', user?.id)
+        .eq('seller_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -157,7 +159,7 @@ const SellerDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id, toast]);
 
   const handleProductSaved = () => {
     fetchSellerProducts();
@@ -174,29 +176,32 @@ const SellerDashboard = () => {
   const MessageNotificationBadge = () => {
     const [unreadCount, setUnreadCount] = useState(0);
 
+    const fetchUnreadCount = useCallback(async () => {
+      if (!user?.id) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .select('id')
+          .eq('recipient_id', user.id)
+          .eq('is_read', false);
+
+        if (error) throw error;
+        setUnreadCount(data?.length || 0);
+      } catch (error) {
+        console.error('Error fetching unread count:', error);
+        // Silently fail - ne pas spammer l'utilisateur avec des erreurs
+      }
+    }, [user?.id]);
+
     useEffect(() => {
-      if (!user) return;
-
-      const fetchUnreadCount = async () => {
-        try {
-          const { data, error } = await supabase
-            .from('messages')
-            .select('id')
-            .eq('recipient_id', user.id)
-            .eq('is_read', false);
-
-          if (error) throw error;
-          setUnreadCount(data?.length || 0);
-        } catch (error) {
-          console.error('Error fetching unread count:', error);
-        }
-      };
+      if (!user?.id) return;
 
       fetchUnreadCount();
 
-      // Set up real-time subscription
+      // Set up real-time subscription avec cleanup approprié
       const channel = supabase
-        .channel('seller-message-notifications')
+        .channel(`seller-message-notifications-${user.id}`)
         .on(
           'postgres_changes',
           {
@@ -221,16 +226,14 @@ const SellerDashboard = () => {
             table: 'messages',
             filter: `recipient_id=eq.${user.id}`
           },
-          () => {
-            fetchUnreadCount();
-          }
+          fetchUnreadCount
         )
         .subscribe();
 
       return () => {
         supabase.removeChannel(channel);
       };
-    }, [user]);
+    }, [user?.id, fetchUnreadCount]);
 
     if (unreadCount === 0) return null;
 
@@ -247,30 +250,33 @@ const SellerDashboard = () => {
   const OrderNotificationBadge = () => {
     const [newOrdersCount, setNewOrdersCount] = useState(0);
 
-    useEffect(() => {
-      if (!user) return;
+    const fetchNewOrdersCount = useCallback(async () => {
+      if (!user?.id) return;
+      
+      try {
+        const { data, error } = await supabase.rpc('get_seller_orders');
+        if (error) throw error;
+        
+        // Filtrer les commandes non traitées (pending et confirmed)
+        const unprocessedOrders = data?.filter(order => 
+          order.seller_id === user.id && 
+          (order.status === 'pending' || order.status === 'confirmed')
+        ) || [];
+        setNewOrdersCount(unprocessedOrders.length);
+      } catch (error) {
+        console.error('Error fetching new orders count:', error);
+        // Silently fail - ne pas spammer l'utilisateur avec des erreurs
+      }
+    }, [user?.id]);
 
-      const fetchNewOrdersCount = async () => {
-        try {
-          const { data, error } = await supabase.rpc('get_seller_orders');
-          if (error) throw error;
-          
-          // Filtrer les commandes non traitées (pending et confirmed)
-          const unprocessedOrders = data?.filter(order => 
-            order.seller_id === user.id && 
-            (order.status === 'pending' || order.status === 'confirmed')
-          ) || [];
-          setNewOrdersCount(unprocessedOrders.length);
-        } catch (error) {
-          console.error('Error fetching new orders count:', error);
-        }
-      };
+    useEffect(() => {
+      if (!user?.id) return;
 
       fetchNewOrdersCount();
 
-      // Set up real-time subscription for new orders
+      // Set up real-time subscription for new orders avec cleanup approprié
       const channel = supabase
-        .channel('seller-order-notifications')
+        .channel(`seller-order-notifications-${user.id}`)
         .on(
           'postgres_changes',
           {
@@ -306,16 +312,14 @@ const SellerDashboard = () => {
             table: 'orders',
             filter: `seller_id=eq.${user.id}`
           },
-          () => {
-            fetchNewOrdersCount();
-          }
+          fetchNewOrdersCount
         )
         .subscribe();
 
       return () => {
         supabase.removeChannel(channel);
       };
-    }, [user]);
+    }, [user?.id, fetchNewOrdersCount]);
 
     if (newOrdersCount === 0) return null;
 
@@ -333,28 +337,31 @@ const SellerDashboard = () => {
   const NewOrdersAlert = () => {
     const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
 
-    useEffect(() => {
-      if (!user) return;
+    const fetchPendingOrders = useCallback(async () => {
+      if (!user?.id) return;
+      
+      try {
+        const { data, error } = await supabase.rpc('get_seller_orders');
+        if (error) throw error;
+        
+        const pending = data?.filter(order => 
+          order.seller_id === user.id && order.status === 'pending'
+        ) || [];
+        setPendingOrders(pending);
+      } catch (error) {
+        console.error('Error fetching pending orders:', error);
+        // Silently fail - ne pas spammer l'utilisateur avec des erreurs
+      }
+    }, [user?.id]);
 
-      const fetchPendingOrders = async () => {
-        try {
-          const { data, error } = await supabase.rpc('get_seller_orders');
-          if (error) throw error;
-          
-          const pending = data?.filter(order => 
-            order.seller_id === user.id && order.status === 'pending'
-          ) || [];
-          setPendingOrders(pending);
-        } catch (error) {
-          console.error('Error fetching pending orders:', error);
-        }
-      };
+    useEffect(() => {
+      if (!user?.id) return;
 
       fetchPendingOrders();
 
-      // Écouter les changements en temps réel
+      // Écouter les changements en temps réel avec cleanup approprié
       const channel = supabase
-        .channel('pending-orders-alert')
+        .channel(`pending-orders-alert-${user.id}`)
         .on(
           'postgres_changes',
           {
@@ -363,16 +370,14 @@ const SellerDashboard = () => {
             table: 'orders',
             filter: `seller_id=eq.${user.id}`
           },
-          () => {
-            fetchPendingOrders();
-          }
+          fetchPendingOrders
         )
         .subscribe();
 
       return () => {
         supabase.removeChannel(channel);
       };
-    }, [user]);
+    }, [user?.id, fetchPendingOrders]);
 
     if (pendingOrders.length === 0) return null;
 

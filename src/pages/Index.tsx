@@ -338,14 +338,17 @@ const Index = () => {
         {/* Promotional Banner */}
         <section className="mb-6 sm:mb-8">
           <div className="gradient-accent rounded-xl sm:rounded-2xl p-4 sm:p-6 text-center">
-            <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
-              🎁 Parrainez vos amis et gagnez !
+            <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2">
+              ✨ Djassa – Achetez et revendez en toute simplicité et sécurité, sans bouger de chez vous ! 🚀
             </h3>
-            <p className="text-sm sm:text-base text-muted-foreground mb-4">
-              Recevez 5,000 FCFA pour chaque ami qui passe sa première commande
+            <p className="text-sm sm:text-base text-muted-foreground mb-2">
+              🎁 Profitez de 28 jours d'essai gratuit pour publier vos produits ⏳
+            </p>
+            <p className="text-base sm:text-lg font-semibold text-foreground mb-4">
+              28 jours restants
             </p>
             <Button variant="default" size="lg" className="w-full sm:w-auto">
-              Commencer à parrainer
+              Commencez à vendre maintenant
             </Button>
           </div>
         </section>

@@ -31,9 +31,9 @@ export const CategoryCard = ({
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-1 sm:p-1.5 md:p-2 text-center">
-            <h3 className="text-xs sm:text-sm font-semibold text-white mb-0.5 line-clamp-2 leading-tight">{title}</h3>
-            <p className="text-xs text-white/80">{itemCount} articles</p>
+          <div className="absolute bottom-0 left-0 right-0 p-0.5 sm:p-1 md:p-1.5 text-center">
+            <h3 className="text-xs font-semibold text-white mb-0.5 line-clamp-2 leading-tight">{title}</h3>
+            <p className="text-[10px] sm:text-xs text-white/80">{itemCount} articles</p>
           </div>
         </div>
       </div>
@@ -43,15 +43,15 @@ export const CategoryCard = ({
   // Fallback to icon-based design
   return (
     <div 
-      className={`${bgColor || 'bg-primary'} p-3 rounded-xl hover-lift cursor-pointer transition-all duration-300 hover:scale-105`}
+      className={`${bgColor || 'bg-primary'} p-2 sm:p-2.5 rounded-lg hover-lift cursor-pointer transition-all duration-300 hover:scale-105`}
       onClick={onClick}
     >
-      <div className="flex flex-col items-center text-center space-y-1.5">
-        <div className="p-2 bg-white/20 rounded-full">
-          {Icon && <Icon className="w-5 h-5 text-white" />}
+      <div className="flex flex-col items-center text-center space-y-1">
+        <div className="p-1.5 bg-white/20 rounded-full">
+          {Icon && <Icon className="w-4 h-4 text-white" />}
         </div>
         <h3 className="text-xs font-semibold text-white">{title}</h3>
-        <p className="text-xs text-white/80">{itemCount} articles</p>
+        <p className="text-[10px] text-white/80">{itemCount} articles</p>
       </div>
     </div>
   );

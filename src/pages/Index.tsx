@@ -391,7 +391,7 @@ const Index = () => {
             </div>
           </div>
           <div className="text-xs sm:text-sm text-muted-foreground">
-            © 2024 Djassa - Votre marketplace de confiance en Côte d'Ivoire
+            © 2025 Djassa – Achetez et revendez en ligne, simple, rapide et fiable.
           </div>
         </div>
       </footer>

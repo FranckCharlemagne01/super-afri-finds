@@ -3,7 +3,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { CategoryCard } from "@/components/CategoryCard";
 import { SearchBar } from "@/components/SearchBar";
 import PromoBanner from "@/components/PromoBanner";
-import { FloatingChatButton } from "@/components/FloatingChatButton";
+import { FloatingChatWidget } from "@/components/FloatingChatWidget";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 import FAQ from "@/components/FAQ";
 import { useState, useEffect } from "react";
@@ -397,7 +397,7 @@ const Index = () => {
       </footer>
       
       {/* Floating Buttons */}
-      <FloatingChatButton />
+      <FloatingChatWidget />
       <ScrollToTopButton />
     </div>
   );

@@ -390,8 +390,16 @@ const Index = () => {
               <p className="text-xs sm:text-sm text-muted-foreground">Satisfait ou remboursé</p>
             </div>
           </div>
-          <div className="text-xs sm:text-sm text-muted-foreground">
-            © 2025 Djassa – Achetez et revendez en ligne, simple, rapide et fiable.
+          <div className="text-xs sm:text-sm text-muted-foreground space-y-2">
+            <div>© 2025 Djassa – Achetez et revendez en ligne, simple, rapide et fiable.</div>
+            <div>
+              <button
+                onClick={() => navigate("/legal")}
+                className="text-primary hover:underline text-xs"
+              >
+                Mentions légales et Politique de confidentialité
+              </button>
+            </div>
           </div>
         </div>
       </footer>

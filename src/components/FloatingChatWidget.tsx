@@ -105,7 +105,7 @@ export const FloatingChatWidget = () => {
           <div className="bg-primary text-primary-foreground p-3 rounded-t-xl flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Bot className="h-5 w-5" />
-              <span className="font-semibold text-sm">Assistant Djassa</span>
+              <span className="font-semibold text-sm">Boza - Assistant Djassa</span>
               {!isMinimized && <Badge variant="secondary" className="text-xs bg-white/20 text-white">En ligne</Badge>}
             </div>
             <div className="flex items-center gap-1">
@@ -139,10 +139,10 @@ export const FloatingChatWidget = () => {
                       <div className="bg-card border rounded-lg p-3">
                         <div className="flex items-center gap-2 mb-2">
                           <Bot className="h-4 w-4 text-primary" />
-                          <span className="text-sm font-medium">Assistant Djassa</span>
+                          <span className="text-sm font-medium">Boza - Assistant Djassa</span>
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          Bonjour {userName} ! 👋 Comment puis-je vous aider ?
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          👋 Bonjour et bienvenue sur Djassa ! Je suis Boza, votre assistant virtuel. Je suis là pour vous aider à acheter, vendre ou répondre à vos questions. N'hésitez pas à me dire "Bonjour" ou à poser votre question !
                         </p>
                       </div>
 

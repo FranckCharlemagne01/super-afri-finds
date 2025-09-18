@@ -109,11 +109,27 @@ Mon compte > Abonnement > Choisir votre formule`
   const findAnswer = (userMessage: string): string => {
     const message = userMessage.toLowerCase();
     
+    // Détecter les salutations
+    const greetingTriggers = ['bonjour', 'bonsoir', 'salut', 'coucou', 'hello', 'hi'];
+    if (greetingTriggers.some(trigger => message.includes(trigger))) {
+      const greetingResponses = [
+        '👋 Bonjour ! Heureux de vous retrouver sur Djassa. Comment puis-je vous aider aujourd\'hui ?',
+        'Bonsoir 🌙, ravi de vous assister sur Djassa. De quoi avez-vous besoin ?',
+        '👋 Salut ! Je suis Boza, votre assistant Djassa. Que puis-je faire pour vous ?',
+        'Bonjour et bienvenue 😊 ! Boza à votre service pour vous accompagner sur Djassa.'
+      ];
+      // Choisir la réponse selon l'heure ou le message
+      if (message.includes('bonsoir')) {
+        return 'Bonsoir 🌙, ravi de vous assister sur Djassa. De quoi avez-vous besoin ?';
+      }
+      return greetingResponses[Math.floor(Math.random() * greetingResponses.length)];
+    }
+    
     // Détecter les remerciements
     const thankYouTriggers = ['merci', 'thanks', 'thank you', 'merci beaucoup', 'merci infiniment', 'merci bien'];
     if (thankYouTriggers.some(trigger => message.includes(trigger))) {
       const politeResponses = [
-        'Avec plaisir 😊 ! Je suis là pour vous aider à profiter pleinement de Djassa.',
+        'Avec plaisir 🙏, je suis là pour vous aider à chaque étape sur Djassa !',
         'Merci à vous 🙏. N\'hésitez pas à revenir vers moi si vous avez d\'autres questions.',
         'Toujours à votre service 💡 ! Bonne visite sur Djassa.',
         'C\'est un plaisir de vous aider 🌟 ! Djassa est là pour faciliter vos achats et ventes.',

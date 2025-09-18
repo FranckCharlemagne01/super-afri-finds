@@ -69,7 +69,7 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Bot className="h-5 w-5 md:h-6 md:w-6" />
-              <DialogTitle className="text-base md:text-lg font-semibold">Assistant Djassa</DialogTitle>
+              <DialogTitle className="text-base md:text-lg font-semibold">Boza - Assistant Djassa</DialogTitle>
             </div>
             <Button
               variant="ghost"
@@ -89,10 +89,10 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
                 <div className="bg-card border rounded-lg p-3 md:p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Bot className="h-4 w-4 md:h-5 md:w-5 text-primary" />
-                    <span className="text-sm md:text-base font-medium">Assistant Djassa</span>
+                    <span className="text-sm md:text-base font-medium">Boza - Assistant Djassa</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Bonjour {userName} ! 👋 Comment puis-je vous aider aujourd'hui ?
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    👋 Bonjour et bienvenue sur Djassa ! Je suis Boza, votre assistant virtuel. Je suis là pour vous aider à acheter, vendre ou répondre à vos questions. N'hésitez pas à me dire "Bonjour" ou à poser votre question !
                   </p>
                   <p className="text-xs text-muted-foreground mt-2">
                     💬 Tapez votre question ou choisissez une option ci-dessous

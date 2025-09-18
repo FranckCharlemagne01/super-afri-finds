@@ -252,7 +252,7 @@ const SellerDashboard = () => {
     return (
       <Badge 
         variant="destructive" 
-        className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center font-bold"
+        className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center font-bold bg-blue-500 text-white border-2 border-white shadow-lg z-10"
       >
         {unreadCount > 9 ? '9+' : unreadCount}
       </Badge>
@@ -338,7 +338,7 @@ const SellerDashboard = () => {
     return (
       <Badge 
         variant="destructive" 
-        className="absolute -top-1 -right-1 h-6 w-6 rounded-full p-0 text-xs flex items-center justify-center font-bold animate-pulse bg-red-500 text-white border-2 border-white shadow-lg"
+        className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center font-bold animate-pulse bg-red-500 text-white border-2 border-white shadow-lg z-10"
       >
         {newOrdersCount > 9 ? '9+' : newOrdersCount}
       </Badge>
@@ -493,50 +493,46 @@ const SellerDashboard = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6 lg:py-8">
         {/* Header - Mobile optimized */}
-        <div className="flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-center mb-6 lg:mb-8">
-          <div>
-            <h1 className="text-2xl lg:text-3xl font-bold gradient-text-primary">Espace Vendeur</h1>
-            <p className="text-sm lg:text-base text-muted-foreground">Gérez vos produits et commandes</p>
-          </div>
-          
-          {/* Mobile action buttons */}
-          <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-4">
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={handleViewPublicPage}
-                className="flex-1 lg:flex-none items-center gap-2 text-sm"
-                size="sm"
-              >
-                <Store className="h-4 w-4" />
-                <span className="hidden sm:inline">Voir la page publique</span>
-                <span className="sm:hidden">Page publique</span>
-              </Button>
-              <Button 
-                variant="outline" 
-                disabled={trialStatus.isInTrial}
-                className={`flex-1 lg:flex-none items-center gap-2 text-sm ${trialStatus.isInTrial ? "opacity-50 cursor-not-allowed" : ""}`}
-                size="sm"
-              >
-                <Package className="h-4 w-4" />
-                {trialStatus.isInTrial ? "Premium (bientôt)" : "Passer au Premium"}
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleSignOut}
-                className="flex-1 lg:flex-none items-center gap-2 text-sm"
-                size="sm"
-              >
-                <LogOut className="h-4 w-4" />
-                <span className="hidden sm:inline">Déconnexion</span>
-                <span className="sm:hidden">Sortir</span>
-              </Button>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="px-3 py-1 text-xs lg:px-4 lg:py-2 bg-blue-100 text-blue-800">
-                <Store className="w-3 h-3 mr-1" />
+        <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl p-4 lg:p-6 mb-6 border border-primary/20">
+          <div className="flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-center">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
+                  <Store className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-xl lg:text-2xl font-bold text-foreground">Espace Vendeur</h1>
+                  <p className="text-sm text-muted-foreground">Gérez facilement vos ventes</p>
+                </div>
+              </div>
+              <Badge variant="secondary" className="w-fit bg-primary/10 text-primary border-primary/30">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
                 Vendeur Actif
               </Badge>
+            </div>
+            
+            {/* Actions compactes pour mobile */}
+            <div className="flex flex-col gap-2 lg:flex-row lg:gap-3">
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleViewPublicPage}
+                  className="flex-1 lg:flex-none bg-white/50 hover:bg-white/80 border-primary/30"
+                  size="sm"
+                >
+                  <Store className="h-4 w-4 lg:mr-2" />
+                  <span className="hidden lg:inline">Voir la boutique</span>
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleSignOut}
+                  className="flex-1 lg:flex-none"
+                  size="sm"
+                >
+                  <LogOut className="h-4 w-4 lg:mr-2" />
+                  <span className="hidden lg:inline">Quitter</span>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -587,24 +583,41 @@ const SellerDashboard = () => {
           </Card>
         </div>
 
-        {/* Main Content - Mobile optimized */}
-        <Tabs defaultValue="products" className="space-y-4" onValueChange={(value) => {
+        {/* Navigation principale - Mobile First */}
+        <Tabs defaultValue="products" className="space-y-6" onValueChange={(value) => {
           // Demander permission pour les notifications si pas encore accordée
           if (value === 'orders' && 'Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
           }
         }}>
-          <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:grid-cols-none lg:flex">
-            <TabsTrigger value="products" className="text-sm">Mes Produits</TabsTrigger>
-            <TabsTrigger value="orders" className="text-sm relative">
-              Commandes
-              <OrderNotificationBadge />
-            </TabsTrigger>
-            <TabsTrigger value="messages" className="text-sm relative">
-              Messages
-              <MessageNotificationBadge />
-            </TabsTrigger>
-          </TabsList>
+          {/* Navigation simplifiée avec indicateurs visuels */}
+          <div className="bg-white rounded-xl border border-border/50 shadow-sm p-2">
+            <TabsList className="grid w-full grid-cols-3 bg-muted/30 rounded-lg h-12">
+              <TabsTrigger 
+                value="products" 
+                className="relative text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all duration-200"
+              >
+                <Package className="h-4 w-4 mr-1 lg:mr-2" />
+                <span className="hidden sm:inline">Mes</span> Produits
+              </TabsTrigger>
+              <TabsTrigger 
+                value="orders" 
+                className="relative text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all duration-200"
+              >
+                <BarChart3 className="h-4 w-4 mr-1 lg:mr-2" />
+                Commandes
+                <OrderNotificationBadge />
+              </TabsTrigger>
+              <TabsTrigger 
+                value="messages" 
+                className="relative text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all duration-200"
+              >
+                <MessageSquare className="h-4 w-4 mr-1 lg:mr-2" />
+                Messages
+                <MessageNotificationBadge />
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="products" className="space-y-4">
             <div className="flex flex-col gap-3 lg:flex-row lg:justify-between lg:items-center">

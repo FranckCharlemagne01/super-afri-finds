@@ -147,48 +147,64 @@ export const SellerMessages = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {messages.map((message) => (
             <Card
               key={message.id}
-              className={`cursor-pointer transition-colors hover:bg-muted/50 hover:shadow-md ${
-                !message.is_read ? 'border-primary' : ''
+              className={`cursor-pointer transition-all duration-200 border hover:shadow-md hover:border-primary/30 ${
+                !message.is_read 
+                  ? 'border-primary bg-primary/5 shadow-sm' 
+                  : 'border-border/50 hover:bg-muted/30'
               }`}
               onClick={() => handleMessageClick(message)}
             >
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
+              <CardHeader className="pb-3">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    <span className="font-medium">
-                      {message.sender_profile?.full_name || message.sender_profile?.email || 'Client'}
-                    </span>
-                    {!message.is_read && (
-                      <Badge variant="destructive" className="text-xs">
-                        Nouveau
-                      </Badge>
-                    )}
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      !message.is_read ? 'bg-primary/20' : 'bg-muted'
+                    }`}>
+                      <User className="h-4 w-4" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="font-medium text-sm break-words">
+                        {message.sender_profile?.full_name || message.sender_profile?.email || 'Client'}
+                      </span>
+                      {!message.is_read && (
+                        <Badge variant="destructive" className="text-xs ml-2 animate-pulse">
+                          Nouveau
+                        </Badge>
+                      )}
+                    </div>
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {format(new Date(message.created_at), 'dd MMM yyyy', { locale: fr })}
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    {format(new Date(message.created_at), 'dd MMM', { locale: fr })}
                   </span>
                 </div>
                 {message.subject && (
-                  <h4 className="text-sm font-medium">{message.subject}</h4>
+                  <h4 className="text-sm font-medium mt-2 line-clamp-1">{message.subject}</h4>
                 )}
                 {message.product && (
-                  <p className="text-xs text-muted-foreground">
-                    Produit: {message.product.title}
+                  <p className="text-xs text-primary font-medium mt-1 bg-primary/10 px-2 py-1 rounded">
+                    📦 {message.product.title}
                   </p>
                 )}
               </CardHeader>
               <CardContent className="pt-0">
-                <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                <p className="text-sm text-muted-foreground line-clamp-2 mb-3 leading-relaxed">
                   {message.content}
                 </p>
-                <Button variant="outline" size="sm" className="w-full">
+                <Button 
+                  variant={!message.is_read ? "default" : "outline"} 
+                  size="sm" 
+                  className={`w-full transition-all duration-200 ${
+                    !message.is_read 
+                      ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm' 
+                      : 'hover:bg-primary/10 hover:border-primary/30'
+                  }`}
+                >
                   <MessageCircle className="h-4 w-4 mr-2" />
-                  Ouvrir le chat
+                  {!message.is_read ? 'Répondre maintenant' : 'Ouvrir le chat'}
                 </Button>
               </CardContent>
             </Card>

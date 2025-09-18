@@ -123,20 +123,21 @@ export const SellerOrders = () => {
       ) : (
         <div className="space-y-4 prevent-flash">
           {(orders || []).map((order) => (
-            <Card key={order.id} className="border-0 shadow-md hover:shadow-lg card-hover cursor-pointer">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">
+            <Card key={order.id} className="border border-border/50 shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-200 cursor-pointer overflow-hidden">
+              <CardHeader className="pb-3 bg-gradient-to-r from-muted/30 to-muted/10">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <CardTitle className="text-base lg:text-lg flex items-center gap-2">
+                    <Package className="h-4 w-4 text-primary" />
                     Commande #{order.id.slice(-8)}
                   </CardTitle>
-                  <Badge variant={getStatusBadgeVariant(order.status)}>
+                  <Badge variant={getStatusBadgeVariant(order.status)} className="w-fit">
                     {statusLabels[order.status as keyof typeof statusLabels]}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Calendar className="h-4 w-4" />
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Calendar className="h-3 w-3" />
                   <span>
-                    {format(new Date(order.created_at), 'dd MMMM yyyy à HH:mm', { locale: fr })}
+                    {format(new Date(order.created_at), 'dd MMM yyyy à HH:mm', { locale: fr })}
                   </span>
                 </div>
               </CardHeader>
@@ -154,24 +155,24 @@ export const SellerOrders = () => {
                   </div>
                 </div>
 
-                {/* Client preview - informations complètes */}
-                <div className="p-4 bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-lg space-y-3">
+                {/* Informations client - conserve la couleur demandée */}
+                <div className="p-4 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-lg space-y-3">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-primary rounded-full"></div>
-                    <p className="font-semibold text-foreground">Client: {order.customer_name}</p>
+                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                    <p className="font-semibold text-orange-900">Client: {order.customer_name}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <p className="text-sm font-medium text-foreground">📞 {order.customer_phone}</p>
+                    <p className="text-sm font-medium text-orange-800">📞 {order.customer_phone}</p>
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-start gap-2">
-                      <div className="w-2 h-2 bg-orange-500 rounded-full mt-1 flex-shrink-0"></div>
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-1 flex-shrink-0"></div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1">
-                          📍 Adresse de livraison complète
+                        <p className="text-xs font-bold text-orange-700 uppercase tracking-wider mb-1">
+                          📍 Adresse de livraison
                         </p>
-                        <p className="text-sm font-medium text-foreground whitespace-pre-wrap break-words bg-white/60 p-2 rounded border">
+                        <p className="text-sm font-medium text-orange-900 whitespace-pre-wrap break-words bg-white/70 p-3 rounded border border-orange-200">
                           {order.delivery_location}
                         </p>
                       </div>

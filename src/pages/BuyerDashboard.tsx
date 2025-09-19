@@ -3,14 +3,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { BuyerMessages } from '@/components/BuyerMessages';
 import { 
-  ArrowLeft, 
   User, 
   Package, 
   MessageSquare, 
@@ -19,7 +17,13 @@ import {
   Edit,
   Save,
   X,
-  Bell
+  Heart,
+  ShoppingCart,
+  Settings,
+  Phone,
+  Mail,
+  MapPin,
+  ChevronRight
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -70,6 +74,7 @@ const BuyerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [editingProfile, setEditingProfile] = useState(false);
   const [updatedProfile, setUpdatedProfile] = useState<UserProfile>({ full_name: '', phone: '', email: '' });
+  const [activeSection, setActiveSection] = useState('dashboard');
 
   const handleSignOut = async () => {
     await signOut();
@@ -193,247 +198,423 @@ const BuyerDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6 lg:py-8">
-        {/* Header */}
-        <div className="flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-center mb-6 lg:mb-8">
-          <div>
-            <h1 className="text-2xl lg:text-3xl font-bold gradient-text-primary">Mon Espace</h1>
-            <p className="text-sm lg:text-base text-muted-foreground">Gérez votre profil et suivez vos commandes</p>
-          </div>
-          
-          <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-4">
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={handleViewPublicPage}
-                className="flex-1 lg:flex-none items-center gap-2 text-sm"
-                size="sm"
-              >
-                <Store className="h-4 w-4" />
-                <span className="hidden sm:inline">Continuer mes achats</span>
-                <span className="sm:hidden">Achats</span>
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleSignOut}
-                className="flex-1 lg:flex-none items-center gap-2 text-sm"
-                size="sm"
-              >
-                <LogOut className="h-4 w-4" />
-                <span className="hidden sm:inline">Déconnexion</span>
-                <span className="sm:hidden">Sortir</span>
-              </Button>
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5">
+      <div className="container mx-auto px-3 py-4 max-w-md lg:max-w-6xl lg:px-6 lg:py-8">
+        {/* Header Mobile */}
+        <div className="lg:hidden mb-6">
+          <div className="flex items-center justify-between p-4 bg-white rounded-2xl shadow-sm border border-border/50">
+            <div>
+              <h1 className="text-xl font-bold text-foreground">Mon Profil</h1>
+              <p className="text-sm text-muted-foreground">Bonjour {profile.full_name?.split(' ')[0] || 'Client'} !</p>
             </div>
-            <Badge variant="secondary" className="px-3 py-1 text-xs lg:px-4 lg:py-2 self-center lg:self-auto">
-              Client
-            </Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignOut}
+              className="h-10 w-10 rounded-full bg-red-50 hover:bg-red-100 text-red-600"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
-          <Card className="border-0 shadow-md">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Commandes</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl lg:text-2xl font-bold">{orders.length}</div>
-            </CardContent>
-          </Card>
-          
-          <Card className="border-0 shadow-md">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Commandes Actives</CardTitle>
-              <MessageSquare className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl lg:text-2xl font-bold">
-                {orders.filter(order => ['pending', 'confirmed', 'shipped'].includes(order.status)).length}
-              </div>
-            </CardContent>
-          </Card>
+        {/* Header Desktop */}
+        <div className="hidden lg:flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold gradient-text-primary">Mon Espace Client</h1>
+            <p className="text-muted-foreground mt-1">Gérez votre profil et suivez vos activités</p>
+          </div>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={handleViewPublicPage}
+              className="items-center gap-2"
+            >
+              <Store className="h-4 w-4" />
+              Continuer mes achats
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleSignOut}
+              className="items-center gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              Déconnexion
+            </Button>
+          </div>
         </div>
 
-        {/* Main Content */}
-        <Tabs defaultValue="profile" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:grid-cols-none lg:flex">
-            <TabsTrigger value="profile" className="text-sm">Mon Profil</TabsTrigger>
-            <TabsTrigger value="orders" className="text-sm">Mes Commandes</TabsTrigger>
-            <TabsTrigger value="messages" className="text-sm relative">
-              Messages
-              <MessageNotificationBadge />
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="profile" className="space-y-4">
-            <Card className="border-0 shadow-md">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg lg:text-xl flex items-center gap-2">
-                    <User className="h-5 w-5" />
-                    Informations Personnelles
-                  </CardTitle>
-                </div>
-                {!editingProfile && (
+        {activeSection === 'dashboard' && (
+          <>
+            {/* Profile Summary Card */}
+            <Card className="mb-6 border-0 shadow-sm bg-gradient-to-r from-primary/10 to-secondary/10">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center">
+                    <User className="w-8 h-8 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold">{profile.full_name || 'Nom non renseigné'}</h3>
+                    <p className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Mail className="w-3 h-3" />
+                      {profile.email}
+                    </p>
+                    {profile.phone && (
+                      <p className="text-sm text-muted-foreground flex items-center gap-1">
+                        <Phone className="w-3 h-3" />
+                        {profile.phone}
+                      </p>
+                    )}
+                  </div>
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
-                    onClick={() => setEditingProfile(true)}
-                    className="flex items-center gap-2"
+                    onClick={() => setActiveSection('profile')}
+                    className="text-primary hover:bg-primary/10"
                   >
-                    <Edit className="h-4 w-4" />
-                    Modifier
+                    <Edit className="w-4 h-4" />
                   </Button>
-                )}
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Stats */}
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              <Card className="border-0 shadow-sm bg-white">
+                <CardContent className="p-4 text-center">
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Package className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div className="text-2xl font-bold text-blue-600">{orders.length}</div>
+                  <p className="text-xs text-muted-foreground">Commandes</p>
+                </CardContent>
+              </Card>
+              <Card className="border-0 shadow-sm bg-white">
+                <CardContent className="p-4 text-center">
+                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Package className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div className="text-2xl font-bold text-green-600">
+                    {orders.filter(order => ['pending', 'confirmed', 'shipped'].includes(order.status)).length}
+                  </div>
+                  <p className="text-xs text-muted-foreground">En cours</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Menu Dashboard */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-foreground">Tableau de bord</h3>
+              
+              <Card 
+                className="border-0 shadow-sm bg-white hover:shadow-md transition-all cursor-pointer" 
+                onClick={() => setActiveSection('orders')}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                        <Package className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium">Mes Commandes</h4>
+                        <p className="text-sm text-muted-foreground">Suivi des commandes en cours et historique</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card 
+                className="border-0 shadow-sm bg-white hover:shadow-md transition-all cursor-pointer" 
+                onClick={() => navigate('/favorites')}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+                        <Heart className="w-6 h-6 text-red-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium">Mes Favoris</h4>
+                        <p className="text-sm text-muted-foreground">Produits sauvegardés pour plus tard</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card 
+                className="border-0 shadow-sm bg-white hover:shadow-md transition-all cursor-pointer" 
+                onClick={() => navigate('/cart')}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                        <ShoppingCart className="w-6 h-6 text-orange-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium">Mon Panier</h4>
+                        <p className="text-sm text-muted-foreground">Articles en attente d'achat</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card 
+                className="border-0 shadow-sm bg-white hover:shadow-md transition-all cursor-pointer" 
+                onClick={() => setActiveSection('messages')}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center relative">
+                        <MessageSquare className="w-6 h-6 text-purple-600" />
+                        <MessageNotificationBadge />
+                      </div>
+                      <div>
+                        <h4 className="font-medium">Mes Messages</h4>
+                        <p className="text-sm text-muted-foreground">Conversations avec les vendeurs</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card 
+                className="border-0 shadow-sm bg-white hover:shadow-md transition-all cursor-pointer" 
+                onClick={() => setActiveSection('profile')}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                        <Settings className="w-6 h-6 text-gray-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium">Paramètres</h4>
+                        <p className="text-sm text-muted-foreground">Modifier le profil et adresses</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        )}
+
+        {activeSection === 'profile' && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 mb-6">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setActiveSection('dashboard')}
+                className="p-2"
+              >
+                <ChevronRight className="w-4 h-4 rotate-180" />
+              </Button>
+              <h2 className="text-xl font-semibold">Informations Personnelles</h2>
+            </div>
+
+            <Card className="border-0 shadow-sm bg-white">
+              <CardContent className="p-6 space-y-6">
                 {editingProfile ? (
                   <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="firstName">Prénom</Label>
+                        <Label htmlFor="firstName" className="flex items-center gap-2 text-sm font-medium">
+                          <User className="w-4 h-4" />
+                          Nom complet
+                        </Label>
                         <Input
                           id="firstName"
-                          value={getFirstName(updatedProfile.full_name)}
-                          onChange={(e) => {
-                            const lastName = getLastName(updatedProfile.full_name);
-                            setUpdatedProfile({
-                              ...updatedProfile,
-                              full_name: `${e.target.value} ${lastName}`.trim()
-                            });
-                          }}
-                          placeholder="Votre prénom"
+                          value={updatedProfile.full_name}
+                          onChange={(e) => setUpdatedProfile({
+                            ...updatedProfile,
+                            full_name: e.target.value
+                          })}
+                          placeholder="Votre nom complet"
+                          className="h-12 rounded-xl border-border/50"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="lastName">Nom</Label>
+                        <Label htmlFor="phone" className="flex items-center gap-2 text-sm font-medium">
+                          <Phone className="w-4 h-4" />
+                          Téléphone
+                        </Label>
                         <Input
-                          id="lastName"
-                          value={getLastName(updatedProfile.full_name)}
-                          onChange={(e) => {
-                            const firstName = getFirstName(updatedProfile.full_name);
-                            setUpdatedProfile({
-                              ...updatedProfile,
-                              full_name: `${firstName} ${e.target.value}`.trim()
-                            });
-                          }}
-                          placeholder="Votre nom"
+                          id="phone"
+                          value={updatedProfile.phone}
+                          onChange={(e) => setUpdatedProfile({
+                            ...updatedProfile,
+                            phone: e.target.value
+                          })}
+                          placeholder="Votre numéro de téléphone"
+                          className="h-12 rounded-xl border-border/50"
                         />
                       </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email" className="flex items-center gap-2 text-sm font-medium">
+                          <Mail className="w-4 h-4" />
+                          Email
+                        </Label>
+                        <Input
+                          id="email"
+                          value={updatedProfile.email}
+                          disabled
+                          className="h-12 rounded-xl bg-muted border-border/50"
+                        />
+                        <p className="text-xs text-muted-foreground">L'email ne peut pas être modifié depuis ce profil</p>
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Téléphone</Label>
-                      <Input
-                        id="phone"
-                        value={updatedProfile.phone}
-                        onChange={(e) => setUpdatedProfile({
-                          ...updatedProfile,
-                          phone: e.target.value
-                        })}
-                        placeholder="Votre numéro de téléphone"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        value={updatedProfile.email}
-                        disabled
-                        className="bg-muted"
-                      />
-                      <p className="text-xs text-muted-foreground">L'email ne peut pas être modifié</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button onClick={handleUpdateProfile} className="flex items-center gap-2">
-                        <Save className="h-4 w-4" />
+                    <div className="flex gap-3 pt-4">
+                      <Button 
+                        onClick={handleUpdateProfile} 
+                        className="flex-1 h-12 rounded-xl bg-primary hover:bg-primary/90"
+                      >
+                        <Save className="h-4 w-4 mr-2" />
                         Enregistrer
                       </Button>
-                      <Button variant="outline" onClick={cancelEdit} className="flex items-center gap-2">
+                      <Button 
+                        variant="outline" 
+                        onClick={cancelEdit} 
+                        className="h-12 px-6 rounded-xl border-border/50"
+                      >
                         <X className="h-4 w-4" />
-                        Annuler
                       </Button>
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Prénom</Label>
-                        <p className="text-lg">{getFirstName(profile.full_name) || 'Non renseigné'}</p>
+                  <div className="space-y-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
+                            <User className="w-5 h-5 text-primary" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">Nom complet</p>
+                            <p className="font-medium">{profile.full_name || 'Non renseigné'}</p>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Nom</Label>
-                        <p className="text-lg">{getLastName(profile.full_name) || 'Non renseigné'}</p>
+                      
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                            <Phone className="w-5 h-5 text-green-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">Téléphone</p>
+                            <p className="font-medium">{profile.phone || 'Non renseigné'}</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                            <Mail className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">Email</p>
+                            <p className="font-medium">{profile.email}</p>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div>
-                      <Label className="text-sm font-medium text-muted-foreground">Téléphone</Label>
-                      <p className="text-lg">{profile.phone || 'Non renseigné'}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-muted-foreground">Email</Label>
-                      <p className="text-lg">{profile.email}</p>
-                    </div>
+                    
+                    <Button
+                      onClick={() => setEditingProfile(true)}
+                      className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90"
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Modifier mes informations
+                    </Button>
                   </div>
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+          </div>
+        )}
 
-          <TabsContent value="orders" className="space-y-4">
-            <div className="flex flex-col gap-3 lg:flex-row lg:justify-between lg:items-center">
-              <h2 className="text-lg lg:text-xl font-semibold">Historique des Commandes</h2>
+        {activeSection === 'orders' && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 mb-6">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setActiveSection('dashboard')}
+                className="p-2"
+              >
+                <ChevronRight className="w-4 h-4 rotate-180" />
+              </Button>
+              <h2 className="text-xl font-semibold">Mes Commandes</h2>
             </div>
 
             {orders.length === 0 ? (
-              <Card className="border-0 shadow-md">
+              <Card className="border-0 shadow-sm bg-white">
                 <CardContent className="text-center py-12">
-                  <Package className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">Aucune commande</h3>
+                  <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Package className="w-10 h-10 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">Aucune commande</h3>
                   <p className="text-muted-foreground mb-6">Vous n'avez pas encore passé de commande</p>
-                  <Button onClick={() => navigate('/')}>
+                  <Button 
+                    onClick={() => navigate('/')}
+                    className="h-12 px-8 rounded-xl bg-primary hover:bg-primary/90"
+                  >
                     Découvrir nos produits
                   </Button>
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {orders.map((order) => {
                   const statusInfo = statusConfig[order.status as keyof typeof statusConfig] || statusConfig.pending;
                   
                   return (
-                    <Card key={order.id} className="border-0 shadow-md">
-                      <CardHeader className="pb-3">
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-lg">Commande #{order.id.slice(-8)}</CardTitle>
-                          <Badge className={`${statusInfo.bgColor} ${statusInfo.color} hover:${statusInfo.bgColor}`}>
+                    <Card key={order.id} className="border-0 shadow-sm bg-white">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <h4 className="font-medium text-sm">#{order.id.slice(-8)}</h4>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(order.created_at).toLocaleDateString('fr-FR', {
+                                day: 'numeric',
+                                month: 'short',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </p>
+                          </div>
+                          <Badge 
+                            className={`${statusInfo.bgColor} ${statusInfo.color} text-xs px-2 py-1 rounded-full`}
+                          >
                             {statusInfo.label}
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          Passée le {new Date(order.created_at).toLocaleDateString('fr-FR', {
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </p>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div>
-                          <h3 className="font-medium text-foreground">{order.product_title}</h3>
-                          <div className="flex items-center justify-between text-sm text-muted-foreground mt-1">
-                            <span>Quantité: {order.quantity}</span>
-                            <span>Prix unitaire: {order.product_price.toLocaleString()} FCFA</span>
+                        
+                        <div className="mb-3">
+                          <h3 className="font-medium text-sm">{order.product_title}</h3>
+                          <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
+                            <span>Qté: {order.quantity}</span>
+                            <span>{order.product_price.toLocaleString()} FCFA/u</span>
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between pt-3 border-t">
-                          <span className="text-lg font-bold text-promo">
-                            Total: {order.total_amount.toLocaleString()} FCFA
+                        <div className="flex items-center justify-between pt-3 border-t border-border/50">
+                          <span className="text-sm font-medium">Total</span>
+                          <span className="text-lg font-bold text-primary">
+                            {order.total_amount.toLocaleString()} FCFA
                           </span>
                         </div>
                       </CardContent>
@@ -442,12 +623,26 @@ const BuyerDashboard = () => {
                 })}
               </div>
             )}
-          </TabsContent>
+          </div>
+        )}
 
-          <TabsContent value="messages" className="space-y-4">
+        {activeSection === 'messages' && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 mb-6">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setActiveSection('dashboard')}
+                className="p-2"
+              >
+                <ChevronRight className="w-4 h-4 rotate-180" />
+              </Button>
+              <h2 className="text-xl font-semibold">Mes Messages</h2>
+            </div>
+
             <BuyerMessages />
-          </TabsContent>
-        </Tabs>
+          </div>
+        )}
       </div>
     </div>
   );

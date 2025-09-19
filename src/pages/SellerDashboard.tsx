@@ -15,6 +15,8 @@ import { SellerProducts } from '@/components/SellerProducts';
 import { SellerMessages } from '@/components/SellerMessages';
 import { SellerOrders } from '@/components/SellerOrders';
 import { TrialCountdown } from '@/components/TrialCountdown';
+import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
+import { RealtimeNotificationBadge } from '@/components/RealtimeNotificationBadge';
 import { useNavigate } from 'react-router-dom';
 
 interface Product {
@@ -186,163 +188,31 @@ const SellerDashboard = () => {
 
   // Notification components
   const MessageNotificationBadge = () => {
-    const [unreadCount, setUnreadCount] = useState(0);
-
-    const fetchUnreadCount = useCallback(async () => {
-      if (!user?.id) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('messages')
-          .select('id')
-          .eq('recipient_id', user.id)
-          .eq('is_read', false);
-
-        if (error) throw error;
-        setUnreadCount(data?.length || 0);
-      } catch (error) {
-        console.error('Error fetching unread count:', error);
-        // Silently fail - ne pas spammer l'utilisateur avec des erreurs
-      }
-    }, [user?.id]);
-
-    useEffect(() => {
-      if (!user?.id) return;
-
-      fetchUnreadCount();
-
-      // Set up real-time subscription avec cleanup approprié
-      const channel = supabase
-        .channel(`seller-message-notifications-${user.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'messages',
-            filter: `recipient_id=eq.${user.id}`
-          },
-          () => {
-            fetchUnreadCount();
-            toast({
-              title: "💬 Nouveau message",
-              description: "Vous avez reçu un nouveau message d'un client",
-            });
-          }
-        )
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'messages',
-            filter: `recipient_id=eq.${user.id}`
-          },
-          fetchUnreadCount
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }, [user?.id, fetchUnreadCount]);
-
-    if (unreadCount === 0) return null;
-
-    return (
-      <Badge 
-        variant="destructive" 
-        className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center font-bold bg-blue-500 text-white border-2 border-white shadow-lg z-10"
-      >
-        {unreadCount > 9 ? '9+' : unreadCount}
-      </Badge>
-    );
+    const { unreadMessages } = useRealtimeNotifications();
+    return <RealtimeNotificationBadge count={unreadMessages} className="bg-blue-500 text-white border-2 border-white shadow-lg z-10" />;
   };
 
   const OrderNotificationBadge = () => {
-    const [newOrdersCount, setNewOrdersCount] = useState(0);
-
-    const fetchNewOrdersCount = useCallback(async () => {
-      if (!user?.id) return;
-      
-      try {
-        const { data, error } = await supabase.rpc('get_seller_orders');
-        if (error) throw error;
-        
-        // Filtrer les commandes non traitées (pending et confirmed)
-        const unprocessedOrders = data?.filter(order => 
-          order.seller_id === user.id && 
-          (order.status === 'pending' || order.status === 'confirmed')
-        ) || [];
-        setNewOrdersCount(unprocessedOrders.length);
-      } catch (error) {
-        console.error('Error fetching new orders count:', error);
-        // Silently fail - ne pas spammer l'utilisateur avec des erreurs
-      }
-    }, [user?.id]);
+    const { user } = useOptimizedAuth();
+    const { newOrders } = useRealtimeNotifications();
+    const [lastOrderCount, setLastOrderCount] = useState(0);
 
     useEffect(() => {
-      if (!user?.id) return;
+      // Jouer un son quand une nouvelle commande arrive
+      if (newOrders > lastOrderCount && lastOrderCount > 0) {
+        const audio = new Audio('/notification.mp3');
+        audio.volume = 0.3;
+        audio.play().catch(e => console.log('Could not play sound:', e));
+        
+        toast({
+          title: "🚨 Nouvelle commande !",
+          description: "Vous avez reçu une nouvelle commande",
+        });
+      }
+      setLastOrderCount(newOrders);
+    }, [newOrders, lastOrderCount]);
 
-      fetchNewOrdersCount();
-
-      // Set up real-time subscription for new orders avec cleanup approprié
-      const channel = supabase
-        .channel(`seller-order-notifications-${user.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'orders',
-            filter: `seller_id=eq.${user.id}`
-          },
-          (payload) => {
-            fetchNewOrdersCount();
-            // Notification plus visible avec son et animation
-            toast({
-              title: "🛒 NOUVELLE COMMANDE !",
-              description: `Commande #${payload.new.id.slice(-8)} - ${payload.new.product_title} (${payload.new.total_amount} FCFA)`,
-              duration: 10000, // 10 secondes pour être sûr que le vendeur la voit
-            });
-            
-            // Notification sonore si supportée
-            if ('Notification' in window && Notification.permission === 'granted') {
-              new Notification('Nouvelle commande Djassa !', {
-                body: `${payload.new.product_title} - ${payload.new.total_amount} FCFA`,
-                icon: '/favicon.png',
-                tag: 'new-order'
-              });
-            }
-          }
-        )
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'orders',
-            filter: `seller_id=eq.${user.id}`
-          },
-          fetchNewOrdersCount
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }, [user?.id, fetchNewOrdersCount]);
-
-    if (newOrdersCount === 0) return null;
-
-    return (
-      <Badge 
-        variant="destructive" 
-        className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center font-bold animate-pulse bg-red-500 text-white border-2 border-white shadow-lg z-10"
-      >
-        {newOrdersCount > 9 ? '9+' : newOrdersCount}
-      </Badge>
-    );
+    return <RealtimeNotificationBadge count={newOrders} className="bg-red-500 text-white border-2 border-white shadow-lg z-10" />;
   };
 
   // Composant pour alerter des nouvelles commandes

@@ -53,74 +53,12 @@ const statusConfig = {
 };
 
 // Message notification component
+import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
+import { RealtimeNotificationBadge } from '@/components/RealtimeNotificationBadge';
+
 const MessageNotificationBadge = () => {
-  const { user } = useAuth();
-  const [unreadCount, setUnreadCount] = useState(0);
-
-  useEffect(() => {
-    if (!user) return;
-
-    const fetchUnreadCount = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('messages')
-          .select('id')
-          .eq('recipient_id', user.id)
-          .eq('is_read', false);
-
-        if (error) throw error;
-        setUnreadCount(data?.length || 0);
-      } catch (error) {
-        console.error('Error fetching unread count:', error);
-      }
-    };
-
-    fetchUnreadCount();
-
-    // Set up real-time subscription for new messages
-    const channel = supabase
-      .channel('message-notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `recipient_id=eq.${user.id}`
-        },
-        () => {
-          fetchUnreadCount();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'messages',
-          filter: `recipient_id=eq.${user.id}`
-        },
-        () => {
-          fetchUnreadCount();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user]);
-
-  if (unreadCount === 0) return null;
-
-  return (
-    <Badge 
-      variant="destructive" 
-      className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
-    >
-      {unreadCount > 9 ? '9+' : unreadCount}
-    </Badge>
-  );
+  const { unreadMessages } = useRealtimeNotifications();
+  return <RealtimeNotificationBadge count={unreadMessages} />;
 };
 
 const BuyerDashboard = () => {

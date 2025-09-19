@@ -14,6 +14,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useRole } from "@/hooks/useRole";
+import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
+import { RealtimeNotificationBadge } from "@/components/RealtimeNotificationBadge";
 import { useNavigate } from "react-router-dom";
 import { 
   Smartphone, 
@@ -220,19 +222,11 @@ const Index = () => {
             <div className="flex items-center gap-0.5 sm:gap-1 md:gap-2">
               <Button variant="ghost" size="icon" className="relative p-2 sm:p-2 min-w-[44px] min-h-[44px]" onClick={handleFavoritesClick}>
                 <Heart className={`w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 ${favoriteIds.length > 0 ? 'fill-current text-promo' : ''}`} />
-                {favoriteIds.length > 0 && (
-                  <Badge className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 bg-promo text-white text-xs w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center min-w-0 p-0">
-                    <span className="text-xs leading-none">{favoriteIds.length > 9 ? '9+' : favoriteIds.length}</span>
-                  </Badge>
-                )}
+                <RealtimeNotificationBadge count={favoriteIds.length} className="bg-promo text-white" />
               </Button>
               <Button variant="ghost" size="icon" className="relative p-2 sm:p-2 min-w-[44px] min-h-[44px]" onClick={handleCartClick}>
                 <ShoppingCart className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5" />
-                {cartCount > 0 && (
-                  <Badge className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 bg-promo text-white text-xs w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center min-w-0 p-0">
-                    <span className="text-xs leading-none">{cartCount > 9 ? '9+' : cartCount}</span>
-                  </Badge>
-                )}
+                <RealtimeNotificationBadge count={cartCount} className="bg-promo text-white" />
               </Button>
               <Button variant="ghost" size="icon" className="p-2 sm:p-2 min-w-[44px] min-h-[44px]" onClick={handleProfileClick}>
                 <User className={`w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 ${user ? 'text-primary' : ''}`} />

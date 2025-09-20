@@ -433,6 +433,10 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
+      cancel_order_by_customer: {
+        Args: { order_id: string }
+        Returns: Json
+      }
       get_admin_statistics: {
         Args: Record<PropertyKey, never>
         Returns: {

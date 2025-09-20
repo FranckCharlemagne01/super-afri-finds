@@ -183,12 +183,39 @@ const BuyerDashboard = () => {
   const handleCancelOrder = async (orderId: string) => {
     try {
       setCancellingOrderId(orderId);
-      const { error } = await supabase.rpc('update_order_status', {
-        order_id: orderId,
-        new_status: 'cancelled'
+      
+      // Utiliser la nouvelle fonction sécurisée pour l'annulation
+      const { data, error } = await supabase.rpc('cancel_order_by_customer', {
+        order_id: orderId
       });
 
       if (error) throw error;
+
+      // Typage correct pour la réponse JSON
+      const result = data as { success: boolean; error?: string; seller_id?: string; customer_name?: string; product_title?: string };
+
+      // Vérifier le résultat de la fonction
+      if (!result.success) {
+        toast({
+          title: "Impossible d'annuler",
+          description: result.error || "Erreur inconnue",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Envoyer une notification temps réel au vendeur
+      if (result.seller_id) {
+        await supabase
+          .from('messages')
+          .insert({
+            sender_id: user.id,
+            recipient_id: result.seller_id,
+            subject: 'Commande annulée',
+            content: `Le client ${result.customer_name} a annulé sa commande pour "${result.product_title}". La commande a été automatiquement marquée comme annulée.`,
+            is_read: false
+          });
+      }
 
       toast({
         title: "✅ Commande annulée",

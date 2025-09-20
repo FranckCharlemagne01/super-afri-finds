@@ -25,6 +25,17 @@ import {
   MapPin,
   ChevronRight
 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useNavigate } from 'react-router-dom';
 
 interface Order {
@@ -75,6 +86,7 @@ const BuyerDashboard = () => {
   const [editingProfile, setEditingProfile] = useState(false);
   const [updatedProfile, setUpdatedProfile] = useState<UserProfile>({ full_name: '', phone: '', email: '' });
   const [activeSection, setActiveSection] = useState('dashboard');
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
 
   const handleSignOut = async () => {
     await signOut();
@@ -166,6 +178,35 @@ const BuyerDashboard = () => {
   const cancelEdit = () => {
     setUpdatedProfile(profile);
     setEditingProfile(false);
+  };
+
+  const handleCancelOrder = async (orderId: string) => {
+    try {
+      setCancellingOrderId(orderId);
+      const { error } = await supabase.rpc('update_order_status', {
+        order_id: orderId,
+        new_status: 'cancelled'
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "✅ Commande annulée",
+        description: "Votre commande a été annulée avec succès. Le vendeur a été notifié.",
+      });
+
+      // Refresh orders to show updated status
+      await fetchUserData();
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'annuler la commande. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    } finally {
+      setCancellingOrderId(null);
+    }
   };
 
   // Extract first and last name from full name
@@ -558,6 +599,9 @@ const BuyerDashboard = () => {
                 <ChevronRight className="w-4 h-4 rotate-180" />
               </Button>
               <h2 className="text-xl font-semibold">Mes Commandes</h2>
+              <Badge className="bg-primary text-primary-foreground ml-auto">
+                {orders.length} commande{orders.length > 1 ? 's' : ''}
+              </Badge>
             </div>
 
             {orders.length === 0 ? (
@@ -580,6 +624,7 @@ const BuyerDashboard = () => {
               <div className="space-y-3">
                 {orders.map((order) => {
                   const statusInfo = statusConfig[order.status as keyof typeof statusConfig] || statusConfig.pending;
+                  const canCancel = order.status === 'pending' || order.status === 'confirmed';
                   
                   return (
                     <Card key={order.id} className="border-0 shadow-sm bg-white">
@@ -612,10 +657,52 @@ const BuyerDashboard = () => {
                         </div>
 
                         <div className="flex items-center justify-between pt-3 border-t border-border/50">
-                          <span className="text-sm font-medium">Total</span>
-                          <span className="text-lg font-bold text-primary">
-                            {order.total_amount.toLocaleString()} FCFA
-                          </span>
+                          <div>
+                            <span className="text-sm font-medium">Total</span>
+                            <div className="text-lg font-bold text-primary">
+                              {order.total_amount.toLocaleString()} FCFA
+                            </div>
+                          </div>
+                          {canCancel && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  disabled={cancellingOrderId === order.id}
+                                  className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 h-8 px-3 text-xs"
+                                >
+                                  {cancellingOrderId === order.id ? (
+                                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-600"></div>
+                                  ) : (
+                                    <>
+                                      <X className="w-3 h-3 mr-1" />
+                                      Annuler
+                                    </>
+                                  )}
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent className="max-w-md mx-4">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle className="text-lg">Confirmer l'annulation</AlertDialogTitle>
+                                  <AlertDialogDescription className="text-sm text-muted-foreground">
+                                    Êtes-vous sûr de vouloir annuler cette commande ? Le vendeur sera automatiquement notifié de l'annulation.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter className="gap-2 flex-col sm:flex-row">
+                                  <AlertDialogCancel className="w-full sm:w-auto">
+                                    Non, garder
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={() => handleCancelOrder(order.id)}
+                                    className="w-full sm:w-auto bg-red-600 text-white hover:bg-red-700"
+                                  >
+                                    Oui, annuler
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
                         </div>
                       </CardContent>
                     </Card>

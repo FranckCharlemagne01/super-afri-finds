@@ -17,6 +17,7 @@ import { useRole } from "@/hooks/useRole";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { RealtimeNotificationBadge } from "@/components/RealtimeNotificationBadge";
 import { useNavigate } from "react-router-dom";
+import { SellerUpgradeForm } from "@/components/SellerUpgradeForm";
 import { 
   Smartphone, 
   Shirt, 
@@ -31,7 +32,8 @@ import {
   Heart,
   Tv,
   Sparkles,
-  ShoppingBag
+  ShoppingBag,
+  ArrowLeft
 } from "lucide-react";
 
 // Import product images
@@ -76,6 +78,7 @@ const Index = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showSellerUpgrade, setShowSellerUpgrade] = useState(false);
 
   const handleProfileClick = () => {
     if (user) {
@@ -179,6 +182,30 @@ const Index = () => {
     seller_id: product.seller_id,
     videoUrl: product.video_url
   });
+
+  // Afficher le formulaire de mise à niveau vendeur pour les utilisateurs connectés
+  if (showSellerUpgrade && user) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <Button
+            variant="ghost"
+            onClick={() => setShowSellerUpgrade(false)}
+            className="mb-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Retour à l'accueil
+          </Button>
+          <SellerUpgradeForm 
+            onSuccess={() => {
+              setShowSellerUpgrade(false);
+              navigate('/seller');
+            }} 
+          />
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -349,8 +376,8 @@ const Index = () => {
                 if (user && role === 'seller') {
                   navigate('/seller');
                 } else if (user && role === 'buyer') {
-                  // Utilisateur connecté mais pas encore vendeur
-                  navigate('/auth?mode=seller-upgrade');
+                  // Utilisateur connecté mais pas encore vendeur - afficher le formulaire directement
+                  setShowSellerUpgrade(true);
                 } else {
                   // Utilisateur non connecté
                   navigate('/auth?mode=signup&role=seller');

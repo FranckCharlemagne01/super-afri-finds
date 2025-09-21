@@ -12,9 +12,11 @@ import { CountrySelect } from '@/components/CountrySelect';
 import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { SellerUpgradeForm } from '@/components/SellerUpgradeForm';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
+  const { user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -30,6 +32,7 @@ const Auth = () => {
   const [resetEmail, setResetEmail] = useState('');
   const [resetSuccess, setResetSuccess] = useState(false);
   const [updatePasswordMode, setUpdatePasswordMode] = useState(false);
+  const [showSellerUpgrade, setShowSellerUpgrade] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -40,16 +43,19 @@ const Auth = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Check if this is a password reset redirect
+  // Check URL params for seller upgrade mode
   useEffect(() => {
+    const mode = searchParams.get('mode');
     const type = searchParams.get('type');
     const access_token = searchParams.get('access_token');
     const refresh_token = searchParams.get('refresh_token');
     
     if (type === 'recovery' && access_token && refresh_token) {
       setUpdatePasswordMode(true);
+    } else if (mode === 'seller-upgrade' && user) {
+      setShowSellerUpgrade(true);
     }
-  }, [searchParams]);
+  }, [searchParams, user]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -222,6 +228,29 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+  // Afficher le formulaire de mise à niveau vendeur pour les utilisateurs connectés
+  if (showSellerUpgrade && user) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/')}
+            className="mb-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Retour à l'accueil
+          </Button>
+          <SellerUpgradeForm 
+            onSuccess={() => {
+              navigate('/seller');
+            }} 
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">

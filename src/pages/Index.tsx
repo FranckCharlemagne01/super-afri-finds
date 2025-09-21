@@ -348,7 +348,11 @@ const Index = () => {
               onClick={() => {
                 if (user && role === 'seller') {
                   navigate('/seller');
+                } else if (user && role === 'buyer') {
+                  // Utilisateur connecté mais pas encore vendeur
+                  navigate('/auth?mode=seller-upgrade');
                 } else {
+                  // Utilisateur non connecté
                   navigate('/auth?mode=signup&role=seller');
                 }
               }}

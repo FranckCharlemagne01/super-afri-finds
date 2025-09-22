@@ -4,6 +4,7 @@ import { useTrialStatus } from '@/hooks/useTrialStatus';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { TextInput, NumericInput } from '@/components/ui/validated-input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -426,12 +427,13 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
       <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'grid-cols-1 md:grid-cols-2 gap-6'}`}>
         <div className="space-y-2">
           <Label htmlFor="title">Titre du produit *</Label>
-          <Input
+          <TextInput
             id="title"
             value={formData.title}
-            onChange={(e) => handleInputChange('title', e.target.value)}
+            onChange={(value) => handleInputChange('title', value)}
             placeholder="Nom de votre produit"
             required
+            allowNumbers={true}
             className={isMobile ? "text-base" : ""}
           />
         </div>
@@ -457,40 +459,34 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
 
         <div className="space-y-2">
           <Label htmlFor="price">Prix (FCFA) *</Label>
-          <Input
+          <NumericInput
             id="price"
-            type="number"
-            value={formData.price}
-            onChange={(e) => handleInputChange('price', Number(e.target.value))}
+            value={formData.price?.toString() || ''}
+            onChange={(value) => handleInputChange('price', Number(value) || 0)}
             placeholder="0"
             required
-            min="0"
             className={isMobile ? "text-base" : ""}
           />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="original_price">Prix original (FCFA)</Label>
-          <Input
+          <NumericInput
             id="original_price"
-            type="number"
-            value={formData.original_price}
-            onChange={(e) => handleInputChange('original_price', Number(e.target.value))}
+            value={formData.original_price?.toString() || ''}
+            onChange={(value) => handleInputChange('original_price', Number(value) || 0)}
             placeholder="0"
-            min="0"
             className={isMobile ? "text-base" : ""}
           />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="stock_quantity">Quantité en stock</Label>
-          <Input
+          <NumericInput
             id="stock_quantity"
-            type="number"
-            value={formData.stock_quantity}
-            onChange={(e) => handleInputChange('stock_quantity', Number(e.target.value))}
+            value={formData.stock_quantity?.toString() || ''}
+            onChange={(value) => handleInputChange('stock_quantity', Number(value) || 0)}
             placeholder="0"
-            min="0"
             className={isMobile ? "text-base" : ""}
           />
         </div>

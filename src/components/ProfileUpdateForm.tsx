@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { TextInput, NumericInput } from '@/components/ui/validated-input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, User, Mail, Phone, MapPin } from 'lucide-react';
@@ -128,10 +129,10 @@ export const ProfileUpdateForm = () => {
             <User className="w-4 h-4" />
             Nom complet
           </Label>
-          <Input
+          <TextInput
             id="full_name"
             value={profileData.full_name}
-            onChange={(e) => handleChange('full_name', e.target.value)}
+            onChange={(value) => handleChange('full_name', value)}
             placeholder="Votre nom complet"
           />
         </div>
@@ -155,11 +156,11 @@ export const ProfileUpdateForm = () => {
             <Phone className="w-4 h-4" />
             Téléphone
           </Label>
-          <Input
+          <NumericInput
             id="phone"
             value={profileData.phone}
-            onChange={(e) => handleChange('phone', e.target.value)}
-            placeholder="+225 XX XX XX XX XX"
+            onChange={(value) => handleChange('phone', value)}
+            placeholder="22501234567"
           />
         </div>
 
@@ -168,10 +169,10 @@ export const ProfileUpdateForm = () => {
             <MapPin className="w-4 h-4" />
             Ville
           </Label>
-          <Input
+          <TextInput
             id="city"
             value={profileData.city}
-            onChange={(e) => handleChange('city', e.target.value)}
+            onChange={(value) => handleChange('city', value)}
             placeholder="Abidjan"
           />
         </div>

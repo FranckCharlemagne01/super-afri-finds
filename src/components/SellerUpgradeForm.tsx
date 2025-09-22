@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { TextInput, NumericInput } from '@/components/ui/validated-input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
@@ -102,36 +103,33 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">Prénom *</Label>
-              <Input
+              <TextInput
                 id="firstName"
-                type="text"
                 placeholder="Votre prénom"
                 value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
+                onChange={setFirstName}
                 required
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="lastName">Nom *</Label>
-              <Input
+              <TextInput
                 id="lastName"
-                type="text"
                 placeholder="Votre nom de famille"
                 value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
+                onChange={setLastName}
                 required
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="phone">Numéro de téléphone *</Label>
-              <Input
+              <NumericInput
                 id="phone"
-                type="tel"
-                placeholder="+225 XX XX XX XX XX"
+                placeholder="22501234567"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={setPhone}
                 required
               />
             </div>

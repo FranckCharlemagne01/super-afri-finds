@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { TextInput, NumericInput } from '@/components/ui/validated-input';
 import { Label } from '@/components/ui/label';
 import { ShoppingCart, Plus, Minus } from 'lucide-react';
 import { useOrders, OrderData } from '@/hooks/useOrders';
@@ -115,10 +116,10 @@ export const QuickOrderDialog = ({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="customerName" className="text-sm font-medium">Nom complet *</Label>
-            <Input
+            <TextInput
               id="customerName"
               value={formData.customerName}
-              onChange={(e) => handleInputChange('customerName', e.target.value)}
+              onChange={(value) => handleInputChange('customerName', value)}
               placeholder="Votre nom complet"
               className="min-h-[44px] text-base"
               required
@@ -127,11 +128,11 @@ export const QuickOrderDialog = ({
 
           <div className="space-y-2">
             <Label htmlFor="customerPhone" className="text-sm font-medium">Numéro de téléphone *</Label>
-            <Input
+            <NumericInput
               id="customerPhone"
               value={formData.customerPhone}
-              onChange={(e) => handleInputChange('customerPhone', e.target.value)}
-              placeholder="Votre numéro de téléphone"
+              onChange={(value) => handleInputChange('customerPhone', value)}
+              placeholder="22501234567"
               className="min-h-[44px] text-base"
               required
             />
@@ -139,11 +140,12 @@ export const QuickOrderDialog = ({
 
           <div className="space-y-2">
             <Label htmlFor="deliveryLocation" className="text-sm font-medium">Lieu de livraison *</Label>
-            <Input
+            <TextInput
               id="deliveryLocation"
               value={formData.deliveryLocation}
-              onChange={(e) => handleInputChange('deliveryLocation', e.target.value)}
+              onChange={(value) => handleInputChange('deliveryLocation', value)}
               placeholder="Adresse de livraison"
+              allowNumbers={true}
               className="min-h-[44px] text-base"
               required
             />

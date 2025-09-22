@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { TextInput, NumericInput } from '@/components/ui/validated-input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -456,12 +457,11 @@ const Auth = () => {
 
                     <div className="space-y-2">
                       <Label htmlFor="fullName">Nom complet</Label>
-                      <Input
+                      <TextInput
                         id="fullName"
-                        type="text"
                         placeholder="Votre nom complet"
                         value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
+                        onChange={setFullName}
                         required
                       />
                     </div>
@@ -478,12 +478,11 @@ const Auth = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="phone">Numéro de téléphone</Label>
-                      <Input
+                      <NumericInput
                         id="phone"
-                        type="tel"
-                        placeholder="+225XXXXXXXX"
+                        placeholder="22501234567"
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        onChange={setPhone}
                         required
                       />
                     </div>

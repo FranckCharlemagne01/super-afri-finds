@@ -289,7 +289,7 @@ const Index = () => {
         <HeroSection />
 
         {/* Promotional Banner */}
-        <PromoBanner />
+        <PromoBanner onShowSellerUpgrade={() => setShowSellerUpgrade(true)} />
 
         {/* Categories */}
         <section id="popular-categories" className="mb-6 sm:mb-8">

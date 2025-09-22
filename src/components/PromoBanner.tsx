@@ -1,8 +1,18 @@
 import { useTrialStatus } from "@/hooks/useTrialStatus";
+import { useAuth } from "@/hooks/useAuth";
+import { useRole } from "@/hooks/useRole";
+import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 
-const PromoBanner = () => {
+interface PromobannerProps {
+  onShowSellerUpgrade?: () => void;
+}
+
+const PromoBanner = ({ onShowSellerUpgrade }: PromobannerProps) => {
   const { isInTrial, trialEndDate } = useTrialStatus();
+  const { user } = useAuth();
+  const { role } = useRole();
+  const navigate = useNavigate();
 
   const calculateDaysRemaining = () => {
     if (!trialEndDate) return 28;
@@ -16,7 +26,19 @@ const PromoBanner = () => {
   const daysRemaining = calculateDaysRemaining();
 
   const handleSellerSignup = () => {
-    window.location.href = '/auth?mode=signup&role=seller';
+    // Si l'utilisateur est connecté
+    if (user) {
+      // Si c'est déjà un vendeur, aller à l'espace vendeur
+      if (role === 'seller') {
+        navigate('/seller');
+      } else {
+        // Sinon, c'est un client qui veut devenir vendeur - afficher le formulaire directement
+        onShowSellerUpgrade?.();
+      }
+    } else {
+      // Utilisateur non connecté - rediriger vers inscription
+      navigate('/auth?mode=signup&role=seller');
+    }
   };
 
   return (

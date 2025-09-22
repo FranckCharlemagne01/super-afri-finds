@@ -73,7 +73,7 @@ const Index = () => {
   const { user, signOut } = useAuth();
   const { cartCount } = useCart();
   const { favoriteIds } = useFavorites();
-  const { role, isSuperAdmin } = useRole();
+  const { role, loading: roleLoading, isSuperAdmin } = useRole();
   const navigate = useNavigate();
   const [refreshKey, setRefreshKey] = useState(0);
   const [products, setProducts] = useState<Product[]>([]);
@@ -373,13 +373,17 @@ const Index = () => {
               size="lg" 
               className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               onClick={() => {
-                if (user && role === 'seller') {
-                  navigate('/seller');
-                } else if (user && role === 'buyer') {
-                  // Utilisateur connecté mais pas encore vendeur - afficher le formulaire directement
-                  setShowSellerUpgrade(true);
+                // Si l'utilisateur est connecté
+                if (user) {
+                  // Si c'est déjà un vendeur, aller à l'espace vendeur
+                  if (role === 'seller') {
+                    navigate('/seller');
+                  } else {
+                    // Sinon, c'est un client qui veut devenir vendeur - afficher le formulaire directement
+                    setShowSellerUpgrade(true);
+                  }
                 } else {
-                  // Utilisateur non connecté
+                  // Utilisateur non connecté - rediriger vers inscription
                   navigate('/auth?mode=signup&role=seller');
                 }
               }}

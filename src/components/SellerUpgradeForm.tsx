@@ -16,7 +16,8 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [fullName, setFullName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,6 +28,7 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
 
     try {
       // Mettre à jour le profil avec les nouvelles informations
+      const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
@@ -99,13 +101,25 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="fullName">Nom & Prénom *</Label>
+              <Label htmlFor="firstName">Prénom *</Label>
               <Input
-                id="fullName"
+                id="firstName"
                 type="text"
-                placeholder="Votre nom complet"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Votre prénom"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="lastName">Nom *</Label>
+              <Input
+                id="lastName"
+                type="text"
+                placeholder="Votre nom de famille"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
                 required
               />
             </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TextInput, NumericInput } from '@/components/ui/validated-input';
@@ -16,6 +17,7 @@ interface SellerUpgradeFormProps {
 export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -69,8 +71,13 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
       toast({
         title: "✅ Profil vendeur activé !",
         description: "Vous pouvez maintenant commencer à vendre vos produits. Vous bénéficiez de 28 jours d'essai gratuit.",
-        duration: 5000,
+        duration: 3000,
       });
+
+      // Redirection automatique vers l'espace vendeur
+      setTimeout(() => {
+        navigate('/seller-dashboard');
+      }, 1500);
 
       onSuccess();
     } catch (error) {

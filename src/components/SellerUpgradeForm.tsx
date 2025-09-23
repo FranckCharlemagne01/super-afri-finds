@@ -30,39 +30,30 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
     setLoading(true);
 
     try {
-      // Mettre à jour le profil avec les nouvelles informations
-      const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({
-          full_name: fullName,
-          phone: phone,
-        })
-        .eq('user_id', user.id);
+      // Utiliser la fonction sécurisée pour l'upgrade vendeur
+      const { data, error } = await supabase.rpc('upgrade_to_seller', {
+        _first_name: firstName.trim(),
+        _last_name: lastName.trim(),
+        _phone: phone.trim()
+      });
 
-      if (profileError) {
-        console.error('Erreur lors de la mise à jour du profil:', profileError);
+      if (error) {
+        console.error('Erreur lors de l\'upgrade vendeur:', error);
         toast({
           title: "❌ Erreur",
-          description: "Impossible de mettre à jour votre profil.",
+          description: "Impossible d'activer votre profil vendeur. Veuillez réessayer.",
           variant: "destructive",
         });
         return;
       }
 
-      // Ajouter le rôle vendeur
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: user.id,
-          role: 'seller'
-        });
-
-      if (roleError && !roleError.message.includes('duplicate key')) {
-        console.error('Erreur lors de l\'ajout du rôle vendeur:', roleError);
+      // Vérifier le résultat de la fonction
+      const result = data as { success: boolean; error?: string; message?: string };
+      if (!result?.success) {
+        console.error('Erreur retournée par la fonction:', result?.error);
         toast({
           title: "❌ Erreur",
-          description: "Impossible d'activer votre profil vendeur.",
+          description: result?.error || "Une erreur s'est produite lors de l'activation.",
           variant: "destructive",
         });
         return;

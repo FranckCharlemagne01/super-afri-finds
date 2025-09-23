@@ -522,6 +522,10 @@ export type Database = {
         Args: { new_status: string; order_id: string }
         Returns: boolean
       }
+      upgrade_to_seller: {
+        Args: { _first_name: string; _last_name: string; _phone: string }
+        Returns: Json
+      }
     }
     Enums: {
       user_role: "buyer" | "seller" | "admin" | "superadmin"

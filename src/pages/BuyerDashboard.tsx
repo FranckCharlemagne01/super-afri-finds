@@ -100,8 +100,11 @@ const BuyerDashboard = () => {
   useEffect(() => {
     if (user) {
       fetchUserData();
+    } else if (!user && !loading) {
+      // Si l'utilisateur n'est pas connecté, rediriger vers l'auth
+      navigate('/auth');
     }
-  }, [user]);
+  }, [user, navigate]);
 
   const fetchUserData = async () => {
     try {
@@ -245,8 +248,8 @@ const BuyerDashboard = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card>
           <CardContent className="p-6">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-2 text-center">Chargement...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="mt-2 text-center">Chargement de votre profil...</p>
           </CardContent>
         </Card>
       </div>
@@ -254,11 +257,13 @@ const BuyerDashboard = () => {
   }
 
   if (!user) {
+    // Éviter le clignotement en redirigeant immédiatement
+    navigate('/auth');
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card>
           <CardContent className="p-6">
-            <p>Vous devez être connecté pour accéder à votre espace.</p>
+            <p>Redirection vers la connexion...</p>
           </CardContent>
         </Card>
       </div>

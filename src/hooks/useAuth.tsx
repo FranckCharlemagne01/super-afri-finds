@@ -20,23 +20,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+        if (!mounted) return;
+        
+        // Éviter les re-renderings inutiles si les valeurs n'ont pas changé
+        setSession(prevSession => {
+          if (prevSession?.access_token === session?.access_token) {
+            return prevSession;
+          }
+          return session;
+        });
+        
+        setUser(prevUser => {
+          const newUser = session?.user ?? null;
+          if (prevUser?.id === newUser?.id) {
+            return prevUser;
+          }
+          return newUser;
+        });
+        
         setLoading(false);
       }
     );
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (emailOrPhone: string, password: string) => {
@@ -82,7 +104,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      // Clear local state first
+      // Clear local state immediately pour éviter les clignotements
+      setLoading(true);
       setUser(null);
       setSession(null);
       
@@ -91,6 +114,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       // Ignore errors - session might already be expired/invalid
       console.log('Logout completed (session was already cleared)');
+    } finally {
+      setLoading(false);
     }
   };
 

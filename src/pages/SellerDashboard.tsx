@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useOptimizedAuth } from '@/hooks/useOptimizedAuth';
-import { useRole } from '@/hooks/useRole';
+import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import { useTrialStatus } from '@/hooks/useTrialStatus';
 import { useStableData } from '@/hooks/useStableData';
 import { supabase } from '@/integrations/supabase/client';
@@ -55,8 +55,8 @@ interface Order {
 }
 
 const SellerDashboard = () => {
-  const { user, signOut } = useOptimizedAuth();
-  const { isSuperAdmin, loading: roleLoading } = useRole();
+  const { user, signOut } = useAuth();
+  const { isSuperAdmin, loading: roleLoading } = useUserRole();
   const trialStatus = useTrialStatus();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -96,25 +96,24 @@ const SellerDashboard = () => {
   };
 
   useEffect(() => {
+    // Ne rediriger que si nous avons confirmé le rôle
+    if (roleLoading || !user) return;
+    
     // Rediriger les SuperAdmin vers leur dashboard
-    if (!roleLoading && isSuperAdmin()) {
+    if (isSuperAdmin) {
       navigate('/superadmin');
       return;
     }
     
-    if (user && !roleLoading) {
-      // Le fetching est géré automatiquement par useStableData
-      
-      // Check for payment success in URL params
-      const urlParams = new URLSearchParams(window.location.search);
-      const paymentStatus = urlParams.get('payment');
-      const reference = urlParams.get('reference');
-      
-      if (paymentStatus === 'success' && reference) {
-        verifyPayment(reference);
-        // Clean URL
-        window.history.replaceState({}, document.title, '/seller');
-      }
+    // Check for payment success in URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentStatus = urlParams.get('payment');
+    const reference = urlParams.get('reference');
+    
+    if (paymentStatus === 'success' && reference) {
+      verifyPayment(reference);
+      // Clean URL
+      window.history.replaceState({}, document.title, '/seller-dashboard');
     }
   }, [user, isSuperAdmin, roleLoading, navigate]);
 
@@ -193,7 +192,7 @@ const SellerDashboard = () => {
   };
 
   const OrderNotificationBadge = () => {
-    const { user } = useOptimizedAuth();
+    const { user } = useAuth();
     const { newOrders } = useRealtimeNotifications();
     const [lastOrderCount, setLastOrderCount] = useState(0);
 
@@ -330,24 +329,13 @@ const SellerDashboard = () => {
     totalViews: products?.reduce((sum, p) => sum + (p.reviews_count || 0), 0) || 0,
   };
 
-  if (roleLoading) {
+  if (roleLoading || !user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card>
           <CardContent className="p-6">
-            <p>Chargement...</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card>
-          <CardContent className="p-6">
-            <p>Vous devez être connecté pour accéder à l'espace vendeur.</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-center">Vérification de vos autorisations...</p>
           </CardContent>
         </Card>
       </div>
@@ -355,7 +343,7 @@ const SellerDashboard = () => {
   }
 
   // Les SuperAdmin sont automatiquement redirigés dans useEffect
-  if (isSuperAdmin()) {
+  if (isSuperAdmin) {
     return null;
   }
 

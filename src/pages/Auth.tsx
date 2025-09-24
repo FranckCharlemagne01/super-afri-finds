@@ -88,8 +88,10 @@ const Auth = () => {
           sessionStorage.removeItem('redirectAfterLogin');
           navigate(redirectUrl);
         } else {
-          // Redirection intelligente après connexion
-          navigate('/buyer-dashboard');
+          // Attendre un moment pour que le rôle se charge, puis rediriger intelligemment
+          setTimeout(() => {
+            navigate('/');
+          }, 500);
         }
       }
     } catch (error) {

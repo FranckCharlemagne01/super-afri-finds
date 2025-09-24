@@ -82,6 +82,12 @@ const Index = () => {
 
   const handleProfileClick = () => {
     if (user) {
+      // Attendre que le rôle soit chargé avant de rediriger
+      if (roleLoading) {
+        // Ne pas rediriger si le rôle est encore en cours de chargement
+        return;
+      }
+      
       if (isSuperAdmin()) {
         navigate('/superadmin');
       } else if (role === 'seller') {

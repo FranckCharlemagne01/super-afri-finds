@@ -85,9 +85,9 @@ const Index = () => {
       if (isSuperAdmin()) {
         navigate('/superadmin');
       } else if (role === 'seller') {
-        navigate('/seller');
+        navigate('/seller-dashboard');
       } else {
-        navigate('/buyer');
+        navigate('/buyer-dashboard');
       }
     } else {
       navigate('/auth');
@@ -199,8 +199,8 @@ const Index = () => {
           <SellerUpgradeForm 
             onSuccess={() => {
               setShowSellerUpgrade(false);
-              navigate('/seller');
-            }} 
+              navigate('/seller-dashboard');
+            }}
           />
         </div>
       </div>
@@ -377,7 +377,7 @@ const Index = () => {
                 if (user) {
                   // Si c'est déjà un vendeur, aller à l'espace vendeur
                   if (role === 'seller') {
-                    navigate('/seller');
+                    navigate('/seller-dashboard');
                   } else {
                     // Sinon, c'est un client qui veut devenir vendeur - afficher le formulaire directement
                     setShowSellerUpgrade(true);

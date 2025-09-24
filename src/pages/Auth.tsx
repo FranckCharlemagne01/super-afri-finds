@@ -88,7 +88,8 @@ const Auth = () => {
           sessionStorage.removeItem('redirectAfterLogin');
           navigate(redirectUrl);
         } else {
-          navigate('/');
+          // Redirection intelligente après connexion
+          navigate('/buyer-dashboard');
         }
       }
     } catch (error) {

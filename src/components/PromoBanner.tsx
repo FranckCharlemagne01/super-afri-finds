@@ -30,7 +30,7 @@ const PromoBanner = ({ onShowSellerUpgrade }: PromobannerProps) => {
     if (user) {
       // Si c'est déjà un vendeur, aller à l'espace vendeur
       if (role === 'seller') {
-        navigate('/seller');
+        navigate('/seller-dashboard');
       } else {
         // Sinon, c'est un client qui veut devenir vendeur - afficher le formulaire directement
         onShowSellerUpgrade?.();

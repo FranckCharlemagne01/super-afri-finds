@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useStableAuth } from '@/hooks/useStableAuth';
+import { useStableRole } from '@/hooks/useStableRole';
 import { useTrialStatus } from '@/hooks/useTrialStatus';
 import { useStableData } from '@/hooks/useStableData';
 import { supabase } from '@/integrations/supabase/client';
@@ -55,8 +55,8 @@ interface Order {
 }
 
 const SellerDashboard = () => {
-  const { user, signOut } = useAuth();
-  const { isSuperAdmin, loading: roleLoading } = useUserRole();
+  const { user, signOut } = useStableAuth();
+  const { isSuperAdmin, loading: roleLoading } = useStableRole();
   const trialStatus = useTrialStatus();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -192,7 +192,7 @@ const SellerDashboard = () => {
   };
 
   const OrderNotificationBadge = () => {
-    const { user } = useAuth();
+    const { user } = useStableAuth();
     const { newOrders } = useRealtimeNotifications();
     const [lastOrderCount, setLastOrderCount] = useState(0);
 

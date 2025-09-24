@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useOptimizedAuth } from '@/hooks/useOptimizedAuth';
+import { useStableAuth } from '@/hooks/useStableAuth';
 import { useStableData } from '@/hooks/useStableData';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -47,7 +47,7 @@ const statusLabels = {
 };
 
 export const SellerOrders = () => {
-  const { user } = useOptimizedAuth();
+  const { user } = useStableAuth();
   const { toast } = useToast();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderDetailOpen, setOrderDetailOpen] = useState(false);

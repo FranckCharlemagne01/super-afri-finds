@@ -10,10 +10,10 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/hooks/useAuth";
+import { useStableAuth } from "@/hooks/useStableAuth";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
-import { useRole } from "@/hooks/useRole";
+import { useStableRole } from "@/hooks/useStableRole";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { RealtimeNotificationBadge } from "@/components/RealtimeNotificationBadge";
 import { useNavigate } from "react-router-dom";
@@ -70,10 +70,10 @@ interface Product {
 }
 
 const Index = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut } = useStableAuth();
   const { cartCount } = useCart();
   const { favoriteIds } = useFavorites();
-  const { role, loading: roleLoading, isSuperAdmin } = useRole();
+  const { role, loading: roleLoading, isSuperAdmin, isSeller } = useStableRole();
   const navigate = useNavigate();
   const [refreshKey, setRefreshKey] = useState(0);
   const [products, setProducts] = useState<Product[]>([]);
@@ -81,22 +81,22 @@ const Index = () => {
   const [showSellerUpgrade, setShowSellerUpgrade] = useState(false);
 
   const handleProfileClick = () => {
-    if (user) {
-      // Attendre que le rôle soit chargé avant de rediriger
-      if (roleLoading) {
-        // Ne pas rediriger si le rôle est encore en cours de chargement
-        return;
-      }
-      
-      if (isSuperAdmin()) {
-        navigate('/superadmin');
-      } else if (role === 'seller') {
-        navigate('/seller-dashboard');
-      } else {
-        navigate('/buyer-dashboard');
-      }
-    } else {
+    if (!user) {
       navigate('/auth');
+      return;
+    }
+
+    // Attendre que le rôle soit chargé avant de rediriger
+    if (roleLoading) {
+      return;
+    }
+
+    if (isSuperAdmin) {
+      navigate('/superadmin');
+    } else if (isSeller) {
+      navigate('/seller-dashboard');
+    } else {
+      navigate('/buyer-dashboard');
     }
   };
 
@@ -205,8 +205,8 @@ const Index = () => {
           <SellerUpgradeForm 
             onSuccess={() => {
               setShowSellerUpgrade(false);
-              navigate('/seller-dashboard');
-            }}
+              // Le SellerUpgradeForm gère la redirection directement
+            }} 
           />
         </div>
       </div>
@@ -264,7 +264,7 @@ const Index = () => {
               <Button variant="ghost" size="icon" className="p-2 sm:p-2 min-w-[44px] min-h-[44px]" onClick={handleProfileClick}>
                 <User className={`w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 ${user ? 'text-primary' : ''}`} />
               </Button>
-              {isSuperAdmin() && (
+              {isSuperAdmin && (
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -382,7 +382,7 @@ const Index = () => {
                 // Si l'utilisateur est connecté
                 if (user) {
                   // Si c'est déjà un vendeur, aller à l'espace vendeur
-                  if (role === 'seller') {
+                  if (isSeller) {
                     navigate('/seller-dashboard');
                   } else {
                     // Sinon, c'est un client qui veut devenir vendeur - afficher le formulaire directement

@@ -1,6 +1,6 @@
 import { useTrialStatus } from "@/hooks/useTrialStatus";
-import { useAuth } from "@/hooks/useAuth";
-import { useRole } from "@/hooks/useRole";
+import { useStableAuth } from "@/hooks/useStableAuth";
+import { useStableRole } from "@/hooks/useStableRole";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 
@@ -10,8 +10,8 @@ interface PromobannerProps {
 
 const PromoBanner = ({ onShowSellerUpgrade }: PromobannerProps) => {
   const { isInTrial, trialEndDate } = useTrialStatus();
-  const { user } = useAuth();
-  const { role } = useRole();
+  const { user } = useStableAuth();
+  const { isSeller } = useStableRole();
   const navigate = useNavigate();
 
   const calculateDaysRemaining = () => {
@@ -29,7 +29,7 @@ const PromoBanner = ({ onShowSellerUpgrade }: PromobannerProps) => {
     // Si l'utilisateur est connecté
     if (user) {
       // Si c'est déjà un vendeur, aller à l'espace vendeur
-      if (role === 'seller') {
+      if (isSeller) {
         navigate('/seller-dashboard');
       } else {
         // Sinon, c'est un client qui veut devenir vendeur - afficher le formulaire directement

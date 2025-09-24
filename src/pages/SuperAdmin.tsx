@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useRole } from '@/hooks/useRole';
-import { useAuth } from '@/hooks/useAuth';
+import { useStableRole } from '@/hooks/useStableRole';
+import { useStableAuth } from '@/hooks/useStableAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -83,8 +83,8 @@ interface Order {
 }
 
 const SuperAdmin = () => {
-  const { isSuperAdmin, loading: roleLoading } = useRole();
-  const { user, signOut } = useAuth();
+  const { isSuperAdmin, loading: roleLoading } = useStableRole();
+  const { user, signOut } = useStableAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -116,7 +116,7 @@ const SuperAdmin = () => {
         return;
       }
       
-      if (!isSuperAdmin()) {
+      if (!isSuperAdmin) {
         navigate('/', { replace: true });
         return;
       }
@@ -129,7 +129,7 @@ const SuperAdmin = () => {
   }, [user, isSuperAdmin, roleLoading, initializing, navigate, dataLoaded]);
 
   const fetchData = async () => {
-    if (!user || !isSuperAdmin()) {
+    if (!user || !isSuperAdmin) {
       setLoading(false);
       return;
     }
@@ -352,7 +352,7 @@ const SuperAdmin = () => {
   };
 
   // Afficher le loader pendant l'initialisation, la vérification du rôle, ou si ce n'est pas un superadmin
-  if (initializing || roleLoading || !user || (!roleLoading && !isSuperAdmin())) {
+  if (initializing || roleLoading || !user || (!roleLoading && !isSuperAdmin)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">

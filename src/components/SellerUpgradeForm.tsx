@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { useStableAuth } from '@/hooks/useStableAuth';
 import { Store } from 'lucide-react';
 
 interface SellerUpgradeFormProps {
@@ -15,7 +15,7 @@ interface SellerUpgradeFormProps {
 }
 
 export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
-  const { user } = useAuth();
+  const { user } = useStableAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -65,12 +65,14 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
         duration: 3000,
       });
 
-      // Redirection automatique vers l'espace vendeur
-      setTimeout(() => {
-        navigate('/seller-dashboard');
-      }, 1500);
-
+      // Déclencher le callback de succès immédiatement
       onSuccess();
+
+      // Attendre un peu pour laisser le temps au rôle de se mettre à jour
+      setTimeout(() => {
+        // Force reload pour s'assurer que tous les états sont à jour
+        window.location.href = '/seller-dashboard';
+      }, 1000);
     } catch (error) {
       console.error('Erreur:', error);
       toast({

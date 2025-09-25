@@ -62,7 +62,7 @@ export const useStableRole = () => {
       setLoading(true);
       fetchUserRole();
     }
-  }, [fetchUserRole, userId]);
+  }, [userId, fetchUserRole]);
 
   // Valeurs mémorisées pour éviter les re-renders
   const roleInfo = useMemo(() => {

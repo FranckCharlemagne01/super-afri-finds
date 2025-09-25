@@ -68,11 +68,10 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
       // Déclencher le callback de succès immédiatement
       onSuccess();
 
-      // Attendre un peu pour laisser le temps au rôle de se mettre à jour
+      // Navigation simple et stable vers le dashboard vendeur
       setTimeout(() => {
-        // Force reload pour s'assurer que tous les états sont à jour
-        window.location.href = '/seller-dashboard';
-      }, 1000);
+        navigate('/seller-dashboard');
+      }, 500);
     } catch (error) {
       console.error('Erreur:', error);
       toast({

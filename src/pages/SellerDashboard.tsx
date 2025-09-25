@@ -96,11 +96,14 @@ const SellerDashboard = () => {
   };
 
   useEffect(() => {
-    // Ne rediriger que si nous avons confirmé le rôle
+    // Ne rediriger que si nous avons confirmé le rôle et si on est sûr de l'utilisateur
     if (roleLoading || !user) return;
     
-    // Rediriger les SuperAdmin vers leur dashboard
-    if (isSuperAdmin) {
+    // Éviter les redirections multiples - vérifier la route actuelle
+    const currentPath = window.location.pathname;
+    
+    // Rediriger les SuperAdmin vers leur dashboard uniquement s'ils ne sont pas déjà dessus
+    if (isSuperAdmin && currentPath !== '/superadmin') {
       navigate('/superadmin');
       return;
     }

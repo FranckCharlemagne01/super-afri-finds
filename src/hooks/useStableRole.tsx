@@ -64,6 +64,32 @@ export const useStableRole = () => {
     }
   }, [userId, fetchUserRole]);
 
+  // Écouter les changements de rôle en temps réel
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel(`user-role-changes-${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_roles',
+          filter: `user_id=eq.${userId}`
+        },
+        () => {
+          // Rafraîchir le rôle automatiquement sans loader visible
+          fetchUserRole();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, fetchUserRole]);
+
   // Valeurs mémorisées pour éviter les re-renders
   const roleInfo = useMemo(() => {
     const hasRole = (requiredRole: UserRole): boolean => {

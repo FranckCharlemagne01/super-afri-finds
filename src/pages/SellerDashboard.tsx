@@ -96,15 +96,15 @@ const SellerDashboard = () => {
   };
 
   useEffect(() => {
-    // Ne rediriger que si nous avons confirmé le rôle et si on est sûr de l'utilisateur
+    // Ne traiter que si nous avons terminé de charger le rôle et l'utilisateur
     if (roleLoading || !user) return;
     
     // Éviter les redirections multiples - vérifier la route actuelle
     const currentPath = window.location.pathname;
     
-    // Rediriger les SuperAdmin vers leur dashboard uniquement s'ils ne sont pas déjà dessus
+    // Rediriger les SuperAdmin vers leur dashboard SEULEMENT s'ils ne sont pas déjà dessus
     if (isSuperAdmin && currentPath !== '/superadmin') {
-      navigate('/superadmin');
+      navigate('/superadmin', { replace: true });
       return;
     }
     
@@ -115,10 +115,10 @@ const SellerDashboard = () => {
     
     if (paymentStatus === 'success' && reference) {
       verifyPayment(reference);
-      // Clean URL
+      // Clean URL sans redirection
       window.history.replaceState({}, document.title, '/seller-dashboard');
     }
-  }, [user, isSuperAdmin, roleLoading, navigate]);
+  }, [user?.id, isSuperAdmin, roleLoading]); // Dépendances minimales pour éviter les re-exécutions
 
   const verifyPayment = async (reference: string) => {
     try {

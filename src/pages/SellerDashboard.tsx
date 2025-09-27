@@ -55,8 +55,8 @@ interface Order {
 }
 
 const SellerDashboard = () => {
-  const { user, signOut } = useStableAuth();
-  const { isSuperAdmin, loading: roleLoading } = useStableRole();
+  const { user, signOut, userId } = useStableAuth();
+  const { isSuperAdmin, loading: roleLoading, refreshRole } = useStableRole();
   const trialStatus = useTrialStatus();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -66,18 +66,18 @@ const SellerDashboard = () => {
   // Utiliser useStableData pour éviter les clignotements
   const { data: products, loading, error, refetch } = useStableData(
     async () => {
-      if (!user?.id) return [];
+      if (!userId) return [];
       
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .eq('seller_id', user.id)
+        .eq('seller_id', userId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data || [];
     },
-    [user?.id],
+    [userId], // Utiliser userId stable du hook useStableAuth
     {
       keepPreviousData: true,
       loadingDelay: 200,
@@ -97,7 +97,7 @@ const SellerDashboard = () => {
 
   useEffect(() => {
     // Ne traiter que si nous avons terminé de charger le rôle et l'utilisateur
-    if (roleLoading || !user) return;
+    if (roleLoading || !userId) return;
     
     // Éviter les redirections multiples - vérifier la route actuelle
     const currentPath = window.location.pathname;
@@ -118,7 +118,7 @@ const SellerDashboard = () => {
       // Clean URL sans redirection
       window.history.replaceState({}, document.title, '/seller-dashboard');
     }
-  }, [user?.id, isSuperAdmin, roleLoading]); // Dépendances minimales pour éviter les re-exécutions
+  }, [userId, isSuperAdmin, roleLoading, navigate]); // Dépendances stables
 
   const verifyPayment = async (reference: string) => {
     try {
@@ -177,11 +177,13 @@ const SellerDashboard = () => {
     }
   }, [error, loading, products, toast]);
 
-  const handleProductSaved = () => {
+  const handleProductSaved = useCallback(() => {
     refetch();
     setShowProductForm(false);
     setEditingProduct(null);
-  };
+    // Rafraîchir le rôle pour s'assurer qu'il est à jour après publication
+    refreshRole();
+  }, [refetch, refreshRole]);
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
@@ -195,7 +197,7 @@ const SellerDashboard = () => {
   };
 
   const OrderNotificationBadge = () => {
-    const { user } = useStableAuth();
+    const { userId: currentUserId } = useStableAuth();
     const { newOrders } = useRealtimeNotifications();
     const [lastOrderCount, setLastOrderCount] = useState(0);
 
@@ -222,37 +224,37 @@ const SellerDashboard = () => {
     const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
 
     const fetchPendingOrders = useCallback(async () => {
-      if (!user?.id) return;
+      if (!userId) return;
       
       try {
         const { data, error } = await supabase.rpc('get_seller_orders');
         if (error) throw error;
         
         const pending = data?.filter(order => 
-          order.seller_id === user.id && order.status === 'pending'
+          order.seller_id === userId && order.status === 'pending'
         ) || [];
         setPendingOrders(pending);
       } catch (error) {
         console.error('Error fetching pending orders:', error);
         // Silently fail - ne pas spammer l'utilisateur avec des erreurs
       }
-    }, [user?.id]);
+    }, [userId]);
 
     useEffect(() => {
-      if (!user?.id) return;
+      if (!userId) return;
 
       fetchPendingOrders();
 
       // Écouter les changements en temps réel avec cleanup approprié
       const channel = supabase
-        .channel(`pending-orders-alert-${user.id}`)
+        .channel(`pending-orders-alert-${userId}`)
         .on(
           'postgres_changes',
           {
             event: '*',
             schema: 'public',
             table: 'orders',
-            filter: `seller_id=eq.${user.id}`
+            filter: `seller_id=eq.${userId}`
           },
           fetchPendingOrders
         )
@@ -261,7 +263,7 @@ const SellerDashboard = () => {
       return () => {
         supabase.removeChannel(channel);
       };
-    }, [user?.id, fetchPendingOrders]);
+    }, [userId, fetchPendingOrders]);
 
     if (pendingOrders.length === 0) return null;
 
@@ -332,7 +334,7 @@ const SellerDashboard = () => {
     totalViews: products?.reduce((sum, p) => sum + (p.reviews_count || 0), 0) || 0,
   };
 
-  if (roleLoading || !user) {
+  if (roleLoading || !userId) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card>

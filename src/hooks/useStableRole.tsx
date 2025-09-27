@@ -13,9 +13,10 @@ export const useStableRole = () => {
   const [role, setRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fonction mémorisée pour récupérer le rôle
-  const fetchUserRole = useCallback(async () => {
-    if (!userId) {
+  // Fonction stable pour récupérer le rôle - utilise un ref pour éviter les re-dependencies
+  const fetchUserRole = useCallback(async (targetUserId?: string) => {
+    const userIdToFetch = targetUserId || userId;
+    if (!userIdToFetch) {
       setRole(null);
       setLoading(false);
       return;
@@ -23,7 +24,7 @@ export const useStableRole = () => {
 
     try {
       const { data, error } = await supabase.rpc('get_user_role', { 
-        _user_id: userId 
+        _user_id: userIdToFetch 
       });
 
       if (error) {
@@ -38,14 +39,14 @@ export const useStableRole = () => {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, []); // Aucune dépendance pour éviter les re-créations
 
   useEffect(() => {
     let mounted = true;
 
     const loadRole = async () => {
-      if (mounted) {
-        await fetchUserRole();
+      if (mounted && userId) {
+        await fetchUserRole(userId);
       }
     };
 
@@ -54,13 +55,13 @@ export const useStableRole = () => {
     return () => {
       mounted = false;
     };
-  }, [fetchUserRole]);
+  }, [userId, fetchUserRole]);
 
-  // Fonction pour rafraîchir le rôle après un changement
+  // Fonction stable pour rafraîchir le rôle après un changement
   const refreshRole = useCallback(() => {
     if (userId) {
       setLoading(true);
-      fetchUserRole();
+      fetchUserRole(userId);
     }
   }, [userId, fetchUserRole]);
 
@@ -80,7 +81,7 @@ export const useStableRole = () => {
         },
         () => {
           // Rafraîchir le rôle automatiquement sans loader visible
-          fetchUserRole();
+          if (userId) fetchUserRole(userId);
         }
       )
       .subscribe();

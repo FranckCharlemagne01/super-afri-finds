@@ -65,12 +65,14 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
         duration: 3000,
       });
 
-      // Déclencher le callback de succès pour fermer le formulaire
+      // Fermer le formulaire immédiatement
       onSuccess();
 
-      // Navigation immédiate et stable vers le dashboard vendeur
-      // Le rafraîchissement du rôle se fera automatiquement via le realtime
-      navigate('/seller-dashboard', { replace: true });
+      // Petite temporisation pour permettre à l'UI de se fermer proprement
+      setTimeout(() => {
+        // Navigation stable vers le dashboard vendeur
+        navigate('/seller-dashboard', { replace: true });
+      }, 100);
     } catch (error) {
       console.error('Erreur:', error);
       toast({

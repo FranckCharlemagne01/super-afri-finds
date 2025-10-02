@@ -29,10 +29,14 @@ export const usePushNotifications = () => {
           
           // Sauvegarder le token dans la base de données
           if (user) {
-            await supabase
+            const { error } = await supabase
               .from('profiles')
-              .update({ push_token: token.value })
+              .update({ push_token: token.value } as any)
               .eq('user_id', user.id);
+            
+            if (error) {
+              console.error('Error saving push token:', error);
+            }
           }
         });
 
@@ -77,15 +81,17 @@ export const usePushNotifications = () => {
         // Récupérer le token de l'utilisateur
         const { data: profile } = await supabase
           .from('profiles')
-          .select('push_token')
+          .select('*')
           .eq('user_id', userId)
           .single();
 
-        if (profile?.push_token) {
+        const pushToken = (profile as any)?.push_token;
+        
+        if (pushToken) {
           // Appeler une Edge Function pour envoyer la notification via FCM/APNs
           await supabase.functions.invoke('send-push-notification', {
             body: {
-              token: profile.push_token,
+              token: pushToken,
               title,
               body
             }

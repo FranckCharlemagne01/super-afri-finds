@@ -304,6 +304,7 @@ export type Database = {
           paystack_reference: string | null
           phone: string | null
           premium_expires_at: string | null
+          push_token: string | null
           trial_end_date: string | null
           trial_start_date: string | null
           trial_used: boolean | null
@@ -323,6 +324,7 @@ export type Database = {
           paystack_reference?: string | null
           phone?: string | null
           premium_expires_at?: string | null
+          push_token?: string | null
           trial_end_date?: string | null
           trial_start_date?: string | null
           trial_used?: boolean | null
@@ -342,6 +344,7 @@ export type Database = {
           paystack_reference?: string | null
           phone?: string | null
           premium_expires_at?: string | null
+          push_token?: string | null
           trial_end_date?: string | null
           trial_start_date?: string | null
           trial_used?: boolean | null

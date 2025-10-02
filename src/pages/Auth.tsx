@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { TextInput, NumericInput } from '@/components/ui/validated-input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Globe, Eye, EyeOff, AlertCircle, ShoppingCart, Store } from 'lucide-react';
@@ -13,7 +12,6 @@ import { CountrySelect } from '@/components/CountrySelect';
 import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { SellerUpgradeForm } from '@/components/SellerUpgradeForm';
 import { getCountryByCode } from '@/data/countries';
 
 const Auth = () => {
@@ -25,10 +23,11 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
-  const [country, setCountry] = useState('CI'); // Default to Côte d'Ivoire
-  const [dialCode, setDialCode] = useState('+225'); // Default dial code for Côte d'Ivoire
-  const [userRole, setUserRole] = useState<'buyer' | 'seller'>('buyer'); // Default to buyer
-  const [loginIdentifier, setLoginIdentifier] = useState(''); // Email ou téléphone pour la connexion
+  const [country, setCountry] = useState('CI');
+  const [dialCode, setDialCode] = useState('+225');
+  const [userRole, setUserRole] = useState<'buyer' | 'seller'>('buyer');
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const [loginIdentifier, setLoginIdentifier] = useState('');
   const [loading, setLoading] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [resetMode, setResetMode] = useState(false);
@@ -45,7 +44,6 @@ const Auth = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Check URL params for recovery mode
   useEffect(() => {
     const type = searchParams.get('type');
     const access_token = searchParams.get('access_token');
@@ -59,13 +57,12 @@ const Auth = () => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setFormError(''); // Clear any previous errors
+    setFormError('');
 
     try {
       const { error } = await signIn(loginIdentifier, password);
       
       if (error) {
-        // Handle different types of authentication errors
         if (error.message.includes('Invalid login credentials') || 
             error.message.includes('Invalid email or password') ||
             error.message.includes('Invalid password')) {
@@ -84,13 +81,11 @@ const Auth = () => {
           duration: 3000,
         });
         
-        // Check if there's a redirect URL stored after login
         const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
         if (redirectUrl) {
           sessionStorage.removeItem('redirectAfterLogin');
           navigate(redirectUrl);
         } else {
-          // Attendre un moment pour que le rôle se charge, puis rediriger intelligemment
           setTimeout(() => {
             navigate('/');
           }, 500);
@@ -109,7 +104,6 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      // Combine dial code with phone number
       const fullPhoneNumber = `${dialCode}${phone}`;
       const { error } = await signUp(email, password, fullName, fullPhoneNumber, country, userRole);
       
@@ -167,7 +161,7 @@ const Auth = () => {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setResetFormError(''); // Clear any previous errors
+    setResetFormError('');
 
     try {
       const { error } = await resetPassword(resetEmail);
@@ -196,7 +190,7 @@ const Auth = () => {
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setUpdatePasswordError(''); // Clear any previous errors
+    setUpdatePasswordError('');
     
     if (newPassword !== confirmPassword) {
       setUpdatePasswordError('Les mots de passe ne correspondent pas. Veuillez vérifier.');
@@ -233,7 +227,6 @@ const Auth = () => {
     }
   };
 
-
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-4">
@@ -252,25 +245,19 @@ const Auth = () => {
             <CardDescription>
               {updatePasswordMode 
                 ? "Créez un nouveau mot de passe" 
-                : "Connectez-vous ou créez votre compte"
+                : resetMode
+                ? "Réinitialiser votre mot de passe"
+                : authMode === 'signup'
+                ? "Créer votre compte"
+                : "Connectez-vous à votre compte"
               }
             </CardDescription>
           </CardHeader>
           <CardContent>
             {updatePasswordMode ? (
               <form onSubmit={handleUpdatePassword} className="space-y-4">
-                <div className="text-center mb-4">
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
-                    Nouveau mot de passe
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Choisissez un mot de passe sécurisé d'au moins 6 caractères
-                  </p>
-                </div>
-                
-                {/* Error Alert for Update Password */}
                 {updatePasswordError && (
-                  <Alert variant="destructive" className="mb-4">
+                  <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>{updatePasswordError}</AlertDescription>
                   </Alert>
@@ -345,231 +332,19 @@ const Auth = () => {
                 </Button>
               </div>
             ) : resetMode ? (
-              <div className="text-center py-4">
-                <p className="text-muted-foreground mb-4">
-                  Vous recevrez un email avec un lien sécurisé pour réinitialiser votre mot de passe.
-                </p>
-                <Button
-                  variant="outline"
-                  onClick={() => setResetMode(false)}
-                >
-                  Retour à la connexion
-                </Button>
-              </div>
-            ) : (
-              <Tabs defaultValue="signin" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="signin">Connexion</TabsTrigger>
-                  <TabsTrigger value="signup">Inscription</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="signin">
-                  <form onSubmit={handleSignIn} className="space-y-4">
-                    {/* Error Alert */}
-                    {formError && (
-                      <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertDescription>{formError}</AlertDescription>
-                      </Alert>
-                    )}
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="loginIdentifier">Email ou numéro de téléphone</Label>
-                      <Input
-                        id="loginIdentifier"
-                        type="text"
-                        placeholder="email@exemple.com ou +225XXXXXXXX"
-                        value={loginIdentifier}
-                        onChange={(e) => {
-                          setLoginIdentifier(e.target.value);
-                          if (formError) setFormError(''); // Clear error when user types
-                        }}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="password">Mot de passe</Label>
-                      <div className="relative">
-                        <Input
-                          id="password"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="••••••••"
-                          value={password}
-                          onChange={(e) => {
-                            setPassword(e.target.value);
-                            if (formError) setFormError(''); // Clear error when user types
-                          }}
-                          required
-                        />
-                        <button
-                          type="button"
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    </div>
-                    <Button 
-                      type="submit" 
-                      className="w-full" 
-                      disabled={loading}
-                    >
-                      {loading ? "Connexion..." : "Se connecter"}
-                    </Button>
-                    
-                    {/* Forgot Password Link */}
-                    <div className="text-center">
-                      <button
-                        type="button"
-                        onClick={() => setResetMode(true)}
-                        className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline transition-colors"
-                      >
-                        Mot de passe oublié ?
-                      </button>
-                    </div>
-                  </form>
-                </TabsContent>
-                
-                <TabsContent value="signup">
-                  <form onSubmit={handleSignUp} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="fullName">Nom complet</Label>
-                      <TextInput
-                        id="fullName"
-                        placeholder="Votre nom complet"
-                        value={fullName}
-                        onChange={setFullName}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="votre.email@exemple.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="country" className="flex items-center gap-2">
-                        <Globe className="w-4 h-4" />
-                        Pays
-                      </Label>
-                      <CountrySelect
-                        value={country}
-                        onValueChange={(value) => {
-                          setCountry(value);
-                          const selectedCountry = getCountryByCode(value);
-                          if (selectedCountry) {
-                            setDialCode(selectedCountry.dialCode);
-                          }
-                        }}
-                        placeholder="Sélectionnez votre pays"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                       Ceci nous aide à personnaliser votre expérience et à vous proposer des produits adaptés à votre région.
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Numéro de téléphone</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={dialCode}
-                          disabled
-                          className="w-20 bg-muted"
-                        />
-                        <NumericInput
-                          id="phone"
-                          placeholder="01234567"
-                          value={phone}
-                          onChange={setPhone}
-                          required
-                          className="flex-1"
-                        />
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        L'indicatif {dialCode} est ajouté automatiquement
-                      </p>
-                    </div>
-                    <div className="space-y-4">
-                      <Label className="text-base font-medium">Je souhaite</Label>
-                      <RadioGroup
-                        value={userRole}
-                        onValueChange={(value: 'buyer' | 'seller') => setUserRole(value)}
-                        className="grid grid-cols-1 gap-4"
-                      >
-                        <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors">
-                          <RadioGroupItem value="buyer" id="buyer" />
-                          <Label htmlFor="buyer" className="flex items-center gap-3 cursor-pointer flex-1">
-                            <ShoppingCart className="w-5 h-5 text-primary" />
-                            <div>
-                              <div className="font-medium">Acheter des produits</div>
-                              <div className="text-sm text-muted-foreground">Accès au panier, commandes et favoris</div>
-                            </div>
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors">
-                          <RadioGroupItem value="seller" id="seller" />
-                          <Label htmlFor="seller" className="flex items-center gap-3 cursor-pointer flex-1">
-                            <Store className="w-5 h-5 text-primary" />
-                            <div>
-                              <div className="font-medium">Vendre mes produits</div>
-                              <div className="text-sm text-muted-foreground">Gérer mes produits et recevoir des commandes</div>
-                            </div>
-                          </Label>
-                        </div>
-                      </RadioGroup>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="password">Mot de passe</Label>
-                      <Input
-                        id="password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        minLength={6}
-                      />
-                    </div>
-                    <Button 
-                      type="submit" 
-                      className="w-full" 
-                      disabled={loading}
-                    >
-                      {loading ? "Création..." : "Créer un compte"}
-                    </Button>
-                  </form>
-                </TabsContent>
-              </Tabs>
-            )}
-          </CardContent>
-        </Card>
+              <form onSubmit={handleResetPassword} className="space-y-4">
+                {resetFormError && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{resetFormError}</AlertDescription>
+                  </Alert>
+                )}
 
-        {/* Reset Password Modal */}
-        {resetMode && (
-          <Card className="mt-4">
-            <CardHeader className="text-center">
-              <CardTitle className="text-xl">Réinitialiser le mot de passe</CardTitle>
-              <CardDescription>
-                Entrez votre adresse email pour recevoir un lien de réinitialisation
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {resetSuccess ? (
-                <div className="text-center space-y-4 py-6">
-                  <div className="text-6xl mb-4">📧</div>
-                  <h3 className="text-xl font-semibold text-foreground">
-                    Email de réinitialisation envoyé !
-                  </h3>
-                  <p className="text-muted-foreground">
-                    Consultez votre boîte email et cliquez sur le lien pour créer un nouveau mot de passe.
-                  </p>
-                  <div className="flex gap-2">
+                {resetSuccess ? (
+                  <div className="text-center py-4">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      📧 Un email de réinitialisation a été envoyé à <strong>{resetEmail}</strong>
+                    </p>
                     <Button
                       variant="outline"
                       onClick={() => {
@@ -577,64 +352,257 @@ const Auth = () => {
                         setResetSuccess(false);
                         setResetEmail('');
                       }}
-                      className="flex-1"
+                      className="w-full"
                     >
                       Retour à la connexion
                     </Button>
-                    <Button
-                      onClick={() => navigate('/')}
-                      className="flex-1"
-                    >
-                      Retour à l'accueil
-                    </Button>
                   </div>
-                </div>
-              ) : (
-                <form onSubmit={handleResetPassword} className="space-y-4">
-                  {/* Error Alert for Reset Password */}
-                  {resetFormError && (
-                    <Alert variant="destructive">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription>{resetFormError}</AlertDescription>
-                    </Alert>
-                  )}
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="resetEmail">Adresse email</Label>
-                    <Input
-                      id="resetEmail"
-                      type="email"
-                      placeholder="votre.email@exemple.com"
-                      value={resetEmail}
-                      onChange={(e) => {
-                        setResetEmail(e.target.value);
-                        if (resetFormError) setResetFormError(''); // Clear error when user types
-                      }}
-                      required
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setResetMode(false)}
-                      className="flex-1"
-                    >
-                      Annuler
-                    </Button>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="resetEmail">Email</Label>
+                      <Input
+                        id="resetEmail"
+                        type="email"
+                        placeholder="email@exemple.com"
+                        value={resetEmail}
+                        onChange={(e) => {
+                          setResetEmail(e.target.value);
+                          if (resetFormError) setResetFormError('');
+                        }}
+                        required
+                      />
+                    </div>
+                    
                     <Button 
                       type="submit" 
-                      className="flex-1" 
+                      className="w-full" 
                       disabled={loading}
                     >
                       {loading ? "Envoi..." : "Envoyer le lien"}
                     </Button>
+
+                    <div className="text-center">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setResetMode(false);
+                          setResetFormError('');
+                        }}
+                        className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline transition-colors"
+                      >
+                        Retour à la connexion
+                      </button>
+                    </div>
+                  </>
+                )}
+              </form>
+            ) : authMode === 'signup' ? (
+              <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Nom complet</Label>
+                  <TextInput
+                    id="fullName"
+                    placeholder="Jean Dupont"
+                    value={fullName}
+                    onChange={setFullName}
+                    required
+                    maxLength={100}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="signupEmail">Email</Label>
+                  <TextInput
+                    id="signupEmail"
+                    type="email"
+                    placeholder="email@exemple.com"
+                    value={email}
+                    onChange={setEmail}
+                    required
+                    maxLength={255}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="country">
+                    <Globe className="w-4 h-4 inline mr-2" />
+                    Pays
+                  </Label>
+                  <CountrySelect
+                    value={country}
+                    onValueChange={(value) => {
+                      setCountry(value);
+                      const selectedCountry = getCountryByCode(value);
+                      if (selectedCountry) {
+                        setDialCode(selectedCountry.dialCode);
+                      }
+                    }}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Numéro de téléphone</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="text"
+                      value={dialCode}
+                      disabled
+                      className="w-20"
+                    />
+                    <NumericInput
+                      id="phone"
+                      placeholder="0123456789"
+                      value={phone}
+                      onChange={setPhone}
+                      required
+                      maxLength={15}
+                      className="flex-1"
+                    />
                   </div>
-                </form>
-              )}
-            </CardContent>
-          </Card>
-        )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Type de compte</Label>
+                  <RadioGroup 
+                    value={userRole} 
+                    onValueChange={(value) => setUserRole(value as 'buyer' | 'seller')}
+                    className="flex gap-4"
+                  >
+                    <div className="flex items-center space-x-2 flex-1">
+                      <RadioGroupItem value="buyer" id="buyer" />
+                      <Label htmlFor="buyer" className="cursor-pointer flex items-center gap-2">
+                        <ShoppingCart className="w-4 h-4" />
+                        Acheteur
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2 flex-1">
+                      <RadioGroupItem value="seller" id="seller" />
+                      <Label htmlFor="seller" className="cursor-pointer flex items-center gap-2">
+                        <Store className="w-4 h-4" />
+                        Vendeur
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="signupPassword">Mot de passe</Label>
+                  <div className="relative">
+                    <Input
+                      id="signupPassword"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Minimum 6 caractères
+                  </p>
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={loading}
+                >
+                  {loading ? "Inscription..." : "S'inscrire"}
+                </Button>
+
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setAuthMode('signin')}
+                    className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline transition-colors"
+                  >
+                    Vous avez déjà un compte ? Se connecter
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleSignIn} className="space-y-4">
+                {formError && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{formError}</AlertDescription>
+                  </Alert>
+                )}
+                
+                <div className="space-y-2">
+                  <Label htmlFor="loginIdentifier">Email ou numéro de téléphone</Label>
+                  <Input
+                    id="loginIdentifier"
+                    type="text"
+                    placeholder="email@exemple.com ou +225XXXXXXXX"
+                    value={loginIdentifier}
+                    onChange={(e) => {
+                      setLoginIdentifier(e.target.value);
+                      if (formError) setFormError('');
+                    }}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Mot de passe</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (formError) setFormError('');
+                      }}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={loading}
+                >
+                  {loading ? "Connexion..." : "Se connecter"}
+                </Button>
+                
+                <div className="flex flex-col gap-2 text-center pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setResetMode(true)}
+                    className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline transition-colors"
+                  >
+                    Mot de passe oublié ?
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAuthMode('signup')}
+                    className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline transition-colors"
+                  >
+                    Pas encore de compte ? S'inscrire
+                  </button>
+                </div>
+              </form>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

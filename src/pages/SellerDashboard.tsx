@@ -56,7 +56,7 @@ interface Order {
 
 const SellerDashboard = () => {
   const { user, signOut, userId } = useStableAuth();
-  const { isSuperAdmin, loading: roleLoading, refreshRole } = useStableRole();
+  const { isSeller, isSuperAdmin, loading: roleLoading, refreshRole } = useStableRole();
   const trialStatus = useTrialStatus();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -108,6 +108,12 @@ const SellerDashboard = () => {
       return;
     }
     
+    // Si l'utilisateur n'est pas vendeur, rediriger vers le dashboard client
+    if (!isSeller && !roleLoading) {
+      navigate('/buyer-dashboard', { replace: true });
+      return;
+    }
+    
     // Check for payment success in URL params
     const urlParams = new URLSearchParams(window.location.search);
     const paymentStatus = urlParams.get('payment');
@@ -118,7 +124,7 @@ const SellerDashboard = () => {
       // Clean URL sans redirection
       window.history.replaceState({}, document.title, '/seller-dashboard');
     }
-  }, [userId, isSuperAdmin, roleLoading, navigate]); // Dépendances stables
+  }, [userId, isSeller, isSuperAdmin, roleLoading, navigate]); // Dépendances stables
 
   const verifyPayment = async (reference: string) => {
     try {
@@ -350,6 +356,26 @@ const SellerDashboard = () => {
   // Les SuperAdmin sont automatiquement redirigés dans useEffect
   if (isSuperAdmin) {
     return null;
+  }
+
+  // Si l'utilisateur n'est pas vendeur après le chargement, afficher un message
+  if (!isSeller && !roleLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card>
+          <CardContent className="p-6 text-center">
+            <Store className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-xl font-semibold mb-2">Accès vendeur requis</h2>
+            <p className="text-muted-foreground mb-4">
+              Vous devez activer votre profil vendeur pour accéder à cet espace.
+            </p>
+            <Button onClick={() => navigate('/buyer-dashboard')}>
+              Retour au tableau de bord
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (

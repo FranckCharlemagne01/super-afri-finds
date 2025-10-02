@@ -29,9 +29,12 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
   // Surveiller le changement de rôle après l'upgrade
   useEffect(() => {
     if (upgradeSuccess && role === 'seller') {
-      // Le rôle a été mis à jour, on peut naviguer
+      // Le rôle a été confirmé comme 'seller', navigation sûre
       onSuccess();
-      navigate('/seller-dashboard', { replace: true });
+      // Utiliser un petit délai pour garantir la stabilité de la session
+      setTimeout(() => {
+        navigate('/seller-dashboard', { replace: true });
+      }, 100);
     }
   }, [upgradeSuccess, role, navigate, onSuccess]);
 

@@ -429,35 +429,6 @@ const Auth = () => {
                 
                 <TabsContent value="signup">
                   <form onSubmit={handleSignUp} className="space-y-4">
-                    {/* Role Selection */}
-                    <div className="space-y-3">
-                      <Label className="text-base font-semibold">Je souhaite :</Label>
-                      <RadioGroup 
-                        value={userRole} 
-                        onValueChange={(value: 'buyer' | 'seller') => setUserRole(value)}
-                        className="grid grid-cols-2 gap-4"
-                      >
-                        <div className="flex items-center space-x-2 border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer">
-                          <RadioGroupItem value="buyer" id="buyer" />
-                          <div className="flex items-center gap-2">
-                            <ShoppingCart className="w-5 h-5 text-primary" />
-                            <Label htmlFor="buyer" className="cursor-pointer font-medium">
-                              Acheter
-                            </Label>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2 border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer">
-                          <RadioGroupItem value="seller" id="seller" />
-                          <div className="flex items-center gap-2">
-                            <Store className="w-5 h-5 text-primary" />
-                            <Label htmlFor="seller" className="cursor-pointer font-medium">
-                              Vendre
-                            </Label>
-                          </div>
-                        </div>
-                      </RadioGroup>
-                    </div>
-
                     <div className="space-y-2">
                       <Label htmlFor="fullName">Nom complet</Label>
                       <TextInput

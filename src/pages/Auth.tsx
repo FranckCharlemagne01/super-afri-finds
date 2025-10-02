@@ -21,7 +21,8 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [fullName, setFullName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [country, setCountry] = useState('CI');
   const [dialCode, setDialCode] = useState('+225');
@@ -105,6 +106,7 @@ const Auth = () => {
 
     try {
       const fullPhoneNumber = `${dialCode}${phone}`;
+      const fullName = `${firstName} ${lastName}`.trim();
       const { error } = await signUp(email, password, fullName, fullPhoneNumber, country, userRole);
       
       if (error) {
@@ -400,25 +402,39 @@ const Auth = () => {
             ) : authMode === 'signup' ? (
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">Nom complet</Label>
-                  <TextInput
-                    id="fullName"
-                    placeholder="Jean Dupont"
-                    value={fullName}
-                    onChange={setFullName}
+                  <Label htmlFor="lastName">Nom</Label>
+                  <Input
+                    id="lastName"
+                    type="text"
+                    placeholder="Dupont"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
                     required
-                    maxLength={100}
+                    maxLength={50}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">Prénom</Label>
+                  <Input
+                    id="firstName"
+                    type="text"
+                    placeholder="Jean"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                    maxLength={50}
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="signupEmail">Email</Label>
-                  <TextInput
+                  <Input
                     id="signupEmail"
                     type="email"
                     placeholder="email@exemple.com"
                     value={email}
-                    onChange={setEmail}
+                    onChange={(e) => setEmail(e.target.value)}
                     required
                     maxLength={255}
                   />

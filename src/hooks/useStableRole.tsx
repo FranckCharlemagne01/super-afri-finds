@@ -13,10 +13,9 @@ export const useStableRole = () => {
   const [role, setRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fonction stable pour récupérer le rôle - utilise un ref pour éviter les re-dependencies
-  const fetchUserRole = useCallback(async (targetUserId?: string) => {
-    const userIdToFetch = targetUserId || userId;
-    if (!userIdToFetch) {
+  // Fonction pour récupérer le rôle - stable avec userId en dépendance
+  const fetchUserRole = useCallback(async () => {
+    if (!userId) {
       setRole(null);
       setLoading(false);
       return;
@@ -24,12 +23,12 @@ export const useStableRole = () => {
 
     try {
       const { data, error } = await supabase.rpc('get_user_role', { 
-        _user_id: userIdToFetch 
+        _user_id: userId 
       });
 
       if (error) {
         console.error('Error fetching user role:', error);
-        setRole('buyer'); // Rôle par défaut
+        setRole('buyer');
       } else {
         setRole(data || 'buyer');
       }
@@ -39,14 +38,20 @@ export const useStableRole = () => {
     } finally {
       setLoading(false);
     }
-  }, []); // Aucune dépendance pour éviter les re-créations
+  }, [userId]); // Dépend uniquement de userId qui est stable
 
   useEffect(() => {
+    if (!userId) {
+      setRole(null);
+      setLoading(false);
+      return;
+    }
+
     let mounted = true;
 
     const loadRole = async () => {
-      if (mounted && userId) {
-        await fetchUserRole(userId);
+      if (mounted) {
+        await fetchUserRole();
       }
     };
 
@@ -61,7 +66,7 @@ export const useStableRole = () => {
   const refreshRole = useCallback(() => {
     if (userId) {
       setLoading(true);
-      fetchUserRole(userId);
+      fetchUserRole();
     }
   }, [userId, fetchUserRole]);
 
@@ -81,7 +86,7 @@ export const useStableRole = () => {
         },
         () => {
           // Rafraîchir le rôle automatiquement sans loader visible
-          if (userId) fetchUserRole(userId);
+          fetchUserRole();
         }
       )
       .subscribe();

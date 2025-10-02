@@ -158,7 +158,7 @@ Mon compte > Abonnement > Choisir votre formule`
 
 Voulez-vous contacter le support Djassa ?
 
-📞 Support WhatsApp : +225 XX XX XX XX
+📞 Support WhatsApp : +225 07 88 28 12 22
 📧 Email : support@djassa.com
 💬 Chat en direct via votre espace client
 

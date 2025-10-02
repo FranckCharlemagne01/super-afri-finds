@@ -191,7 +191,7 @@ const FAQ = () => {
               Contacter le Support
             </a>
             <a
-              href="https://wa.me/+2250123456789"
+              href="https://wa.me/2250788281222"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center px-6 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-colors"

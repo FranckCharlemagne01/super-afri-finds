@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useStableAuth } from '@/hooks/useStableAuth';
+import { useStableRole } from '@/hooks/useStableRole';
 import { Store } from 'lucide-react';
 
 interface SellerUpgradeFormProps {
@@ -16,12 +17,23 @@ interface SellerUpgradeFormProps {
 
 export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
   const { user } = useStableAuth();
+  const { role, refreshRole } = useStableRole();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [upgradeSuccess, setUpgradeSuccess] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
+
+  // Surveiller le changement de rôle après l'upgrade
+  useEffect(() => {
+    if (upgradeSuccess && role === 'seller') {
+      // Le rôle a été mis à jour, on peut naviguer
+      onSuccess();
+      navigate('/seller-dashboard', { replace: true });
+    }
+  }, [upgradeSuccess, role, navigate, onSuccess]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,14 +77,9 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
         duration: 3000,
       });
 
-      // Fermer le formulaire
-      onSuccess();
-
-      // Attendre que le rôle soit mis à jour dans la base de données
-      // avant de naviguer vers le dashboard vendeur
-      setTimeout(() => {
-        navigate('/seller-dashboard', { replace: true });
-      }, 500);
+      // Marquer l'upgrade comme réussi et rafraîchir le rôle
+      setUpgradeSuccess(true);
+      refreshRole();
     } catch (error) {
       console.error('Erreur:', error);
       toast({

@@ -2,6 +2,11 @@
 
 Ce guide vous explique comment transformer votre application web Djassa en une application mobile native pour iOS et Android.
 
+## ⚠️ Important
+
+**Les packages Capacitor et les hooks natifs seront installés lors de la configuration locale.** 
+Le site web actuel fonctionne normalement sans ces dépendances - elles ne sont nécessaires que pour créer l'application mobile.
+
 ## 🚀 Configuration Initiale
 
 ### Prérequis
@@ -23,13 +28,239 @@ cd djassaa-marketplace
 npm install
 ```
 
-### Étape 3 : Initialiser Capacitor
+### Étape 3 : Installer Capacitor
+```bash
+npm install @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android @capacitor/push-notifications @capacitor/camera @capacitor/haptics @capacitor/status-bar
+```
+
+### Étape 4 : Initialiser Capacitor
 ```bash
 npx cap init
 ```
 Les valeurs sont déjà configurées dans `capacitor.config.ts`.
 
-### Étape 4 : Ajouter les plateformes natives
+### Étape 5 : Créer les hooks natifs
+
+Créez les fichiers suivants dans `src/hooks/` :
+
+**src/hooks/usePushNotifications.tsx** :
+```typescript
+import { useEffect } from 'react';
+import { PushNotifications } from '@capacitor/push-notifications';
+import { Capacitor } from '@capacitor/core';
+import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './useAuth';
+
+export const usePushNotifications = () => {
+  const { toast } = useToast();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) {
+      return;
+    }
+
+    const initPushNotifications = async () => {
+      try {
+        const permission = await PushNotifications.requestPermissions();
+        
+        if (permission.receive === 'granted') {
+          await PushNotifications.register();
+        }
+
+        await PushNotifications.addListener('registration', async (token) => {
+          console.log('Push registration success, token: ' + token.value);
+          
+          if (user) {
+            const { error } = await supabase
+              .from('profiles')
+              .update({ push_token: token.value } as any)
+              .eq('user_id', user.id);
+            
+            if (error) {
+              console.error('Error saving push token:', error);
+            }
+          }
+        });
+
+        await PushNotifications.addListener('registrationError', (error) => {
+          console.error('Error on registration: ' + JSON.stringify(error));
+        });
+
+        await PushNotifications.addListener(
+          'pushNotificationReceived',
+          (notification) => {
+            toast({
+              title: notification.title || 'Nouvelle notification',
+              description: notification.body,
+            });
+          }
+        );
+
+        await PushNotifications.addListener(
+          'pushNotificationActionPerformed',
+          (notification) => {
+            console.log('Push notification action performed', notification);
+          }
+        );
+      } catch (error) {
+        console.error('Error initializing push notifications:', error);
+      }
+    };
+
+    initPushNotifications();
+
+    return () => {
+      PushNotifications.removeAllListeners();
+    };
+  }, [user, toast]);
+
+  return {
+    async sendNotification(userId: string, title: string, body: string) {
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', userId)
+          .single();
+
+        const pushToken = (profile as any)?.push_token;
+        
+        if (pushToken) {
+          await supabase.functions.invoke('send-push-notification', {
+            body: {
+              token: pushToken,
+              title,
+              body
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error sending push notification:', error);
+      }
+    }
+  };
+};
+```
+
+**src/hooks/useNativeCamera.tsx** :
+```typescript
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Capacitor } from '@capacitor/core';
+import { useToast } from '@/components/ui/use-toast';
+
+export const useNativeCamera = () => {
+  const { toast } = useToast();
+
+  const takePicture = async () => {
+    try {
+      if (!Capacitor.isNativePlatform()) {
+        toast({
+          title: 'Fonctionnalité native',
+          description: 'La caméra native est disponible uniquement sur l\'application mobile.',
+          variant: 'destructive'
+        });
+        return null;
+      }
+
+      const image = await Camera.getPhoto({
+        quality: 90,
+        allowEditing: true,
+        resultType: CameraResultType.Base64,
+        source: CameraSource.Camera
+      });
+
+      return {
+        base64: image.base64String,
+        format: image.format,
+        dataUrl: `data:image/${image.format};base64,${image.base64String}`
+      };
+    } catch (error) {
+      console.error('Error taking picture:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible d\'accéder à la caméra.',
+        variant: 'destructive'
+      });
+      return null;
+    }
+  };
+
+  const pickImage = async () => {
+    try {
+      if (!Capacitor.isNativePlatform()) {
+        toast({
+          title: 'Fonctionnalité native',
+          description: 'L\'accès à la galerie est disponible uniquement sur l\'application mobile.',
+          variant: 'destructive'
+        });
+        return null;
+      }
+
+      const image = await Camera.getPhoto({
+        quality: 90,
+        allowEditing: true,
+        resultType: CameraResultType.Base64,
+        source: CameraSource.Photos
+      });
+
+      return {
+        base64: image.base64String,
+        format: image.format,
+        dataUrl: `data:image/${image.format};base64,${image.base64String}`
+      };
+    } catch (error) {
+      console.error('Error picking image:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible d\'accéder à la galerie.',
+        variant: 'destructive'
+      });
+      return null;
+    }
+  };
+
+  return {
+    takePicture,
+    pickImage
+  };
+};
+```
+
+**src/hooks/useNativeApp.tsx** :
+```typescript
+import { useEffect } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
+
+export const useNativeApp = () => {
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      StatusBar.setStyle({ style: Style.Light });
+      StatusBar.setBackgroundColor({ color: '#000000' });
+    }
+  }, []);
+
+  const vibrate = async (style: ImpactStyle = ImpactStyle.Medium) => {
+    if (Capacitor.isNativePlatform()) {
+      await Haptics.impact({ style });
+    }
+  };
+
+  const isNative = Capacitor.isNativePlatform();
+  const platform = Capacitor.getPlatform();
+
+  return {
+    isNative,
+    platform,
+    vibrate
+  };
+};
+```
+
+### Étape 6 : Ajouter les plateformes natives
 
 Pour iOS :
 ```bash
@@ -43,7 +274,7 @@ npx cap add android
 npx cap update android
 ```
 
-### Étape 5 : Build et sync
+### Étape 7 : Build et sync
 ```bash
 npm run build
 npx cap sync

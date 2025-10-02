@@ -18,6 +18,7 @@ import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { RealtimeNotificationBadge } from "@/components/RealtimeNotificationBadge";
 import { useNavigate } from "react-router-dom";
 import { SellerUpgradeForm } from "@/components/SellerUpgradeForm";
+import { getCountryName } from "@/data/countries";
 import { 
   Smartphone, 
   Shirt, 
@@ -79,6 +80,7 @@ const Index = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSellerUpgrade, setShowSellerUpgrade] = useState(false);
+  const [userCountry, setUserCountry] = useState<string>("Côte d'Ivoire");
 
   const handleProfileClick = () => {
     if (!user) {
@@ -116,7 +118,34 @@ const Index = () => {
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+    if (user) {
+      fetchUserCountry();
+    }
+  }, [user]);
+
+  const fetchUserCountry = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('country')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching user country:', error);
+        return;
+      }
+      
+      if (data?.country) {
+        const countryName = getCountryName(data.country);
+        setUserCountry(countryName);
+      }
+    } catch (error) {
+      console.error('Error fetching user country:', error);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -244,7 +273,7 @@ const Index = () => {
                 Djassa
               </h1>
               <Badge className="gradient-accent text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 hidden sm:inline-flex">
-                Côte d'Ivoire
+                {userCountry}
               </Badge>
             </div>
             

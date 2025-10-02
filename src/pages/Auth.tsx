@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { SellerUpgradeForm } from '@/components/SellerUpgradeForm';
+import { getCountryByCode } from '@/data/countries';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -25,6 +26,7 @@ const Auth = () => {
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [country, setCountry] = useState('CI'); // Default to Côte d'Ivoire
+  const [dialCode, setDialCode] = useState('+225'); // Default dial code for Côte d'Ivoire
   const [userRole, setUserRole] = useState<'buyer' | 'seller'>('buyer'); // Default to buyer
   const [loginIdentifier, setLoginIdentifier] = useState(''); // Email ou téléphone pour la connexion
   const [loading, setLoading] = useState(false);
@@ -107,7 +109,9 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const { error } = await signUp(email, password, fullName, phone, country, userRole);
+      // Combine dial code with phone number
+      const fullPhoneNumber = `${dialCode}${phone}`;
+      const { error } = await signUp(email, password, fullName, fullPhoneNumber, country, userRole);
       
       if (error) {
         if (error.message.includes('already registered') || error.message.includes('already been registered')) {
@@ -451,27 +455,44 @@ const Auth = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="phone">Numéro de téléphone</Label>
-                      <NumericInput
-                        id="phone"
-                        placeholder="22501234567"
-                        value={phone}
-                        onChange={setPhone}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
                       <Label htmlFor="country" className="flex items-center gap-2">
                         <Globe className="w-4 h-4" />
                         Pays
                       </Label>
                       <CountrySelect
                         value={country}
-                        onValueChange={setCountry}
+                        onValueChange={(value) => {
+                          setCountry(value);
+                          const selectedCountry = getCountryByCode(value);
+                          if (selectedCountry) {
+                            setDialCode(selectedCountry.dialCode);
+                          }
+                        }}
                         placeholder="Sélectionnez votre pays"
                       />
                       <p className="text-xs text-muted-foreground">
                        Ceci nous aide à personnaliser votre expérience et à vous proposer des produits adaptés à votre région.
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Numéro de téléphone</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          value={dialCode}
+                          disabled
+                          className="w-20 bg-muted"
+                        />
+                        <NumericInput
+                          id="phone"
+                          placeholder="01234567"
+                          value={phone}
+                          onChange={setPhone}
+                          required
+                          className="flex-1"
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        L'indicatif {dialCode} est ajouté automatiquement
                       </p>
                     </div>
                     <div className="space-y-4">

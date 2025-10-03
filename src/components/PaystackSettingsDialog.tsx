@@ -14,13 +14,15 @@ interface PaystackSettingsDialogProps {
 }
 
 export function PaystackSettingsDialog({ open, onOpenChange }: PaystackSettingsDialogProps) {
-  const [testKey, setTestKey] = useState('');
-  const [liveKey, setLiveKey] = useState('');
+  const [testSecretKey, setTestSecretKey] = useState('');
+  const [liveSecretKey, setLiveSecretKey] = useState('');
+  const [testPublicKey, setTestPublicKey] = useState('');
+  const [livePublicKey, setLivePublicKey] = useState('');
   const [mode, setMode] = useState<'test' | 'live'>('test');
   const [isLoading, setIsLoading] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
-  const [hasTestKey, setHasTestKey] = useState(false);
-  const [hasLiveKey, setHasLiveKey] = useState(false);
+  const [hasTestKeys, setHasTestKeys] = useState(false);
+  const [hasLiveKeys, setHasLiveKeys] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -39,30 +41,32 @@ export function PaystackSettingsDialog({ open, onOpenChange }: PaystackSettingsD
 
       if (data.success) {
         setMode(data.mode);
-        setHasTestKey(data.has_test_key);
-        setHasLiveKey(data.has_live_key);
+        setHasTestKeys(data.has_test_keys);
+        setHasLiveKeys(data.has_live_keys);
       }
     } catch (error) {
       console.error('Error loading config:', error);
     }
   };
 
-  const handleTestKey = async (keyToTest: string, keyType: 'test' | 'live') => {
-    if (!keyToTest.trim()) {
+  const handleTestKey = async (keyType: 'test' | 'live') => {
+    const secretKey = keyType === 'test' ? testSecretKey : liveSecretKey;
+    
+    if (!secretKey.trim()) {
       toast({
         title: "Erreur",
-        description: `Veuillez entrer une clé ${keyType === 'test' ? 'Test' : 'Live'} à tester`,
+        description: `Veuillez entrer une clé secrète ${keyType === 'test' ? 'Test' : 'Live'}`,
         variant: "destructive",
       });
       return;
     }
 
-    // Validate key format
+    // Validate secret key format
     const expectedPrefix = keyType === 'test' ? 'sk_test_' : 'sk_live_';
-    if (!keyToTest.startsWith(expectedPrefix)) {
+    if (!secretKey.startsWith(expectedPrefix)) {
       toast({
         title: "Erreur",
-        description: `La clé ${keyType === 'test' ? 'Test' : 'Live'} doit commencer par '${expectedPrefix}'`,
+        description: `La clé secrète ${keyType === 'test' ? 'Test' : 'Live'} doit commencer par '${expectedPrefix}'`,
         variant: "destructive",
       });
       return;
@@ -74,7 +78,7 @@ export function PaystackSettingsDialog({ open, onOpenChange }: PaystackSettingsD
       const response = await fetch('https://api.paystack.co/transaction', {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${keyToTest}`,
+          'Authorization': `Bearer ${secretKey}`,
           'Content-Type': 'application/json'
         }
       });
@@ -82,13 +86,13 @@ export function PaystackSettingsDialog({ open, onOpenChange }: PaystackSettingsD
       if (response.status === 401) {
         toast({
           title: "❌ Clé invalide",
-          description: "Votre clé Paystack n'est pas valide. Merci d'entrer une clé valide.",
+          description: "Votre clé secrète Paystack n'est pas valide. Merci d'entrer une clé valide.",
           variant: "destructive",
         });
       } else if (response.status === 200) {
         toast({
-          title: "✅ Clé valide",
-          description: `La clé ${keyType === 'test' ? 'Test' : 'Live'} Paystack est valide et fonctionne correctement.`,
+          title: "✅ Connexion réussie",
+          description: `Les clés ${keyType === 'test' ? 'Test' : 'Live'} Paystack sont valides et fonctionnent correctement.`,
         });
       } else {
         toast({
@@ -110,31 +114,47 @@ export function PaystackSettingsDialog({ open, onOpenChange }: PaystackSettingsD
   };
 
   const handleSave = async () => {
-    // Validate at least one key is provided
-    if (!testKey.trim() && !liveKey.trim()) {
+    // Validate at least one pair is provided
+    if ((!testSecretKey.trim() && !testPublicKey.trim()) && (!liveSecretKey.trim() && !livePublicKey.trim())) {
       toast({
         title: "Erreur",
-        description: "Veuillez entrer au moins une clé (Test ou Live)",
+        description: "Veuillez entrer au moins une paire de clés (Test ou Live)",
         variant: "destructive",
       });
       return;
     }
 
-    // Validate test key format if provided
-    if (testKey.trim() && !testKey.startsWith('sk_test_')) {
+    // Validate test keys format if provided
+    if (testSecretKey.trim() && !testSecretKey.startsWith('sk_test_')) {
       toast({
         title: "Erreur",
-        description: "La clé de test doit commencer par 'sk_test_'",
+        description: "La clé secrète de test doit commencer par 'sk_test_'",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (testPublicKey.trim() && !testPublicKey.startsWith('pk_test_')) {
+      toast({
+        title: "Erreur",
+        description: "La clé publique de test doit commencer par 'pk_test_'",
         variant: "destructive",
       });
       return;
     }
 
-    // Validate live key format if provided
-    if (liveKey.trim() && !liveKey.startsWith('sk_live_')) {
+    // Validate live keys format if provided
+    if (liveSecretKey.trim() && !liveSecretKey.startsWith('sk_live_')) {
       toast({
         title: "Erreur",
-        description: "La clé live doit commencer par 'sk_live_'",
+        description: "La clé secrète live doit commencer par 'sk_live_'",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (livePublicKey.trim() && !livePublicKey.startsWith('pk_live_')) {
+      toast({
+        title: "Erreur",
+        description: "La clé publique live doit commencer par 'pk_live_'",
         variant: "destructive",
       });
       return;
@@ -145,8 +165,10 @@ export function PaystackSettingsDialog({ open, onOpenChange }: PaystackSettingsD
       const { data, error } = await supabase.functions.invoke('paystack-config', {
         body: {
           action: 'save',
-          key_test: testKey.trim() || null,
-          key_live: liveKey.trim() || null,
+          secret_key_test: testSecretKey.trim() || null,
+          public_key_test: testPublicKey.trim() || null,
+          secret_key_live: liveSecretKey.trim() || null,
+          public_key_live: livePublicKey.trim() || null,
           mode: mode,
         }
       });
@@ -159,8 +181,10 @@ export function PaystackSettingsDialog({ open, onOpenChange }: PaystackSettingsD
           description: "Configuration Paystack enregistrée de manière sécurisée",
         });
         
-        setTestKey('');
-        setLiveKey('');
+        setTestSecretKey('');
+        setTestPublicKey('');
+        setLiveSecretKey('');
+        setLivePublicKey('');
         await loadConfig();
         onOpenChange(false);
       } else {
@@ -213,62 +237,102 @@ export function PaystackSettingsDialog({ open, onOpenChange }: PaystackSettingsD
             </RadioGroup>
           </div>
 
-          {/* Test key */}
-          <div className="space-y-2">
-            <Label htmlFor="test-key" className="flex items-center gap-2">
-              Clé Test Paystack
-              {hasTestKey && <span className="text-xs text-green-600 dark:text-green-400">✓ Configurée</span>}
-            </Label>
-            <div className="flex gap-2">
+          {/* Test keys */}
+          <div className="space-y-4 p-4 border rounded-lg bg-accent/20">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
+              <Label className="text-base font-semibold">Clés Test Paystack</Label>
+              {hasTestKeys && <span className="text-xs text-green-600 dark:text-green-400">✓ Configurées</span>}
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="test-secret-key">Clé Secrète (Secret Key)</Label>
               <Input
-                id="test-key"
+                id="test-secret-key"
                 type="password"
                 placeholder="sk_test_..."
-                value={testKey}
-                onChange={(e) => setTestKey(e.target.value)}
-                className="font-mono flex-1"
+                value={testSecretKey}
+                onChange={(e) => setTestSecretKey(e.target.value)}
+                className="font-mono"
               />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleTestKey(testKey, 'test')}
-                disabled={isTesting || !testKey.trim()}
-              >
-                {isTesting ? 'Test...' : 'Tester'}
-              </Button>
+              <p className="text-xs text-muted-foreground">
+                Utilisée côté serveur pour traiter les paiements
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Laissez vide pour conserver la clé existante
-            </p>
+
+            <div className="space-y-2">
+              <Label htmlFor="test-public-key">Clé Publique (Public Key)</Label>
+              <Input
+                id="test-public-key"
+                type="text"
+                placeholder="pk_test_..."
+                value={testPublicKey}
+                onChange={(e) => setTestPublicKey(e.target.value)}
+                className="font-mono"
+              />
+              <p className="text-xs text-muted-foreground">
+                Utilisée côté client pour initialiser les paiements
+              </p>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleTestKey('test')}
+              disabled={isTesting || !testSecretKey.trim()}
+              className="w-full"
+            >
+              {isTesting ? 'Test en cours...' : '🔍 Tester la connexion Test'}
+            </Button>
           </div>
 
-          {/* Live key */}
-          <div className="space-y-2">
-            <Label htmlFor="live-key" className="flex items-center gap-2">
-              Clé Live Paystack
-              {hasLiveKey && <span className="text-xs text-green-600 dark:text-green-400">✓ Configurée</span>}
-            </Label>
-            <div className="flex gap-2">
+          {/* Live keys */}
+          <div className="space-y-4 p-4 border rounded-lg bg-accent/20">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-green-500"></div>
+              <Label className="text-base font-semibold">Clés Live Paystack</Label>
+              {hasLiveKeys && <span className="text-xs text-green-600 dark:text-green-400">✓ Configurées</span>}
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="live-secret-key">Clé Secrète (Secret Key)</Label>
               <Input
-                id="live-key"
+                id="live-secret-key"
                 type="password"
                 placeholder="sk_live_..."
-                value={liveKey}
-                onChange={(e) => setLiveKey(e.target.value)}
-                className="font-mono flex-1"
+                value={liveSecretKey}
+                onChange={(e) => setLiveSecretKey(e.target.value)}
+                className="font-mono"
               />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleTestKey(liveKey, 'live')}
-                disabled={isTesting || !liveKey.trim()}
-              >
-                {isTesting ? 'Test...' : 'Tester'}
-              </Button>
+              <p className="text-xs text-muted-foreground">
+                Utilisée côté serveur pour traiter les paiements réels
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Laissez vide pour conserver la clé existante
-            </p>
+
+            <div className="space-y-2">
+              <Label htmlFor="live-public-key">Clé Publique (Public Key)</Label>
+              <Input
+                id="live-public-key"
+                type="text"
+                placeholder="pk_live_..."
+                value={livePublicKey}
+                onChange={(e) => setLivePublicKey(e.target.value)}
+                className="font-mono"
+              />
+              <p className="text-xs text-muted-foreground">
+                Utilisée côté client pour initialiser les paiements réels
+              </p>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleTestKey('live')}
+              disabled={isTesting || !liveSecretKey.trim()}
+              className="w-full"
+            >
+              {isTesting ? 'Test en cours...' : '🔍 Tester la connexion Live'}
+            </Button>
           </div>
 
           {/* Security info */}

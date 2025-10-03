@@ -182,6 +182,33 @@ export type Database = {
         }
         Relationships: []
       }
+      paystack_config: {
+        Row: {
+          created_at: string
+          encrypted_key_live: string | null
+          encrypted_key_test: string | null
+          id: string
+          mode: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          encrypted_key_live?: string | null
+          encrypted_key_test?: string | null
+          id?: string
+          mode?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          encrypted_key_live?: string | null
+          encrypted_key_test?: string | null
+          id?: string
+          mode?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       premium_payments: {
         Row: {
           amount: number

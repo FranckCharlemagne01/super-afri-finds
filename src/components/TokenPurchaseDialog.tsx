@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Coins, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { usePaystackPayment } from 'react-paystack';
 
 interface TokenPurchaseDialogProps {
   open: boolean;
@@ -56,14 +57,106 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
     setStep('select_payment');
   };
 
+  const [paystackReference, setPaystackReference] = useState<string>('');
+
+  const config = {
+    reference: paystackReference || new Date().getTime().toString(),
+    email: user?.email || '',
+    amount: (selectedPackage?.price || 0) * 100, // Paystack utilise les centimes (XOF * 100)
+    publicKey: 'pk_test_4c8dd945af2e5e023dd9bd5e8f8c2e5b61df8e71',
+    currency: 'XOF',
+    channels: selectedPayment === 'card' 
+      ? ['card'] 
+      : ['mobile_money'],
+    metadata: {
+      custom_fields: [
+        {
+          display_name: "Payment Method",
+          variable_name: "payment_method",
+          value: selectedPayment
+        },
+        {
+          display_name: "Tokens Amount",
+          variable_name: "tokens_amount",
+          value: selectedPackage?.tokens.toString() || '0'
+        }
+      ]
+    }
+  };
+
+  const onSuccess = async (reference: any) => {
+    setLoading(true);
+    try {
+      // Vérifier le paiement côté serveur
+      const { error: verifyError } = await supabase.functions.invoke('paystack-payment', {
+        body: {
+          action: 'verify_payment',
+          reference: reference.reference || paystackReference,
+        },
+      });
+
+      if (verifyError) throw verifyError;
+
+      toast({
+        title: '✅ Paiement réussi',
+        description: `Vous avez reçu ${selectedPackage?.tokens} jetons`,
+      });
+      
+      // Rafraîchir le solde
+      await onPurchaseComplete();
+      
+      // Fermer le dialog
+      onOpenChange(false);
+      setStep('select_package');
+      setSelectedPackage(null);
+    } catch (error: any) {
+      console.error('Error verifying payment:', error);
+      toast({
+        title: 'Erreur de vérification',
+        description: 'Le paiement sera vérifié automatiquement',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onClose = () => {
+    toast({
+      title: 'Paiement annulé',
+      description: 'Vous pouvez réessayer quand vous voulez',
+    });
+    setLoading(false);
+  };
+
+  const initializePayment = usePaystackPayment(config);
+
   const handlePurchase = async () => {
     if (!user || !selectedPackage) return;
 
     setLoading(true);
 
     try {
+      // Créer la référence de paiement
+      const reference = `tokens_${user.id}_${Date.now()}`;
+      setPaystackReference(reference);
+
+      // Initialiser le paiement dans la base de données via edge function
+      const { error } = await supabase.functions.invoke('paystack-payment', {
+        body: {
+          action: 'initialize_payment',
+          user_id: user.id,
+          email: user.email,
+          amount: selectedPackage.price,
+          payment_type: 'tokens',
+          tokens_amount: selectedPackage.tokens,
+        },
+      });
+
+      if (error) throw error;
+
       // Créer une transaction en attente
-      const { data: transactionData, error: transactionError } = await supabase
+      await supabase
         .from('token_transactions')
         .insert({
           seller_id: user.id,
@@ -72,36 +165,15 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
           price_paid: selectedPackage.price,
           payment_method: selectedPayment,
           status: 'pending',
-        })
-        .select()
-        .single();
+          paystack_reference: reference,
+        });
 
-      if (transactionError) throw transactionError;
+      // Attendre un peu pour que la référence soit mise à jour
+      setTimeout(() => {
+        // Ouvrir le popup Paystack inline
+        initializePayment({ onSuccess, onClose });
+      }, 100);
 
-      // Appeler Paystack pour initialiser le paiement
-      const { data, error } = await supabase.functions.invoke('paystack-payment', {
-        body: {
-          action: 'initialize_payment',
-          amount: selectedPackage.price,
-          email: user.email,
-          payment_type: 'tokens',
-          tokens_amount: selectedPackage.tokens,
-          payment_method: selectedPayment,
-        },
-      });
-
-      if (error) throw error;
-
-      if (data?.authorization_url) {
-        // Mettre à jour la transaction avec la référence Paystack
-        await supabase
-          .from('token_transactions')
-          .update({ paystack_reference: data.reference })
-          .eq('id', transactionData.id);
-
-        // Rediriger vers Paystack
-        window.location.href = data.authorization_url;
-      }
     } catch (error: any) {
       console.error('Error purchasing tokens:', error);
       toast({
@@ -109,7 +181,6 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
         description: error.message || 'Impossible d\'initier le paiement',
         variant: 'destructive',
       });
-    } finally {
       setLoading(false);
     }
   };
@@ -233,9 +304,9 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
                     onClick={() => setSelectedPayment(method.id)}
                     className={`
                       cursor-pointer border-2 rounded-xl p-4 transition-all
-                      hover:border-primary hover:shadow-md
+                      hover:border-primary hover:shadow-lg hover:scale-[1.02]
                       ${selectedPayment === method.id 
-                        ? 'border-primary bg-primary/5 shadow-md' 
+                        ? 'border-primary bg-primary/5 shadow-lg' 
                         : 'border-border bg-card'
                       }
                     `}
@@ -244,11 +315,13 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
                       <div className="flex-shrink-0 text-3xl">{method.icon}</div>
                       <div className="flex-1">
                         <p className="font-semibold text-base">{method.label}</p>
-                        <p className="text-xs text-muted-foreground">{method.description}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{method.description}</p>
                       </div>
                       {selectedPayment === method.id && (
-                        <div className="flex-shrink-0 h-6 w-6 rounded-full bg-primary flex items-center justify-center">
-                          <div className="h-3 w-3 rounded-full bg-white" />
+                        <div className="flex-shrink-0 h-6 w-6 rounded-full bg-primary flex items-center justify-center animate-in zoom-in-50">
+                          <svg className="h-3.5 w-3.5 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
                         </div>
                       )}
                     </div>
@@ -257,9 +330,12 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
               </div>
             </div>
 
-            <div className="bg-muted/30 p-3 rounded-lg">
-              <p className="text-xs text-center text-muted-foreground">
+            <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
+              <p className="text-xs text-center text-muted-foreground font-medium">
                 🔒 Paiement 100% sécurisé • Vos jetons seront ajoutés immédiatement après validation
+              </p>
+              <p className="text-xs text-center text-muted-foreground mt-2">
+                Une fenêtre de paiement sécurisée s'ouvrira pour finaliser votre achat
               </p>
             </div>
 
@@ -276,13 +352,13 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
               <Button
                 onClick={handlePurchase}
                 disabled={loading}
-                className="flex-1"
+                className="flex-1 bg-primary hover:bg-primary/90"
                 size="lg"
               >
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Redirection...
+                    Traitement...
                   </>
                 ) : (
                   <>

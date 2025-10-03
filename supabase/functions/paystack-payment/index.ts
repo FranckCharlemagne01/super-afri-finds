@@ -7,15 +7,65 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Function to get the current Paystack secret key from encrypted config
+async function getPaystackSecretKey(supabase: any): Promise<string> {
+  try {
+    // Try to get from encrypted config first
+    const { data: config, error } = await supabase
+      .from('paystack_config')
+      .select('encrypted_key_test, encrypted_key_live, mode')
+      .limit(1)
+      .maybeSingle();
+
+    if (!error && config) {
+      // We have a config, now decrypt the appropriate key
+      const encryptedKey = config.mode === 'test' ? config.encrypted_key_test : config.encrypted_key_live;
+      
+      if (encryptedKey) {
+        // Call the paystack-config function to decrypt
+        const decryptResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/paystack-config`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+          },
+          body: JSON.stringify({ action: 'get_decrypted_key' })
+        });
+
+        const decryptData = await decryptResponse.json();
+        
+        if (decryptData.success && decryptData.key) {
+          console.log(`✅ Using encrypted Paystack ${decryptData.mode} key from database`);
+          return decryptData.key;
+        }
+      }
+    }
+  } catch (error) {
+    console.error('⚠️ Error getting encrypted Paystack key:', error);
+  }
+
+  // Fallback to environment variable
+  const envKey = Deno.env.get('PAYSTACK_SECRET_KEY');
+  if (envKey) {
+    console.log('⚠️ Using fallback Paystack key from environment variable');
+    return envKey;
+  }
+
+  throw new Error('No Paystack key configured');
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const paystackSecretKey = Deno.env.get('PAYSTACK_SECRET_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Get Paystack secret key from encrypted config (with fallback)
+    const paystackSecretKey = await getPaystackSecretKey(supabase);
 
     if (!paystackSecretKey) {
       console.error('PAYSTACK_SECRET_KEY not configured');
@@ -24,8 +74,6 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const { action, ...payload } = await req.json();
 
     if (action === 'initialize_payment') {

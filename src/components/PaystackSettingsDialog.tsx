@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { KeyRound, Save, Shield } from 'lucide-react';
+import { KeyRound, Save, Shield, Trash2, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface PaystackSettingsDialogProps {
   open: boolean;
@@ -115,6 +116,43 @@ export function PaystackSettingsDialog({ open, onOpenChange }: PaystackSettingsD
     }
   };
 
+  const handleDeleteKeys = async (keyType: 'test' | 'live') => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('paystack-config', {
+        body: {
+          action: 'save',
+          secret_key_test: keyType === 'test' ? null : undefined,
+          public_key_test: keyType === 'test' ? null : undefined,
+          secret_key_live: keyType === 'live' ? null : undefined,
+          public_key_live: keyType === 'live' ? null : undefined,
+          mode: mode,
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast({
+          title: "✅ Clés supprimées",
+          description: `Les clés ${keyType === 'test' ? 'Test' : 'Live'} ont été supprimées avec succès`,
+        });
+        await loadConfig();
+      } else {
+        throw new Error(data.error || 'Erreur inconnue');
+      }
+    } catch (error: any) {
+      console.error('Error deleting keys:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de supprimer les clés",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSave = async () => {
     // Validate at least one pair is provided
     if ((!testSecretKey.trim() && !testPublicKey.trim()) && (!liveSecretKey.trim() && !livePublicKey.trim())) {
@@ -179,8 +217,9 @@ export function PaystackSettingsDialog({ open, onOpenChange }: PaystackSettingsD
 
       if (data.success) {
         toast({
-          title: "✅ Succès",
-          description: "Configuration Paystack enregistrée de manière sécurisée",
+          title: "✅ Configuration enregistrée avec succès",
+          description: `Vos clés Paystack ${mode === 'test' ? 'Test' : 'Live'} sont maintenant actives et prêtes à être utilisées`,
+          duration: 5000,
         });
         
         setTestSecretKey('');
@@ -218,21 +257,37 @@ export function PaystackSettingsDialog({ open, onOpenChange }: PaystackSettingsD
         </DialogHeader>
         
         <div className="space-y-6 py-4">
+          {/* Active key indicator */}
+          {(hasTestKeys || hasLiveKeys) && (
+            <Alert className="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
+              <AlertCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <AlertDescription className="text-green-800 dark:text-green-200">
+                ✅ Clés {mode === 'test' ? 'Test' : 'Live'} actives et prêtes à l'utilisation
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Mode selector */}
           <div className="space-y-3">
-            <Label className="text-base font-semibold">Mode de paiement</Label>
+            <Label className="text-base font-semibold">Mode de paiement actuel</Label>
             <RadioGroup value={mode} onValueChange={(value) => setMode(value as 'test' | 'live')}>
               <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent/50 transition-colors">
                 <RadioGroupItem value="test" id="test" />
                 <Label htmlFor="test" className="flex-1 cursor-pointer">
-                  <div className="font-medium">Mode Test</div>
+                  <div className="font-medium flex items-center gap-2">
+                    Mode Test
+                    {mode === 'test' && hasTestKeys && <span className="text-xs text-green-600 dark:text-green-400">✅ Active</span>}
+                  </div>
                   <div className="text-sm text-muted-foreground">Pour les tests et le développement</div>
                 </Label>
               </div>
               <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent/50 transition-colors">
                 <RadioGroupItem value="live" id="live" />
                 <Label htmlFor="live" className="flex-1 cursor-pointer">
-                  <div className="font-medium">Mode Live</div>
+                  <div className="font-medium flex items-center gap-2">
+                    Mode Live
+                    {mode === 'live' && hasLiveKeys && <span className="text-xs text-green-600 dark:text-green-400">✅ Active</span>}
+                  </div>
                   <div className="text-sm text-muted-foreground">Pour les paiements réels</div>
                 </Label>
               </div>
@@ -241,10 +296,25 @@ export function PaystackSettingsDialog({ open, onOpenChange }: PaystackSettingsD
 
           {/* Test keys */}
           <div className="space-y-4 p-4 border rounded-lg bg-accent/20">
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
-              <Label className="text-base font-semibold">Clés Test Paystack</Label>
-              {hasTestKeys && <span className="text-xs text-green-600 dark:text-green-400">✓ Configurées</span>}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
+                <Label className="text-base font-semibold">Clés Test Paystack</Label>
+                {hasTestKeys && <span className="text-xs text-green-600 dark:text-green-400">✓ Configurées</span>}
+              </div>
+              {hasTestKeys && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleDeleteKeys('test')}
+                  disabled={isLoading}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  Supprimer
+                </Button>
+              )}
             </div>
             
             <div className="space-y-2">
@@ -290,10 +360,25 @@ export function PaystackSettingsDialog({ open, onOpenChange }: PaystackSettingsD
 
           {/* Live keys */}
           <div className="space-y-4 p-4 border rounded-lg bg-accent/20">
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-green-500"></div>
-              <Label className="text-base font-semibold">Clés Live Paystack</Label>
-              {hasLiveKeys && <span className="text-xs text-green-600 dark:text-green-400">✓ Configurées</span>}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                <Label className="text-base font-semibold">Clés Live Paystack</Label>
+                {hasLiveKeys && <span className="text-xs text-green-600 dark:text-green-400">✓ Configurées</span>}
+              </div>
+              {hasLiveKeys && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleDeleteKeys('live')}
+                  disabled={isLoading}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  Supprimer
+                </Button>
+              )}
             </div>
             
             <div className="space-y-2">

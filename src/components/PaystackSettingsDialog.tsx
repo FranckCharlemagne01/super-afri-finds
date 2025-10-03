@@ -350,7 +350,7 @@ export function PaystackSettingsDialog({ open, onOpenChange }: PaystackSettingsD
                   if (error) throw error;
                   if (data.success) {
                     setCurrentKeys({
-                      secretKey: data.secret_key,
+                      secretKey: '', // Not returned for regular users
                       publicKey: data.public_key,
                       mode: data.mode
                     });
@@ -382,19 +382,16 @@ export function PaystackSettingsDialog({ open, onOpenChange }: PaystackSettingsD
                     </span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Clé publique :</span>
+                    <span className="text-muted-foreground">Clé publique en cours d'utilisation :</span>
                     <div className="mt-1 p-2 bg-white dark:bg-gray-900 rounded break-all">
                       {currentKeys.publicKey}
                     </div>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">Clé secrète :</span>
-                    <div className="mt-1 p-2 bg-white dark:bg-gray-900 rounded break-all">
-                      {currentKeys.secretKey.substring(0, 15)}...{currentKeys.secretKey.substring(currentKeys.secretKey.length - 10)}
-                    </div>
-                  </div>
-                  <p className="text-yellow-700 dark:text-yellow-300 mt-2 italic">
-                    ⚠️ Ces informations sont visibles uniquement pour les super admins
+                  <p className="text-green-700 dark:text-green-300 mt-2">
+                    ✅ Cette clé publique est utilisée pour initialiser les paiements
+                  </p>
+                  <p className="text-muted-foreground text-xs mt-2">
+                    Note : La clé secrète est utilisée uniquement côté serveur et n'est jamais exposée au front-end
                   </p>
                 </div>
               </div>

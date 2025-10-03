@@ -18,6 +18,7 @@ export function PaystackSettingsDialog({ open, onOpenChange }: PaystackSettingsD
   const [liveKey, setLiveKey] = useState('');
   const [mode, setMode] = useState<'test' | 'live'>('test');
   const [isLoading, setIsLoading] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
   const [hasTestKey, setHasTestKey] = useState(false);
   const [hasLiveKey, setHasLiveKey] = useState(false);
   const { toast } = useToast();
@@ -43,6 +44,68 @@ export function PaystackSettingsDialog({ open, onOpenChange }: PaystackSettingsD
       }
     } catch (error) {
       console.error('Error loading config:', error);
+    }
+  };
+
+  const handleTestKey = async (keyToTest: string, keyType: 'test' | 'live') => {
+    if (!keyToTest.trim()) {
+      toast({
+        title: "Erreur",
+        description: `Veuillez entrer une clé ${keyType === 'test' ? 'Test' : 'Live'} à tester`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate key format
+    const expectedPrefix = keyType === 'test' ? 'sk_test_' : 'sk_live_';
+    if (!keyToTest.startsWith(expectedPrefix)) {
+      toast({
+        title: "Erreur",
+        description: `La clé ${keyType === 'test' ? 'Test' : 'Live'} doit commencer par '${expectedPrefix}'`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsTesting(true);
+    try {
+      // Test the key by calling Paystack API
+      const response = await fetch('https://api.paystack.co/transaction', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${keyToTest}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.status === 401) {
+        toast({
+          title: "❌ Clé invalide",
+          description: "Votre clé Paystack n'est pas valide. Merci d'entrer une clé valide.",
+          variant: "destructive",
+        });
+      } else if (response.status === 200) {
+        toast({
+          title: "✅ Clé valide",
+          description: `La clé ${keyType === 'test' ? 'Test' : 'Live'} Paystack est valide et fonctionne correctement.`,
+        });
+      } else {
+        toast({
+          title: "Erreur",
+          description: "Impossible de valider la clé. Veuillez réessayer.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error testing key:', error);
+      toast({
+        title: "Erreur",
+        description: "Erreur de connexion lors du test de la clé.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsTesting(false);
     }
   };
 
@@ -103,11 +166,11 @@ export function PaystackSettingsDialog({ open, onOpenChange }: PaystackSettingsD
       } else {
         throw new Error(data.error || 'Erreur inconnue');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving config:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de sauvegarder la configuration",
+        description: error.message || "Impossible de sauvegarder la configuration",
         variant: "destructive",
       });
     } finally {
@@ -156,14 +219,24 @@ export function PaystackSettingsDialog({ open, onOpenChange }: PaystackSettingsD
               Clé Test Paystack
               {hasTestKey && <span className="text-xs text-green-600 dark:text-green-400">✓ Configurée</span>}
             </Label>
-            <Input
-              id="test-key"
-              type="password"
-              placeholder="sk_test_..."
-              value={testKey}
-              onChange={(e) => setTestKey(e.target.value)}
-              className="font-mono"
-            />
+            <div className="flex gap-2">
+              <Input
+                id="test-key"
+                type="password"
+                placeholder="sk_test_..."
+                value={testKey}
+                onChange={(e) => setTestKey(e.target.value)}
+                className="font-mono flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleTestKey(testKey, 'test')}
+                disabled={isTesting || !testKey.trim()}
+              >
+                {isTesting ? 'Test...' : 'Tester'}
+              </Button>
+            </div>
             <p className="text-xs text-muted-foreground">
               Laissez vide pour conserver la clé existante
             </p>
@@ -175,14 +248,24 @@ export function PaystackSettingsDialog({ open, onOpenChange }: PaystackSettingsD
               Clé Live Paystack
               {hasLiveKey && <span className="text-xs text-green-600 dark:text-green-400">✓ Configurée</span>}
             </Label>
-            <Input
-              id="live-key"
-              type="password"
-              placeholder="sk_live_..."
-              value={liveKey}
-              onChange={(e) => setLiveKey(e.target.value)}
-              className="font-mono"
-            />
+            <div className="flex gap-2">
+              <Input
+                id="live-key"
+                type="password"
+                placeholder="sk_live_..."
+                value={liveKey}
+                onChange={(e) => setLiveKey(e.target.value)}
+                className="font-mono flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleTestKey(liveKey, 'live')}
+                disabled={isTesting || !liveKey.trim()}
+              >
+                {isTesting ? 'Test...' : 'Tester'}
+              </Button>
+            </div>
             <p className="text-xs text-muted-foreground">
               Laissez vide pour conserver la clé existante
             </p>

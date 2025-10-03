@@ -274,16 +274,16 @@ const SellerDashboard = () => {
     if (pendingOrders.length === 0) return null;
 
     return (
-      <div className="mb-6">
+      <div className="mb-4 lg:mb-6">
         <Card className="border-orange-200 bg-orange-50 shadow-md">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="h-3 w-3 bg-orange-500 rounded-full animate-pulse"></div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-orange-800 mb-1">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+              <div className="h-3 w-3 bg-orange-500 rounded-full animate-pulse flex-shrink-0"></div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-orange-800 mb-1 text-sm sm:text-base">
                   🚨 {pendingOrders.length} nouvelle{pendingOrders.length > 1 ? 's' : ''} commande{pendingOrders.length > 1 ? 's' : ''} en attente !
                 </h3>
-                <p className="text-sm text-orange-700">
+                <p className="text-xs sm:text-sm text-orange-700 break-words">
                   {pendingOrders.length === 1 
                     ? `Commande #${pendingOrders[0].id.slice(-8)} - ${pendingOrders[0].product_title}`
                     : `Plusieurs commandes nécessitent votre attention.`
@@ -298,7 +298,7 @@ const SellerDashboard = () => {
                   const ordersTab = document.querySelector('[value="orders"]') as HTMLElement;
                   if (ordersTab) ordersTab.click();
                 }}
-                className="bg-orange-100 hover:bg-orange-200 text-orange-800 border-orange-300"
+                className="bg-orange-100 hover:bg-orange-200 text-orange-800 border-orange-300 w-full sm:w-auto flex-shrink-0 h-9 text-xs sm:text-sm"
               >
                 Voir les commandes
               </Button>
@@ -392,55 +392,53 @@ const SellerDashboard = () => {
         </svg>
       </Button>
 
-      <div className="container mx-auto px-4 py-6 lg:py-8 pb-24 lg:pb-8">
+      <div className="container mx-auto px-3 sm:px-4 py-4 lg:py-8 pb-24 lg:pb-8">
         {/* Header - Mobile optimized */}
-        <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl p-4 lg:p-6 mb-6 border border-primary/20">
-          <div className="flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-center">
+        <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg lg:rounded-xl p-3 sm:p-4 lg:p-6 mb-4 lg:mb-6 border border-primary/20">
+          <div className="flex flex-col gap-3 lg:flex-row lg:justify-between lg:items-center">
             <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
-                  <Store className="h-5 w-5 text-primary" />
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Store className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-xl lg:text-2xl font-bold text-foreground">Espace Vendeur</h1>
-                  <p className="text-sm text-muted-foreground">Gérez facilement vos ventes</p>
+                  <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground">Espace Vendeur</h1>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Gérez facilement vos ventes</p>
                 </div>
               </div>
-              <Badge variant="secondary" className="w-fit bg-primary/10 text-primary border-primary/30">
+              <Badge variant="secondary" className="w-fit bg-primary/10 text-primary border-primary/30 text-xs">
                 <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
                 Vendeur Actif
               </Badge>
             </div>
             
             {/* Actions compactes pour mobile */}
-            <div className="flex flex-col gap-2 lg:flex-row lg:gap-3">
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={handleViewPublicPage}
-                  className="flex-1 lg:flex-none bg-white/50 hover:bg-white/80 border-primary/30"
-                  size="sm"
-                >
-                  <Store className="h-4 w-4 lg:mr-2" />
-                  <span className="hidden lg:inline">Voir la boutique</span>
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={handleSignOut}
-                  className="flex-1 lg:flex-none"
-                  size="sm"
-                >
-                  <LogOut className="h-4 w-4 lg:mr-2" />
-                  <span className="hidden lg:inline">Quitter</span>
-                </Button>
-              </div>
+            <div className="flex gap-2 lg:gap-3">
+              <Button
+                variant="outline"
+                onClick={handleViewPublicPage}
+                className="flex-1 lg:flex-none bg-white/50 hover:bg-white/80 border-primary/30 h-10"
+                size="sm"
+              >
+                <Store className="h-4 w-4 mr-2" />
+                <span className="text-xs sm:text-sm">Boutique</span>
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleSignOut}
+                className="flex-1 lg:flex-none h-10"
+                size="sm"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                <span className="text-xs sm:text-sm">Quitter</span>
+              </Button>
             </div>
           </div>
         </div>
 
         {/* Trial Status Component - Visible uniquement si en essai */}
         {!trialStatus.loading && trialStatus.isInTrial && trialStatus.trialEndDate && (
-          <div className="mb-6">
+          <div className="mb-4 lg:mb-6">
             <TrialCountdown 
               trialEndDate={trialStatus.trialEndDate}
               onExpire={() => {
@@ -459,103 +457,105 @@ const SellerDashboard = () => {
         <NewOrdersAlert />
 
         {/* Stats Cards - Mobile optimized */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 mb-4 lg:mb-8">
           <Card className="border-0 shadow-md">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Produits Total</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-4 lg:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">Produits Total</CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             </CardHeader>
-            <CardContent>
-              <div className="text-xl lg:text-2xl font-bold">{stats.totalProducts}</div>
+            <CardContent className="p-3 sm:p-4 lg:p-6 pt-0">
+              <div className="text-xl sm:text-2xl font-bold">{stats.totalProducts}</div>
             </CardContent>
           </Card>
           
           <Card className="border-0 shadow-md">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Produits Actifs</CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-4 lg:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">Produits Actifs</CardTitle>
+              <BarChart3 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             </CardHeader>
-            <CardContent>
-              <div className="text-xl lg:text-2xl font-bold">{stats.activeProducts}</div>
+            <CardContent className="p-3 sm:p-4 lg:p-6 pt-0">
+              <div className="text-xl sm:text-2xl font-bold">{stats.activeProducts}</div>
             </CardContent>
           </Card>
           
           <Card className="border-0 shadow-md sm:col-span-2 lg:col-span-1">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Avis</CardTitle>
-              <MessageSquare className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-4 lg:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">Total Avis</CardTitle>
+              <MessageSquare className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             </CardHeader>
-            <CardContent>
-              <div className="text-xl lg:text-2xl font-bold">{stats.totalViews}</div>
+            <CardContent className="p-3 sm:p-4 lg:p-6 pt-0">
+              <div className="text-xl sm:text-2xl font-bold">{stats.totalViews}</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Navigation principale - Mobile First */}
-        <Tabs defaultValue="products" className="space-y-6" onValueChange={(value) => {
+        <Tabs defaultValue="products" className="space-y-4 lg:space-y-6" onValueChange={(value) => {
           // Demander permission pour les notifications si pas encore accordée
           if (value === 'orders' && 'Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
           }
         }}>
           {/* Navigation simplifiée avec indicateurs visuels */}
-          <div className="bg-white rounded-xl border border-border/50 shadow-sm p-2">
-            <TabsList className="grid w-full grid-cols-3 bg-muted/30 rounded-lg h-12">
+          <div className="bg-white rounded-lg lg:rounded-xl border border-border/50 shadow-sm p-1.5 sm:p-2">
+            <TabsList className="grid w-full grid-cols-3 bg-muted/30 rounded-lg h-11 sm:h-12 gap-1">
               <TabsTrigger 
                 value="products" 
-                className="relative text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all duration-200"
+                className="relative text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all duration-200 px-2 sm:px-3"
               >
-                <Package className="h-4 w-4 mr-1 lg:mr-2" />
-                <span className="hidden sm:inline">Mes</span> Produits
+                <Package className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 lg:mr-2 flex-shrink-0" />
+                <span className="hidden sm:inline">Mes</span> <span className="truncate">Produits</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="orders" 
-                className="relative text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all duration-200"
+                className="relative text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all duration-200 px-2 sm:px-3"
               >
-                <BarChart3 className="h-4 w-4 mr-1 lg:mr-2" />
-                Commandes
+                <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 lg:mr-2 flex-shrink-0" />
+                <span className="truncate">Commandes</span>
                 <OrderNotificationBadge />
               </TabsTrigger>
               <TabsTrigger 
                 value="messages" 
-                className="relative text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all duration-200"
+                className="relative text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all duration-200 px-2 sm:px-3"
               >
-                <MessageSquare className="h-4 w-4 mr-1 lg:mr-2" />
-                Messages
+                <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 lg:mr-2 flex-shrink-0" />
+                <span className="truncate">Messages</span>
                 <MessageNotificationBadge />
               </TabsTrigger>
             </TabsList>
           </div>
 
-          <TabsContent value="products" className="space-y-4">
-            <div className="flex flex-col gap-3 lg:flex-row lg:justify-between lg:items-center">
-              <h2 className="text-lg lg:text-xl font-semibold">Gestion des Produits</h2>
+          <TabsContent value="products" className="space-y-3 sm:space-y-4">
+            <div className="flex flex-col gap-2 sm:gap-3 lg:flex-row lg:justify-between lg:items-center">
+              <h2 className="text-base sm:text-lg lg:text-xl font-semibold">Gestion des Produits</h2>
               <Button 
                 onClick={() => setShowProductForm(true)}
                 disabled={!trialStatus.canPublish}
-                className={`flex items-center gap-2 w-full lg:w-auto ${!trialStatus.canPublish ? "opacity-50 cursor-not-allowed" : ""}`}
+                className={`flex items-center justify-center gap-2 w-full lg:w-auto h-11 sm:h-10 text-sm ${!trialStatus.canPublish ? "opacity-50 cursor-not-allowed" : ""}`}
                 size="sm"
               >
-                <Plus className="h-4 w-4" />
-                {trialStatus.isInTrial 
-                  ? "Publier un Article (Gratuit - Essai)" 
-                  : trialStatus.canPublish 
-                    ? "Publier un Article (1000 FCFA)" 
-                    : "Période d'essai expirée"}
+                <Plus className="h-4 w-4 flex-shrink-0" />
+                <span className="truncate">
+                  {trialStatus.isInTrial 
+                    ? "Publier un Article (Gratuit - Essai)" 
+                    : trialStatus.canPublish 
+                      ? "Publier un Article (1000 FCFA)" 
+                      : "Période d'essai expirée"}
+                </span>
               </Button>
             </div>
 
             {showProductForm && (
               <Card className="border-0 shadow-md">
-                <CardHeader className="px-4 lg:px-6">
-                  <CardTitle className="text-lg lg:text-xl">
+                <CardHeader className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 lg:py-6">
+                  <CardTitle className="text-base sm:text-lg lg:text-xl">
                     {editingProduct ? 'Modifier le Produit' : 'Ajouter un Nouveau Produit'}
                   </CardTitle>
-                  <CardDescription className="text-sm">
+                  <CardDescription className="text-xs sm:text-sm">
                     Remplissez les informations de votre produit
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="px-4 lg:px-6">
+                <CardContent className="px-3 sm:px-4 lg:px-6 pb-3 sm:pb-4 lg:pb-6">
                   <ProductForm
                     product={editingProduct}
                     onSave={handleProductSaved}

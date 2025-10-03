@@ -7,33 +7,44 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Function to decrypt data using AES-GCM
-async function decryptData(encryptedBase64: string): Promise<string> {
-  const encryptionKeyBase64 = Deno.env.get('ENCRYPTION_KEY');
-  if (!encryptionKeyBase64) {
+// Function to get encryption key (same method as paystack-config)
+async function getEncryptionKey(): Promise<CryptoKey> {
+  const keyString = Deno.env.get('ENCRYPTION_KEY');
+  if (!keyString) {
     throw new Error('ENCRYPTION_KEY not configured');
   }
-
-  const keyData = Uint8Array.from(atob(encryptionKeyBase64), c => c.charCodeAt(0));
-  const key = await crypto.subtle.importKey(
+  
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(keyString.padEnd(32, '0').slice(0, 32));
+  
+  return await crypto.subtle.importKey(
     'raw',
     keyData,
     { name: 'AES-GCM', length: 256 },
     false,
     ['decrypt']
   );
+}
 
-  const encryptedData = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
-  const iv = encryptedData.slice(0, 12);
-  const ciphertext = encryptedData.slice(12);
-
+// Function to decrypt data using AES-GCM (same method as paystack-config)
+async function decryptData(encryptedBase64: string): Promise<string> {
+  const key = await getEncryptionKey();
+  
+  // Decode base64
+  const combined = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
+  
+  // Extract IV and encrypted data
+  const iv = combined.slice(0, 12);
+  const encrypted = combined.slice(12);
+  
   const decrypted = await crypto.subtle.decrypt(
     { name: 'AES-GCM', iv },
     key,
-    ciphertext
+    encrypted
   );
-
-  return new TextDecoder().decode(decrypted);
+  
+  const decoder = new TextDecoder();
+  return decoder.decode(decrypted);
 }
 
 // Function to get the current Paystack keys from encrypted config

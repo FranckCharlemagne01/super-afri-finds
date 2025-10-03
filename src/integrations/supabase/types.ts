@@ -187,6 +187,8 @@ export type Database = {
           created_at: string
           encrypted_key_live: string | null
           encrypted_key_test: string | null
+          encrypted_public_key_live: string | null
+          encrypted_public_key_test: string | null
           id: string
           mode: string
           updated_at: string
@@ -195,6 +197,8 @@ export type Database = {
           created_at?: string
           encrypted_key_live?: string | null
           encrypted_key_test?: string | null
+          encrypted_public_key_live?: string | null
+          encrypted_public_key_test?: string | null
           id?: string
           mode?: string
           updated_at?: string
@@ -203,6 +207,8 @@ export type Database = {
           created_at?: string
           encrypted_key_live?: string | null
           encrypted_key_test?: string | null
+          encrypted_public_key_live?: string | null
+          encrypted_public_key_test?: string | null
           id?: string
           mode?: string
           updated_at?: string

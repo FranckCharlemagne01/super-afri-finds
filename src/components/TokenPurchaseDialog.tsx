@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { usePaystackPayment } from 'react-paystack';
+import { usePaystackPublicKey } from '@/hooks/usePaystackPublicKey';
 
 interface TokenPurchaseDialogProps {
   open: boolean;
@@ -47,6 +48,7 @@ const paymentMethods: PaymentMethodOption[] = [
 export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: TokenPurchaseDialogProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { publicKey: paystackPublicKey, loading: keyLoading } = usePaystackPublicKey();
   const [loading, setLoading] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<TokenPackage | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>('orange_money');
@@ -63,7 +65,7 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
     reference: paystackReference || new Date().getTime().toString(),
     email: user?.email || '',
     amount: (selectedPackage?.price || 0) * 100, // Paystack utilise les centimes (XOF * 100)
-    publicKey: 'pk_test_4c8dd945af2e5e023dd9bd5e8f8c2e5b61df8e71',
+    publicKey: paystackPublicKey || 'pk_test_4c8dd945af2e5e023dd9bd5e8f8c2e5b61df8e71',
     currency: 'XOF',
     channels: selectedPayment === 'card' 
       ? ['card'] 
@@ -351,11 +353,11 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
               </Button>
               <Button
                 onClick={handlePurchase}
-                disabled={loading}
+                disabled={loading || keyLoading}
                 className="flex-1 bg-primary hover:bg-primary/90"
                 size="lg"
               >
-                {loading ? (
+                {loading || keyLoading ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                     Traitement...

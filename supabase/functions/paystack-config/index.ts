@@ -127,17 +127,17 @@ serve(async (req) => {
       throw new Error('Forbidden: Superadmin access required');
     }
 
-    const { action, key_test, key_live, mode } = await req.json();
+    const { action, secret_key_test, public_key_test, secret_key_live, public_key_live, mode } = await req.json();
 
     if (action === 'save') {
       // Validate keys before encrypting and saving
-      if (key_test) {
-        const validation = await validatePaystackKey(key_test);
+      if (secret_key_test) {
+        const validation = await validatePaystackKey(secret_key_test);
         if (!validation.valid) {
           return new Response(
             JSON.stringify({ 
               success: false, 
-              error: validation.error || 'Votre clé Paystack Test n\'est pas valide. Merci d\'entrer une clé valide.' 
+              error: validation.error || 'Votre clé secrète Paystack Test n\'est pas valide. Merci d\'entrer une clé valide.' 
             }),
             { 
               status: 400,
@@ -147,13 +147,13 @@ serve(async (req) => {
         }
       }
 
-      if (key_live) {
-        const validation = await validatePaystackKey(key_live);
+      if (secret_key_live) {
+        const validation = await validatePaystackKey(secret_key_live);
         if (!validation.valid) {
           return new Response(
             JSON.stringify({ 
               success: false, 
-              error: validation.error || 'Votre clé Paystack Live n\'est pas valide. Merci d\'entrer une clé valide.' 
+              error: validation.error || 'Votre clé secrète Paystack Live n\'est pas valide. Merci d\'entrer une clé valide.' 
             }),
             { 
               status: 400,
@@ -164,8 +164,10 @@ serve(async (req) => {
       }
 
       // Encrypt keys if provided
-      const encryptedKeyTest = key_test ? await encryptData(key_test) : null;
-      const encryptedKeyLive = key_live ? await encryptData(key_live) : null;
+      const encryptedSecretKeyTest = secret_key_test ? await encryptData(secret_key_test) : null;
+      const encryptedPublicKeyTest = public_key_test ? await encryptData(public_key_test) : null;
+      const encryptedSecretKeyLive = secret_key_live ? await encryptData(secret_key_live) : null;
+      const encryptedPublicKeyLive = public_key_live ? await encryptData(public_key_live) : null;
 
       // Get existing config
       const { data: existingConfig } = await supabase
@@ -175,8 +177,10 @@ serve(async (req) => {
         .maybeSingle();
 
       const updateData: any = { mode };
-      if (encryptedKeyTest) updateData.encrypted_key_test = encryptedKeyTest;
-      if (encryptedKeyLive) updateData.encrypted_key_live = encryptedKeyLive;
+      if (encryptedSecretKeyTest) updateData.encrypted_key_test = encryptedSecretKeyTest;
+      if (encryptedPublicKeyTest) updateData.encrypted_public_key_test = encryptedPublicKeyTest;
+      if (encryptedSecretKeyLive) updateData.encrypted_key_live = encryptedSecretKeyLive;
+      if (encryptedPublicKeyLive) updateData.encrypted_public_key_live = encryptedPublicKeyLive;
 
       if (existingConfig) {
         // Update existing config
@@ -215,15 +219,15 @@ serve(async (req) => {
         JSON.stringify({
           success: true,
           mode: config?.mode || 'test',
-          has_test_key: !!config?.encrypted_key_test,
-          has_live_key: !!config?.encrypted_key_live,
+          has_test_keys: !!(config?.encrypted_key_test && config?.encrypted_public_key_test),
+          has_live_keys: !!(config?.encrypted_key_live && config?.encrypted_public_key_live),
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    if (action === 'get_decrypted_key') {
-      // Get the appropriate key based on current mode
+    if (action === 'get_decrypted_keys') {
+      // Get the appropriate keys based on current mode
       const { data: config, error: configError } = await supabase
         .from('paystack_config')
         .select('*')
@@ -235,18 +239,28 @@ serve(async (req) => {
         throw new Error('Paystack configuration not found');
       }
 
-      const encryptedKey = config.mode === 'test' 
+      const encryptedSecretKey = config.mode === 'test' 
         ? config.encrypted_key_test 
         : config.encrypted_key_live;
 
-      if (!encryptedKey) {
-        throw new Error(`No ${config.mode} key configured`);
+      const encryptedPublicKey = config.mode === 'test'
+        ? config.encrypted_public_key_test
+        : config.encrypted_public_key_live;
+
+      if (!encryptedSecretKey || !encryptedPublicKey) {
+        throw new Error(`No ${config.mode} keys configured`);
       }
 
-      const decryptedKey = await decryptData(encryptedKey);
+      const decryptedSecretKey = await decryptData(encryptedSecretKey);
+      const decryptedPublicKey = await decryptData(encryptedPublicKey);
 
       return new Response(
-        JSON.stringify({ success: true, key: decryptedKey, mode: config.mode }),
+        JSON.stringify({ 
+          success: true, 
+          secret_key: decryptedSecretKey,
+          public_key: decryptedPublicKey,
+          mode: config.mode 
+        }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

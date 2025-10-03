@@ -7,21 +7,22 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Function to get the current Paystack secret key from encrypted config
-async function getPaystackSecretKey(supabase: any): Promise<string> {
+// Function to get the current Paystack keys from encrypted config
+async function getPaystackKeys(supabase: any): Promise<{ secretKey: string; publicKey: string; mode: string }> {
   try {
     // Try to get from encrypted config first
     const { data: config, error } = await supabase
       .from('paystack_config')
-      .select('encrypted_key_test, encrypted_key_live, mode')
+      .select('encrypted_key_test, encrypted_key_live, encrypted_public_key_test, encrypted_public_key_live, mode')
       .limit(1)
       .maybeSingle();
 
     if (!error && config) {
-      // We have a config, now decrypt the appropriate key
-      const encryptedKey = config.mode === 'test' ? config.encrypted_key_test : config.encrypted_key_live;
+      // We have a config, now decrypt the appropriate keys
+      const encryptedSecretKey = config.mode === 'test' ? config.encrypted_key_test : config.encrypted_key_live;
+      const encryptedPublicKey = config.mode === 'test' ? config.encrypted_public_key_test : config.encrypted_public_key_live;
       
-      if (encryptedKey) {
+      if (encryptedSecretKey && encryptedPublicKey) {
         // Call the paystack-config function to decrypt
         const decryptResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/paystack-config`, {
           method: 'POST',
@@ -29,29 +30,38 @@ async function getPaystackSecretKey(supabase: any): Promise<string> {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
           },
-          body: JSON.stringify({ action: 'get_decrypted_key' })
+          body: JSON.stringify({ action: 'get_decrypted_keys' })
         });
 
         const decryptData = await decryptResponse.json();
         
-        if (decryptData.success && decryptData.key) {
-          console.log(`✅ Using encrypted Paystack ${decryptData.mode} key from database`);
-          return decryptData.key;
+        if (decryptData.success && decryptData.secret_key && decryptData.public_key) {
+          console.log(`✅ Using encrypted Paystack ${decryptData.mode} keys from database`);
+          return {
+            secretKey: decryptData.secret_key,
+            publicKey: decryptData.public_key,
+            mode: decryptData.mode
+          };
         }
       }
     }
   } catch (error) {
-    console.error('⚠️ Error getting encrypted Paystack key:', error);
+    console.error('⚠️ Error getting encrypted Paystack keys:', error);
   }
 
   // Fallback to environment variable
   const envKey = Deno.env.get('PAYSTACK_SECRET_KEY');
   if (envKey) {
     console.log('⚠️ Using fallback Paystack key from environment variable');
-    return envKey;
+    // Extract public key from test config for fallback (this is not ideal but maintains compatibility)
+    return {
+      secretKey: envKey,
+      publicKey: 'pk_test_4c8dd945af2e5e023dd9bd5e8f8c2e5b61df8e71', // Fallback public key
+      mode: envKey.startsWith('sk_test_') ? 'test' : 'live'
+    };
   }
 
-  throw new Error('No Paystack key configured');
+  throw new Error('No Paystack keys configured');
 }
 
 serve(async (req) => {
@@ -64,10 +74,10 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get Paystack secret key from encrypted config (with fallback)
-    const paystackSecretKey = await getPaystackSecretKey(supabase);
+    // Get Paystack keys from encrypted config (with fallback)
+    const paystackKeys = await getPaystackKeys(supabase);
 
-    if (!paystackSecretKey) {
+    if (!paystackKeys.secretKey) {
       console.error('PAYSTACK_SECRET_KEY not configured');
       return new Response(JSON.stringify({ error: 'Payment service not configured' }), {
         status: 500,
@@ -109,7 +119,7 @@ serve(async (req) => {
       const paystackResponse = await fetch('https://api.paystack.co/transaction/initialize', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${paystackSecretKey}`,
+          'Authorization': `Bearer ${paystackKeys.secretKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -157,7 +167,7 @@ serve(async (req) => {
       // Verify payment with Paystack
       const paystackResponse = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
         headers: {
-          'Authorization': `Bearer ${paystackSecretKey}`,
+          'Authorization': `Bearer ${paystackKeys.secretKey}`,
         },
       });
 

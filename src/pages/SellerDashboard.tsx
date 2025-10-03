@@ -380,7 +380,19 @@ const SellerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6 lg:py-8">
+      {/* Bouton retour mobile fixe en bas */}
+      <Button
+        variant="outline"
+        onClick={() => navigate(-1)}
+        className="lg:hidden fixed bottom-6 left-4 z-50 rounded-full shadow-lg h-12 w-12 p-0 bg-white border-2 border-primary/30 hover:bg-primary/10"
+        aria-label="Retour"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </Button>
+
+      <div className="container mx-auto px-4 py-6 lg:py-8 pb-24 lg:pb-8">
         {/* Header - Mobile optimized */}
         <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl p-4 lg:p-6 mb-6 border border-primary/20">
           <div className="flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-center">
@@ -426,12 +438,19 @@ const SellerDashboard = () => {
           </div>
         </div>
 
-        {/* Trial Status Component */}
-        {!trialStatus.loading && trialStatus.trialEndDate && (
+        {/* Trial Status Component - Visible uniquement si en essai */}
+        {!trialStatus.loading && trialStatus.isInTrial && trialStatus.trialEndDate && (
           <div className="mb-6">
             <TrialCountdown 
               trialEndDate={trialStatus.trialEndDate}
-              onExpire={() => window.location.reload()}
+              onExpire={() => {
+                toast({
+                  title: "⏰ Période d'essai expirée",
+                  description: "Passez en Premium pour continuer à publier vos produits",
+                  variant: "destructive",
+                });
+                window.location.reload();
+              }}
             />
           </div>
         )}

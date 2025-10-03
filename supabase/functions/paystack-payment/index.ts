@@ -7,49 +7,78 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Function to decrypt data using AES-GCM
+async function decryptData(encryptedBase64: string): Promise<string> {
+  const encryptionKeyBase64 = Deno.env.get('ENCRYPTION_KEY');
+  if (!encryptionKeyBase64) {
+    throw new Error('ENCRYPTION_KEY not configured');
+  }
+
+  const keyData = Uint8Array.from(atob(encryptionKeyBase64), c => c.charCodeAt(0));
+  const key = await crypto.subtle.importKey(
+    'raw',
+    keyData,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['decrypt']
+  );
+
+  const encryptedData = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
+  const iv = encryptedData.slice(0, 12);
+  const ciphertext = encryptedData.slice(12);
+
+  const decrypted = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    ciphertext
+  );
+
+  return new TextDecoder().decode(decrypted);
+}
+
 // Function to get the current Paystack keys from encrypted config
 async function getPaystackKeys(supabase: any): Promise<{ secretKey: string; publicKey: string; mode: string }> {
   try {
-    // Try to get from encrypted config first
+    // Get encrypted keys from database
     const { data: config, error } = await supabase
       .from('paystack_config')
       .select('encrypted_key_test, encrypted_key_live, encrypted_public_key_test, encrypted_public_key_live, mode')
       .limit(1)
       .maybeSingle();
 
-    if (!error && config) {
-      // We have a config, now decrypt the appropriate keys
-      const encryptedSecretKey = config.mode === 'test' ? config.encrypted_key_test : config.encrypted_key_live;
-      const encryptedPublicKey = config.mode === 'test' ? config.encrypted_public_key_test : config.encrypted_public_key_live;
-      
-      if (encryptedSecretKey && encryptedPublicKey) {
-        // Call the paystack-config function to decrypt
-        const decryptResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/paystack-config`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
-          },
-          body: JSON.stringify({ action: 'get_decrypted_keys' })
-        });
-
-        const decryptData = await decryptResponse.json();
-        
-        if (decryptData.success && decryptData.secret_key && decryptData.public_key) {
-          console.log(`✅ Using encrypted Paystack ${decryptData.mode} keys from database`);
-          return {
-            secretKey: decryptData.secret_key,
-            publicKey: decryptData.public_key,
-            mode: decryptData.mode
-          };
-        }
-      }
+    if (error) {
+      console.error('❌ Database error:', error);
+      throw new Error('Erreur lors de la récupération de la configuration Paystack');
     }
+
+    if (!config) {
+      throw new Error('Veuillez configurer vos clés Paystack dans le super admin');
+    }
+
+    // Select the right keys based on mode
+    const encryptedSecretKey = config.mode === 'test' ? config.encrypted_key_test : config.encrypted_key_live;
+    const encryptedPublicKey = config.mode === 'test' ? config.encrypted_public_key_test : config.encrypted_public_key_live;
+    
+    if (!encryptedSecretKey || !encryptedPublicKey) {
+      throw new Error(`Clés Paystack ${config.mode} non configurées. Veuillez les ajouter dans le super admin.`);
+    }
+
+    // Decrypt the keys
+    const secretKey = await decryptData(encryptedSecretKey);
+    const publicKey = await decryptData(encryptedPublicKey);
+    
+    console.log(`✅ Using encrypted Paystack ${config.mode} keys from database`);
+    console.log(`   Public key starts with: ${publicKey.substring(0, 7)}...`);
+    
+    return {
+      secretKey,
+      publicKey,
+      mode: config.mode
+    };
   } catch (error) {
     console.error('⚠️ Error getting encrypted Paystack keys:', error);
+    throw error;
   }
-
-  throw new Error('Veuillez configurer vos clés Paystack dans le super admin');
 }
 
 serve(async (req) => {

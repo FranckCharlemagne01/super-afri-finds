@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Edit, Trash2, Eye, EyeOff, Zap } from 'lucide-react';
 import { SmoothListSkeleton } from '@/components/ui/smooth-skeleton';
 import {
   AlertDialog,
@@ -28,6 +28,8 @@ interface Product {
   stock_quantity?: number;
   is_active?: boolean;
   is_flash_sale?: boolean;
+  is_boosted?: boolean;
+  boosted_until?: string;
   rating?: number;
   reviews_count?: number;
   created_at: string;
@@ -38,11 +40,15 @@ interface SellerProductsProps {
   loading: boolean;
   onEdit: (product: Product) => void;
   onDelete: (productId: string) => void;
+  onBoost?: (productId: string, productTitle: string) => void;
   title?: string;
   emptyMessage?: string;
 }
 
-export const SellerProducts = ({ products, loading, onEdit, onDelete, title, emptyMessage }: SellerProductsProps) => {
+export const SellerProducts = ({ products, loading, onEdit, onDelete, onBoost, title, emptyMessage }: SellerProductsProps) => {
+  const isProductBoosted = (product: Product) => {
+    return product.is_boosted && product.boosted_until && new Date(product.boosted_until) > new Date();
+  };
   if (loading) {
     return <SmoothListSkeleton items={6} variant="card" className="prevent-flash" />;
   }
@@ -79,7 +85,12 @@ export const SellerProducts = ({ products, loading, onEdit, onDelete, title, emp
               </div>
             )}
             
-            <div className="absolute top-2 left-2 flex gap-2">
+            <div className="absolute top-2 left-2 flex gap-2 flex-wrap">
+              {isProductBoosted(product) && (
+                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0">
+                  <Zap className="w-3 h-3 mr-1" /> Boosté
+                </Badge>
+              )}
               {product.badge && (
                 <Badge variant="secondary">{product.badge}</Badge>
               )}
@@ -131,45 +142,66 @@ export const SellerProducts = ({ products, loading, onEdit, onDelete, title, emp
               </div>
             </div>
 
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onEdit(product)}
-                className="flex-1"
-              >
-                <Edit className="w-4 h-4 mr-1" />
-                Modifier
-              </Button>
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onEdit(product)}
+                  className="flex-1"
+                >
+                  <Edit className="w-4 h-4 mr-1" />
+                  Modifier
+                </Button>
+                
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm">
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>⚠️ Supprimer le produit</AlertDialogTitle>
+                      <AlertDialogDescription className="space-y-2">
+                        <p>Êtes-vous sûr de vouloir supprimer <strong>"{product.title}"</strong> ?</p>
+                        <p className="text-destructive text-sm">
+                          ⚠️ Cette action est <strong>irréversible</strong> et le produit sera définitivement retiré de la plateforme.
+                        </p>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Annuler</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => onDelete(product.id)}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        <Trash2 className="w-4 h-4 mr-1" />
+                        Supprimer définitivement
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+
+              {onBoost && !isProductBoosted(product) && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => onBoost(product.id, product.title)}
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                >
+                  <Zap className="w-4 h-4 mr-1" />
+                  Booster (2 jetons)
+                </Button>
+              )}
               
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm">
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>⚠️ Supprimer le produit</AlertDialogTitle>
-                    <AlertDialogDescription className="space-y-2">
-                      <p>Êtes-vous sûr de vouloir supprimer <strong>"{product.title}"</strong> ?</p>
-                      <p className="text-destructive text-sm">
-                        ⚠️ Cette action est <strong>irréversible</strong> et le produit sera définitivement retiré de la plateforme.
-                      </p>
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Annuler</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => onDelete(product.id)}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      <Trash2 className="w-4 h-4 mr-1" />
-                      Supprimer définitivement
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              {isProductBoosted(product) && (
+                <div className="text-xs text-center text-muted-foreground">
+                  <Zap className="w-3 h-3 inline mr-1" />
+                  Boosté jusqu'au {new Date(product.boosted_until!).toLocaleDateString()}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

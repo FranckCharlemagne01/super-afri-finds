@@ -230,6 +230,8 @@ export type Database = {
       products: {
         Row: {
           badge: string | null
+          boosted_at: string | null
+          boosted_until: string | null
           category: string
           created_at: string
           description: string | null
@@ -237,6 +239,7 @@ export type Database = {
           id: string
           images: string[] | null
           is_active: boolean | null
+          is_boosted: boolean | null
           is_flash_sale: boolean | null
           original_price: number | null
           price: number
@@ -250,6 +253,8 @@ export type Database = {
         }
         Insert: {
           badge?: string | null
+          boosted_at?: string | null
+          boosted_until?: string | null
           category: string
           created_at?: string
           description?: string | null
@@ -257,6 +262,7 @@ export type Database = {
           id?: string
           images?: string[] | null
           is_active?: boolean | null
+          is_boosted?: boolean | null
           is_flash_sale?: boolean | null
           original_price?: number | null
           price: number
@@ -270,6 +276,8 @@ export type Database = {
         }
         Update: {
           badge?: string | null
+          boosted_at?: string | null
+          boosted_until?: string | null
           category?: string
           created_at?: string
           description?: string | null
@@ -277,6 +285,7 @@ export type Database = {
           id?: string
           images?: string[] | null
           is_active?: boolean | null
+          is_boosted?: boolean | null
           is_flash_sale?: boolean | null
           original_price?: number | null
           price?: number
@@ -381,6 +390,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          payment_method: string | null
           paystack_reference: string | null
           price_paid: number | null
           product_id: string | null
@@ -392,6 +402,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          payment_method?: string | null
           paystack_reference?: string | null
           price_paid?: number | null
           product_id?: string | null
@@ -403,6 +414,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          payment_method?: string | null
           paystack_reference?: string | null
           price_paid?: number | null
           product_id?: string | null
@@ -501,6 +513,10 @@ export type Database = {
         Args: { _email: string }
         Returns: string
       }
+      boost_product: {
+        Args: { _product_id: string; _seller_id: string }
+        Returns: boolean
+      }
       can_publish_products: {
         Args: { _user_id: string }
         Returns: boolean
@@ -596,6 +612,10 @@ export type Database = {
       }
       is_in_trial_period: {
         Args: { _user_id: string }
+        Returns: boolean
+      }
+      is_product_boosted: {
+        Args: { _product_id: string }
         Returns: boolean
       }
       update_order_status: {

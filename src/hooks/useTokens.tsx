@@ -13,10 +13,11 @@ export interface TokenBalance {
 export interface TokenTransaction {
   id: string;
   seller_id: string;
-  transaction_type: 'purchase' | 'usage';
+  transaction_type: 'purchase' | 'usage' | 'boost';
   tokens_amount: number;
   price_paid: number | null;
   paystack_reference: string | null;
+  payment_method: string | null;
   status: 'pending' | 'completed' | 'failed';
   product_id: string | null;
   created_at: string;

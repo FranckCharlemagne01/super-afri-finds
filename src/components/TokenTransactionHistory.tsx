@@ -28,11 +28,24 @@ export const TokenTransactionHistory = () => {
   };
 
   const getTransactionIcon = (type: string) => {
-    return type === 'purchase' ? (
-      <ShoppingCart className="h-4 w-4 text-green-500" />
-    ) : (
-      <Coins className="h-4 w-4 text-orange-500" />
-    );
+    if (type === 'purchase') {
+      return <ShoppingCart className="h-4 w-4 text-green-500" />;
+    } else if (type === 'boost') {
+      return <Coins className="h-4 w-4 text-purple-500" />;
+    } else {
+      return <Coins className="h-4 w-4 text-orange-500" />;
+    }
+  };
+
+  const getPaymentMethodLabel = (method: string | null) => {
+    if (!method) return '';
+    const labels: Record<string, string> = {
+      'orange_money': 'Orange Money',
+      'mtn_money': 'MTN Money',
+      'moov_money': 'Moov Money',
+      'card': 'Carte Bancaire',
+    };
+    return labels[method] || method;
   };
 
   if (transactions.length === 0) {
@@ -80,12 +93,19 @@ export const TokenTransactionHistory = () => {
                         <p className="font-medium text-sm">
                           {transaction.transaction_type === 'purchase'
                             ? `Achat de ${transaction.tokens_amount} jetons`
-                            : 'Utilisation pour publication'}
+                            : transaction.transaction_type === 'boost'
+                            ? `Boost de produit (-${Math.abs(transaction.tokens_amount)} jetons)`
+                            : `Utilisation pour publication (-${Math.abs(transaction.tokens_amount)} jeton)`}
                         </p>
                       </div>
                       <p className="text-xs text-muted-foreground">
                         {format(new Date(transaction.created_at), 'PPp', { locale: fr })}
                       </p>
+                      {transaction.payment_method && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {getPaymentMethodLabel(transaction.payment_method)}
+                        </p>
+                      )}
                     </div>
                   </div>
                   

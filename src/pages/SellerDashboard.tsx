@@ -18,6 +18,7 @@ import { SellerOrders } from '@/components/SellerOrders';
 import { TrialCountdown } from '@/components/TrialCountdown';
 import { TokenPurchaseDialog } from '@/components/TokenPurchaseDialog';
 import { TokenTransactionHistory } from '@/components/TokenTransactionHistory';
+import { ProductBoostDialog } from '@/components/ProductBoostDialog';
 import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
 import { RealtimeNotificationBadge } from '@/components/RealtimeNotificationBadge';
 import { useNavigate } from 'react-router-dom';
@@ -35,6 +36,8 @@ interface Product {
   stock_quantity?: number;
   is_active?: boolean;
   is_flash_sale?: boolean;
+  is_boosted?: boolean;
+  boosted_until?: string;
   rating?: number;
   reviews_count?: number;
   created_at: string;
@@ -67,6 +70,8 @@ const SellerDashboard = () => {
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [showTokenPurchase, setShowTokenPurchase] = useState(false);
+  const [showBoostDialog, setShowBoostDialog] = useState(false);
+  const [boostingProduct, setBoostingProduct] = useState<{ id: string; title: string } | null>(null);
   
   // Utiliser useStableData pour éviter les clignotements
   const { data: products, loading, error, refetch } = useStableData(
@@ -200,6 +205,16 @@ const SellerDashboard = () => {
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
     setShowProductForm(true);
+  };
+
+  const handleBoostProduct = (productId: string, productTitle: string) => {
+    setBoostingProduct({ id: productId, title: productTitle });
+    setShowBoostDialog(true);
+  };
+
+  const handleBoostComplete = () => {
+    refetch();
+    refreshBalance();
   };
 
   // Notification components
@@ -620,6 +635,7 @@ const SellerDashboard = () => {
               loading={loading}
               onEdit={handleEditProduct}
               onDelete={handleDeleteProduct}
+              onBoost={handleBoostProduct}
             />
           </TabsContent>
 
@@ -648,6 +664,17 @@ const SellerDashboard = () => {
           setShowTokenPurchase(false);
         }}
       />
+
+      {boostingProduct && (
+        <ProductBoostDialog
+          open={showBoostDialog}
+          onOpenChange={setShowBoostDialog}
+          productId={boostingProduct.id}
+          productTitle={boostingProduct.title}
+          currentTokens={tokenBalance}
+          onBoostComplete={handleBoostComplete}
+        />
+      )}
     </div>
   );
 };

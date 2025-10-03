@@ -22,23 +22,25 @@ interface TokenPackage {
 const tokenPackages: TokenPackage[] = [
   { tokens: 5, price: 1000, label: '5 Jetons' },
   { tokens: 12, price: 2000, label: '12 Jetons', popular: true },
-  { tokens: 25, price: 3500, label: '25 Jetons' },
-  { tokens: 60, price: 7000, label: '60 Jetons' },
+  { tokens: 20, price: 3500, label: '20 Jetons' },
+  { tokens: 50, price: 8000, label: '50 Jetons' },
 ];
 
-type PaymentMethod = 'orange_money' | 'mtn_money' | 'moov_money' | 'card';
+type PaymentMethod = 'orange_money' | 'mtn_money' | 'moov_money' | 'wave_money' | 'card';
 
 interface PaymentMethodOption {
   id: PaymentMethod;
   label: string;
   icon: string;
+  description: string;
 }
 
 const paymentMethods: PaymentMethodOption[] = [
-  { id: 'orange_money', label: 'Orange Money', icon: '🟠' },
-  { id: 'mtn_money', label: 'MTN Money', icon: '🟡' },
-  { id: 'moov_money', label: 'Moov Money', icon: '🔵' },
-  { id: 'card', label: 'Carte Bancaire', icon: '💳' },
+  { id: 'orange_money', label: 'Orange Money CI', icon: '🟠', description: 'Paiement via Orange Money' },
+  { id: 'mtn_money', label: 'MTN MoMo CI', icon: '🟡', description: 'Paiement via MTN Mobile Money' },
+  { id: 'moov_money', label: 'Moov Money CI', icon: '🔵', description: 'Paiement via Moov Money' },
+  { id: 'wave_money', label: 'Wave CI', icon: '💙', description: 'Paiement via Wave' },
+  { id: 'card', label: 'Carte Bancaire', icon: '💳', description: 'Visa, Mastercard' },
 ];
 
 export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: TokenPurchaseDialogProps) => {
@@ -134,40 +136,48 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
         </DialogHeader>
         
         {step === 'select_package' ? (
-          <div className="space-y-4 mt-4">
-            <p className="text-sm text-muted-foreground">
-              Chaque jeton vous permet de publier un produit. 2 jetons = 1 boost (7 jours).
-            </p>
+          <div className="space-y-6 mt-4">
+            <div className="text-center space-y-2">
+              <h3 className="text-lg font-semibold">Choisissez votre pack de jetons</h3>
+              <p className="text-sm text-muted-foreground">
+                Publiez vos produits et boostez leur visibilité
+              </p>
+            </div>
 
-            {/* Packs scrollables horizontalement sur mobile */}
-            <div className="overflow-x-auto pb-2">
-              <div className="flex gap-3 min-w-max md:grid md:grid-cols-2 lg:grid-cols-4">
+            {/* Packs scrollables horizontalement sur mobile, grille sur desktop */}
+            <div className="overflow-x-auto pb-4 -mx-2 px-2">
+              <div className="flex gap-4 min-w-max md:grid md:grid-cols-2 lg:grid-cols-4 md:min-w-0">
                 {tokenPackages.map((pkg) => (
                   <div
                     key={pkg.tokens}
                     onClick={() => handleSelectPackage(pkg)}
                     className={`
-                      relative cursor-pointer border-2 rounded-xl p-4 transition-all
-                      hover:border-primary hover:shadow-lg min-w-[160px] md:min-w-0
-                      ${pkg.popular ? 'border-primary bg-primary/5' : 'border-border'}
+                      relative cursor-pointer border-2 rounded-2xl p-5 transition-all
+                      hover:border-primary hover:shadow-xl hover:scale-105 min-w-[170px] md:min-w-0
+                      ${pkg.popular 
+                        ? 'border-primary bg-gradient-to-br from-primary/10 to-primary/5 shadow-md' 
+                        : 'border-border bg-card hover:bg-accent/50'
+                      }
                     `}
                   >
                     {pkg.popular && (
-                      <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full font-semibold">
-                        Populaire
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs px-3 py-1 rounded-full font-bold shadow-lg">
+                        ⭐ Populaire
                       </div>
                     )}
-                    <div className="flex flex-col items-center text-center space-y-2">
-                      <Coins className="h-8 w-8 text-primary" />
-                      <div>
-                        <p className="font-bold text-2xl">{pkg.tokens}</p>
-                        <p className="text-xs text-muted-foreground">Jetons</p>
+                    <div className="flex flex-col items-center text-center space-y-3">
+                      <div className="bg-primary/10 p-3 rounded-full">
+                        <Coins className="h-8 w-8 text-primary" />
                       </div>
-                      <div className="pt-2 border-t w-full">
-                        <p className="text-lg font-bold text-primary">
+                      <div>
+                        <p className="font-bold text-3xl text-primary">{pkg.tokens}</p>
+                        <p className="text-xs text-muted-foreground font-medium">Jetons</p>
+                      </div>
+                      <div className="pt-3 border-t-2 w-full border-dashed border-border">
+                        <p className="text-xl font-bold">
                           {pkg.price.toLocaleString()}
                         </p>
-                        <p className="text-xs text-muted-foreground">FCFA</p>
+                        <p className="text-xs text-muted-foreground font-semibold">FCFA</p>
                       </div>
                     </div>
                   </div>
@@ -175,45 +185,70 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
               </div>
             </div>
 
-            <div className="bg-muted/50 p-3 rounded-lg">
-              <p className="text-xs text-muted-foreground">
-                💡 Les jetons n'expirent jamais et peuvent être utilisés pour publier vos produits ou les booster.
-              </p>
+            <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 p-4 rounded-xl border border-primary/20">
+              <div className="flex items-start gap-3">
+                <div className="text-2xl">💡</div>
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold">À savoir :</p>
+                  <ul className="text-xs text-muted-foreground space-y-1">
+                    <li>• 1 jeton = 1 publication de produit</li>
+                    <li>• 2 jetons = 1 boost de 7 jours</li>
+                    <li>• Vos jetons n'expirent jamais</li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         ) : (
-          <div className="space-y-4 mt-4">
-            <div className="bg-muted/50 p-4 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Coins className="h-5 w-5 text-primary" />
-                  <span className="font-semibold">{selectedPackage?.label}</span>
+          <div className="space-y-6 mt-4">
+            <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-4 rounded-xl border border-primary/20">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-3">
+                  <div className="bg-primary/10 p-2 rounded-full">
+                    <Coins className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-lg">{selectedPackage?.label}</p>
+                    <p className="text-xs text-muted-foreground">Pack de jetons</p>
+                  </div>
                 </div>
-                <span className="text-xl font-bold text-primary">
-                  {selectedPackage?.price.toLocaleString()} FCFA
-                </span>
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-primary">
+                    {selectedPackage?.price.toLocaleString()}
+                  </p>
+                  <p className="text-xs text-muted-foreground font-semibold">FCFA</p>
+                </div>
               </div>
             </div>
 
             <div>
-              <p className="text-sm font-medium mb-3">Choisissez votre mode de paiement :</p>
+              <h4 className="text-sm font-semibold mb-4 flex items-center gap-2">
+                <span className="text-lg">💳</span>
+                Choisissez votre mode de paiement
+              </h4>
               <div className="grid gap-3">
                 {paymentMethods.map((method) => (
                   <div
                     key={method.id}
                     onClick={() => setSelectedPayment(method.id)}
                     className={`
-                      cursor-pointer border-2 rounded-lg p-4 transition-all
-                      hover:border-primary
-                      ${selectedPayment === method.id ? 'border-primary bg-primary/5' : 'border-border'}
+                      cursor-pointer border-2 rounded-xl p-4 transition-all
+                      hover:border-primary hover:shadow-md
+                      ${selectedPayment === method.id 
+                        ? 'border-primary bg-primary/5 shadow-md' 
+                        : 'border-border bg-card'
+                      }
                     `}
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{method.icon}</span>
-                      <span className="font-medium">{method.label}</span>
+                    <div className="flex items-center gap-4">
+                      <div className="flex-shrink-0 text-3xl">{method.icon}</div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-base">{method.label}</p>
+                        <p className="text-xs text-muted-foreground">{method.description}</p>
+                      </div>
                       {selectedPayment === method.id && (
-                        <div className="ml-auto h-5 w-5 rounded-full bg-primary flex items-center justify-center">
-                          <div className="h-2 w-2 rounded-full bg-white" />
+                        <div className="flex-shrink-0 h-6 w-6 rounded-full bg-primary flex items-center justify-center">
+                          <div className="h-3 w-3 rounded-full bg-white" />
                         </div>
                       )}
                     </div>
@@ -222,12 +257,19 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
               </div>
             </div>
 
+            <div className="bg-muted/30 p-3 rounded-lg">
+              <p className="text-xs text-center text-muted-foreground">
+                🔒 Paiement 100% sécurisé • Vos jetons seront ajoutés immédiatement après validation
+              </p>
+            </div>
+
             <div className="flex gap-3">
               <Button
                 onClick={handleBack}
                 variant="outline"
                 className="flex-1"
                 disabled={loading}
+                size="lg"
               >
                 Retour
               </Button>
@@ -235,14 +277,17 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
                 onClick={handlePurchase}
                 disabled={loading}
                 className="flex-1"
+                size="lg"
               >
                 {loading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Traitement...
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Redirection...
                   </>
                 ) : (
-                  'Confirmer le paiement'
+                  <>
+                    Payer {selectedPackage?.price.toLocaleString()} FCFA
+                  </>
                 )}
               </Button>
             </div>

@@ -82,46 +82,59 @@ export const ProductBoostDialog = ({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
-            <Zap className="h-6 w-6 text-primary" />
-            Booster ce produit
+            <div className="bg-primary/10 p-2 rounded-full">
+              <Zap className="h-6 w-6 text-primary" />
+            </div>
+            Booster mon produit
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4 mt-4">
-          <div className="bg-muted/50 p-4 rounded-lg">
-            <p className="font-semibold mb-2">{productTitle}</p>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Coins className="h-4 w-4" />
-              <span>Coût : {BOOST_COST} jetons</span>
+        <div className="space-y-6 mt-4">
+          <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-4 rounded-xl border border-primary/20">
+            <p className="font-bold text-lg mb-2">{productTitle}</p>
+            <div className="flex items-center gap-2 text-sm">
+              <Coins className="h-5 w-5 text-primary" />
+              <span className="font-semibold">Coût : {BOOST_COST} jetons</span>
             </div>
           </div>
 
-          <div className="space-y-3">
-            <p className="text-sm font-medium">Avantages du boost :</p>
-            <div className="space-y-2">
-              <div className="flex items-start gap-3 text-sm">
-                <TrendingUp className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold flex items-center gap-2">
+              <span className="text-lg">⚡</span>
+              Avantages du boost
+            </h4>
+            <div className="space-y-3">
+              <div className="flex items-start gap-4 p-3 rounded-xl bg-accent/50 border border-border">
+                <div className="bg-primary/10 p-2 rounded-lg flex-shrink-0">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                </div>
                 <div>
-                  <p className="font-medium">Meilleur positionnement</p>
-                  <p className="text-muted-foreground">Affiché en priorité dans les Meilleurs choix</p>
+                  <p className="font-semibold text-sm">Meilleur positionnement</p>
+                  <p className="text-xs text-muted-foreground">
+                    Affiché en priorité dans "Meilleurs choix" et "Actualités"
+                  </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 text-sm">
-                <Clock className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              <div className="flex items-start gap-4 p-3 rounded-xl bg-accent/50 border border-border">
+                <div className="bg-primary/10 p-2 rounded-lg flex-shrink-0">
+                  <Clock className="h-5 w-5 text-primary" />
+                </div>
                 <div>
-                  <p className="font-medium">Durée de 7 jours</p>
-                  <p className="text-muted-foreground">Visibilité garantie pendant une semaine</p>
+                  <p className="font-semibold text-sm">Durée de 7 jours</p>
+                  <p className="text-xs text-muted-foreground">
+                    Visibilité garantie pendant une semaine complète
+                  </p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-primary/10 border border-primary/20 p-3 rounded-lg">
+          <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 p-4 rounded-xl border-2 border-primary/20">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Votre solde actuel :</span>
-              <div className="flex items-center gap-1.5 font-bold text-primary">
-                <Coins className="h-4 w-4" />
-                <span>{currentTokens} jeton(s)</span>
+              <span className="text-sm font-semibold">Votre solde actuel</span>
+              <div className="flex items-center gap-2 text-primary">
+                <Coins className="h-5 w-5" />
+                <span className="font-bold text-lg">{currentTokens} jeton{currentTokens > 1 ? 's' : ''}</span>
               </div>
             </div>
           </div>
@@ -135,7 +148,7 @@ export const ProductBoostDialog = ({
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Boost en cours...
+                Activation du boost...
               </>
             ) : (
               <>
@@ -146,9 +159,11 @@ export const ProductBoostDialog = ({
           </Button>
 
           {currentTokens < BOOST_COST && (
-            <p className="text-xs text-center text-muted-foreground">
-              Vous avez besoin de {BOOST_COST - currentTokens} jeton(s) supplémentaire(s)
-            </p>
+            <div className="bg-destructive/10 border border-destructive/20 p-3 rounded-lg">
+              <p className="text-xs text-center text-destructive font-medium">
+                ⚠️ Vous avez besoin de {BOOST_COST - currentTokens} jeton{(BOOST_COST - currentTokens) > 1 ? 's' : ''} supplémentaire{(BOOST_COST - currentTokens) > 1 ? 's' : ''}
+              </p>
+            </div>
           )}
         </div>
       </DialogContent>

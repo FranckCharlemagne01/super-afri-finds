@@ -353,6 +353,66 @@ export type Database = {
         }
         Relationships: []
       }
+      seller_tokens: {
+        Row: {
+          created_at: string
+          id: string
+          seller_id: string
+          token_balance: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          seller_id: string
+          token_balance?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          seller_id?: string
+          token_balance?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      token_transactions: {
+        Row: {
+          created_at: string
+          id: string
+          paystack_reference: string | null
+          price_paid: number | null
+          product_id: string | null
+          seller_id: string
+          status: string
+          tokens_amount: number
+          transaction_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          paystack_reference?: string | null
+          price_paid?: number | null
+          product_id?: string | null
+          seller_id: string
+          status?: string
+          tokens_amount: number
+          transaction_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          paystack_reference?: string | null
+          price_paid?: number | null
+          product_id?: string | null
+          seller_id?: string
+          status?: string
+          tokens_amount?: number
+          transaction_type?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           assigned_at: string
@@ -424,6 +484,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_tokens_after_purchase: {
+        Args: {
+          _paystack_reference: string
+          _price_paid: number
+          _seller_id: string
+          _tokens_amount: number
+        }
+        Returns: boolean
+      }
       assign_current_user_superadmin: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -439,6 +508,10 @@ export type Database = {
       cancel_order_by_customer: {
         Args: { order_id: string }
         Returns: Json
+      }
+      consume_token_for_publication: {
+        Args: { _product_id: string; _seller_id: string }
+        Returns: boolean
       }
       get_admin_statistics: {
         Args: Record<PropertyKey, never>
@@ -516,6 +589,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      initialize_seller_tokens: {
+        Args: { _seller_id: string }
+        Returns: undefined
       }
       is_in_trial_period: {
         Args: { _user_id: string }

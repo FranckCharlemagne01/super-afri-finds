@@ -29,7 +29,7 @@ serve(async (req) => {
     const { action, ...payload } = await req.json();
 
     if (action === 'initialize_payment') {
-      const { user_id, email, amount = 1000, payment_type = 'article_publication', product_data } = payload; // 1000 XOF pour publication d'article
+      const { user_id, email, amount = 1000, payment_type = 'article_publication', product_data, tokens_amount } = payload;
       
       console.log('Initializing payment for user:', user_id);
 
@@ -73,7 +73,8 @@ serve(async (req) => {
           metadata: {
             user_id,
             payment_type,
-            product: payment_type === 'article_publication' ? 'Publication d\'article' : 'Premium Seller Access'
+            tokens_amount,
+            product: payment_type === 'tokens' ? `Achat de ${tokens_amount} jetons` : (payment_type === 'article_publication' ? 'Publication d\'article' : 'Premium Seller Access')
           }
         }),
       });
@@ -142,7 +143,17 @@ serve(async (req) => {
 
         // Handle payment based on type
         let updateError;
-        if (paymentRecord.payment_type === 'article_publication') {
+        if (paymentRecord.payment_type === 'tokens') {
+          // Achat de jetons
+          const tokensAmount = paystackData.data.metadata?.tokens_amount || 0;
+          updateError = (await supabase
+            .rpc('add_tokens_after_purchase', {
+              _seller_id: paymentRecord.user_id,
+              _tokens_amount: tokensAmount,
+              _price_paid: paystackData.data.amount / 100,
+              _paystack_reference: reference
+            })).error;
+        } else if (paymentRecord.payment_type === 'article_publication') {
           // Publication d'article
           updateError = (await supabase
             .rpc('handle_article_payment_success', {
@@ -171,9 +182,11 @@ serve(async (req) => {
 
       return new Response(JSON.stringify({
         status: 'success',
-        message: paymentRecord.payment_type === 'article_publication' 
-          ? 'Paiement vérifié et article publié avec succès' 
-          : 'Payment verified and premium access granted',
+        message: paymentRecord.payment_type === 'tokens'
+          ? 'Jetons ajoutés avec succès'
+          : (paymentRecord.payment_type === 'article_publication' 
+            ? 'Paiement vérifié et article publié avec succès' 
+            : 'Payment verified and premium access granted'),
         data: paystackData.data
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -3,18 +3,21 @@ import { useStableAuth } from '@/hooks/useStableAuth';
 import { useStableRole } from '@/hooks/useStableRole';
 import { useTrialStatus } from '@/hooks/useTrialStatus';
 import { useStableData } from '@/hooks/useStableData';
+import { useTokens } from '@/hooks/useTokens';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Package, MessageSquare, BarChart3, LogOut, Store } from 'lucide-react';
+import { Plus, Package, MessageSquare, BarChart3, LogOut, Store, Coins, History } from 'lucide-react';
 import { ProductForm } from '@/components/ProductForm';
 import { SellerProducts } from '@/components/SellerProducts';
 import { SellerMessages } from '@/components/SellerMessages';
 import { SellerOrders } from '@/components/SellerOrders';
 import { TrialCountdown } from '@/components/TrialCountdown';
+import { TokenPurchaseDialog } from '@/components/TokenPurchaseDialog';
+import { TokenTransactionHistory } from '@/components/TokenTransactionHistory';
 import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
 import { RealtimeNotificationBadge } from '@/components/RealtimeNotificationBadge';
 import { useNavigate } from 'react-router-dom';
@@ -58,10 +61,12 @@ const SellerDashboard = () => {
   const { user, signOut, userId } = useStableAuth();
   const { isSeller, isSuperAdmin, loading: roleLoading, refreshRole } = useStableRole();
   const trialStatus = useTrialStatus();
+  const { tokenBalance, refreshBalance } = useTokens();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [showTokenPurchase, setShowTokenPurchase] = useState(false);
   
   // Utiliser useStableData pour éviter les clignotements
   const { data: products, loading, error, refetch } = useStableData(
@@ -148,9 +153,10 @@ const SellerDashboard = () => {
       if (data?.status === 'success') {
         toast({
           title: "🎉 Paiement réussi !",
-          description: data.message || "Votre article a été publié avec succès !",
+          description: data.message || "Paiement effectué avec succès !",
         });
-        refetch(); // Refresh products list to show new article
+        refetch();
+        refreshBalance();
       } else {
         toast({
           title: "Échec du paiement",
@@ -187,9 +193,9 @@ const SellerDashboard = () => {
     refetch();
     setShowProductForm(false);
     setEditingProduct(null);
-    // Rafraîchir le rôle pour s'assurer qu'il est à jour après publication
+    refreshBalance();
     refreshRole();
-  }, [refetch, refreshRole]);
+  }, [refetch, refreshRole, refreshBalance]);
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
@@ -456,6 +462,38 @@ const SellerDashboard = () => {
         {/* Nouvelles commandes en attente - Notification persistante */}
         <NewOrdersAlert />
 
+        {/* Section Jetons - Affichage professionnel */}
+        {!trialStatus.isInTrial && (
+          <Card className="mb-4 lg:mb-6 border-0 shadow-lg bg-gradient-to-r from-amber-50 to-orange-50">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="h-12 w-12 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Coins className="h-6 w-6 text-amber-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Solde disponible</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-amber-700">
+                      {tokenBalance} Jeton{tokenBalance !== 1 ? 's' : ''}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      💡 Chaque publication consomme 1 jeton
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => setShowTokenPurchase(true)}
+                  className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white shadow-md"
+                  size="lg"
+                >
+                  <Coins className="mr-2 h-5 w-5" />
+                  Acheter des Jetons
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Stats Cards - Mobile optimized */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 mb-4 lg:mb-8">
           <Card className="border-0 shadow-md">
@@ -498,7 +536,7 @@ const SellerDashboard = () => {
         }}>
           {/* Navigation simplifiée avec indicateurs visuels */}
           <div className="bg-white rounded-lg lg:rounded-xl border border-border/50 shadow-sm p-1.5 sm:p-2">
-            <TabsList className="grid w-full grid-cols-3 bg-muted/30 rounded-lg h-11 sm:h-12 gap-1">
+            <TabsList className="grid w-full grid-cols-4 bg-muted/30 rounded-lg h-11 sm:h-12 gap-1">
               <TabsTrigger 
                 value="products" 
                 className="relative text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all duration-200 px-2 sm:px-3"
@@ -522,6 +560,15 @@ const SellerDashboard = () => {
                 <span className="truncate">Messages</span>
                 <MessageNotificationBadge />
               </TabsTrigger>
+              {!trialStatus.isInTrial && (
+                <TabsTrigger 
+                  value="history" 
+                  className="relative text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all duration-200 px-2 sm:px-3"
+                >
+                  <History className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 lg:mr-2 flex-shrink-0" />
+                  <span className="truncate">Historique</span>
+                </TabsTrigger>
+              )}
             </TabsList>
           </div>
 
@@ -583,9 +630,24 @@ const SellerDashboard = () => {
           <TabsContent value="messages">
             <SellerMessages />
           </TabsContent>
+
+          {!trialStatus.isInTrial && (
+            <TabsContent value="history">
+              <TokenTransactionHistory />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
 
+      {/* Dialogs */}
+      <TokenPurchaseDialog
+        open={showTokenPurchase}
+        onOpenChange={setShowTokenPurchase}
+        onPurchaseComplete={() => {
+          refreshBalance();
+          setShowTokenPurchase(false);
+        }}
+      />
     </div>
   );
 };

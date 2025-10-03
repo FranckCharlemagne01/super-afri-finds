@@ -23,6 +23,8 @@ export function PaystackSettingsDialog({ open, onOpenChange }: PaystackSettingsD
   const [isTesting, setIsTesting] = useState(false);
   const [hasTestKeys, setHasTestKeys] = useState(false);
   const [hasLiveKeys, setHasLiveKeys] = useState(false);
+  const [showDebugInfo, setShowDebugInfo] = useState(false);
+  const [currentKeys, setCurrentKeys] = useState<{secretKey: string; publicKey: string; mode: string} | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -333,6 +335,70 @@ export function PaystackSettingsDialog({ open, onOpenChange }: PaystackSettingsD
             >
               {isTesting ? 'Test en cours...' : '🔍 Tester la connexion Live'}
             </Button>
+          </div>
+
+          {/* Debug mode */}
+          <div className="space-y-3">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={async () => {
+                try {
+                  const { data, error } = await supabase.functions.invoke('paystack-config', {
+                    body: { action: 'get_decrypted_keys' }
+                  });
+                  if (error) throw error;
+                  if (data.success) {
+                    setCurrentKeys({
+                      secretKey: data.secret_key,
+                      publicKey: data.public_key,
+                      mode: data.mode
+                    });
+                    setShowDebugInfo(true);
+                  }
+                } catch (err: any) {
+                  toast({
+                    title: "Erreur",
+                    description: err.message || "Impossible de récupérer les clés",
+                    variant: "destructive",
+                  });
+                }
+              }}
+              className="w-full"
+            >
+              🔍 Mode Debug : Afficher les clés en cours d'utilisation
+            </Button>
+            
+            {showDebugInfo && currentKeys && (
+              <div className="bg-yellow-50 dark:bg-yellow-950 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
+                  🔐 Mode Debug (Admin seulement)
+                </p>
+                <div className="space-y-2 text-xs font-mono">
+                  <div>
+                    <span className="text-muted-foreground">Mode actuel :</span>
+                    <span className="ml-2 font-bold text-yellow-700 dark:text-yellow-300">
+                      {currentKeys.mode.toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Clé publique :</span>
+                    <div className="mt-1 p-2 bg-white dark:bg-gray-900 rounded break-all">
+                      {currentKeys.publicKey}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Clé secrète :</span>
+                    <div className="mt-1 p-2 bg-white dark:bg-gray-900 rounded break-all">
+                      {currentKeys.secretKey.substring(0, 15)}...{currentKeys.secretKey.substring(currentKeys.secretKey.length - 10)}
+                    </div>
+                  </div>
+                  <p className="text-yellow-700 dark:text-yellow-300 mt-2 italic">
+                    ⚠️ Ces informations sont visibles uniquement pour les super admins
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Security info */}

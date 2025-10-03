@@ -49,19 +49,7 @@ async function getPaystackKeys(supabase: any): Promise<{ secretKey: string; publ
     console.error('⚠️ Error getting encrypted Paystack keys:', error);
   }
 
-  // Fallback to environment variable
-  const envKey = Deno.env.get('PAYSTACK_SECRET_KEY');
-  if (envKey) {
-    console.log('⚠️ Using fallback Paystack key from environment variable');
-    // Extract public key from test config for fallback (this is not ideal but maintains compatibility)
-    return {
-      secretKey: envKey,
-      publicKey: 'pk_test_4c8dd945af2e5e023dd9bd5e8f8c2e5b61df8e71', // Fallback public key
-      mode: envKey.startsWith('sk_test_') ? 'test' : 'live'
-    };
-  }
-
-  throw new Error('No Paystack keys configured');
+  throw new Error('Veuillez configurer vos clés Paystack dans le super admin');
 }
 
 serve(async (req) => {

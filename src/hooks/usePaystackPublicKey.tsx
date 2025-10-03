@@ -25,9 +25,8 @@ export const usePaystackPublicKey = () => {
         }
       } catch (err: any) {
         console.error('Error fetching Paystack public key:', err);
-        setError(err.message);
-        // Fallback to a default test key if configured
-        setPublicKey('pk_test_4c8dd945af2e5e023dd9bd5e8f8c2e5b61df8e71');
+        setError('Veuillez configurer vos clés Paystack dans le super admin');
+        setPublicKey('');
       } finally {
         setLoading(false);
       }

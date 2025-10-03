@@ -48,11 +48,29 @@ const paymentMethods: PaymentMethodOption[] = [
 export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: TokenPurchaseDialogProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { publicKey: paystackPublicKey, loading: keyLoading } = usePaystackPublicKey();
+  const { publicKey: paystackPublicKey, loading: keyLoading, error: keyError } = usePaystackPublicKey();
   const [loading, setLoading] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<TokenPackage | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>('orange_money');
   const [step, setStep] = useState<'select_package' | 'select_payment'>('select_package');
+
+  // Si erreur de clé ou pas de clé configurée, afficher le message
+  if (keyError || (!keyLoading && !paystackPublicKey)) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Configuration requise</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-destructive text-center">
+              {keyError || 'Veuillez configurer vos clés Paystack dans le super admin'}
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   const handleSelectPackage = (pkg: TokenPackage) => {
     setSelectedPackage(pkg);
@@ -65,7 +83,7 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
     reference: paystackReference || new Date().getTime().toString(),
     email: user?.email || '',
     amount: (selectedPackage?.price || 0) * 100, // Paystack utilise les centimes (XOF * 100)
-    publicKey: paystackPublicKey || 'pk_test_4c8dd945af2e5e023dd9bd5e8f8c2e5b61df8e71',
+    publicKey: paystackPublicKey,
     currency: 'XOF',
     channels: selectedPayment === 'card' 
       ? ['card'] 

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { KeyRound, Save, Shield, Trash2, AlertCircle } from 'lucide-react';
+import { KeyRound, Save, Shield, Trash2, AlertCircle, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -257,12 +257,48 @@ export function PaystackSettingsDialog({ open, onOpenChange }: PaystackSettingsD
         </DialogHeader>
         
         <div className="space-y-6 py-4">
+          {/* Help section with Paystack links */}
+          <Alert className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+            <KeyRound className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <AlertDescription className="text-blue-800 dark:text-blue-200">
+              <div className="space-y-2">
+                <p className="font-medium">📚 Comment obtenir vos clés Paystack ?</p>
+                <ol className="text-sm space-y-1 ml-4 list-decimal">
+                  <li>Connectez-vous à votre tableau de bord Paystack</li>
+                  <li>Allez dans Paramètres → API Keys & Webhooks</li>
+                  <li>Copiez vos clés Test ou Live selon vos besoins</li>
+                  <li>Collez-les ci-dessous et testez la connexion</li>
+                </ol>
+                <div className="flex gap-2 mt-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => window.open('https://dashboard.paystack.com/#/settings/developers', '_blank')}
+                  >
+                    <ExternalLink className="w-3 h-3 mr-1" />
+                    Ouvrir le Dashboard Paystack
+                  </Button>
+                </div>
+              </div>
+            </AlertDescription>
+          </Alert>
+
           {/* Active key indicator */}
           {(hasTestKeys || hasLiveKeys) && (
             <Alert className="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
               <AlertCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
               <AlertDescription className="text-green-800 dark:text-green-200">
                 ✅ Clés {mode === 'test' ? 'Test' : 'Live'} actives et prêtes à l'utilisation
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {!hasTestKeys && !hasLiveKeys && (
+            <Alert className="bg-yellow-50 dark:bg-yellow-950 border-yellow-200 dark:border-yellow-800">
+              <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+              <AlertDescription className="text-yellow-800 dark:text-yellow-200">
+                ⚠️ Aucune clé Paystack configurée. Veuillez ajouter vos clés pour activer les paiements.
               </AlertDescription>
             </Alert>
           )}

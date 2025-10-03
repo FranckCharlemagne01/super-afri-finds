@@ -53,37 +53,18 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
   const [selectedPackage, setSelectedPackage] = useState<TokenPackage | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>('orange_money');
   const [step, setStep] = useState<'select_package' | 'select_payment'>('select_package');
-
-  // Si erreur de clé ou pas de clé configurée, afficher le message
-  if (keyError || (!keyLoading && !paystackPublicKey)) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Configuration requise</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p className="text-destructive text-center">
-              {keyError || 'Veuillez configurer vos clés Paystack dans le super admin'}
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
+  const [paystackReference, setPaystackReference] = useState<string>('');
 
   const handleSelectPackage = (pkg: TokenPackage) => {
     setSelectedPackage(pkg);
     setStep('select_payment');
   };
 
-  const [paystackReference, setPaystackReference] = useState<string>('');
-
   const config = {
     reference: paystackReference || new Date().getTime().toString(),
     email: user?.email || '',
     amount: (selectedPackage?.price || 0) * 100, // Paystack utilise les centimes (XOF * 100)
-    publicKey: paystackPublicKey,
+    publicKey: paystackPublicKey || '',
     currency: 'XOF',
     channels: selectedPayment === 'card' 
       ? ['card'] 
@@ -210,6 +191,9 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
     setSelectedPackage(null);
   };
 
+  // Si erreur de clé ou pas de clé configurée, afficher le message d'erreur
+  const hasKeyError = keyError || (!keyLoading && !paystackPublicKey);
+
   return (
     <Dialog open={open} onOpenChange={(open) => {
       onOpenChange(open);
@@ -222,11 +206,22 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Coins className="h-6 w-6 text-primary" />
-            {step === 'select_package' ? 'Acheter des Jetons' : 'Choisir le mode de paiement'}
+            {hasKeyError ? 'Configuration requise' : (step === 'select_package' ? 'Acheter des Jetons' : 'Choisir le mode de paiement')}
           </DialogTitle>
         </DialogHeader>
         
-        {step === 'select_package' ? (
+        {hasKeyError ? (
+          <div className="py-8 text-center space-y-4">
+            <div className="bg-destructive/10 p-4 rounded-lg border border-destructive/20">
+              <p className="text-destructive font-medium">
+                {keyError || 'Veuillez configurer vos clés Paystack dans le super admin'}
+              </p>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Les clés Paystack doivent être configurées par un super administrateur avant de pouvoir effectuer des achats.
+            </p>
+          </div>
+        ) : step === 'select_package' ? (
           <div className="space-y-6 mt-4">
             <div className="text-center space-y-2">
               <h3 className="text-lg font-semibold">Choisissez votre pack de jetons</h3>

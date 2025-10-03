@@ -105,6 +105,7 @@ serve(async (req) => {
     // Verify user is authenticated
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
+      console.error('Missing authorization header');
       throw new Error('Missing authorization header');
     }
 
@@ -112,22 +113,27 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     
     if (authError || !user) {
+      console.error('Authentication error:', authError);
       throw new Error('Unauthorized');
     }
 
-    // Verify user is superadmin
-    const { data: roleData, error: roleError } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .eq('role', 'superadmin')
-      .maybeSingle();
-
-    if (roleError || !roleData) {
-      throw new Error('Forbidden: Superadmin access required');
-    }
-
     const { action, secret_key_test, public_key_test, secret_key_live, public_key_live, mode } = await req.json();
+    console.log('Paystack config action:', action, 'for user:', user.id);
+
+    // For save and get actions, verify user is superadmin
+    if (action === 'save' || action === 'get') {
+      const { data: roleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'superadmin')
+        .maybeSingle();
+
+      if (roleError || !roleData) {
+        console.error('Superadmin check failed:', roleError);
+        throw new Error('Forbidden: Superadmin access required');
+      }
+    }
 
     if (action === 'save') {
       // Validate keys before encrypting and saving
@@ -228,16 +234,24 @@ serve(async (req) => {
 
     if (action === 'get_decrypted_keys') {
       // Get the appropriate keys based on current mode
+      // This action is accessible to all authenticated users (they need public key for payments)
       const { data: config, error: configError } = await supabase
         .from('paystack_config')
         .select('*')
         .limit(1)
         .maybeSingle();
 
-      if (configError) throw configError;
-      if (!config) {
-        throw new Error('Paystack configuration not found');
+      if (configError) {
+        console.error('Error fetching config:', configError);
+        throw configError;
       }
+      
+      if (!config) {
+        console.error('No Paystack configuration found in database');
+        throw new Error('Paystack configuration not found. Please configure Paystack keys in the super admin panel.');
+      }
+
+      console.log('Config mode:', config.mode);
 
       const encryptedSecretKey = config.mode === 'test' 
         ? config.encrypted_key_test 
@@ -247,17 +261,24 @@ serve(async (req) => {
         ? config.encrypted_public_key_test
         : config.encrypted_public_key_live;
 
-      if (!encryptedSecretKey || !encryptedPublicKey) {
-        throw new Error(`No ${config.mode} keys configured`);
+      if (!encryptedPublicKey) {
+        console.error(`No ${config.mode} public key configured`);
+        throw new Error(`No ${config.mode} public key configured. Please add Paystack keys in the super admin panel.`);
       }
 
-      const decryptedSecretKey = await decryptData(encryptedSecretKey);
-      const decryptedPublicKey = await decryptData(encryptedPublicKey);
+      if (!encryptedSecretKey) {
+        console.error(`No ${config.mode} secret key configured`);
+        throw new Error(`No ${config.mode} secret key configured. Please add Paystack keys in the super admin panel.`);
+      }
 
+      const decryptedPublicKey = await decryptData(encryptedPublicKey);
+      console.log('Successfully decrypted public key, starts with:', decryptedPublicKey.substring(0, 7));
+
+      // Only return public key to regular users
+      // Secret key is only used server-side in paystack-payment function
       return new Response(
         JSON.stringify({ 
           success: true, 
-          secret_key: decryptedSecretKey,
           public_key: decryptedPublicKey,
           mode: config.mode 
         }),

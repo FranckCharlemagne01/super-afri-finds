@@ -66,6 +66,32 @@ async function decryptData(encryptedBase64: string): Promise<string> {
   return decoder.decode(decrypted);
 }
 
+// Validate Paystack key by calling their API
+async function validatePaystackKey(key: string): Promise<{ valid: boolean; error?: string }> {
+  try {
+    const response = await fetch('https://api.paystack.co/transaction', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (response.status === 401) {
+      return { valid: false, error: 'Clé Paystack invalide. Veuillez vérifier votre clé secrète.' };
+    }
+
+    if (response.status === 200) {
+      return { valid: true };
+    }
+
+    return { valid: false, error: 'Impossible de valider la clé Paystack. Veuillez réessayer.' };
+  } catch (error) {
+    console.error('Error validating Paystack key:', error);
+    return { valid: false, error: 'Erreur de connexion à Paystack. Veuillez réessayer.' };
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -104,6 +130,39 @@ serve(async (req) => {
     const { action, key_test, key_live, mode } = await req.json();
 
     if (action === 'save') {
+      // Validate keys before encrypting and saving
+      if (key_test) {
+        const validation = await validatePaystackKey(key_test);
+        if (!validation.valid) {
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              error: validation.error || 'Votre clé Paystack Test n\'est pas valide. Merci d\'entrer une clé valide.' 
+            }),
+            { 
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+            }
+          );
+        }
+      }
+
+      if (key_live) {
+        const validation = await validatePaystackKey(key_live);
+        if (!validation.valid) {
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              error: validation.error || 'Votre clé Paystack Live n\'est pas valide. Merci d\'entrer une clé valide.' 
+            }),
+            { 
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+            }
+          );
+        }
+      }
+
       // Encrypt keys if provided
       const encryptedKeyTest = key_test ? await encryptData(key_test) : null;
       const encryptedKeyLive = key_live ? await encryptData(key_live) : null;

@@ -88,6 +88,11 @@ export const useTokens = () => {
     if (!user) return;
 
     try {
+      console.log('🔄 Rafraîchissement du solde de jetons...');
+      
+      // Initialiser les jetons si nécessaire
+      await supabase.rpc('initialize_seller_tokens', { _seller_id: user.id });
+      
       const { data, error } = await supabase
         .from('seller_tokens')
         .select('token_balance')
@@ -97,7 +102,9 @@ export const useTokens = () => {
       if (error) {
         console.error('Error refreshing token balance:', error);
       } else {
-        setTokenBalance(data?.token_balance || 0);
+        const newBalance = data?.token_balance || 0;
+        console.log('✅ Nouveau solde de jetons:', newBalance);
+        setTokenBalance(newBalance);
       }
     } catch (error) {
       console.error('Error refreshing token balance:', error);

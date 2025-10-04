@@ -143,6 +143,25 @@ serve(async (req) => {
         });
       }
 
+      // Si c'est un achat de jetons, créer aussi la transaction
+      if (payment_type === 'tokens' && tokens_amount) {
+        const { error: tokenTxError } = await supabase
+          .from('token_transactions')
+          .insert({
+            seller_id: user_id,
+            transaction_type: 'purchase',
+            tokens_amount: tokens_amount,
+            price_paid: amount,
+            paystack_reference: reference,
+            payment_method: payload.payment_method || 'card',
+            status: 'pending'
+          });
+
+        if (tokenTxError) {
+          console.error('Error creating token transaction:', tokenTxError);
+        }
+      }
+
       // Initialize payment with Paystack
       const paystackResponse = await fetch('https://api.paystack.co/transaction/initialize', {
         method: 'POST',
@@ -232,6 +251,14 @@ serve(async (req) => {
         if (paymentRecord.payment_type === 'tokens') {
           // Achat de jetons
           const tokensAmount = paystackData.data.metadata?.tokens_amount || 0;
+          
+          console.log('✅ Processing token purchase:', {
+            seller_id: paymentRecord.user_id,
+            tokens_amount: tokensAmount,
+            price_paid: paystackData.data.amount / 100,
+            reference
+          });
+          
           updateError = (await supabase
             .rpc('add_tokens_after_purchase', {
               _seller_id: paymentRecord.user_id,
@@ -239,6 +266,12 @@ serve(async (req) => {
               _price_paid: paystackData.data.amount / 100,
               _paystack_reference: reference
             })).error;
+            
+          if (updateError) {
+            console.error('❌ Error adding tokens:', updateError);
+          } else {
+            console.log('✅ Tokens added successfully');
+          }
         } else if (paymentRecord.payment_type === 'article_publication') {
           // Publication d'article
           updateError = (await supabase

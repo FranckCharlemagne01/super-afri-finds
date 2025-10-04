@@ -88,21 +88,31 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
   const onSuccess = async (reference: any) => {
     setLoading(true);
     try {
+      console.log('🔄 Vérification du paiement...', reference);
+      
       // Vérifier le paiement côté serveur
-      const { error: verifyError } = await supabase.functions.invoke('paystack-payment', {
+      const { data, error: verifyError } = await supabase.functions.invoke('paystack-payment', {
         body: {
           action: 'verify_payment',
           reference: reference.reference || paystackReference,
         },
       });
 
-      if (verifyError) throw verifyError;
+      if (verifyError) {
+        console.error('❌ Erreur de vérification:', verifyError);
+        throw verifyError;
+      }
+
+      console.log('✅ Paiement vérifié avec succès:', data);
 
       toast({
         title: '✅ Paiement réussi !',
         description: `🎉 ${selectedPackage?.tokens} jetons ont été ajoutés à votre compte`,
         duration: 5000,
       });
+      
+      // Attendre un peu avant de rafraîchir pour que la base de données soit mise à jour
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Rafraîchir le solde
       await onPurchaseComplete();
@@ -112,10 +122,10 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
       setStep('select_package');
       setSelectedPackage(null);
     } catch (error: any) {
-      console.error('Error verifying payment:', error);
+      console.error('❌ Error verifying payment:', error);
       toast({
         title: 'Erreur de vérification',
-        description: 'Le paiement sera vérifié automatiquement',
+        description: 'Le paiement sera vérifié automatiquement. Rechargez la page dans quelques instants.',
         variant: 'destructive',
       });
     } finally {
@@ -157,18 +167,7 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
 
       if (error) throw error;
 
-      // Créer une transaction en attente
-      await supabase
-        .from('token_transactions')
-        .insert({
-          seller_id: user.id,
-          transaction_type: 'purchase',
-          tokens_amount: selectedPackage.tokens,
-          price_paid: selectedPackage.price,
-          payment_method: selectedPayment,
-          status: 'pending',
-          paystack_reference: reference,
-        });
+      console.log('✅ Paiement initialisé avec référence:', reference);
 
       // Attendre un peu pour que la référence soit mise à jour
       setTimeout(() => {

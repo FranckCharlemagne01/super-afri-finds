@@ -9,6 +9,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Users, ShoppingBag, TrendingUp, DollarSign, Eye, Edit, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { TokenTransactionsSuperAdmin } from '@/components/TokenTransactionsSuperAdmin';
 
 interface UserProfile {
   id: string;
@@ -50,6 +51,8 @@ interface AdminStats {
   total_revenue: number;
   orders_today: number;
   new_users_today: number;
+  total_tokens_revenue: number;
+  total_tokens_distributed: number;
 }
 
 const SuperAdminDashboard = () => {
@@ -125,6 +128,15 @@ const SuperAdminDashboard = () => {
       if (ordersError) throw ordersError;
       setOrders(ordersData || []);
 
+      // Fetch token transactions for stats
+      const { data: tokenTransactions, error: tokenError } = await supabase
+        .from('token_transactions')
+        .select('*')
+        .eq('transaction_type', 'purchase')
+        .eq('status', 'completed');
+
+      if (tokenError) throw tokenError;
+
       // Calculate stats manually since we can't use the view with RLS issues
       const statsData: AdminStats = {
         total_users: transformedUsers.length,
@@ -141,6 +153,10 @@ const SuperAdminDashboard = () => {
         new_users_today: transformedUsers.filter(u => 
           new Date(u.created_at).toDateString() === new Date().toDateString()
         ).length,
+        total_tokens_revenue: (tokenTransactions || [])
+          .reduce((sum, t) => sum + parseFloat(String(t.price_paid || '0')), 0),
+        total_tokens_distributed: (tokenTransactions || [])
+          .reduce((sum, t) => sum + parseInt(String(t.tokens_amount || '0')), 0),
       };
 
       setStats(statsData);
@@ -218,67 +234,103 @@ const SuperAdminDashboard = () => {
       <main className="container mx-auto px-4 py-6">
         {/* Stats Cards */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Utilisateurs Total</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.total_users}</div>
-                <p className="text-xs text-muted-foreground">
-                  +{stats.new_users_today} aujourd'hui
-                </p>
-              </CardContent>
-            </Card>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Utilisateurs Total</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.total_users}</div>
+                  <p className="text-xs text-muted-foreground">
+                    +{stats.new_users_today} aujourd'hui
+                  </p>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Produits Actifs</CardTitle>
-                <ShoppingBag className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.total_active_products}</div>
-                <p className="text-xs text-muted-foreground">
-                  {stats.total_sellers} vendeurs
-                </p>
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Produits Actifs</CardTitle>
+                  <ShoppingBag className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.total_active_products}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {stats.total_sellers} vendeurs
+                  </p>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Commandes</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.total_orders}</div>
-                <p className="text-xs text-muted-foreground">
-                  +{stats.orders_today} aujourd'hui
-                </p>
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Commandes</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.total_orders}</div>
+                  <p className="text-xs text-muted-foreground">
+                    +{stats.orders_today} aujourd'hui
+                  </p>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Revenus</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.total_revenue.toLocaleString()} FCFA</div>
-                <p className="text-xs text-muted-foreground">
-                  Commandes complétées
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Revenus Produits</CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.total_revenue.toLocaleString()} FCFA</div>
+                  <p className="text-xs text-muted-foreground">
+                    Commandes complétées
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Token Stats - Nouvelle section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+              <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Revenus Jetons</CardTitle>
+                  <DollarSign className="h-4 w-4 text-amber-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-amber-600">
+                    {stats.total_tokens_revenue.toLocaleString()} FCFA
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Ventes de jetons (Test & Live)
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Jetons Distribués</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-purple-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-purple-600">
+                    {stats.total_tokens_distributed.toLocaleString()} Jetons
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Total des achats vendeurs
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </>
         )}
 
         {/* Tabs Content */}
         <Tabs defaultValue="users" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="users">Utilisateurs</TabsTrigger>
             <TabsTrigger value="products">Produits</TabsTrigger>
             <TabsTrigger value="orders">Commandes</TabsTrigger>
+            <TabsTrigger value="tokens">Jetons</TabsTrigger>
           </TabsList>
 
           <TabsContent value="users">
@@ -431,6 +483,20 @@ const SuperAdminDashboard = () => {
                     ))}
                   </TableBody>
                 </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="tokens">
+            <Card>
+              <CardHeader>
+                <CardTitle>Transactions de Jetons</CardTitle>
+                <CardDescription>
+                  Historique complet des achats de jetons par les vendeurs
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <TokenTransactionsSuperAdmin />
               </CardContent>
             </Card>
           </TabsContent>

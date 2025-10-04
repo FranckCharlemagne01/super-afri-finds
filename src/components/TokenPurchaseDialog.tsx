@@ -24,8 +24,8 @@ interface TokenPackage {
 const tokenPackages: TokenPackage[] = [
   { tokens: 5, price: 1000, label: '5 Jetons' },
   { tokens: 12, price: 2000, label: '12 Jetons', popular: true },
-  { tokens: 20, price: 3500, label: '20 Jetons' },
-  { tokens: 50, price: 8000, label: '50 Jetons' },
+  { tokens: 30, price: 5000, label: '30 Jetons' },
+  { tokens: 65, price: 10000, label: '65 Jetons' },
 ];
 
 type PaymentMethod = 'orange_money' | 'mtn_money' | 'moov_money' | 'wave_money' | 'card';
@@ -99,8 +99,9 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
       if (verifyError) throw verifyError;
 
       toast({
-        title: '✅ Paiement réussi',
-        description: `Vous avez reçu ${selectedPackage?.tokens} jetons`,
+        title: '✅ Paiement réussi !',
+        description: `🎉 ${selectedPackage?.tokens} jetons ont été ajoutés à votre compte`,
+        duration: 5000,
       });
       
       // Rafraîchir le solde

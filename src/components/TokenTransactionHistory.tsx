@@ -106,7 +106,7 @@ export const TokenTransactionHistory = () => {
                           {format(new Date(transaction.created_at), 'PPp', { locale: fr })}
                         </p>
                         
-                        {transaction.payment_method && (
+                        {transaction.payment_method && transaction.transaction_type === 'purchase' && (
                           <p className="text-xs font-medium text-primary flex items-center gap-1">
                             <span>💳</span>
                             {getPaymentMethodLabel(transaction.payment_method)}
@@ -119,6 +119,13 @@ export const TokenTransactionHistory = () => {
                               ? `${Math.abs(transaction.tokens_amount)} jetons utilisés`
                               : `${Math.abs(transaction.tokens_amount)} jeton utilisé`
                             }
+                          </p>
+                        )}
+                        
+                        {transaction.transaction_type === 'purchase' && (
+                          <p className="text-xs font-semibold text-green-600 flex items-center gap-1">
+                            <span>✅</span>
+                            +{transaction.tokens_amount} jetons reçus
                           </p>
                         )}
                       </div>

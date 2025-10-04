@@ -111,11 +111,15 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
         duration: 5000,
       });
       
-      // Attendre un peu avant de rafraîchir pour que la base de données soit mise à jour
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Attendre pour que la base de données soit mise à jour
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      console.log('🔄 Rafraîchissement du solde de jetons...');
       
       // Rafraîchir le solde
       await onPurchaseComplete();
+      
+      console.log('✅ Solde rafraîchi');
       
       // Fermer le dialog
       onOpenChange(false);
@@ -162,6 +166,7 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
           amount: selectedPackage.price,
           payment_type: 'tokens',
           tokens_amount: selectedPackage.tokens,
+          payment_method: selectedPayment,
         },
       });
 

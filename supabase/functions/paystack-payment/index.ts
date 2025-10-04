@@ -115,12 +115,14 @@ serve(async (req) => {
     const { action, ...payload } = await req.json();
 
     if (action === 'initialize_payment') {
-      const { user_id, email, amount = 1000, payment_type = 'article_publication', product_data, tokens_amount } = payload;
+      const { user_id, email, amount = 1000, payment_type = 'article_publication', product_data, tokens_amount, payment_method } = payload;
       
       console.log('Initializing payment for user:', user_id);
 
-      // Generate unique reference
-      const reference = `premium_${user_id}_${Date.now()}`;
+      // Generate unique reference based on payment type
+      const reference = payment_type === 'tokens' 
+        ? `tokens_${user_id}_${Date.now()}`
+        : `premium_${user_id}_${Date.now()}`;
 
       // Store payment record in database
       const { error: dbError } = await supabase
@@ -145,6 +147,8 @@ serve(async (req) => {
 
       // Si c'est un achat de jetons, créer aussi la transaction
       if (payment_type === 'tokens' && tokens_amount) {
+        console.log(`💰 Creating token transaction: ${tokens_amount} tokens for ${amount} FCFA`);
+        
         const { error: tokenTxError } = await supabase
           .from('token_transactions')
           .insert({
@@ -153,12 +157,14 @@ serve(async (req) => {
             tokens_amount: tokens_amount,
             price_paid: amount,
             paystack_reference: reference,
-            payment_method: payload.payment_method || 'card',
+            payment_method: payment_method || 'card',
             status: 'pending'
           });
 
         if (tokenTxError) {
-          console.error('Error creating token transaction:', tokenTxError);
+          console.error('❌ Error creating token transaction:', tokenTxError);
+        } else {
+          console.log('✅ Token transaction created with reference:', reference);
         }
       }
 
@@ -179,6 +185,7 @@ serve(async (req) => {
             user_id,
             payment_type,
             tokens_amount,
+            payment_method,
             product: payment_type === 'tokens' ? `Achat de ${tokens_amount} jetons` : (payment_type === 'article_publication' ? 'Publication d\'article' : 'Premium Seller Access')
           }
         }),
@@ -256,8 +263,12 @@ serve(async (req) => {
             seller_id: paymentRecord.user_id,
             tokens_amount: tokensAmount,
             price_paid: paystackData.data.amount / 100,
-            reference
+            reference,
+            metadata: paystackData.data.metadata
           });
+          
+          // Initialiser les jetons du vendeur si nécessaire
+          await supabase.rpc('initialize_seller_tokens', { _seller_id: paymentRecord.user_id });
           
           updateError = (await supabase
             .rpc('add_tokens_after_purchase', {
@@ -270,7 +281,16 @@ serve(async (req) => {
           if (updateError) {
             console.error('❌ Error adding tokens:', updateError);
           } else {
-            console.log('✅ Tokens added successfully');
+            console.log('✅ Tokens added successfully to seller:', paymentRecord.user_id);
+            
+            // Vérifier que les jetons ont bien été ajoutés
+            const { data: tokenData } = await supabase
+              .from('seller_tokens')
+              .select('token_balance')
+              .eq('seller_id', paymentRecord.user_id)
+              .single();
+            
+            console.log('📊 New token balance:', tokenData?.token_balance);
           }
         } else if (paymentRecord.payment_type === 'article_publication') {
           // Publication d'article

@@ -55,6 +55,22 @@ const Auth = () => {
     }
   }, [searchParams]);
 
+  // Rediriger automatiquement les utilisateurs connectés vers leur dashboard
+  useEffect(() => {
+    if (user && !updatePasswordMode && registrationSuccess) {
+      toast({
+        title: "✅ Inscription réussie !",
+        description: "Bienvenue sur Djassa.",
+        duration: 3000,
+      });
+      
+      // Rediriger vers le tableau de bord approprié
+      setTimeout(() => {
+        navigate('/');
+      }, 500);
+    }
+  }, [user, updatePasswordMode, registrationSuccess, navigate, toast]);
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -134,7 +150,7 @@ const Auth = () => {
         } else {
           toast({
             title: "❌ Erreur d'inscription",
-            description: error.message,
+            description: "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
             variant: "destructive",
             duration: 5000,
           });

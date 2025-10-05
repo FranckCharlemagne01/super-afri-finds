@@ -431,21 +431,30 @@ export type Database = {
       seller_tokens: {
         Row: {
           created_at: string
+          free_tokens_count: number | null
+          free_tokens_expires_at: string | null
           id: string
+          paid_tokens_count: number | null
           seller_id: string
           token_balance: number
           updated_at: string
         }
         Insert: {
           created_at?: string
+          free_tokens_count?: number | null
+          free_tokens_expires_at?: string | null
           id?: string
+          paid_tokens_count?: number | null
           seller_id: string
           token_balance?: number
           updated_at?: string
         }
         Update: {
           created_at?: string
+          free_tokens_count?: number | null
+          free_tokens_expires_at?: string | null
           id?: string
+          paid_tokens_count?: number | null
           seller_id?: string
           token_balance?: number
           updated_at?: string
@@ -595,6 +604,10 @@ export type Database = {
         Args: { _product_id: string; _seller_id: string }
         Returns: boolean
       }
+      expire_free_tokens: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       get_admin_statistics: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -651,6 +664,10 @@ export type Database = {
           updated_at: string
           user_id: string
         }[]
+      }
+      grant_free_tokens_to_existing_sellers: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       grant_trial_bonus_tokens: {
         Args: { _user_id: string }

@@ -21,6 +21,7 @@ import { TokenTransactionHistory } from '@/components/TokenTransactionHistory';
 import { ProductBoostDialog } from '@/components/ProductBoostDialog';
 import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
 import { RealtimeNotificationBadge } from '@/components/RealtimeNotificationBadge';
+import { TokenBalanceCard } from '@/components/TokenBalanceCard';
 import { useNavigate } from 'react-router-dom';
 
 interface Product {
@@ -64,7 +65,7 @@ const SellerDashboard = () => {
   const { user, signOut, userId } = useStableAuth();
   const { isSeller, isSuperAdmin, loading: roleLoading, refreshRole } = useStableRole();
   const trialStatus = useTrialStatus();
-  const { tokenBalance, refreshBalance } = useTokens();
+  const { tokenBalance, freeTokens, paidTokens, freeTokensExpiresAt, refreshBalance } = useTokens();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [showProductForm, setShowProductForm] = useState(false);
@@ -477,37 +478,30 @@ const SellerDashboard = () => {
         {/* Nouvelles commandes en attente - Notification persistante */}
         <NewOrdersAlert />
 
-        {/* Section Jetons - Affichage professionnel */}
-        {!trialStatus.isInTrial && (
-          <Card className="mb-4 lg:mb-6 border-0 shadow-lg bg-gradient-to-r from-amber-50 to-orange-50">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="h-12 w-12 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Coins className="h-6 w-6 text-amber-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Solde disponible</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-amber-700">
-                      {tokenBalance} Jeton{tokenBalance !== 1 ? 's' : ''}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      💡 Chaque publication consomme 1 jeton
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  onClick={() => setShowTokenPurchase(true)}
-                  className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white shadow-md"
-                  size="lg"
-                >
-                  <Coins className="mr-2 h-5 w-5" />
-                  Acheter des Jetons
-                </Button>
-              </div>
-            </CardContent>
+        {/* Section Jetons - Affichage avec détails */}
+        <div className="mb-4 lg:mb-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2">
+            <TokenBalanceCard
+              totalTokens={tokenBalance}
+              freeTokens={freeTokens}
+              paidTokens={paidTokens}
+              expiresAt={freeTokensExpiresAt}
+            />
+          </div>
+          <Card className="p-6 flex flex-col justify-center items-center text-center bg-gradient-to-br from-amber-50 to-orange-50">
+            <Coins className="h-12 w-12 text-amber-600 mb-3" />
+            <h3 className="font-semibold mb-2">Besoin de plus de jetons ?</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Achetez des jetons pour continuer à publier vos produits
+            </p>
+            <Button
+              onClick={() => setShowTokenPurchase(true)}
+              className="w-full bg-amber-600 hover:bg-amber-700"
+            >
+              Acheter maintenant
+            </Button>
           </Card>
-        )}
+        </div>
 
         {/* Stats Cards - Mobile optimized */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 mb-4 lg:mb-8">

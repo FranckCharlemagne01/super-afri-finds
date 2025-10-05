@@ -7,6 +7,9 @@ export interface TokenBalance {
   id: string;
   seller_id: string;
   token_balance: number;
+  free_tokens_count: number;
+  paid_tokens_count: number;
+  free_tokens_expires_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -34,6 +37,9 @@ interface TrialBonusResult {
 export const useTokens = () => {
   const { user } = useAuth();
   const [tokenBalance, setTokenBalance] = useState<number>(0);
+  const [freeTokens, setFreeTokens] = useState<number>(0);
+  const [paidTokens, setPaidTokens] = useState<number>(0);
+  const [freeTokensExpiresAt, setFreeTokensExpiresAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState<TokenTransaction[]>([]);
 
@@ -51,15 +57,21 @@ export const useTokens = () => {
 
         const { data, error } = await supabase
           .from('seller_tokens')
-          .select('token_balance')
+          .select('token_balance, free_tokens_count, paid_tokens_count, free_tokens_expires_at')
           .eq('seller_id', user.id)
           .maybeSingle();
 
         if (error) {
           console.error('Error fetching token balance:', error);
           setTokenBalance(0);
+          setFreeTokens(0);
+          setPaidTokens(0);
+          setFreeTokensExpiresAt(null);
         } else {
           setTokenBalance(data?.token_balance || 0);
+          setFreeTokens(data?.free_tokens_count || 0);
+          setPaidTokens(data?.paid_tokens_count || 0);
+          setFreeTokensExpiresAt(data?.free_tokens_expires_at || null);
         }
       } catch (error) {
         console.error('Error fetching token balance:', error);
@@ -103,7 +115,7 @@ export const useTokens = () => {
       
       const { data, error } = await supabase
         .from('seller_tokens')
-        .select('token_balance')
+        .select('token_balance, free_tokens_count, paid_tokens_count, free_tokens_expires_at')
         .eq('seller_id', user.id)
         .maybeSingle();
 
@@ -111,8 +123,14 @@ export const useTokens = () => {
         console.error('Error refreshing token balance:', error);
       } else {
         const newBalance = data?.token_balance || 0;
+        const newFreeTokens = data?.free_tokens_count || 0;
+        const newPaidTokens = data?.paid_tokens_count || 0;
+        const newExpiresAt = data?.free_tokens_expires_at || null;
         console.log('✅ Nouveau solde de jetons:', newBalance);
         setTokenBalance(newBalance);
+        setFreeTokens(newFreeTokens);
+        setPaidTokens(newPaidTokens);
+        setFreeTokensExpiresAt(newExpiresAt);
       }
     } catch (error) {
       console.error('Error refreshing token balance:', error);
@@ -121,6 +139,9 @@ export const useTokens = () => {
 
   return {
     tokenBalance,
+    freeTokens,
+    paidTokens,
+    freeTokensExpiresAt,
     loading,
     transactions,
     fetchTransactions,

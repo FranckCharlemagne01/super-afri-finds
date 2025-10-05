@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Users, ShoppingBag, TrendingUp, DollarSign, Eye, Edit, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { TokenTransactionsSuperAdmin } from '@/components/TokenTransactionsSuperAdmin';
+import { TokenStatsSuperAdmin } from '@/components/TokenStatsSuperAdmin';
 
 interface UserProfile {
   id: string;
@@ -487,7 +488,8 @@ const SuperAdminDashboard = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="tokens">
+          <TabsContent value="tokens" className="space-y-6">
+            <TokenStatsSuperAdmin />
             <Card>
               <CardHeader>
                 <CardTitle>Transactions de Jetons</CardTitle>

@@ -6,6 +6,7 @@ import PromoBanner from "@/components/PromoBanner";
 import { FloatingChatWidget } from "@/components/FloatingChatWidget";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 import FAQ from "@/components/FAQ";
+import { FeaturedProducts } from "@/components/FeaturedProducts";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -325,6 +326,9 @@ const Index = () => {
 
         {/* Promotional Banner */}
         <PromoBanner onShowSellerUpgrade={() => setShowSellerUpgrade(true)} />
+
+        {/* Featured/Boosted Products Section */}
+        <FeaturedProducts />
 
         {/* Categories */}
         <section id="popular-categories" className="mb-6 sm:mb-8">

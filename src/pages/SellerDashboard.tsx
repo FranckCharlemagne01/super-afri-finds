@@ -23,6 +23,17 @@ import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
 import { RealtimeNotificationBadge } from '@/components/RealtimeNotificationBadge';
 import { TokenBalanceCard } from '@/components/TokenBalanceCard';
 import { useNavigate } from 'react-router-dom';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -71,6 +82,7 @@ const SellerDashboard = () => {
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [showTokenPurchase, setShowTokenPurchase] = useState(false);
+  const [showNoTokensDialog, setShowNoTokensDialog] = useState(false);
   const [showBoostDialog, setShowBoostDialog] = useState(false);
   const [boostingProduct, setBoostingProduct] = useState<{ id: string; title: string } | null>(null);
   
@@ -585,21 +597,66 @@ const SellerDashboard = () => {
             <div className="flex flex-col gap-2 sm:gap-3 lg:flex-row lg:justify-between lg:items-center">
               <h2 className="text-base sm:text-lg lg:text-xl font-semibold">Gestion des Produits</h2>
               <Button 
-                onClick={() => setShowProductForm(true)}
-                disabled={!trialStatus.canPublish}
-                className={`flex items-center justify-center gap-2 w-full lg:w-auto h-11 sm:h-10 text-sm ${!trialStatus.canPublish ? "opacity-50 cursor-not-allowed" : ""}`}
+                onClick={() => {
+                  if (tokenBalance <= 0) {
+                    setShowNoTokensDialog(true);
+                  } else {
+                    setShowProductForm(true);
+                  }
+                }}
+                disabled={tokenBalance <= 0}
+                className={tokenBalance <= 0 
+                  ? "flex items-center justify-center gap-2 w-full lg:w-auto h-11 sm:h-10 text-sm cursor-not-allowed opacity-60 bg-muted text-muted-foreground"
+                  : "flex items-center justify-center gap-2 w-full lg:w-auto h-11 sm:h-10 text-sm"
+                }
                 size="sm"
               >
-                <Plus className="h-4 w-4 flex-shrink-0" />
-                <span className="truncate">
-                  {trialStatus.isInTrial 
-                    ? "Publier un Article (Gratuit - Essai)" 
-                    : trialStatus.canPublish 
-                      ? "Publier un Article (1000 FCFA)" 
-                      : "Période d'essai expirée"}
-                </span>
+                {tokenBalance <= 0 ? (
+                  <>
+                    <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">Jetons épuisés — Achetez des jetons pour publier</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">Publier un produit</span>
+                  </>
+                )}
               </Button>
             </div>
+            
+            {/* Dialog pour absence de jetons */}
+            <AlertDialog open={showNoTokensDialog} onOpenChange={setShowNoTokensDialog}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                    ❌ Jetons épuisés
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="space-y-3 pt-2">
+                    <p className="text-base">
+                      Vous n'avez plus de jetons disponibles.
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Veuillez acheter des jetons pour continuer à publier vos produits.
+                    </p>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Fermer</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => {
+                      setShowNoTokensDialog(false);
+                      setShowTokenPurchase(true);
+                    }}
+                    className="bg-primary hover:bg-primary/90"
+                  >
+                    <Coins className="w-4 h-4 mr-2" />
+                    Acheter des jetons maintenant
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
 
             {showProductForm && (
               <Card className="border-0 shadow-md">

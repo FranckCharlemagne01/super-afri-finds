@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrialStatus } from '@/hooks/useTrialStatus';
+import { useTokens } from '@/hooks/useTokens';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
 import { Camera, Image as ImageIcon, X } from 'lucide-react';
 
 interface Product {
@@ -80,6 +83,7 @@ const categoryDefaults = {
 export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => {
   const { user } = useAuth();
   const trialStatus = useTrialStatus();
+  const { tokenBalance, loading: tokensLoading, refreshBalance } = useTokens();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [loading, setLoading] = useState(false);
@@ -243,7 +247,7 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
       };
 
       if (product?.id) {
-        // Update existing product (no payment required)
+        // Update existing product (no token required)
         const { error: updateError } = await supabase
           .from('products')
           .update(productData)
@@ -258,34 +262,51 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
 
         onSave();
       } else {
-        // New product - check trial status
-        if (!trialStatus.canPublish) {
+        // New product - check token balance
+        if (tokenBalance <= 0) {
           toast({
-            title: "Période d'essai expirée",
-            description: "Vous devez passer au Premium pour publier de nouveaux articles.",
+            title: "❌ Jetons insuffisants",
+            description: "Vous n'avez plus de jetons disponibles pour publier un produit. Veuillez acheter des jetons pour continuer.",
             variant: "destructive",
           });
           return;
         }
 
-        // If in trial period, save directly without payment
-        if (trialStatus.isInTrial) {
-          const { error: insertError } = await supabase
-            .from('products')
-            .insert(productData);
-          
-          if (insertError) throw insertError;
+        // Insert the product
+        const { data: insertedProduct, error: insertError } = await supabase
+          .from('products')
+          .insert(productData)
+          .select('id')
+          .single();
+        
+        if (insertError) throw insertError;
 
-          toast({
-            title: "✅ Article publié gratuitement",
-            description: "Votre article a été publié pendant votre période d'essai !",
+        // Consume 1 token for publication
+        const { data: tokenConsumed, error: tokenError } = await supabase
+          .rpc('consume_token_for_publication', {
+            _seller_id: user.id,
+            _product_id: insertedProduct.id
           });
 
-          onSave();
-        } else {
-          // Not in trial and not premium - initiate payment process
-          handlePublishWithPayment(productData);
+        if (tokenError || !tokenConsumed) {
+          console.error('Error consuming token:', tokenError);
+          // Product was created but token wasn't consumed - this shouldn't happen
+          toast({
+            title: "⚠️ Avertissement",
+            description: "Produit publié mais erreur lors de la déduction du jeton. Contactez le support.",
+            variant: "destructive",
+          });
         }
+
+        // Refresh token balance
+        await refreshBalance();
+
+        toast({
+          title: "✅ Article publié avec succès",
+          description: `Votre article a été publié ! Il vous reste ${tokenBalance - 1} jeton${tokenBalance - 1 > 1 ? 's' : ''}.`,
+        });
+
+        onSave();
       }
     } catch (error) {
       console.error('Error saving product:', error);
@@ -699,6 +720,28 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
         </div>
       </div>
 
+      {/* Alert if no tokens available for new product */}
+      {!product?.id && tokenBalance <= 0 && !tokensLoading && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            ⚠️ Vous n'avez plus de jetons disponibles pour publier un produit. 
+            Veuillez acheter des jetons pour continuer.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Alert if low tokens */}
+      {!product?.id && tokenBalance > 0 && tokenBalance < 5 && !tokensLoading && (
+        <Alert className="border-orange-500 bg-orange-50">
+          <AlertTriangle className="h-4 w-4 text-orange-600" />
+          <AlertDescription className="text-orange-800">
+            ⚠️ Attention ! Il ne vous reste que {tokenBalance} jeton{tokenBalance > 1 ? 's' : ''}. 
+            Pensez à recharger bientôt.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'justify-end space-x-2'}`}>
         <Button 
           type="button" 
@@ -710,16 +753,16 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
         </Button>
         <Button 
           type="submit" 
-          disabled={loading || uploadingVideo || uploadingImages || (!product?.id && !trialStatus.canPublish)}
+          disabled={loading || uploadingVideo || uploadingImages || tokensLoading || (!product?.id && tokenBalance <= 0)}
           className={isMobile ? "w-full" : ""}
         >
           {loading ? 'Sauvegarde...' : 
            uploadingImages ? 'Upload images...' : 
            uploadingVideo ? 'Upload vidéo...' : 
+           tokensLoading ? 'Chargement...' :
            product?.id ? 'Modifier' : 
-           trialStatus.isInTrial ? 'Publier (Gratuit - Essai)' :
-           trialStatus.canPublish ? 'Publier (1000 FCFA)' :
-           'Période d\'essai expirée'}
+           tokenBalance <= 0 ? 'Jetons insuffisants' :
+           `Publier (1 jeton)`}
         </Button>
       </div>
     </form>

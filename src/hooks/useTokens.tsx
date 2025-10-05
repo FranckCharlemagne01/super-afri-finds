@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { toast } from 'sonner';
 
 export interface TokenBalance {
   id: string;
@@ -45,20 +46,28 @@ export const useTokens = () => {
       }
 
       try {
-        // Vérifier et attribuer les jetons bonus après essai gratuit
-        const { data: bonusResult } = await supabase.rpc('grant_trial_bonus_tokens', { 
-          _user_id: user.id 
-        });
-        
-        if (bonusResult && typeof bonusResult === 'object') {
-          const result = bonusResult as unknown as TrialBonusResult;
-          if (result.success) {
-            console.log('✨ Jetons bonus attribués:', result.message);
-          }
-        }
+      // Initialiser les jetons si nécessaire
+      await supabase.rpc('initialize_seller_tokens', { _seller_id: user.id });
 
-        // Initialiser les jetons si nécessaire
-        await supabase.rpc('initialize_seller_tokens', { _seller_id: user.id });
+      // Vérifier et attribuer les jetons bonus après essai gratuit
+      const { data: bonusResult, error: bonusError } = await supabase.rpc('grant_trial_bonus_tokens', { 
+        _user_id: user.id 
+      });
+      
+      if (bonusError) {
+        console.error('❌ Erreur lors de l\'attribution des jetons bonus:', bonusError);
+      } else if (bonusResult && typeof bonusResult === 'object') {
+        const result = bonusResult as unknown as TrialBonusResult;
+        if (result.success) {
+          console.log('✨ Jetons bonus attribués:', result.message);
+          toast.success('🎁 Bienvenue !', {
+            description: `Vous avez reçu 20 jetons gratuits pour tester nos fonctionnalités premium !`,
+            duration: 6000,
+          });
+        } else if (result.error) {
+          console.log('ℹ️ Jetons bonus:', result.message || result.error);
+        }
+      }
 
         const { data, error } = await supabase
           .from('seller_tokens')

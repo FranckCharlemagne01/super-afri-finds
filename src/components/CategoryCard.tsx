@@ -23,6 +23,7 @@ export const CategoryCard = ({
       <div 
         className="relative overflow-hidden rounded-lg sm:rounded-xl hover-lift cursor-pointer transition-all duration-300 hover:scale-105 group"
         onClick={onClick}
+        style={{ transform: 'scale(0.85)' }}
       >
         <div className="aspect-square relative">
           <img
@@ -31,9 +32,9 @@ export const CategoryCard = ({
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-0.5 sm:p-1 md:p-1.5 text-center">
-            <h3 className="text-xs font-semibold text-white mb-0.5 line-clamp-2 leading-tight">{title}</h3>
-            <p className="text-[10px] sm:text-xs text-white/80">{itemCount} articles</p>
+          <div className="absolute bottom-0 left-0 right-0 p-1 sm:p-1.5 text-center">
+            <h3 className="text-[11px] sm:text-xs font-semibold text-white mb-0.5 line-clamp-2 leading-tight">{title}</h3>
+            <p className="text-[9px] sm:text-[10px] text-white/80">{itemCount} articles</p>
           </div>
         </div>
       </div>
@@ -45,13 +46,14 @@ export const CategoryCard = ({
     <div 
       className={`${bgColor || 'bg-primary'} p-2 sm:p-2.5 rounded-lg hover-lift cursor-pointer transition-all duration-300 hover:scale-105`}
       onClick={onClick}
+      style={{ transform: 'scale(0.85)' }}
     >
       <div className="flex flex-col items-center text-center space-y-1">
         <div className="p-1.5 bg-white/20 rounded-full">
-          {Icon && <Icon className="w-4 h-4 text-white" />}
+          {Icon && <Icon className="w-3.5 h-3.5 text-white" />}
         </div>
-        <h3 className="text-xs font-semibold text-white">{title}</h3>
-        <p className="text-[10px] text-white/80">{itemCount} articles</p>
+        <h3 className="text-[11px] font-semibold text-white">{title}</h3>
+        <p className="text-[9px] text-white/80">{itemCount} articles</p>
       </div>
     </div>
   );

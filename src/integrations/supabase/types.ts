@@ -377,6 +377,7 @@ export type Database = {
           phone: string | null
           premium_expires_at: string | null
           push_token: string | null
+          trial_bonus_tokens_given: boolean | null
           trial_end_date: string | null
           trial_start_date: string | null
           trial_used: boolean | null
@@ -397,6 +398,7 @@ export type Database = {
           phone?: string | null
           premium_expires_at?: string | null
           push_token?: string | null
+          trial_bonus_tokens_given?: boolean | null
           trial_end_date?: string | null
           trial_start_date?: string | null
           trial_used?: boolean | null
@@ -417,6 +419,7 @@ export type Database = {
           phone?: string | null
           premium_expires_at?: string | null
           push_token?: string | null
+          trial_bonus_tokens_given?: boolean | null
           trial_end_date?: string | null
           trial_start_date?: string | null
           trial_used?: boolean | null
@@ -648,6 +651,10 @@ export type Database = {
           updated_at: string
           user_id: string
         }[]
+      }
+      grant_trial_bonus_tokens: {
+        Args: { _user_id: string }
+        Returns: Json
       }
       handle_article_payment_success: {
         Args: {

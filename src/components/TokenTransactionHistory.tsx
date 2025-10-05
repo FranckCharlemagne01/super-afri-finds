@@ -32,6 +32,8 @@ export const TokenTransactionHistory = () => {
       return <ShoppingCart className="h-4 w-4 text-green-500" />;
     } else if (type === 'boost') {
       return <Coins className="h-4 w-4 text-purple-500" />;
+    } else if (type === 'trial_bonus') {
+      return <Coins className="h-4 w-4 text-blue-500" />;
     } else {
       return <Coins className="h-4 w-4 text-orange-500" />;
     }
@@ -96,6 +98,8 @@ export const TokenTransactionHistory = () => {
                             ? `Achat de ${transaction.tokens_amount} jetons`
                             : transaction.transaction_type === 'boost'
                             ? `Boost de produit`
+                            : transaction.transaction_type === 'trial_bonus'
+                            ? `🎁 Bonus de bienvenue`
                             : `Publication de produit`}
                         </p>
                       </div>
@@ -113,7 +117,7 @@ export const TokenTransactionHistory = () => {
                           </p>
                         )}
                         
-                        {transaction.transaction_type !== 'purchase' && (
+                        {transaction.transaction_type !== 'purchase' && transaction.transaction_type !== 'trial_bonus' && (
                           <p className="text-xs text-muted-foreground">
                             {transaction.transaction_type === 'boost' 
                               ? `${Math.abs(transaction.tokens_amount)} jetons utilisés`
@@ -122,10 +126,16 @@ export const TokenTransactionHistory = () => {
                           </p>
                         )}
                         
-                        {transaction.transaction_type === 'purchase' && (
+                        {(transaction.transaction_type === 'purchase' || transaction.transaction_type === 'trial_bonus') && (
                           <p className="text-xs font-semibold text-green-600 flex items-center gap-1">
                             <span>✅</span>
                             +{transaction.tokens_amount} jetons reçus
+                          </p>
+                        )}
+                        
+                        {transaction.transaction_type === 'trial_bonus' && (
+                          <p className="text-xs text-blue-600 font-medium">
+                            Jetons offerts après votre essai gratuit
                           </p>
                         )}
                       </div>

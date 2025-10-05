@@ -9,7 +9,7 @@ import { fr } from 'date-fns/locale';
 interface TokenTransaction {
   id: string;
   seller_id: string;
-  transaction_type: 'purchase' | 'usage' | 'boost';
+  transaction_type: 'purchase' | 'usage' | 'boost' | 'trial_bonus';
   tokens_amount: number;
   price_paid: number | null;
   paystack_reference: string | null;
@@ -32,11 +32,11 @@ export const TokenTransactionsSuperAdmin = () => {
 
   const fetchTransactions = async () => {
     try {
-      // Get transactions
+      // Get transactions (achats et bonus)
       const { data: transactionsData, error: transactionsError } = await supabase
         .from('token_transactions')
         .select('*')
-        .eq('transaction_type', 'purchase')
+        .in('transaction_type', ['purchase', 'trial_bonus'])
         .order('created_at', { ascending: false })
         .limit(100);
 
@@ -75,6 +75,17 @@ export const TokenTransactionsSuperAdmin = () => {
         return <Badge variant="destructive">❌ Échoué</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  const getTransactionTypeBadge = (type: string) => {
+    switch (type) {
+      case 'purchase':
+        return <Badge className="bg-purple-500">💳 Achat</Badge>;
+      case 'trial_bonus':
+        return <Badge className="bg-blue-500">🎁 Bonus essai</Badge>;
+      default:
+        return <Badge variant="outline">{type}</Badge>;
     }
   };
 
@@ -138,6 +149,7 @@ export const TokenTransactionsSuperAdmin = () => {
           <TableRow>
             <TableHead>Vendeur</TableHead>
             <TableHead>Email</TableHead>
+            <TableHead>Type</TableHead>
             <TableHead>Montant</TableHead>
             <TableHead>Jetons</TableHead>
             <TableHead>Méthode</TableHead>
@@ -156,12 +168,15 @@ export const TokenTransactionsSuperAdmin = () => {
                 {(transaction.profiles as any)?.email || 'N/A'}
               </TableCell>
               <TableCell>
+                {getTransactionTypeBadge(transaction.transaction_type)}
+              </TableCell>
+              <TableCell>
                 {transaction.price_paid ? (
                   <span className="font-semibold text-green-600">
                     {transaction.price_paid.toLocaleString()} FCFA
                   </span>
                 ) : (
-                  '-'
+                  <span className="text-blue-500 font-medium">Gratuit</span>
                 )}
               </TableCell>
               <TableCell>

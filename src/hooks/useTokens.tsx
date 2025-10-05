@@ -13,7 +13,7 @@ export interface TokenBalance {
 export interface TokenTransaction {
   id: string;
   seller_id: string;
-  transaction_type: 'purchase' | 'usage' | 'boost';
+  transaction_type: 'purchase' | 'usage' | 'boost' | 'trial_bonus';
   tokens_amount: number;
   price_paid: number | null;
   paystack_reference: string | null;
@@ -21,6 +21,13 @@ export interface TokenTransaction {
   status: 'pending' | 'completed' | 'failed';
   product_id: string | null;
   created_at: string;
+}
+
+interface TrialBonusResult {
+  success: boolean;
+  message?: string;
+  error?: string;
+  new_balance?: number;
 }
 
 export const useTokens = () => {
@@ -38,6 +45,18 @@ export const useTokens = () => {
       }
 
       try {
+        // Vérifier et attribuer les jetons bonus après essai gratuit
+        const { data: bonusResult } = await supabase.rpc('grant_trial_bonus_tokens', { 
+          _user_id: user.id 
+        });
+        
+        if (bonusResult && typeof bonusResult === 'object') {
+          const result = bonusResult as unknown as TrialBonusResult;
+          if (result.success) {
+            console.log('✨ Jetons bonus attribués:', result.message);
+          }
+        }
+
         // Initialiser les jetons si nécessaire
         await supabase.rpc('initialize_seller_tokens', { _seller_id: user.id });
 

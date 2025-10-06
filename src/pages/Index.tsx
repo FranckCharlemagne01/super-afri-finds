@@ -1,4 +1,4 @@
-import { HeroSection } from "@/components/HeroSection";
+
 import { ProductCard } from "@/components/ProductCard";
 import { CategoryCard } from "@/components/CategoryCard";
 import { SearchBar } from "@/components/SearchBar";
@@ -6,7 +6,7 @@ import PromoBanner from "@/components/PromoBanner";
 import { FloatingChatWidget } from "@/components/FloatingChatWidget";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 import FAQ from "@/components/FAQ";
-import { BoostedProductsSection } from "@/components/BoostedProductsSection";
+
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { CategorySidebar } from "@/components/CategorySidebar";
 import { useState, useEffect } from "react";
@@ -327,27 +327,47 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
-        {/* Hero Carousel - Produits Vedettes */}
-        <HeroCarousel />
-
-        {/* Layout with Sidebar and Content */}
-        <div className="flex gap-6">
+        {/* Layout with Sidebar and Hero Carousel */}
+        <div className="flex gap-4 lg:gap-6 mb-6">
           {/* Category Sidebar - Desktop only */}
           <CategorySidebar />
 
-          {/* Main content area */}
+          {/* Hero Carousel - Produits Vedettes (Center) */}
           <div className="flex-1 min-w-0">
-            {/* Hero Section */}
-            <HeroSection />
+            <HeroCarousel />
+          </div>
 
-            {/* Promotional Banner */}
-            <PromoBanner onShowSellerUpgrade={() => setShowSellerUpgrade(true)} />
+          {/* Secondary Banners - Desktop only */}
+          <div className="hidden xl:flex flex-col gap-3 w-64">
+            <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg p-4 h-[184px] flex flex-col justify-between">
+              <div>
+                <p className="text-xs font-semibold text-purple-600 mb-1">🎁 OFFRE SPÉCIALE</p>
+                <h3 className="text-sm font-bold text-purple-900 mb-1">Nouveaux vendeurs</h3>
+                <p className="text-xs text-purple-700">28 jours gratuits</p>
+              </div>
+              <Button size="sm" className="w-full bg-purple-600 hover:bg-purple-700 text-white text-xs">
+                Commencer
+              </Button>
+            </div>
+            
+            <div className="bg-gradient-to-br from-blue-100 to-cyan-100 rounded-lg p-4 h-[184px] flex flex-col justify-between">
+              <div>
+                <p className="text-xs font-semibold text-blue-600 mb-1">⚡ LIVRAISON</p>
+                <h3 className="text-sm font-bold text-blue-900 mb-1">Rapide partout</h3>
+                <p className="text-xs text-blue-700">2-5 jours en CI</p>
+              </div>
+              <Button size="sm" variant="outline" className="w-full border-blue-600 text-blue-600 hover:bg-blue-50 text-xs">
+                En savoir +
+              </Button>
+            </div>
+          </div>
+        </div>
 
-            {/* Boosted Products Section - Above Categories */}
-            <BoostedProductsSection />
+        {/* Promotional Banner */}
+        <PromoBanner onShowSellerUpgrade={() => setShowSellerUpgrade(true)} />
 
-            {/* Categories */}
-            <section id="popular-categories" className="mb-6 sm:mb-8">
+        {/* Categories */}
+        <section id="popular-categories" className="mb-6 sm:mb-8">
           <div className="flex items-center justify-between mb-3 sm:mb-4">
             <h2 className="text-lg sm:text-xl font-bold text-foreground">Catégories populaires</h2>
             <Button variant="ghost" size="sm" onClick={handleViewAllCategories} className="text-xs sm:text-sm">
@@ -447,8 +467,6 @@ const Index = () => {
             </Button>
           </div>
         </section>
-          </div>
-        </div>
       </main>
 
       {/* FAQ Section */}

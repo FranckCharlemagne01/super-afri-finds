@@ -75,102 +75,143 @@ export const HeroCarousel = () => {
 
   const currentProduct = boostedProducts[currentIndex];
 
+  // Sample products for the banner
+  const sampleProducts = [
+    { name: "Chaussures", price: "17 000", emoji: "👟" },
+    { name: "Sac à main", price: "20 000", emoji: "👜" },
+    { name: "Robe", price: "15 000", emoji: "👗" },
+    { name: "Chemise", price: "12 000", emoji: "👔" }
+  ];
+
   return (
-    <div className="relative w-full h-64 md:h-80 lg:h-96 rounded-xl overflow-hidden mb-6 group">
-      {/* Background gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-red-500/10 z-10" />
-      
-      {/* Product image */}
-      <img
-        src={currentProduct.images[0] || "/placeholder.svg"}
-        alt={currentProduct.title}
-        className="absolute inset-0 w-full h-full object-cover"
-      />
-      
-      {/* Dark overlay for text readability */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent z-20" />
+    <div className="mb-6">
+      {/* Main Hero Carousel */}
+      <div className="relative w-full h-64 md:h-80 lg:h-96 rounded-xl overflow-hidden mb-3 group">
+        {/* Background gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-red-500/10 z-10" />
+        
+        {/* Product image */}
+        <img
+          src={currentProduct.images[0] || "/placeholder.svg"}
+          alt={currentProduct.title}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent z-20" />
 
-      {/* Content */}
-      <div className="absolute inset-0 z-30 flex items-center">
-        <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          <div className="max-w-xl">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-full mb-4 shadow-lg">
-              <Star className="w-4 h-4 fill-current" />
-              <span className="text-sm font-bold">Produit Vedette</span>
-            </div>
+        {/* Content */}
+        <div className="absolute inset-0 z-30 flex items-center">
+          <div className="container mx-auto px-4 md:px-6 lg:px-8">
+            <div className="max-w-xl">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-full mb-4 shadow-lg">
+                <Star className="w-4 h-4 fill-current" />
+                <span className="text-sm font-bold">Produit Vedette</span>
+              </div>
 
-            {/* Title */}
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-3 line-clamp-2">
-              {currentProduct.title}
-            </h2>
+              {/* Title */}
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-3 line-clamp-2">
+                {currentProduct.title}
+              </h2>
 
-            {/* Description */}
-            <p className="text-white/90 text-sm md:text-base mb-4 line-clamp-2">
-              {currentProduct.description}
-            </p>
+              {/* Description */}
+              <p className="text-white/90 text-sm md:text-base mb-4 line-clamp-2">
+                {currentProduct.description}
+              </p>
 
-            {/* Price */}
-            <div className="flex items-baseline gap-3 mb-6">
-              <span className="text-3xl md:text-4xl font-bold text-amber-400">
-                {currentProduct.price.toLocaleString()} FCFA
-              </span>
-              {currentProduct.original_price && (
-                <div className="flex items-center gap-2">
-                  <span className="text-lg text-white/60 line-through">
-                    {currentProduct.original_price.toLocaleString()} FCFA
-                  </span>
-                  {currentProduct.discount_percentage && (
-                    <span className="bg-red-500 text-white px-2 py-1 rounded text-sm font-bold">
-                      -{currentProduct.discount_percentage}%
+              {/* Price */}
+              <div className="flex items-baseline gap-3 mb-6">
+                <span className="text-3xl md:text-4xl font-bold text-amber-400">
+                  {currentProduct.price.toLocaleString()} FCFA
+                </span>
+                {currentProduct.original_price && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg text-white/60 line-through">
+                      {currentProduct.original_price.toLocaleString()} FCFA
                     </span>
-                  )}
-                </div>
-              )}
-            </div>
+                    {currentProduct.discount_percentage && (
+                      <span className="bg-red-500 text-white px-2 py-1 rounded text-sm font-bold">
+                        -{currentProduct.discount_percentage}%
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
 
-            {/* CTA Button */}
-            <Button
-              size="lg"
-              className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold shadow-xl"
-              onClick={() => navigate(`/product/${currentProduct.id}`)}
-            >
-              Découvrir maintenant
-            </Button>
+              {/* CTA Button */}
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold shadow-xl"
+                onClick={() => navigate(`/product/${currentProduct.id}`)}
+              >
+                Découvrir maintenant
+              </Button>
+            </div>
           </div>
+        </div>
+
+        {/* Navigation arrows */}
+        <button
+          onClick={goToPrevious}
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-40 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-2 md:p-3 rounded-full transition-all opacity-0 group-hover:opacity-100"
+          aria-label="Produit précédent"
+        >
+          <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
+        </button>
+        <button
+          onClick={goToNext}
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-40 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-2 md:p-3 rounded-full transition-all opacity-0 group-hover:opacity-100"
+          aria-label="Produit suivant"
+        >
+          <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+        </button>
+
+        {/* Dots indicator */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 flex gap-2">
+          {boostedProducts.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentIndex(index)}
+              className={`w-2 h-2 rounded-full transition-all ${
+                index === currentIndex
+                  ? "bg-white w-8"
+                  : "bg-white/50 hover:bg-white/75"
+              }`}
+              aria-label={`Aller au produit ${index + 1}`}
+            />
+          ))}
         </div>
       </div>
 
-      {/* Navigation arrows */}
-      <button
-        onClick={goToPrevious}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-40 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-2 md:p-3 rounded-full transition-all opacity-0 group-hover:opacity-100"
-        aria-label="Produit précédent"
-      >
-        <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
-      </button>
-      <button
-        onClick={goToNext}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-40 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-2 md:p-3 rounded-full transition-all opacity-0 group-hover:opacity-100"
-        aria-label="Produit suivant"
-      >
-        <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
-      </button>
+      {/* Buy & Resell Banner */}
+      <div className="w-full bg-gradient-to-r from-orange-100 via-amber-50 to-yellow-100 rounded-xl shadow-md border border-orange-200/50 p-4 md:p-6">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          {/* Left: Text */}
+          <div className="flex-shrink-0">
+            <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-orange-900">
+              🛍️ Achetez & Revendez sur Djassa
+            </h3>
+          </div>
 
-      {/* Dots indicator */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 flex gap-2">
-        {boostedProducts.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentIndex(index)}
-            className={`w-2 h-2 rounded-full transition-all ${
-              index === currentIndex
-                ? "bg-white w-8"
-                : "bg-white/50 hover:bg-white/75"
-            }`}
-            aria-label={`Aller au produit ${index + 1}`}
-          />
-        ))}
+          {/* Right: Product miniatures */}
+          <div className="flex items-center gap-3 md:gap-4 overflow-x-auto w-full md:w-auto justify-center md:justify-end">
+            {sampleProducts.map((product, index) => (
+              <div
+                key={index}
+                className="flex-shrink-0 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-3 min-w-[90px] text-center"
+              >
+                <div className="text-3xl md:text-4xl mb-2">{product.emoji}</div>
+                <p className="text-xs text-gray-600 mb-1 font-medium truncate">
+                  {product.name}
+                </p>
+                <p className="text-sm font-bold text-orange-600">
+                  {product.price} <span className="text-xs">FCFA</span>
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

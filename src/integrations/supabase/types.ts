@@ -568,17 +568,7 @@ export type Database = {
       }
     }
     Views: {
-      suspicious_order_access: {
-        Row: {
-          access_count: number | null
-          access_types: string[] | null
-          accessed_by: string | null
-          first_access: string | null
-          last_access: string | null
-          unique_orders_accessed: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       add_tokens_after_purchase: {
@@ -675,6 +665,17 @@ export type Database = {
           status: string
           total_amount: number
           updated_at: string
+        }[]
+      }
+      get_suspicious_order_access: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          access_count: number
+          access_types: string[]
+          accessed_by: string
+          first_access: string
+          last_access: string
+          unique_orders_accessed: number
         }[]
       }
       get_user_role: {

@@ -6,7 +6,7 @@ import PromoBanner from "@/components/PromoBanner";
 import { FloatingChatWidget } from "@/components/FloatingChatWidget";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 import FAQ from "@/components/FAQ";
-import { FeaturedProducts } from "@/components/FeaturedProducts";
+import { BoostedProductsSection } from "@/components/BoostedProductsSection";
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { CategorySidebar } from "@/components/CategorySidebar";
 import { useState, useEffect } from "react";
@@ -343,8 +343,8 @@ const Index = () => {
             {/* Promotional Banner */}
             <PromoBanner onShowSellerUpgrade={() => setShowSellerUpgrade(true)} />
 
-            {/* Featured/Boosted Products Section */}
-            <FeaturedProducts />
+            {/* Boosted Products Section - Above Categories */}
+            <BoostedProductsSection />
 
             {/* Categories */}
             <section id="popular-categories" className="mb-6 sm:mb-8">

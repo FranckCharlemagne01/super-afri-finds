@@ -600,8 +600,12 @@ export type Database = {
         Args: { order_id: string }
         Returns: Json
       }
+      check_token_balance: {
+        Args: { _seller_id: string }
+        Returns: Json
+      }
       consume_token_for_publication: {
-        Args: { _product_id: string; _seller_id: string }
+        Args: { _product_id?: string; _seller_id: string }
         Returns: boolean
       }
       expire_free_tokens: {

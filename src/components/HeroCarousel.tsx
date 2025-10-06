@@ -192,40 +192,30 @@ export const HeroCarousel = () => {
         </div>
       </div>
 
-      {/* Buy & Resell Banner - Inspired by Temu/Akiba */}
-      <div className="w-full bg-gradient-to-r from-orange-500 via-orange-500 to-orange-400 rounded-2xl shadow-2xl overflow-hidden">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 p-6 md:p-8">
-          {/* Left: Bold Text */}
-          <div className="flex-shrink-0 z-10 text-center md:text-left">
-            <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-white leading-tight animate-fade-in">
-              Achetez & Revendez
+      {/* Buy & Resell Banner - Compact horizontal style */}
+      <div className="w-full bg-gradient-to-r from-orange-100 via-amber-50 to-yellow-100 rounded-xl shadow-md border border-orange-200/30 overflow-hidden">
+        <div className="flex flex-row items-center justify-between gap-4 px-4 md:px-6 py-3">
+          {/* Left: Compact Text */}
+          <div className="flex-shrink-0 z-10">
+            <h3 className="text-base md:text-lg lg:text-xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent animate-pulse-slow whitespace-nowrap">
+              🛍️ Achetez & Revendez sur Djassa
             </h3>
-            <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-white leading-tight animate-fade-in">
-              sur Djassa
-            </h3>
-            <p className="text-sm md:text-base text-white/90 mt-2 font-medium">
+            <p className="text-xs text-gray-600 mt-0.5 hidden md:block">
               Des milliers de produits à découvrir !
             </p>
           </div>
 
-          {/* Right: Scrolling Product Cards */}
-          <div className="relative flex-1 w-full md:w-auto overflow-hidden">
-            <div className="flex items-stretch gap-4 animate-scroll-products">
+          {/* Right: Compact Scrolling Product Cards */}
+          <div className="relative flex-1 overflow-hidden">
+            <div className="flex items-center gap-2 animate-scroll-products">
               {/* Duplicate products for seamless infinite loop */}
               {[...sampleProducts, ...sampleProducts].map((product, index) => (
                 <div
                   key={index}
-                  className="flex-shrink-0 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden min-w-[140px] hover:scale-105 cursor-pointer"
+                  className="flex-shrink-0 bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden min-w-[90px] hover:scale-105 cursor-pointer border border-orange-100/50"
                 >
-                  {/* Product Name Header */}
-                  <div className="bg-white px-3 py-2 border-b border-gray-100">
-                    <p className="text-xs md:text-sm font-bold text-orange-600 text-center tracking-wide">
-                      {product.name}
-                    </p>
-                  </div>
-                  
-                  {/* Product Image */}
-                  <div className="aspect-square bg-gray-50 p-3">
+                  {/* Compact Product Image */}
+                  <div className="aspect-square bg-gray-50 p-2">
                     <img
                       src={product.image}
                       alt={product.name}
@@ -233,9 +223,12 @@ export const HeroCarousel = () => {
                     />
                   </div>
                   
-                  {/* Price Badge */}
-                  <div className="bg-yellow-400 px-3 py-2">
-                    <p className="text-sm md:text-base font-black text-gray-900 text-center">
+                  {/* Compact Info */}
+                  <div className="px-2 py-1.5 bg-white">
+                    <p className="text-[10px] font-semibold text-orange-600 text-center truncate mb-0.5">
+                      {product.name}
+                    </p>
+                    <p className="text-xs font-bold text-gray-900 text-center bg-yellow-100 rounded px-1 py-0.5">
                       {product.price}
                     </p>
                   </div>

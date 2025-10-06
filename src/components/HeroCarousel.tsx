@@ -83,12 +83,12 @@ export const HeroCarousel = () => {
 
   // Sample products for the banner with real images
   const sampleProducts = [
-    { name: "Chaussures", price: "17 000", image: sneakersImg },
-    { name: "Sac à main", price: "20 000", image: handbagImg },
-    { name: "Robe", price: "15 000", image: dressImg },
-    { name: "Chemise", price: "12 000", image: shirtImg },
-    { name: "Montre", price: "25 000", image: watchImg },
-    { name: "Lunettes", price: "8 000", image: sunglassesImg }
+    { name: "CHAUSSURE", price: "17008 FCA", image: sneakersImg },
+    { name: "SAC", price: "1500 FCA", image: handbagImg },
+    { name: "ROBE", price: "20000 FCA", image: dressImg },
+    { name: "CHEMISE", price: "12000 FCA", image: shirtImg },
+    { name: "MONTRE", price: "25000 FCA", image: watchImg },
+    { name: "LUNETTES", price: "8000 FCA", image: sunglassesImg }
   ];
 
   return (
@@ -192,41 +192,53 @@ export const HeroCarousel = () => {
         </div>
       </div>
 
-      {/* Buy & Resell Banner */}
-      <div className="w-full bg-gradient-to-r from-orange-50 via-amber-50 to-yellow-50 rounded-xl shadow-lg border border-orange-200/50 overflow-hidden">
-        <div className="flex flex-col md:flex-row items-center justify-between p-4 md:p-6 gap-4">
-          {/* Left: Text */}
-          <div className="flex-shrink-0 z-10">
-            <h3 className="text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent animate-pulse-slow">
-              🛍️ Achetez & Revendez sur Djassa
+      {/* Buy & Resell Banner - Inspired by Temu/Akiba */}
+      <div className="w-full bg-gradient-to-r from-orange-500 via-orange-500 to-orange-400 rounded-2xl shadow-2xl overflow-hidden">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 p-6 md:p-8">
+          {/* Left: Bold Text */}
+          <div className="flex-shrink-0 z-10 text-center md:text-left">
+            <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-white leading-tight animate-fade-in">
+              Achetez & Revendez
             </h3>
-            <p className="text-sm text-gray-600 mt-1 hidden md:block animate-fade-in">
-              Des milliers de produits à découvrir
+            <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-white leading-tight animate-fade-in">
+              sur Djassa
+            </h3>
+            <p className="text-sm md:text-base text-white/90 mt-2 font-medium">
+              Des milliers de produits à découvrir !
             </p>
           </div>
 
-          {/* Right: Scrolling Product miniatures */}
+          {/* Right: Scrolling Product Cards */}
           <div className="relative flex-1 w-full md:w-auto overflow-hidden">
-            <div className="flex items-center gap-3 animate-scroll-products">
-              {/* Duplicate products for seamless loop */}
+            <div className="flex items-stretch gap-4 animate-scroll-products">
+              {/* Duplicate products for seamless infinite loop */}
               {[...sampleProducts, ...sampleProducts].map((product, index) => (
                 <div
                   key={index}
-                  className="flex-shrink-0 bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 p-3 min-w-[110px] hover:scale-105 cursor-pointer border border-orange-100"
+                  className="flex-shrink-0 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden min-w-[140px] hover:scale-105 cursor-pointer"
                 >
-                  <div className="aspect-square rounded-md overflow-hidden mb-2 bg-gray-50">
+                  {/* Product Name Header */}
+                  <div className="bg-white px-3 py-2 border-b border-gray-100">
+                    <p className="text-xs md:text-sm font-bold text-orange-600 text-center tracking-wide">
+                      {product.name}
+                    </p>
+                  </div>
+                  
+                  {/* Product Image */}
+                  <div className="aspect-square bg-gray-50 p-3">
                     <img
                       src={product.image}
                       alt={product.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
                   </div>
-                  <p className="text-xs text-gray-700 mb-1 font-medium truncate text-center">
-                    {product.name}
-                  </p>
-                  <p className="text-sm font-bold text-orange-600 text-center">
-                    {product.price} <span className="text-xs font-normal">FCFA</span>
-                  </p>
+                  
+                  {/* Price Badge */}
+                  <div className="bg-yellow-400 px-3 py-2">
+                    <p className="text-sm md:text-base font-black text-gray-900 text-center">
+                      {product.price}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>

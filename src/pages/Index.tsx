@@ -7,6 +7,8 @@ import { FloatingChatWidget } from "@/components/FloatingChatWidget";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 import FAQ from "@/components/FAQ";
 import { FeaturedProducts } from "@/components/FeaturedProducts";
+import { HeroCarousel } from "@/components/HeroCarousel";
+import { CategorySidebar } from "@/components/CategorySidebar";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -325,17 +327,27 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
-        {/* Hero Section */}
-        <HeroSection />
+        {/* Hero Carousel - Produits Vedettes */}
+        <HeroCarousel />
 
-        {/* Promotional Banner */}
-        <PromoBanner onShowSellerUpgrade={() => setShowSellerUpgrade(true)} />
+        {/* Layout with Sidebar and Content */}
+        <div className="flex gap-6">
+          {/* Category Sidebar - Desktop only */}
+          <CategorySidebar />
 
-        {/* Featured/Boosted Products Section */}
-        <FeaturedProducts />
+          {/* Main content area */}
+          <div className="flex-1 min-w-0">
+            {/* Hero Section */}
+            <HeroSection />
 
-        {/* Categories */}
-        <section id="popular-categories" className="mb-6 sm:mb-8">
+            {/* Promotional Banner */}
+            <PromoBanner onShowSellerUpgrade={() => setShowSellerUpgrade(true)} />
+
+            {/* Featured/Boosted Products Section */}
+            <FeaturedProducts />
+
+            {/* Categories */}
+            <section id="popular-categories" className="mb-6 sm:mb-8">
           <div className="flex items-center justify-between mb-3 sm:mb-4">
             <h2 className="text-lg sm:text-xl font-bold text-foreground">Catégories populaires</h2>
             <Button variant="ghost" size="sm" onClick={handleViewAllCategories} className="text-xs sm:text-sm">
@@ -435,8 +447,9 @@ const Index = () => {
             </Button>
           </div>
         </section>
+          </div>
+        </div>
       </main>
-
 
       {/* FAQ Section */}
       <FAQ />

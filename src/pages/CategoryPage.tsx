@@ -22,6 +22,8 @@ interface Product {
   is_flash_sale?: boolean;
   stock_quantity?: number;
   video_url?: string;
+  is_boosted?: boolean;
+  boosted_until?: string;
 }
 
 const CategoryPage = () => {
@@ -76,7 +78,9 @@ const CategoryPage = () => {
     badge: product.badge,
     isFlashSale: product.is_flash_sale || false,
     seller_id: product.seller_id,
-    videoUrl: product.video_url
+    videoUrl: product.video_url,
+    isBoosted: product.is_boosted || false,
+    boostedUntil: product.boosted_until
   });
 
   // Fonction pour normaliser le text et tolérer les fautes d'orthographe
@@ -117,39 +121,49 @@ const CategoryPage = () => {
     return matrix[str2.length][str1.length];
   };
 
-  const filteredProducts = products.filter(product => {
-    if (!searchTerm.trim()) return true;
+  const filteredProducts = products
+    .filter(product => {
+      if (!searchTerm.trim()) return true;
 
-    const normalizedQuery = normalizeText(searchTerm);
-    const queryWords = normalizedQuery.split(' ').filter(word => word.length > 0);
-    
-    const normalizedTitle = normalizeText(product.title);
-    const normalizedDescription = normalizeText(product.description || '');
-    
-    // Recherche exacte d'abord
-    for (const word of queryWords) {
-      if (normalizedTitle.includes(word) || normalizedDescription.includes(word)) {
-        return true;
-      }
-    }
-
-    // Recherche avec tolérance aux fautes (distance max de 2)
-    const titleWords = normalizedTitle.split(' ');
-    const descWords = normalizedDescription.split(' ');
-    
-    for (const queryWord of queryWords) {
-      if (queryWord.length < 3) continue; // Skip très courts mots
+      const normalizedQuery = normalizeText(searchTerm);
+      const queryWords = normalizedQuery.split(' ').filter(word => word.length > 0);
       
-      const allWords = [...titleWords, ...descWords];
-      for (const word of allWords) {
-        if (word.length >= 3 && levenshteinDistance(queryWord, word) <= 2) {
+      const normalizedTitle = normalizeText(product.title);
+      const normalizedDescription = normalizeText(product.description || '');
+      
+      // Recherche exacte d'abord
+      for (const word of queryWords) {
+        if (normalizedTitle.includes(word) || normalizedDescription.includes(word)) {
           return true;
         }
       }
-    }
 
-    return false;
-  });
+      // Recherche avec tolérance aux fautes (distance max de 2)
+      const titleWords = normalizedTitle.split(' ');
+      const descWords = normalizedDescription.split(' ');
+      
+      for (const queryWord of queryWords) {
+        if (queryWord.length < 3) continue; // Skip très courts mots
+        
+        const allWords = [...titleWords, ...descWords];
+        for (const word of allWords) {
+          if (word.length >= 3 && levenshteinDistance(queryWord, word) <= 2) {
+            return true;
+          }
+        }
+      }
+
+      return false;
+    })
+    .sort((a, b) => {
+      // Trier les produits boostés en premier
+      const aIsBoosted = a.is_boosted && a.boosted_until && new Date(a.boosted_until) > new Date();
+      const bIsBoosted = b.is_boosted && b.boosted_until && new Date(b.boosted_until) > new Date();
+      
+      if (aIsBoosted && !bIsBoosted) return -1;
+      if (!aIsBoosted && bIsBoosted) return 1;
+      return 0;
+    });
 
   if (loading) {
     return (

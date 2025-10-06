@@ -69,6 +69,8 @@ interface Product {
   is_flash_sale?: boolean;
   stock_quantity?: number;
   video_url?: string;
+  is_boosted?: boolean;
+  boosted_until?: string;
 }
 
 const Index = () => {
@@ -216,7 +218,9 @@ const Index = () => {
     badge: product.badge,
     isFlashSale: product.is_flash_sale || false,
     seller_id: product.seller_id,
-    videoUrl: product.video_url
+    videoUrl: product.video_url,
+    isBoosted: product.is_boosted || false,
+    boostedUntil: product.boosted_until
   });
 
   // Afficher le formulaire de mise à niveau vendeur pour les utilisateurs connectés

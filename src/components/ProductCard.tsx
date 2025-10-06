@@ -22,6 +22,8 @@ interface ProductCardProps {
   isFlashSale?: boolean;
   seller_id?: string;
   videoUrl?: string;
+  isBoosted?: boolean;
+  boostedUntil?: string;
 }
 
 export const ProductCard = ({
@@ -37,6 +39,8 @@ export const ProductCard = ({
   isFlashSale = false,
   seller_id = 'default-seller',
   videoUrl,
+  isBoosted = false,
+  boostedUntil,
 }: ProductCardProps) => {
   const { addToCart } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
@@ -57,11 +61,28 @@ export const ProductCard = ({
     navigate(`/product/${id}`);
   };
 
+  const isActiveBoosted = isBoosted && boostedUntil && new Date(boostedUntil) > new Date();
+
   return (
-    <Card className="relative overflow-hidden hover-lift cursor-pointer border-0 shadow-lg" onClick={handleProductClick}>
+    <Card className={`relative overflow-hidden cursor-pointer border-0 shadow-lg transition-all duration-300 ${
+      isActiveBoosted 
+        ? 'ring-2 ring-amber-400 hover:ring-amber-500 hover:shadow-2xl hover:shadow-amber-200/50 hover:-translate-y-1' 
+        : 'hover-lift'
+    }`} onClick={handleProductClick}>
+      {/* Gradient overlay pour produits boostés */}
+      {isActiveBoosted && (
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-50/40 via-transparent to-amber-50/20 pointer-events-none z-0" />
+      )}
+      
       {/* Badges */}
       <div className="absolute top-1 sm:top-2 left-1 sm:left-2 z-10 flex flex-col gap-1">
-        {badge && (
+        {isActiveBoosted && (
+          <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs px-2 sm:px-2.5 py-0.5 sm:py-1 font-semibold shadow-lg animate-pulse flex items-center gap-1">
+            <span className="text-xs">⭐</span>
+            En vedette
+          </Badge>
+        )}
+        {badge && !isActiveBoosted && (
           <Badge className="bg-success text-success-foreground text-xs px-1.5 sm:px-2 py-0.5 sm:py-1">
             {badge}
           </Badge>
@@ -71,9 +92,11 @@ export const ProductCard = ({
             ⚡ FLASH
           </Badge>
         )}
-        <Badge className="bg-promo text-promo-foreground text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 font-bold">
-          -{discount}%
-        </Badge>
+        {discount > 0 && (
+          <Badge className="bg-promo text-promo-foreground text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 font-bold">
+            -{discount}%
+          </Badge>
+        )}
       </div>
 
       {/* Heart Icon */}
@@ -108,8 +131,10 @@ export const ProductCard = ({
       </div>
 
       {/* Product Info */}
-      <div className="p-1.5 sm:p-2 space-y-1">
-        <h3 className="text-xs sm:text-sm font-medium text-foreground line-clamp-2 leading-tight min-h-[2rem] sm:min-h-[2.5rem]">
+      <div className="p-1.5 sm:p-2 space-y-1 relative z-10">
+        <h3 className={`text-xs sm:text-sm font-medium text-foreground line-clamp-2 leading-tight min-h-[2rem] sm:min-h-[2.5rem] ${
+          isActiveBoosted ? 'font-bold' : ''
+        }`}>
           {title}
         </h3>
         

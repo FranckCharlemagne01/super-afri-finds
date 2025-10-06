@@ -25,6 +25,7 @@ interface Product {
   seller_id: string;
   video_url: string | null;
   is_boosted: boolean;
+  boosted_until: string | null;
 }
 
 export const FeaturedProducts = () => {
@@ -124,6 +125,8 @@ export const FeaturedProducts = () => {
                     isFlashSale={product.is_flash_sale}
                     seller_id={product.seller_id}
                     videoUrl={product.video_url || undefined}
+                    isBoosted={product.is_boosted}
+                    boostedUntil={product.boosted_until || undefined}
                   />
                 </div>
               </CarouselItem>

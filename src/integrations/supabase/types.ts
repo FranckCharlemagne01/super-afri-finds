@@ -568,7 +568,17 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      suspicious_order_access: {
+        Row: {
+          access_count: number | null
+          access_types: string[] | null
+          accessed_by: string | null
+          first_access: string | null
+          last_access: string | null
+          unique_orders_accessed: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       add_tokens_after_purchase: {
@@ -628,6 +638,25 @@ export type Database = {
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["user_role"]
+      }
+      get_order_details: {
+        Args: { order_id: string }
+        Returns: {
+          created_at: string
+          customer_id: string
+          customer_name: string
+          customer_phone: string
+          delivery_location: string
+          id: string
+          product_id: string
+          product_price: number
+          product_title: string
+          quantity: number
+          seller_id: string
+          status: string
+          total_amount: number
+          updated_at: string
+        }[]
       }
       get_seller_orders: {
         Args: Record<PropertyKey, never>

@@ -192,30 +192,27 @@ export const HeroCarousel = () => {
         </div>
       </div>
 
-      {/* Buy & Resell Banner - Compact horizontal style */}
-      <div className="w-full bg-gradient-to-r from-orange-100 via-amber-50 to-yellow-100 rounded-xl shadow-md border border-orange-200/30 overflow-hidden">
-        <div className="flex flex-row items-center justify-between gap-4 px-4 md:px-6 py-3">
-          {/* Left: Compact Text */}
+      {/* Buy & Resell Banner - Fine horizontal banner */}
+      <div className="w-full bg-gradient-to-r from-orange-100 via-amber-50 to-yellow-100 rounded-lg shadow-sm border border-orange-200/30 overflow-hidden">
+        <div className="flex flex-row items-center justify-between gap-3 px-3 md:px-4 py-2">
+          {/* Left: Animated Text */}
           <div className="flex-shrink-0 z-10">
-            <h3 className="text-base md:text-lg lg:text-xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent animate-pulse-slow whitespace-nowrap">
-              🛍️ Achetez & Revendez sur Djassa
+            <h3 className="text-sm md:text-base font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent animate-pulse-slow whitespace-nowrap">
+              🛍️ Achetez & Revendez sur Djassa – Des milliers de produits à découvrir !
             </h3>
-            <p className="text-xs text-gray-600 mt-0.5 hidden md:block">
-              Des milliers de produits à découvrir !
-            </p>
           </div>
 
-          {/* Right: Compact Scrolling Product Cards */}
-          <div className="relative flex-1 overflow-hidden">
+          {/* Right: Mini Scrolling Product Cards */}
+          <div className="relative flex-1 overflow-hidden max-w-md">
             <div className="flex items-center gap-2 animate-scroll-products">
               {/* Duplicate products for seamless infinite loop */}
               {[...sampleProducts, ...sampleProducts].map((product, index) => (
                 <div
                   key={index}
-                  className="flex-shrink-0 bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden min-w-[90px] hover:scale-105 cursor-pointer border border-orange-100/50"
+                  className="flex-shrink-0 bg-white rounded-md shadow-sm hover:shadow transition-all duration-300 overflow-hidden w-16 md:w-20 hover:scale-105 cursor-pointer border border-orange-100/50"
                 >
-                  {/* Compact Product Image */}
-                  <div className="aspect-square bg-gray-50 p-2">
+                  {/* Mini Product Image */}
+                  <div className="aspect-square bg-gray-50 p-1.5">
                     <img
                       src={product.image}
                       alt={product.name}
@@ -223,12 +220,12 @@ export const HeroCarousel = () => {
                     />
                   </div>
                   
-                  {/* Compact Info */}
-                  <div className="px-2 py-1.5 bg-white">
-                    <p className="text-[10px] font-semibold text-orange-600 text-center truncate mb-0.5">
+                  {/* Mini Info */}
+                  <div className="px-1 py-1 bg-white">
+                    <p className="text-[8px] md:text-[9px] font-semibold text-orange-600 text-center truncate mb-0.5">
                       {product.name}
                     </p>
-                    <p className="text-xs font-bold text-gray-900 text-center bg-yellow-100 rounded px-1 py-0.5">
+                    <p className="text-[9px] md:text-[10px] font-bold text-gray-900 text-center bg-yellow-100 rounded px-0.5 py-0.5">
                       {product.price}
                     </p>
                   </div>

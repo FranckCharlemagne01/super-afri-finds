@@ -455,6 +455,24 @@ All colors MUST be HSL.
     animation: flash-gold-black 1.5s ease-in-out infinite;
   }
   
+  /* Smooth horizontal scrolling animation for products */
+  @keyframes scroll-products {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+  
+  .animate-scroll-products {
+    animation: scroll-products 20s linear infinite;
+  }
+  
+  .animate-scroll-products:hover {
+    animation-play-state: paused;
+  }
+  
   .hover-lift {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }

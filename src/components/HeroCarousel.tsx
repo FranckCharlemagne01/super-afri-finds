@@ -3,6 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import sneakersImg from "@/assets/product-sneakers.jpg";
+import handbagImg from "@/assets/product-handbag.jpg";
+import dressImg from "@/assets/product-dress.jpg";
+import shirtImg from "@/assets/product-shirt.jpg";
+import watchImg from "@/assets/product-watch.jpg";
+import sunglassesImg from "@/assets/product-sunglasses.jpg";
 
 interface BoostedProduct {
   id: string;
@@ -75,12 +81,14 @@ export const HeroCarousel = () => {
 
   const currentProduct = boostedProducts[currentIndex];
 
-  // Sample products for the banner
+  // Sample products for the banner with real images
   const sampleProducts = [
-    { name: "Chaussures", price: "17 000", emoji: "👟" },
-    { name: "Sac à main", price: "20 000", emoji: "👜" },
-    { name: "Robe", price: "15 000", emoji: "👗" },
-    { name: "Chemise", price: "12 000", emoji: "👔" }
+    { name: "Chaussures", price: "17 000", image: sneakersImg },
+    { name: "Sac à main", price: "20 000", image: handbagImg },
+    { name: "Robe", price: "15 000", image: dressImg },
+    { name: "Chemise", price: "12 000", image: shirtImg },
+    { name: "Montre", price: "25 000", image: watchImg },
+    { name: "Lunettes", price: "8 000", image: sunglassesImg }
   ];
 
   return (
@@ -185,31 +193,43 @@ export const HeroCarousel = () => {
       </div>
 
       {/* Buy & Resell Banner */}
-      <div className="w-full bg-gradient-to-r from-orange-100 via-amber-50 to-yellow-100 rounded-xl shadow-md border border-orange-200/50 p-4 md:p-6">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="w-full bg-gradient-to-r from-orange-50 via-amber-50 to-yellow-50 rounded-xl shadow-lg border border-orange-200/50 overflow-hidden">
+        <div className="flex flex-col md:flex-row items-center justify-between p-4 md:p-6 gap-4">
           {/* Left: Text */}
-          <div className="flex-shrink-0">
-            <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-orange-900">
+          <div className="flex-shrink-0 z-10">
+            <h3 className="text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
               🛍️ Achetez & Revendez sur Djassa
             </h3>
+            <p className="text-sm text-gray-600 mt-1 hidden md:block">
+              Des milliers de produits à découvrir
+            </p>
           </div>
 
-          {/* Right: Product miniatures */}
-          <div className="flex items-center gap-3 md:gap-4 overflow-x-auto w-full md:w-auto justify-center md:justify-end">
-            {sampleProducts.map((product, index) => (
-              <div
-                key={index}
-                className="flex-shrink-0 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-3 min-w-[90px] text-center"
-              >
-                <div className="text-3xl md:text-4xl mb-2">{product.emoji}</div>
-                <p className="text-xs text-gray-600 mb-1 font-medium truncate">
-                  {product.name}
-                </p>
-                <p className="text-sm font-bold text-orange-600">
-                  {product.price} <span className="text-xs">FCFA</span>
-                </p>
-              </div>
-            ))}
+          {/* Right: Scrolling Product miniatures */}
+          <div className="relative flex-1 w-full md:w-auto overflow-hidden">
+            <div className="flex items-center gap-3 animate-scroll-products">
+              {/* Duplicate products for seamless loop */}
+              {[...sampleProducts, ...sampleProducts].map((product, index) => (
+                <div
+                  key={index}
+                  className="flex-shrink-0 bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 p-3 min-w-[110px] hover:scale-105 cursor-pointer border border-orange-100"
+                >
+                  <div className="aspect-square rounded-md overflow-hidden mb-2 bg-gray-50">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-700 mb-1 font-medium truncate text-center">
+                    {product.name}
+                  </p>
+                  <p className="text-sm font-bold text-orange-600 text-center">
+                    {product.price} <span className="text-xs font-normal">FCFA</span>
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

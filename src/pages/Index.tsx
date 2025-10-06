@@ -6,9 +6,9 @@ import PromoBanner from "@/components/PromoBanner";
 import { FloatingChatWidget } from "@/components/FloatingChatWidget";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 import FAQ from "@/components/FAQ";
-
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { CategorySidebar } from "@/components/CategorySidebar";
+import boutiqueBanner from "@/assets/boutique.png";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -361,6 +361,15 @@ const Index = () => {
               </Button>
             </div>
           </div>
+        </div>
+
+        {/* Boutique Banner */}
+        <div className="mt-3 mb-6">
+          <img 
+            src={boutiqueBanner} 
+            alt="Vendez vos produits sur Djassa" 
+            className="w-full h-auto rounded-xl shadow-lg object-cover hover:shadow-xl transition-shadow duration-300"
+          />
         </div>
 
         {/* Promotional Banner */}

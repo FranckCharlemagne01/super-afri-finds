@@ -8,7 +8,6 @@ import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 import FAQ from "@/components/FAQ";
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { CategorySidebar } from "@/components/CategorySidebar";
-import boutiqueBanner from "@/assets/boutique.png";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -363,13 +362,11 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Boutique Banner */}
-        <div className="mt-3 mb-6">
-          <img 
-            src={boutiqueBanner} 
-            alt="Vendez vos produits sur Djassa" 
-            className="w-full h-auto rounded-xl shadow-lg object-cover hover:shadow-xl transition-shadow duration-300"
-          />
+        {/* Seller Invitation Banner */}
+        <div className="mt-3 mb-6 bg-gradient-to-r from-orange-100 via-yellow-50 to-orange-100 rounded-xl shadow-md p-8 text-center border border-orange-200/50">
+          <p className="text-lg sm:text-xl md:text-2xl font-bold text-orange-900">
+            💼 Vous aussi, vendez vos produits sur Djassa ! Créez votre boutique dès aujourd'hui.
+          </p>
         </div>
 
         {/* Promotional Banner */}

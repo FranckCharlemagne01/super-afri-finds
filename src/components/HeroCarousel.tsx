@@ -197,10 +197,10 @@ export const HeroCarousel = () => {
         <div className="flex flex-col md:flex-row items-center justify-between p-4 md:p-6 gap-4">
           {/* Left: Text */}
           <div className="flex-shrink-0 z-10">
-            <h3 className="text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+            <h3 className="text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent animate-pulse-slow">
               🛍️ Achetez & Revendez sur Djassa
             </h3>
-            <p className="text-sm text-gray-600 mt-1 hidden md:block">
+            <p className="text-sm text-gray-600 mt-1 hidden md:block animate-fade-in">
               Des milliers de produits à découvrir
             </p>
           </div>

@@ -456,22 +456,35 @@ All colors MUST be HSL.
   }
   
   /* Smooth horizontal scrolling animation for products */
-  @keyframes scroll-products {
-    0% {
-      transform: translateX(0);
-    }
-    100% {
-      transform: translateX(-50%);
-    }
+@keyframes scroll-products {
+  0% {
+    transform: translateX(0);
   }
-  
-  .animate-scroll-products {
-    animation: scroll-products 20s linear infinite;
+  100% {
+    transform: translateX(-50%);
   }
-  
-  .animate-scroll-products:hover {
-    animation-play-state: paused;
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
   }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+.animate-scroll-products {
+  animation: scroll-products 25s linear infinite;
+}
+
+.animate-scroll-products:hover {
+  animation-play-state: paused;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
   
   .hover-lift {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

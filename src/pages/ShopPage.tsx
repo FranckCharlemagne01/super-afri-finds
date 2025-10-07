@@ -87,11 +87,6 @@ const ShopPage = () => {
 
         setShop(shopData);
 
-        // Check if current user is the shop owner
-        if (user?.id === shopData.seller_id) {
-          setIsOwner(true);
-        }
-
         // Fetch shop products
         const { data: productsData, error: productsError } = await supabase
           .from('products')
@@ -116,7 +111,16 @@ const ShopPage = () => {
     };
 
     fetchShopData();
-  }, [slug, navigate, toast, user]);
+  }, [slug, navigate, toast]);
+
+  // Separate effect to check ownership when user or shop changes
+  useEffect(() => {
+    if (shop && user) {
+      setIsOwner(user.id === shop.seller_id);
+    } else {
+      setIsOwner(false);
+    }
+  }, [user, shop]);
 
   const handleProductPublished = () => {
     setIsProductFormOpen(false);

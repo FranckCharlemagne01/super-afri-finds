@@ -19,6 +19,7 @@ import SearchResults from "./pages/SearchResults";
 import ShopPage from "./pages/ShopPage";
 import LegalNotice from "./pages/LegalNotice";
 import NotFound from "./pages/NotFound";
+import { CategoriesPage } from "./pages/CategoriesPage";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="/category/:categoryName" element={<CategoryPage />} />
             <Route path="/search" element={<SearchResults />} />
             <Route path="/boutique/:slug" element={<ShopPage />} />
+            <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/legal" element={<LegalNotice />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

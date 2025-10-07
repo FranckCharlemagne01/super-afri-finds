@@ -115,9 +115,7 @@ const Index = () => {
   };
 
   const handleViewAllCategories = () => {
-    // Pour l'instant, on peut faire défiler vers les produits ou naviguer vers une page de catégories
-    console.log('Navigation vers toutes les catégories');
-    // navigate('/categories'); // À implémenter plus tard
+    navigate('/categories');
   };
 
   useEffect(() => {

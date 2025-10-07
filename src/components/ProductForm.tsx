@@ -38,47 +38,10 @@ interface ProductFormProps {
   onCancel: () => void;
 }
 
-const categories = [
-  'Téléphones & Tablettes',
-  'Électroménager / TV & Audio',
-  'Mode',
-  'Maison & Décoration',
-  'Beauté & Soins personnels',
-  'Épicerie & Produits alimentaires',
-  'Auto & Accessoires',
-];
+import { getAllCategoriesFlat } from '@/data/categories';
 
-// Suggestions de contenu par catégorie
-const categoryDefaults = {
-  'Téléphones & Tablettes': {
-    title: 'iPhone 13 Pro 128 Go',
-    description: 'iPhone 13 Pro, 128 Go, très bon état. Livré avec son chargeur, coque incluse.'
-  },
-  'Électroménager / TV & Audio': {
-    title: 'TV Samsung 55" 4K Ultra HD',
-    description: 'TV Samsung 55" 4K Ultra HD. Très bonne qualité d\'image, télécommande incluse.'
-  },
-  'Mode': {
-    title: 'Veste en jean Levi\'s taille M',
-    description: 'Veste en jean Levi\'s taille M. Excellent état, très peu portée.'
-  },
-  'Maison & Décoration': {
-    title: 'Canapé 3 places en tissu gris',
-    description: 'Canapé 3 places en tissu gris. Propre, confortable, idéal pour salon moderne.'
-  },
-  'Beauté & Soins personnels': {
-    title: 'Sèche-cheveux Dyson Supersonic',
-    description: 'Sèche-cheveux Dyson Supersonic, neuf dans son emballage d\'origine.'
-  },
-  'Épicerie & Produits alimentaires': {
-    title: 'Huile d\'olive extra vierge 1L',
-    description: 'Huile d\'olive extra vierge 1L. Produit artisanal, première pression à froid.'
-  },
-  'Auto & Accessoires': {
-    title: 'Tapis de sol universels pour voiture',
-    description: 'Tapis de sol universels pour voiture. Antidérapants, faciles à nettoyer.'
-  }
-};
+const categoriesFlat = getAllCategoriesFlat();
+
 
 export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => {
   const { user } = useAuth();
@@ -111,16 +74,6 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
   const [uploadingImages, setUploadingImages] = useState(false);
   const [previewImages, setPreviewImages] = useState<string[]>([]);
 
-  // Pré-remplir les champs selon la catégorie sélectionnée
-  useEffect(() => {
-    if (formData.category && !product?.id && categoryDefaults[formData.category as keyof typeof categoryDefaults]) {
-      const defaults = categoryDefaults[formData.category as keyof typeof categoryDefaults];
-      // Ne pré-remplir que si les champs sont vides pour ne pas écraser les modifications de l'utilisateur
-      if (!formData.title) {
-        setFormData(prev => ({ ...prev, title: defaults.title }));
-      }
-    }
-  }, [formData.category, product?.id]);
 
   const uploadImages = async (): Promise<string[]> => {
     if (imageFiles.length === 0 || !user) return [];
@@ -524,9 +477,9 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
               <SelectValue placeholder="Sélectionnez une catégorie" />
             </SelectTrigger>
             <SelectContent>
-              {categories.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {category}
+              {categoriesFlat.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -585,9 +538,7 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
           id="description"
           value={formData.description}
           onChange={(e) => handleInputChange('description', e.target.value)}
-          placeholder={formData.category && categoryDefaults[formData.category as keyof typeof categoryDefaults] 
-            ? categoryDefaults[formData.category as keyof typeof categoryDefaults].description
-            : "Décrivez votre produit en détail..."}
+          placeholder="Décrivez votre produit en détail..."
           rows={4}
         />
       </div>

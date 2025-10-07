@@ -309,6 +309,7 @@ export type Database = {
           rating: number | null
           reviews_count: number | null
           seller_id: string
+          shop_id: string | null
           stock_quantity: number | null
           title: string
           updated_at: string
@@ -332,6 +333,7 @@ export type Database = {
           rating?: number | null
           reviews_count?: number | null
           seller_id: string
+          shop_id?: string | null
           stock_quantity?: number | null
           title: string
           updated_at?: string
@@ -355,12 +357,21 @@ export type Database = {
           rating?: number | null
           reviews_count?: number | null
           seller_id?: string
+          shop_id?: string | null
           stock_quantity?: number | null
           title?: string
           updated_at?: string
           video_url?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "products_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "seller_shops"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -425,6 +436,54 @@ export type Database = {
           trial_used?: boolean | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      seller_shops: {
+        Row: {
+          banner_url: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          logo_url: string | null
+          monthly_fee: number | null
+          seller_id: string
+          shop_description: string | null
+          shop_name: string
+          shop_slug: string
+          subscription_active: boolean | null
+          subscription_expires_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          banner_url?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          monthly_fee?: number | null
+          seller_id: string
+          shop_description?: string | null
+          shop_name: string
+          shop_slug: string
+          subscription_active?: boolean | null
+          subscription_expires_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          banner_url?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          monthly_fee?: number | null
+          seller_id?: string
+          shop_description?: string | null
+          shop_name?: string
+          shop_slug?: string
+          subscription_active?: boolean | null
+          subscription_expires_at?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -611,6 +670,10 @@ export type Database = {
       expire_free_tokens: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      generate_shop_slug: {
+        Args: { shop_name: string }
+        Returns: string
       }
       get_admin_statistics: {
         Args: Record<PropertyKey, never>

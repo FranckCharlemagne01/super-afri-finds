@@ -4,12 +4,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Store, MapPin, Calendar, Star } from 'lucide-react';
+import { ArrowLeft, Store, MapPin, Calendar, Star, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ProductCard } from '@/components/ProductCard';
 import { useCart } from '@/hooks/useCart';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
+import { ProductForm } from '@/components/ProductForm';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface Shop {
   id: string;
@@ -49,6 +57,8 @@ const ShopPage = () => {
   const [shop, setShop] = useState<Shop | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isProductFormOpen, setIsProductFormOpen] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
 
   useEffect(() => {
     const fetchShopData = async () => {
@@ -77,6 +87,11 @@ const ShopPage = () => {
 
         setShop(shopData);
 
+        // Check if current user is the shop owner
+        if (user?.id === shopData.seller_id) {
+          setIsOwner(true);
+        }
+
         // Fetch shop products
         const { data: productsData, error: productsError } = await supabase
           .from('products')
@@ -101,7 +116,26 @@ const ShopPage = () => {
     };
 
     fetchShopData();
-  }, [slug, navigate, toast]);
+  }, [slug, navigate, toast, user]);
+
+  const handleProductPublished = () => {
+    setIsProductFormOpen(false);
+    // Refresh products list
+    const fetchProducts = async () => {
+      if (!shop) return;
+      const { data: productsData } = await supabase
+        .from('products')
+        .select('*')
+        .eq('shop_id', shop.id)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+      
+      if (productsData) {
+        setProducts(productsData);
+      }
+    };
+    fetchProducts();
+  };
 
   if (loading) {
     return (
@@ -159,7 +193,8 @@ const ShopPage = () => {
 
       {/* Shop Info */}
       <div className="container mx-auto px-4 -mt-16 relative z-10">
-        <Card className="p-6 mb-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+          <Card className="flex-1 p-6 w-full">
           <div className="flex flex-col md:flex-row gap-6">
             {/* Shop Logo */}
             <div className="flex-shrink-0">
@@ -198,7 +233,20 @@ const ShopPage = () => {
               </div>
             </div>
           </div>
-        </Card>
+          </Card>
+          
+          {/* Publish Product Button - Only visible to shop owner */}
+          {isOwner && (
+            <Button
+              onClick={() => setIsProductFormOpen(true)}
+              size="lg"
+              className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white shadow-lg w-full md:w-auto md:self-start"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Publier un produit
+            </Button>
+          )}
+        </div>
 
         {/* Products Section - Grouped by Category */}
         <div className="mb-8">
@@ -254,6 +302,23 @@ const ShopPage = () => {
           )}
         </div>
       </div>
+
+      {/* Product Form Dialog */}
+      <Dialog open={isProductFormOpen} onOpenChange={setIsProductFormOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Publier un nouveau produit</DialogTitle>
+            <DialogDescription>
+              Ajoutez un nouveau produit à votre boutique. Un jeton sera déduit de votre compte.
+            </DialogDescription>
+          </DialogHeader>
+          <ProductForm
+            onSave={handleProductPublished}
+            onCancel={() => setIsProductFormOpen(false)}
+            shopId={shop?.id}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

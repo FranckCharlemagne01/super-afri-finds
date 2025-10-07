@@ -36,6 +36,7 @@ interface ProductFormProps {
   product?: Product | null;
   onSave: () => void;
   onCancel: () => void;
+  shopId?: string;
 }
 
 import { getAllCategoriesFlat } from '@/data/categories';
@@ -43,7 +44,7 @@ import { getAllCategoriesFlat } from '@/data/categories';
 const categoriesFlat = getAllCategoriesFlat();
 
 
-export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => {
+export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormProps) => {
   const { user } = useAuth();
   const trialStatus = useTrialStatus();
   const { tokenBalance, loading: tokensLoading, refreshBalance } = useTokens();
@@ -183,13 +184,17 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
         ? Math.round(((formData.original_price - formData.price) / formData.original_price) * 100)
         : 0;
 
-      // Get seller's shop_id
-      const { data: shopData } = await supabase
-        .from('seller_shops')
-        .select('id')
-        .eq('seller_id', user.id)
-        .eq('is_active', true)
-        .single();
+      // Get seller's shop_id (use provided shopId or fetch from database)
+      let finalShopId = shopId;
+      if (!finalShopId) {
+        const { data: shopData } = await supabase
+          .from('seller_shops')
+          .select('id')
+          .eq('seller_id', user.id)
+          .eq('is_active', true)
+          .single();
+        finalShopId = shopData?.id || null;
+      }
 
       const productData = {
         title: formData.title,
@@ -205,7 +210,7 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
         images: allImages,
         video_url: videoUrl || null,
         seller_id: user.id,
-        shop_id: shopData?.id || null,
+        shop_id: finalShopId,
       };
 
       if (product?.id) {

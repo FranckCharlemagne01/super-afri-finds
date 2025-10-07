@@ -19,6 +19,7 @@ import { TrialCountdown } from '@/components/TrialCountdown';
 import { TokenPurchaseDialog } from '@/components/TokenPurchaseDialog';
 import { TokenTransactionHistory } from '@/components/TokenTransactionHistory';
 import { ProductBoostDialog } from '@/components/ProductBoostDialog';
+import { ShopManagement } from '@/components/ShopManagement';
 import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
 import { RealtimeNotificationBadge } from '@/components/RealtimeNotificationBadge';
 import { TokenBalanceCard } from '@/components/TokenBalanceCard';
@@ -557,20 +558,27 @@ const SellerDashboard = () => {
         }}>
           {/* Navigation simplifiée avec indicateurs visuels */}
           <div className="bg-white rounded-lg lg:rounded-xl border border-border/50 shadow-sm p-1.5 sm:p-2">
-            <TabsList className="grid w-full grid-cols-4 bg-muted/30 rounded-lg h-11 sm:h-12 gap-1">
+            <TabsList className="grid w-full grid-cols-5 bg-muted/30 rounded-lg h-11 sm:h-12 gap-1">
               <TabsTrigger 
                 value="products" 
                 className="relative text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all duration-200 px-2 sm:px-3"
               >
                 <Package className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 lg:mr-2 flex-shrink-0" />
-                <span className="hidden sm:inline">Mes</span> <span className="truncate">Produits</span>
+                <span className="hidden lg:inline">Produits</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="shop" 
+                className="relative text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all duration-200 px-2 sm:px-3"
+              >
+                <Store className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 lg:mr-2 flex-shrink-0" />
+                <span className="hidden lg:inline">Boutique</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="orders" 
                 className="relative text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all duration-200 px-2 sm:px-3"
               >
                 <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 lg:mr-2 flex-shrink-0" />
-                <span className="truncate">Commandes</span>
+                <span className="hidden lg:inline">Commandes</span>
                 <OrderNotificationBadge />
               </TabsTrigger>
               <TabsTrigger 
@@ -578,7 +586,7 @@ const SellerDashboard = () => {
                 className="relative text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all duration-200 px-2 sm:px-3"
               >
                 <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 lg:mr-2 flex-shrink-0" />
-                <span className="truncate">Messages</span>
+                <span className="hidden lg:inline">Messages</span>
                 <MessageNotificationBadge />
               </TabsTrigger>
               {!trialStatus.isInTrial && (
@@ -587,7 +595,7 @@ const SellerDashboard = () => {
                   className="relative text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all duration-200 px-2 sm:px-3"
                 >
                   <History className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 lg:mr-2 flex-shrink-0" />
-                  <span className="truncate">Historique</span>
+                  <span className="hidden lg:inline">Historique</span>
                 </TabsTrigger>
               )}
             </TabsList>
@@ -692,6 +700,10 @@ const SellerDashboard = () => {
 
           <TabsContent value="orders">
             <SellerOrders />
+          </TabsContent>
+
+          <TabsContent value="shop">
+            <ShopManagement />
           </TabsContent>
 
           <TabsContent value="messages">

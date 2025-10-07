@@ -14,9 +14,9 @@ import Cart from "./pages/Cart";
 import Favorites from "./pages/Favorites";
 import FlashSales from "./pages/FlashSales";
 import MyOrders from "./pages/MyOrders";
-import CategoryPage from "./pages/CategoryPage";
 import SearchResults from "./pages/SearchResults";
 import ShopPage from "./pages/ShopPage";
+import CategoryPage from "./pages/CategoryPage";
 import LegalNotice from "./pages/LegalNotice";
 import NotFound from "./pages/NotFound";
 import { CategoriesPage } from "./pages/CategoriesPage";
@@ -41,9 +41,9 @@ const App = () => (
             <Route path="/favorites" element={<Favorites />} />
             <Route path="/flash-sales" element={<FlashSales />} />
             <Route path="/my-orders" element={<MyOrders />} />
-            <Route path="/category/:categoryName" element={<CategoryPage />} />
             <Route path="/search" element={<SearchResults />} />
             <Route path="/boutique/:slug" element={<ShopPage />} />
+            <Route path="/category/:slug" element={<CategoryPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/legal" element={<LegalNotice />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

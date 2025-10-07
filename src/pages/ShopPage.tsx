@@ -200,7 +200,7 @@ const ShopPage = () => {
           </div>
         </Card>
 
-        {/* Products Section */}
+        {/* Products Section - Grouped by Category */}
         <div className="mb-8">
           <h3 className="text-xl font-semibold mb-4">Produits de la boutique</h3>
           
@@ -210,25 +210,47 @@ const ShopPage = () => {
               <p className="text-muted-foreground">Cette boutique n'a pas encore de produits.</p>
             </Card>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {products.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  id={product.id}
-                  title={product.title}
-                  originalPrice={product.original_price || product.price}
-                  salePrice={product.price}
-                  image={product.images[0] || ''}
-                  rating={product.rating}
-                  reviews={product.reviews_count}
-                  badge={product.badge || undefined}
-                  isFlashSale={product.is_flash_sale}
-                  discount={product.discount_percentage || 0}
-                  seller_id={product.seller_id}
-                  isBoosted={false}
-                />
-              ))}
-            </div>
+            (() => {
+              // Group products by category
+              const productsByCategory = products.reduce((acc, product) => {
+                if (!acc[product.category]) {
+                  acc[product.category] = [];
+                }
+                acc[product.category].push(product);
+                return acc;
+              }, {} as Record<string, Product[]>);
+
+              return (
+                <div className="space-y-8">
+                  {Object.entries(productsByCategory).map(([category, categoryProducts]) => (
+                    <div key={category}>
+                      <h4 className="text-lg font-medium mb-4 capitalize">
+                        {category.replace(/-/g, ' ')}
+                      </h4>
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                        {categoryProducts.map((product) => (
+                          <ProductCard
+                            key={product.id}
+                            id={product.id}
+                            title={product.title}
+                            originalPrice={product.original_price || product.price}
+                            salePrice={product.price}
+                            image={product.images[0] || ''}
+                            rating={product.rating}
+                            reviews={product.reviews_count}
+                            badge={product.badge || undefined}
+                            isFlashSale={product.is_flash_sale}
+                            discount={product.discount_percentage || 0}
+                            seller_id={product.seller_id}
+                            isBoosted={false}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()
           )}
         </div>
       </div>

@@ -183,6 +183,14 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
         ? Math.round(((formData.original_price - formData.price) / formData.original_price) * 100)
         : 0;
 
+      // Get seller's shop_id
+      const { data: shopData } = await supabase
+        .from('seller_shops')
+        .select('id')
+        .eq('seller_id', user.id)
+        .eq('is_active', true)
+        .single();
+
       const productData = {
         title: formData.title,
         description: formData.description,
@@ -197,6 +205,7 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
         images: allImages,
         video_url: videoUrl || null,
         seller_id: user.id,
+        shop_id: shopData?.id || null,
       };
 
       if (product?.id) {

@@ -8,6 +8,7 @@ import { ArrowLeft, Store, Plus, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ProductCard } from '@/components/ProductCard';
 import { useAuth } from '@/hooks/useAuth';
+import { SellerShopDashboard } from '@/components/SellerShopDashboard';
 
 interface Shop {
   id: string;
@@ -24,6 +25,7 @@ interface Shop {
 interface Product {
   id: string;
   title: string;
+  description?: string;
   price: number;
   original_price: number | null;
   discount_percentage: number | null;
@@ -34,6 +36,11 @@ interface Product {
   is_flash_sale: boolean;
   badge: string | null;
   seller_id: string;
+  stock_quantity?: number;
+  is_active?: boolean;
+  is_boosted?: boolean;
+  boosted_until?: string;
+  created_at: string;
 }
 
 const ShopPage = () => {
@@ -46,6 +53,7 @@ const ShopPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const fetchShopData = async () => {
@@ -98,7 +106,7 @@ const ShopPage = () => {
     };
 
     fetchShopData();
-  }, [slug, navigate, toast]);
+  }, [slug, navigate, toast, refreshKey]);
 
   // Separate effect to check ownership when user or shop changes
   useEffect(() => {
@@ -124,6 +132,38 @@ const ShopPage = () => {
     return null;
   }
 
+  // If user is the owner, show the seller dashboard
+  if (isOwner) {
+    return (
+      <div className="min-h-screen bg-background">
+        {/* Header with back button */}
+        <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b">
+          <div className="container mx-auto px-4 py-3 flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate('/')}
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex items-center gap-2">
+              <Store className="h-5 w-5 text-primary" />
+              <h1 className="text-lg font-semibold">Tableau de bord - {shop.shop_name}</h1>
+            </div>
+          </div>
+        </header>
+
+        <SellerShopDashboard
+          shop={shop}
+          products={products}
+          loading={loading}
+          onProductsUpdate={() => setRefreshKey(prev => prev + 1)}
+        />
+      </div>
+    );
+  }
+
+  // Public shop view for visitors
   return (
     <div className="min-h-screen bg-background">
       {/* Header with back button */}
@@ -206,18 +246,6 @@ const ShopPage = () => {
             </div>
           </div>
           </Card>
-          
-          {/* Publish Product Button - Only visible to shop owner */}
-          {isOwner && (
-            <Button
-              onClick={() => navigate('/seller-dashboard')}
-              size="lg"
-              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg w-full md:w-auto md:self-start"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Publier un produit
-            </Button>
-          )}
         </div>
 
         {/* Products Section - Grouped by Category */}

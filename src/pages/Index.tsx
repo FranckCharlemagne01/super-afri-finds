@@ -72,6 +72,11 @@ interface Product {
   video_url?: string;
   is_boosted?: boolean;
   boosted_until?: string;
+  shop_id?: string;
+  seller_shops?: {
+    shop_slug: string;
+    shop_name: string;
+  };
 }
 
 const Index = () => {
@@ -218,10 +223,10 @@ const Index = () => {
     rating: product.rating || 0,
     reviews: product.reviews_count || 0,
     badge: product.badge,
+    shop_slug: product.seller_shops?.shop_slug,
+    shop_name: product.seller_shops?.shop_name,
     isFlashSale: product.is_flash_sale || false,
     seller_id: product.seller_id,
-    shop_id: product.shop_id,
-    shop_slug: product.shop?.shop_slug,
     videoUrl: product.video_url,
     isBoosted: product.is_boosted || false,
     boostedUntil: product.boosted_until

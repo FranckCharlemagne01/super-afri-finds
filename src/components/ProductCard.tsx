@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, Heart, ShoppingCart, MessageSquare } from "lucide-react";
+import { Star, Heart, ShoppingCart, Store } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useNavigate } from "react-router-dom";
@@ -21,11 +21,11 @@ interface ProductCardProps {
   badge?: string;
   isFlashSale?: boolean;
   seller_id?: string;
-  shop_id?: string;
-  shop_slug?: string;
   videoUrl?: string;
   isBoosted?: boolean;
   boostedUntil?: string;
+  shop_slug?: string;
+  shop_name?: string;
 }
 
 export const ProductCard = ({
@@ -40,11 +40,11 @@ export const ProductCard = ({
   badge,
   isFlashSale = false,
   seller_id = 'default-seller',
-  shop_id,
-  shop_slug,
   videoUrl,
   isBoosted = false,
   boostedUntil,
+  shop_slug,
+  shop_name,
 }: ProductCardProps) => {
   const { addToCart } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
@@ -168,6 +168,27 @@ export const ProductCard = ({
             {originalPrice.toLocaleString()} FCFA
           </span>
         </div>
+
+        {/* Boutique du vendeur */}
+        {shop_slug && shop_name && (
+          <div className="pt-1 border-t border-border/50">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/shop/${shop_slug}`);
+              }}
+              className="w-full text-left px-2 py-1.5 hover:bg-muted/50 rounded-md transition-colors"
+            >
+              <div className="flex items-center gap-1.5">
+                <Store className="w-3 h-3 text-primary flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium text-primary truncate">{shop_name}</p>
+                  <p className="text-xs text-muted-foreground">Voir la boutique →</p>
+                </div>
+              </div>
+            </button>
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="space-y-1">

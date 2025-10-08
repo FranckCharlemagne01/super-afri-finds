@@ -27,6 +27,7 @@ const Auth = () => {
   const [country, setCountry] = useState('CI');
   const [dialCode, setDialCode] = useState('+225');
   const [userRole, setUserRole] = useState<'buyer' | 'seller'>('buyer');
+  const [shopName, setShopName] = useState('');
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [loginIdentifier, setLoginIdentifier] = useState('');
   const [loading, setLoading] = useState(false);
@@ -123,7 +124,8 @@ const Auth = () => {
     try {
       const fullPhoneNumber = `${dialCode}${phone}`;
       const fullName = `${firstName} ${lastName}`.trim();
-      const { error } = await signUp(email, password, fullName, fullPhoneNumber, country, userRole);
+      const shopNameToSend = userRole === 'seller' && shopName.trim() ? shopName.trim() : '';
+      const { error } = await signUp(email, password, fullName, fullPhoneNumber, country, userRole, shopNameToSend);
       
       if (error) {
         if (error.message.includes('already registered') || error.message.includes('already been registered')) {
@@ -517,6 +519,26 @@ const Auth = () => {
                     </div>
                   </RadioGroup>
                 </div>
+
+                {userRole === 'seller' && (
+                  <div className="space-y-2 bg-primary/5 p-4 rounded-lg border border-primary/20">
+                    <Label htmlFor="shopName" className="flex items-center gap-2">
+                      <Store className="w-4 h-4" />
+                      Nom de votre boutique (optionnel)
+                    </Label>
+                    <Input
+                      id="shopName"
+                      type="text"
+                      placeholder="Ex: Ma Boutique Mode, Électronique Pro..."
+                      value={shopName}
+                      onChange={(e) => setShopName(e.target.value)}
+                      maxLength={100}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Si vide, votre boutique s'appellera "Djassa Boutique" par défaut. Vous pourrez le modifier plus tard.
+                    </p>
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <Label htmlFor="signupPassword">Mot de passe</Label>

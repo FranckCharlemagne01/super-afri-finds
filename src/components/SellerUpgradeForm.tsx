@@ -25,6 +25,7 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
+  const [shopName, setShopName] = useState('');
 
   // Surveiller le changement de rôle après l'upgrade
   useEffect(() => {
@@ -142,6 +143,24 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
                 onChange={setPhone}
                 required
               />
+            </div>
+
+            <div className="space-y-2 bg-primary/5 p-4 rounded-lg border border-primary/20">
+              <Label htmlFor="shopName" className="flex items-center gap-2">
+                <Store className="w-4 h-4" />
+                Nom de votre boutique (optionnel)
+              </Label>
+              <Input
+                id="shopName"
+                type="text"
+                placeholder="Ex: Ma Boutique Mode, Électronique Pro..."
+                value={shopName}
+                onChange={(e) => setShopName(e.target.value)}
+                maxLength={100}
+              />
+              <p className="text-xs text-muted-foreground">
+                Si vide, votre boutique s'appellera "Boutique {firstName} {lastName}" ou "Djassa Boutique" par défaut.
+              </p>
             </div>
 
             <div className="bg-muted p-3 rounded-lg">

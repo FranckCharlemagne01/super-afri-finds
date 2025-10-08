@@ -51,6 +51,7 @@ const ShopPage = () => {
 
   const [shop, setShop] = useState<Shop | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
+  const [similarShops, setSimilarShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -92,6 +93,46 @@ const ShopPage = () => {
 
         if (!productsError && productsData) {
           setProducts(productsData);
+          
+          // Fetch similar shops based on the main category of this shop's products
+          if (productsData.length > 0) {
+            const mainCategory = productsData[0].category;
+            
+            const { data: similarShopsData } = await supabase
+              .from('seller_shops')
+              .select(`
+                id,
+                shop_name,
+                shop_slug,
+                shop_description,
+                logo_url,
+                banner_url,
+                seller_id,
+                created_at,
+                subscription_active
+              `)
+              .eq('is_active', true)
+              .neq('id', shopData.id)
+              .limit(6);
+            
+            if (similarShopsData) {
+              // Filter shops that have products in the same category
+              const shopsWithCategory = await Promise.all(
+                similarShopsData.map(async (s) => {
+                  const { data: shopProducts } = await supabase
+                    .from('products')
+                    .select('category')
+                    .eq('shop_id', s.id)
+                    .eq('category', mainCategory)
+                    .limit(1);
+                  
+                  return shopProducts && shopProducts.length > 0 ? s : null;
+                })
+              );
+              
+              setSimilarShops(shopsWithCategory.filter((s): s is Shop => s !== null).slice(0, 4));
+            }
+          }
         }
       } catch (error) {
         console.error('Error fetching shop:', error);
@@ -301,6 +342,47 @@ const ShopPage = () => {
             })()
           )}
         </div>
+
+        {/* Similar Shops Section */}
+        {similarShops.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold mb-4">Boutiques similaires</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {similarShops.map((similarShop) => (
+                <Card
+                  key={similarShop.id}
+                  className="p-4 cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => navigate(`/shop/${similarShop.shop_slug}`)}
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    {similarShop.logo_url ? (
+                      <img
+                        src={similarShop.logo_url}
+                        alt={similarShop.shop_name}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                        <Store className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold truncate">{similarShop.shop_name}</h4>
+                      {similarShop.subscription_active && (
+                        <Badge variant="secondary" className="text-xs">Premium</Badge>
+                      )}
+                    </div>
+                  </div>
+                  {similarShop.shop_description && (
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {similarShop.shop_description}
+                    </p>
+                  )}
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

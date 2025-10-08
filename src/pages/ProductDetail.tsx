@@ -493,7 +493,7 @@ const ProductDetail = () => {
       {shopProducts.length > 0 && (
         <section className="container mx-auto px-4 py-6 border-t">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-foreground">Produits de la même boutique</h2>
+            <h2 className="text-2xl font-bold text-foreground">Produits recommandés de cette boutique</h2>
             {shop && (
               <Button
                 variant="outline"

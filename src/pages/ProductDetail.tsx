@@ -29,12 +29,21 @@ interface Product {
   category: string;
   images?: string[];
   seller_id: string;
+  shop_id?: string;
   rating?: number;
   reviews_count?: number;
   badge?: string;
   is_flash_sale?: boolean;
   stock_quantity?: number;
   video_url?: string;
+}
+
+interface Shop {
+  id: string;
+  shop_name: string;
+  shop_slug: string;
+  shop_description?: string;
+  logo_url?: string;
 }
 
 const ProductDetail = () => {
@@ -49,6 +58,9 @@ const ProductDetail = () => {
   const [personalMessage, setPersonalMessage] = useState('');
   const [showVideo, setShowVideo] = useState(false);
   const [product, setProduct] = useState<Product | null>(null);
+  const [shop, setShop] = useState<Shop | null>(null);
+  const [shopProducts, setShopProducts] = useState<Product[]>([]);
+  const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -74,6 +86,47 @@ const ProductDetail = () => {
       }
       
       setProduct(data);
+      
+      // Fetch shop info if shop_id exists
+      if (data.shop_id) {
+        const { data: shopData } = await supabase
+          .from('seller_shops')
+          .select('*')
+          .eq('id', data.shop_id)
+          .single();
+        
+        if (shopData) {
+          setShop(shopData);
+          
+          // Fetch other products from the same shop
+          const { data: shopProductsData } = await supabase
+            .from('products')
+            .select('*')
+            .eq('shop_id', data.shop_id)
+            .eq('is_active', true)
+            .neq('id', productId)
+            .limit(6);
+          
+          if (shopProductsData) {
+            setShopProducts(shopProductsData);
+          }
+        }
+      }
+      
+      // Fetch similar products from other shops (same category)
+      const { data: similarData } = await supabase
+        .from('products')
+        .select('*')
+        .eq('category', data.category)
+        .eq('is_active', true)
+        .neq('id', productId)
+        .neq('shop_id', data.shop_id || '')
+        .limit(6);
+      
+      if (similarData) {
+        setSimilarProducts(similarData);
+      }
+      
     } catch (error) {
       console.error('Error fetching product:', error);
       navigate('/');
@@ -404,6 +457,119 @@ const ProductDetail = () => {
 
       {/* Mobile padding to prevent content being hidden behind action bar */}
       <div className="lg:hidden h-32"></div>
+
+      {/* Shop Info Section */}
+      {shop && (
+        <section className="container mx-auto px-4 py-6 border-t">
+          <div className="flex items-center gap-4 mb-6">
+            {shop.logo_url ? (
+              <img
+                src={shop.logo_url}
+                alt={shop.shop_name}
+                className="w-16 h-16 rounded-full object-cover border-2 border-primary"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-2xl">🏪</span>
+              </div>
+            )}
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-foreground">{shop.shop_name}</h3>
+              {shop.shop_description && (
+                <p className="text-sm text-muted-foreground">{shop.shop_description}</p>
+              )}
+            </div>
+            <Button
+              onClick={() => navigate(`/shop/${shop.shop_slug}`)}
+              className="bg-primary hover:bg-primary/90"
+            >
+              Voir la boutique
+            </Button>
+          </div>
+        </section>
+      )}
+
+      {/* Products from the Same Shop */}
+      {shopProducts.length > 0 && (
+        <section className="container mx-auto px-4 py-6 border-t">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-foreground">Produits de la même boutique</h2>
+            {shop && (
+              <Button
+                variant="outline"
+                onClick={() => navigate(`/shop/${shop.shop_slug}`)}
+              >
+                Voir tous
+              </Button>
+            )}
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {shopProducts.map((prod) => (
+              <div
+                key={prod.id}
+                onClick={() => navigate(`/product/${prod.id}`)}
+                className="cursor-pointer group"
+              >
+                <div className="relative aspect-square overflow-hidden rounded-lg bg-muted mb-2">
+                  <img
+                    src={prod.images?.[0] || "/placeholder.svg"}
+                    alt={prod.title}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                  />
+                  {prod.discount_percentage && prod.discount_percentage > 0 && (
+                    <Badge className="absolute top-2 left-2 bg-promo text-promo-foreground">
+                      -{prod.discount_percentage}%
+                    </Badge>
+                  )}
+                </div>
+                <h3 className="text-sm font-medium text-foreground line-clamp-2 mb-1">
+                  {prod.title}
+                </h3>
+                <p className="text-lg font-bold text-primary">
+                  {prod.price.toLocaleString()} FCFA
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Similar Products from Other Shops */}
+      {similarProducts.length > 0 && (
+        <section className="container mx-auto px-4 py-6 border-t">
+          <h2 className="text-2xl font-bold text-foreground mb-4">
+            Produits similaires dans d'autres boutiques
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {similarProducts.map((prod) => (
+              <div
+                key={prod.id}
+                onClick={() => navigate(`/product/${prod.id}`)}
+                className="cursor-pointer group"
+              >
+                <div className="relative aspect-square overflow-hidden rounded-lg bg-muted mb-2">
+                  <img
+                    src={prod.images?.[0] || "/placeholder.svg"}
+                    alt={prod.title}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                  />
+                  {prod.discount_percentage && prod.discount_percentage > 0 && (
+                    <Badge className="absolute top-2 left-2 bg-promo text-promo-foreground">
+                      -{prod.discount_percentage}%
+                    </Badge>
+                  )}
+                </div>
+                <h3 className="text-sm font-medium text-foreground line-clamp-2 mb-1">
+                  {prod.title}
+                </h3>
+                <p className="text-lg font-bold text-primary">
+                  {prod.price.toLocaleString()} FCFA
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 };

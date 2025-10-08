@@ -2,7 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Store, ExternalLink, LogOut, Coins, Clock, CheckCircle2 } from 'lucide-react';
+import { Store, ExternalLink, LogOut, Coins, Clock, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface Shop {
@@ -129,6 +129,14 @@ export const ModernSellerHeader = ({
 
             {/* Action Buttons */}
             <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => navigate('/')}
+                className="bg-card hover:bg-primary/10 border-primary/30 flex-1 sm:flex-none"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Retour
+              </Button>
               {shop && (
                 <Button
                   variant="outline"

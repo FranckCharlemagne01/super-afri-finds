@@ -132,7 +132,7 @@ export const ModernSellerHeader = ({
               {shop && (
                 <Button
                   variant="outline"
-                  onClick={() => navigate(`/shop/${shop.shop_slug}`)}
+                  onClick={() => navigate(`/boutique/${shop.shop_slug}`)}
                   className="bg-card hover:bg-primary/10 border-primary/30 flex-1 sm:flex-none"
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />

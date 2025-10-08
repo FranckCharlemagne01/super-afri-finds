@@ -99,7 +99,7 @@ export const ShopOverviewTab = ({
     {
       label: 'Voir ma boutique',
       icon: ShoppingBag,
-      onClick: () => shop && navigate(`/shop/${shop.shop_slug}`),
+      onClick: () => shop && navigate(`/boutique/${shop.shop_slug}`),
       variant: 'outline' as const,
     },
   ];

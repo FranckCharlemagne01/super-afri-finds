@@ -175,7 +175,7 @@ export const ProductCard = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                navigate(`/shop/${shop_slug}`);
+                navigate(`/boutique/${shop_slug}`);
               }}
               className="w-full text-left px-2 py-1.5 hover:bg-muted/50 rounded-md transition-colors"
             >

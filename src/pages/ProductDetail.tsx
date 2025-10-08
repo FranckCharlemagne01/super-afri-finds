@@ -480,7 +480,7 @@ const ProductDetail = () => {
               )}
             </div>
             <Button
-              onClick={() => navigate(`/shop/${shop.shop_slug}`)}
+              onClick={() => navigate(`/boutique/${shop.shop_slug}`)}
               className="bg-primary hover:bg-primary/90"
             >
               Voir la boutique
@@ -497,7 +497,7 @@ const ProductDetail = () => {
             {shop && (
               <Button
                 variant="outline"
-                onClick={() => navigate(`/shop/${shop.shop_slug}`)}
+                onClick={() => navigate(`/boutique/${shop.shop_slug}`)}
               >
                 Voir tous
               </Button>

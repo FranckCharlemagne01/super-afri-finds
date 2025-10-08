@@ -154,7 +154,10 @@ const Index = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select(`
+          *,
+          shop:seller_shops!shop_id(shop_slug, shop_name)
+        `)
         .eq('is_active', true)
         .order('created_at', { ascending: false });
       
@@ -205,7 +208,7 @@ const Index = () => {
   const regularProducts = products.filter(product => !product.is_flash_sale);
 
   // Convert Supabase product to ProductCard props
-  const convertToProductCardProps = (product: Product) => ({
+  const convertToProductCardProps = (product: any) => ({
     id: product.id,
     image: product.images?.[0] || "/placeholder.svg",
     title: product.title,
@@ -217,6 +220,8 @@ const Index = () => {
     badge: product.badge,
     isFlashSale: product.is_flash_sale || false,
     seller_id: product.seller_id,
+    shop_id: product.shop_id,
+    shop_slug: product.shop?.shop_slug,
     videoUrl: product.video_url,
     isBoosted: product.is_boosted || false,
     boostedUntil: product.boosted_until

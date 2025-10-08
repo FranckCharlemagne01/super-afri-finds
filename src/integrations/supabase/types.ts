@@ -667,6 +667,10 @@ export type Database = {
         Args: { _product_id?: string; _seller_id: string }
         Returns: boolean
       }
+      create_shops_for_existing_sellers: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       expire_free_tokens: {
         Args: Record<PropertyKey, never>
         Returns: undefined

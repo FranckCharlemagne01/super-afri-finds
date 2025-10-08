@@ -21,6 +21,8 @@ interface ProductCardProps {
   badge?: string;
   isFlashSale?: boolean;
   seller_id?: string;
+  shop_id?: string;
+  shop_slug?: string;
   videoUrl?: string;
   isBoosted?: boolean;
   boostedUntil?: string;
@@ -38,6 +40,8 @@ export const ProductCard = ({
   badge,
   isFlashSale = false,
   seller_id = 'default-seller',
+  shop_id,
+  shop_slug,
   videoUrl,
   isBoosted = false,
   boostedUntil,

@@ -271,64 +271,57 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white shadow-lg border-b">
+      <header className="sticky top-0 z-50 bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
-              <Button variant="ghost" size="icon" className="md:hidden p-2 min-w-[44px] min-h-[44px]">
-                <Menu className="w-5 h-5" />
-              </Button>
-              <h1 
-                className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold gradient-text-primary cursor-pointer transition-transform hover:scale-105" 
-                onClick={() => {
-                  navigate('/');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-              >
-                Djassa
-              </h1>
-              <Badge className="gradient-accent text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 hidden sm:inline-flex">
-                {userCountry}
-              </Badge>
-            </div>
+          <div className="flex items-center gap-3">
+            {/* Logo Djassa - Always visible, no lines behind */}
+            <h1 
+              className="text-lg md:text-xl lg:text-2xl font-bold gradient-text-primary cursor-pointer transition-transform hover:scale-105 whitespace-nowrap" 
+              onClick={() => {
+                navigate('/');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            >
+              Djassa
+            </h1>
             
-            <div className="flex-1 max-w-md mx-4 hidden md:block">
+            {/* Search Bar - Full width on mobile/tablet, limited on desktop */}
+            <div className="flex-1 md:max-w-md">
               <SearchBar placeholder="Rechercher des produits..." />
             </div>
             
-            <div className="flex items-center gap-0.5 sm:gap-1 md:gap-2">
-              <Button variant="ghost" size="icon" className="relative p-2 sm:p-2 min-w-[44px] min-h-[44px]" onClick={handleFavoritesClick}>
-                <Heart className={`w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 ${favoriteIds.length > 0 ? 'fill-current text-promo' : ''}`} />
+            {/* Desktop Icons Only - Hidden on mobile/tablet */}
+            <div className="hidden md:flex items-center gap-2">
+              <Badge className="gradient-accent text-xs px-2 py-1">
+                {userCountry}
+              </Badge>
+              <Button variant="ghost" size="icon" className="relative p-2 min-w-[44px] min-h-[44px]" onClick={handleFavoritesClick}>
+                <Heart className={`w-5 h-5 ${favoriteIds.length > 0 ? 'fill-current text-promo' : ''}`} />
                 <RealtimeNotificationBadge count={favoriteIds.length} className="bg-promo text-white" />
               </Button>
-              <Button variant="ghost" size="icon" className="relative p-2 sm:p-2 min-w-[44px] min-h-[44px]" onClick={handleCartClick}>
-                <ShoppingCart className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+              <Button variant="ghost" size="icon" className="relative p-2 min-w-[44px] min-h-[44px]" onClick={handleCartClick}>
+                <ShoppingCart className="w-5 h-5" />
                 <RealtimeNotificationBadge count={cartCount} className="bg-promo text-white" />
               </Button>
-              <Button variant="ghost" size="icon" className="p-2 sm:p-2 min-w-[44px] min-h-[44px]" onClick={handleProfileClick}>
-                <User className={`w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 ${user ? 'text-primary' : ''}`} />
+              <Button variant="ghost" size="icon" className="p-2 min-w-[44px] min-h-[44px]" onClick={handleProfileClick}>
+                <User className={`w-5 h-5 ${user ? 'text-primary' : ''}`} />
               </Button>
               {isSuperAdmin && (
                 <Button 
                   variant="outline" 
                   size="sm" 
                   onClick={() => navigate('/superadmin')}
-                  className="text-xs hidden sm:flex min-h-[36px]"
+                  className="text-xs min-h-[36px]"
                 >
                   Dashboard
                 </Button>
               )}
               {user && (
-                <Button variant="ghost" size="sm" onClick={signOut} className="hidden sm:flex text-xs min-h-[36px]">
+                <Button variant="ghost" size="sm" onClick={signOut} className="text-xs min-h-[36px]">
                   Déconnexion
                 </Button>
               )}
             </div>
-          </div>
-          
-          {/* Mobile search */}
-          <div className="mt-3 md:hidden">
-            <SearchBar placeholder="Rechercher..." />
           </div>
         </div>
       </header>

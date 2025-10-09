@@ -178,15 +178,15 @@ const ShopPage = () => {
     return (
       <div className="min-h-screen bg-background">
         {/* Header with back button */}
-        <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b">
-          <div className="container mx-auto px-4 py-3 flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/seller/dashboard')}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+      <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b">
+        <div className="container mx-auto px-4 py-3 flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/')}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
             <div className="flex items-center gap-2">
               <Store className="h-5 w-5 text-primary" />
               <h1 className="text-lg font-semibold">Tableau de bord - {shop.shop_name}</h1>

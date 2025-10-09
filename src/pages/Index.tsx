@@ -8,6 +8,7 @@ import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 import FAQ from "@/components/FAQ";
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { CategorySidebar } from "@/components/CategorySidebar";
+import { PopularCategories } from "@/components/PopularCategories";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -388,17 +389,7 @@ const Index = () => {
               Voir tout
             </Button>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-2 sm:gap-3">
-            {categories.map((category, index) => (
-              <CategoryCard
-                key={index}
-                title={category.title}
-                itemCount={category.itemCount}
-                image={category.image}
-                onClick={() => navigate(`/category/${category.slug}`)}
-              />
-            ))}
-          </div>
+          <PopularCategories />
         </section>
 
         {/* Flash Sales */}

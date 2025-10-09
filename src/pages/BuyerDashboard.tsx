@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useStableAuth } from '@/hooks/useStableAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -113,6 +113,13 @@ const BuyerDashboard = () => {
     setCancellingOrderId(null);
   };
 
+  // Sync updatedProfile when profile changes - using useEffect to avoid re-render loop
+  useEffect(() => {
+    if (profile.full_name && !updatedProfile.full_name) {
+      setUpdatedProfile(profile);
+    }
+  }, [profile, updatedProfile.full_name]);
+
   // Show skeleton while loading profile
   if (loadingProfile) {
     return <DashboardSkeleton />;
@@ -120,11 +127,6 @@ const BuyerDashboard = () => {
 
   if (!user) {
     return <DashboardSkeleton />;
-  }
-
-  // Sync updatedProfile when profile changes
-  if (profile.full_name && !updatedProfile.full_name) {
-    setUpdatedProfile(profile);
   }
 
   return (

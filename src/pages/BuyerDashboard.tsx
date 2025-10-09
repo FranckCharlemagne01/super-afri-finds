@@ -1,13 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { useStableAuth } from '@/hooks/useStableAuth';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { BuyerMessages } from '@/components/BuyerMessages';
+import { useBuyerProfile } from '@/hooks/useBuyerProfile';
+import { DashboardSkeleton } from '@/components/buyer/DashboardSkeleton';
 import { 
   User, 
   Package, 
@@ -22,7 +21,6 @@ import {
   Settings,
   Phone,
   Mail,
-  MapPin,
   ChevronRight
 } from 'lucide-react';
 import {
@@ -37,6 +35,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useNavigate } from 'react-router-dom';
+
+// Lazy load heavy components
+const BuyerMessages = lazy(() => import('@/components/BuyerMessages').then(module => ({ default: module.BuyerMessages })));
 
 interface Order {
   id: string;
@@ -78,13 +79,10 @@ const MessageNotificationBadge = () => {
 
 const BuyerDashboard = () => {
   const { user, signOut } = useStableAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [profile, setProfile] = useState<UserProfile>({ full_name: '', phone: '', email: '' });
-  const [loading, setLoading] = useState(true);
+  const { profile, orders, loadingProfile, updateProfile, cancelOrder } = useBuyerProfile(user?.id);
   const [editingProfile, setEditingProfile] = useState(false);
-  const [updatedProfile, setUpdatedProfile] = useState<UserProfile>({ full_name: '', phone: '', email: '' });
+  const [updatedProfile, setUpdatedProfile] = useState({ full_name: '', phone: '', email: '' });
   const [activeSection, setActiveSection] = useState('dashboard');
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
 
@@ -97,81 +95,10 @@ const BuyerDashboard = () => {
     navigate('/');
   };
 
-  useEffect(() => {
-    if (user) {
-      fetchUserData();
-    }
-  }, [user]);
-
-  const fetchUserData = async () => {
-    try {
-      setLoading(true);
-      
-      // Fetch profile
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('full_name, phone, email')
-        .eq('user_id', user?.id)
-        .single();
-
-      if (profileError) throw profileError;
-      
-      const userProfile = {
-        full_name: profileData?.full_name || '',
-        phone: profileData?.phone || '',
-        email: profileData?.email || user?.email || ''
-      };
-      
-      setProfile(userProfile);
-      setUpdatedProfile(userProfile);
-
-      // Fetch orders
-      const { data: ordersData, error: ordersError } = await supabase.rpc('get_seller_orders');
-      
-      if (ordersError) throw ordersError;
-      
-      // Filter only orders where the current user is the customer
-      const customerOrders = ordersData?.filter(order => order.customer_id === user?.id) || [];
-      setOrders(customerOrders);
-      
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger vos données",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleUpdateProfile = async () => {
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          full_name: updatedProfile.full_name,
-          phone: updatedProfile.phone,
-        })
-        .eq('user_id', user?.id);
-
-      if (error) throw error;
-
-      setProfile(updatedProfile);
+    const result = await updateProfile(updatedProfile);
+    if (result.success) {
       setEditingProfile(false);
-      
-      toast({
-        title: "Profil mis à jour",
-        description: "Vos informations ont été mises à jour avec succès",
-      });
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour votre profil",
-        variant: "destructive",
-      });
     }
   };
 
@@ -181,89 +108,23 @@ const BuyerDashboard = () => {
   };
 
   const handleCancelOrder = async (orderId: string) => {
-    try {
-      setCancellingOrderId(orderId);
-      
-      // Utiliser la nouvelle fonction sécurisée pour l'annulation
-      const { data, error } = await supabase.rpc('cancel_order_by_customer', {
-        order_id: orderId
-      });
-
-      if (error) throw error;
-
-      // Typage correct pour la réponse JSON
-      const result = data as { success: boolean; error?: string; seller_id?: string; customer_name?: string; product_title?: string };
-
-      // Vérifier le résultat de la fonction
-      if (!result.success) {
-        toast({
-          title: "Impossible d'annuler",
-          description: result.error || "Erreur inconnue",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Envoyer une notification temps réel au vendeur
-      if (result.seller_id) {
-        await supabase
-          .from('messages')
-          .insert({
-            sender_id: user.id,
-            recipient_id: result.seller_id,
-            subject: 'Commande annulée',
-            content: `Le client ${result.customer_name} a annulé sa commande pour "${result.product_title}". La commande a été automatiquement marquée comme annulée.`,
-            is_read: false
-          });
-      }
-
-      toast({
-        title: "✅ Commande annulée",
-        description: "Votre commande a été annulée avec succès. Le vendeur a été notifié.",
-      });
-
-      // Refresh orders to show updated status
-      await fetchUserData();
-    } catch (error) {
-      console.error('Error cancelling order:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'annuler la commande. Veuillez réessayer.",
-        variant: "destructive",
-      });
-    } finally {
-      setCancellingOrderId(null);
-    }
+    setCancellingOrderId(orderId);
+    await cancelOrder(orderId);
+    setCancellingOrderId(null);
   };
 
-  // Extract first and last name from full name
-  const getFirstName = (fullName: string) => fullName.split(' ')[0] || '';
-  const getLastName = (fullName: string) => fullName.split(' ').slice(1).join(' ') || '';
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card>
-          <CardContent className="p-6">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="mt-2 text-center">Chargement de votre profil...</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
+  // Show skeleton while loading profile
+  if (loadingProfile) {
+    return <DashboardSkeleton />;
   }
 
   if (!user) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card>
-          <CardContent className="p-6">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-center">Vérification de votre session...</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <DashboardSkeleton />;
+  }
+
+  // Sync updatedProfile when profile changes
+  if (profile.full_name && !updatedProfile.full_name) {
+    setUpdatedProfile(profile);
   }
 
   return (
@@ -755,7 +616,16 @@ const BuyerDashboard = () => {
               <h2 className="text-xl font-semibold">Mes Messages</h2>
             </div>
 
-            <BuyerMessages />
+            <Suspense fallback={
+              <Card className="border-0 shadow-sm bg-white">
+                <CardContent className="p-6">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p className="text-center text-sm text-muted-foreground">Chargement des messages...</p>
+                </CardContent>
+              </Card>
+            }>
+              <BuyerMessages />
+            </Suspense>
           </div>
         )}
       </div>

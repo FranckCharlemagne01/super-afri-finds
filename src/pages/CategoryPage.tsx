@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { getSubCategoryBySlug } from '@/data/categories';
+import { getCategoryBySlug } from '@/data/categories';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -41,20 +41,23 @@ const CategoryPage = () => {
   const [selectedShop, setSelectedShop] = useState<string>('all');
   const [loading, setLoading] = useState(true);
 
-  const categoryInfo = slug ? getSubCategoryBySlug(slug) : null;
+  const categoryInfo = slug ? getCategoryBySlug(slug) : null;
 
   useEffect(() => {
     const fetchProducts = async () => {
-      if (!slug) return;
+      if (!slug || !categoryInfo) return;
 
       try {
         setLoading(true);
 
-        // Fetch products for this category
+        // Get all subcategory slugs for this main category
+        const subcategorySlugs = categoryInfo.subcategories.map(sub => sub.slug);
+
+        // Fetch products for ALL subcategories of this main category
         const { data: productsData, error: productsError } = await supabase
           .from('products')
           .select('*')
-          .eq('category', slug)
+          .in('category', subcategorySlugs)
           .eq('is_active', true)
           .order('created_at', { ascending: false });
 
@@ -91,7 +94,7 @@ const CategoryPage = () => {
     };
 
     fetchProducts();
-  }, [slug, toast]);
+  }, [slug, categoryInfo, toast]);
 
   if (!categoryInfo) {
     return (
@@ -110,7 +113,7 @@ const CategoryPage = () => {
     ? products 
     : products.filter(p => p.shop_id === selectedShop);
 
-  const Icon = categoryInfo.category.icon;
+  const Icon = categoryInfo.icon;
 
   return (
     <div className="min-h-screen bg-background">
@@ -126,7 +129,7 @@ const CategoryPage = () => {
           </Button>
           <div className="flex items-center gap-2">
             <Icon className="h-5 w-5 text-primary" />
-            <h1 className="text-lg font-semibold">{categoryInfo.subcategory.name}</h1>
+            <h1 className="text-lg font-semibold">{categoryInfo.name}</h1>
           </div>
         </div>
       </header>
@@ -137,9 +140,9 @@ const CategoryPage = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-card rounded-full mb-4">
             <Icon className="h-8 w-8 text-primary" />
           </div>
-          <h2 className="text-2xl md:text-3xl font-bold mb-2">{categoryInfo.subcategory.name}</h2>
+          <h2 className="text-2xl md:text-3xl font-bold mb-2">{categoryInfo.name}</h2>
           <p className="text-muted-foreground">
-            {categoryInfo.category.name} • {products.length} produit{products.length > 1 ? 's' : ''}
+            {products.length} produit{products.length > 1 ? 's' : ''} disponible{products.length > 1 ? 's' : ''}
           </p>
         </div>
       </div>

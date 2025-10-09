@@ -61,6 +61,7 @@ const ProductDetail = () => {
   const [shop, setShop] = useState<Shop | null>(null);
   const [shopProducts, setShopProducts] = useState<Product[]>([]);
   const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
+  const [similarShops, setSimilarShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -125,6 +126,22 @@ const ProductDetail = () => {
       
       if (similarData) {
         setSimilarProducts(similarData);
+        
+        // Fetch similar shops (shops that have similar products)
+        const similarShopIds = Array.from(new Set(similarData.map(p => p.shop_id).filter(Boolean)));
+        
+        if (similarShopIds.length > 0) {
+          const { data: similarShopsData } = await supabase
+            .from('seller_shops')
+            .select('*')
+            .in('id', similarShopIds)
+            .eq('is_active', true)
+            .limit(4);
+          
+          if (similarShopsData) {
+            setSimilarShops(similarShopsData);
+          }
+        }
       }
       
     } catch (error) {
@@ -538,7 +555,7 @@ const ProductDetail = () => {
       {similarProducts.length > 0 && (
         <section className="container mx-auto px-4 py-6 border-t">
           <h2 className="text-2xl font-bold text-foreground mb-4">
-            Produits similaires dans d'autres boutiques
+            Produits similaires
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {similarProducts.map((prod) => (
@@ -565,6 +582,59 @@ const ProductDetail = () => {
                 <p className="text-lg font-bold text-primary">
                   {prod.price.toLocaleString()} FCFA
                 </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Similar Shops */}
+      {similarShops.length > 0 && (
+        <section className="container mx-auto px-4 py-6 border-t">
+          <h2 className="text-2xl font-bold text-foreground mb-4">
+            Autres boutiques similaires
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {similarShops.map((similarShop) => (
+              <div
+                key={similarShop.id}
+                onClick={() => navigate(`/boutique/${similarShop.shop_slug}`)}
+                className="cursor-pointer group p-4 border rounded-lg hover:shadow-lg transition-all duration-300 bg-card"
+              >
+                <div className="flex flex-col items-center text-center gap-3">
+                  {similarShop.logo_url ? (
+                    <img
+                      src={similarShop.logo_url}
+                      alt={similarShop.shop_name}
+                      className="w-16 h-16 rounded-full object-cover border-2 border-primary/20 group-hover:border-primary transition-colors"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                      <span className="text-2xl">🏪</span>
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                      {similarShop.shop_name}
+                    </h3>
+                    {similarShop.shop_description && (
+                      <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                        {similarShop.shop_description}
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/boutique/${similarShop.shop_slug}`);
+                    }}
+                  >
+                    Voir la boutique
+                  </Button>
+                </div>
               </div>
             ))}
           </div>

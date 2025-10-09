@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Grid3x3, MessageSquare, User } from "lucide-react";
+import { Home, Grid3x3, MessageSquare, ShoppingCart, User } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { cn } from "@/lib/utils";
@@ -8,7 +8,7 @@ export const MobileBottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
-  const { unreadMessages } = useRealtimeNotifications();
+  const { unreadMessages, cartItems } = useRealtimeNotifications();
 
   // Ne s'affiche que sur mobile et tablette
   if (!isMobile) return null;
@@ -16,8 +16,9 @@ export const MobileBottomNav = () => {
   const navItems = [
     { icon: Home, label: "Accueil", path: "/" },
     { icon: Grid3x3, label: "Catégories", path: "/categories" },
-    { icon: MessageSquare, label: "Messages", path: "/messages", badge: unreadMessages },
-    { icon: User, label: "Mon Profil", path: "/buyer-dashboard" },
+    { icon: MessageSquare, label: "Messagerie", path: "/messages", badge: unreadMessages },
+    { icon: ShoppingCart, label: "Panier", path: "/cart", badge: cartItems },
+    { icon: User, label: "Mon Djassa", path: "/buyer-dashboard" },
   ];
 
   const isActive = (path: string) => location.pathname === path;

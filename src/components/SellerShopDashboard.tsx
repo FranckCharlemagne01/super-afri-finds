@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { SellerProducts } from '@/components/SellerProducts';
 import { ProductForm } from '@/components/ProductForm';
+import { ProductBoostDialog } from '@/components/ProductBoostDialog';
 import { TokenTransactionHistory } from '@/components/TokenTransactionHistory';
 import { useTokens } from '@/hooks/useTokens';
 
@@ -63,7 +64,9 @@ export const SellerShopDashboard = ({ shop, products, loading, onProductsUpdate 
   const [activeTab, setActiveTab] = useState('products');
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const { tokenBalance, freeTokens, paidTokens, freeTokensExpiresAt } = useTokens();
+  const [boostDialogOpen, setBoostDialogOpen] = useState(false);
+  const [selectedProductForBoost, setSelectedProductForBoost] = useState<{ id: string; title: string } | null>(null);
+  const { tokenBalance, freeTokens, paidTokens, freeTokensExpiresAt, refreshBalance } = useTokens();
 
   const handleProductEdit = (product: Product) => {
     setEditingProduct(product);
@@ -79,6 +82,16 @@ export const SellerShopDashboard = ({ shop, products, loading, onProductsUpdate 
     setShowProductForm(false);
     setEditingProduct(null);
     onProductsUpdate();
+  };
+
+  const handleBoost = (productId: string, productTitle: string) => {
+    setSelectedProductForBoost({ id: productId, title: productTitle });
+    setBoostDialogOpen(true);
+  };
+
+  const handleBoostComplete = () => {
+    onProductsUpdate();
+    refreshBalance();
   };
 
   return (
@@ -201,6 +214,7 @@ export const SellerShopDashboard = ({ shop, products, loading, onProductsUpdate 
                 loading={loading}
                 onEdit={handleProductEdit}
                 onDelete={handleProductDelete}
+                onBoost={handleBoost}
                 emptyMessage="Vous n'avez pas encore de produits dans votre boutique."
               />
             </>
@@ -323,6 +337,18 @@ export const SellerShopDashboard = ({ shop, products, loading, onProductsUpdate 
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Boost Dialog */}
+      {selectedProductForBoost && (
+        <ProductBoostDialog
+          open={boostDialogOpen}
+          onOpenChange={setBoostDialogOpen}
+          productId={selectedProductForBoost.id}
+          productTitle={selectedProductForBoost.title}
+          currentTokens={tokenBalance}
+          onBoostComplete={handleBoostComplete}
+        />
+      )}
     </div>
   );
 };

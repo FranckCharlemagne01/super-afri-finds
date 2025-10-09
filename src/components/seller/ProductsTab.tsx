@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { ProductForm } from '@/components/ProductForm';
 import { SellerProducts } from '@/components/SellerProducts';
+import { ProductBoostDialog } from '@/components/ProductBoostDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useTokens } from '@/hooks/useTokens';
 
 interface Product {
   id: string;
@@ -36,8 +38,11 @@ interface ProductsTabProps {
 
 export const ProductsTab = ({ products, loading, shopId, onRefresh }: ProductsTabProps) => {
   const { toast } = useToast();
+  const { tokenBalance, refreshBalance } = useTokens();
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [boostDialogOpen, setBoostDialogOpen] = useState(false);
+  const [selectedProductForBoost, setSelectedProductForBoost] = useState<{ id: string; title: string } | null>(null);
 
   const handleEdit = (product: Product) => {
     setEditingProduct(product);
@@ -73,6 +78,16 @@ export const ProductsTab = ({ products, loading, shopId, onRefresh }: ProductsTa
     setShowProductForm(false);
     setEditingProduct(null);
     onRefresh();
+  };
+
+  const handleBoost = (productId: string, productTitle: string) => {
+    setSelectedProductForBoost({ id: productId, title: productTitle });
+    setBoostDialogOpen(true);
+  };
+
+  const handleBoostComplete = () => {
+    onRefresh();
+    refreshBalance();
   };
 
   if (showProductForm) {
@@ -117,9 +132,22 @@ export const ProductsTab = ({ products, loading, shopId, onRefresh }: ProductsTa
             loading={loading}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            onBoost={handleBoost}
           />
         </CardContent>
       </Card>
+
+      {/* Boost Dialog */}
+      {selectedProductForBoost && (
+        <ProductBoostDialog
+          open={boostDialogOpen}
+          onOpenChange={setBoostDialogOpen}
+          productId={selectedProductForBoost.id}
+          productTitle={selectedProductForBoost.title}
+          currentTokens={tokenBalance}
+          onBoostComplete={handleBoostComplete}
+        />
+      )}
     </div>
   );
 };

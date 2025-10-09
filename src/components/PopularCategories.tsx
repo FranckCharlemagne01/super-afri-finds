@@ -4,7 +4,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 import { categories } from "@/data/categories";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { supabase } from "@/integrations/supabase/client";
 
 export const PopularCategories = () => {
   const navigate = useNavigate();
@@ -12,34 +11,9 @@ export const PopularCategories = () => {
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
   const isMobile = useIsMobile();
-  const [popularCategories, setPopularCategories] = useState<typeof categories>([]);
 
-  // Récupérer les catégories ayant au moins un produit actif
-  useEffect(() => {
-    const fetchActiveCategories = async () => {
-      const { data: products, error } = await supabase
-        .from('products')
-        .select('category')
-        .eq('is_active', true);
-
-      if (error || !products) {
-        console.error('Error fetching active categories:', error);
-        return;
-      }
-
-      // Extraire les catégories uniques
-      const activeCategories = [...new Set(products.map(p => p.category))];
-      
-      // Filtrer la liste des catégories pour ne garder que celles avec des produits actifs
-      const filteredCategories = categories.filter(cat => 
-        activeCategories.includes(cat.slug)
-      );
-
-      setPopularCategories(filteredCategories);
-    };
-
-    fetchActiveCategories();
-  }, []);
+  // Sélectionner les catégories principales les plus populaires
+  const popularCategories = categories.slice(0, 12);
 
   // Défilement fluide avec la molette ou scroll horizontal
   const scroll = (direction: "left" | "right") => {

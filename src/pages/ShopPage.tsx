@@ -183,7 +183,7 @@ const ShopPage = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/seller/dashboard')}
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>

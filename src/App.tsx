@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import SellerDashboard from "./pages/SellerDashboard";
@@ -19,6 +20,7 @@ import ShopPage from "./pages/ShopPage";
 import CategoryPage from "./pages/CategoryPage";
 import LegalNotice from "./pages/LegalNotice";
 import NotFound from "./pages/NotFound";
+import MessagesPage from "./pages/MessagesPage";
 import { CategoriesPage } from "./pages/CategoriesPage";
 
 const queryClient = new QueryClient();
@@ -45,10 +47,12 @@ const App = () => (
             <Route path="/boutique/:slug" element={<ShopPage />} />
             <Route path="/category/:slug" element={<CategoryPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
+            <Route path="/messages" element={<MessagesPage />} />
             <Route path="/legal" element={<LegalNotice />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <MobileBottomNav />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

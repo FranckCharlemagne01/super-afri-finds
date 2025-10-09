@@ -181,27 +181,21 @@ const SuperAdmin = () => {
       setProducts(productsData.data || []);
       setOrders(ordersData.data || []);
       
-      // Get users with roles separately for better control
-      const { data: allProfiles } = await supabase.from('profiles').select('*');
-      const { data: allUserRoles } = await supabase.from('user_roles').select('user_id, role');
+      // SECURITY: Use secure RPC function that enforces superadmin check
+      const { data: transformedUsers, error: usersError } = await supabase
+        .rpc('get_users_with_profiles');
       
-      // Transform profiles data to match expected format
-      const transformedUsers = allProfiles?.map(profile => {
-        const userRole = allUserRoles?.find(ur => ur.user_id === profile.user_id);
-        return {
-          id: profile.id,
-          user_id: profile.user_id,
-          email: profile.email || '',
-          full_name: profile.full_name || '',
-          phone: profile.phone || '',
-          city: profile.city || '',
-          country: profile.country || '',
-          created_at: profile.created_at,
-          role: userRole?.role || 'buyer'
-        };
-      }) || [];
+      if (usersError) {
+        console.error('Error fetching users:', usersError);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les utilisateurs",
+          variant: "destructive",
+        });
+        return;
+      }
       
-      setUsers(transformedUsers);
+      setUsers(transformedUsers || []);
       setDataLoaded(true);
 
     } catch (error: any) {

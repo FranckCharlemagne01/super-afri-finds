@@ -84,30 +84,14 @@ const SuperAdminDashboard = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Fetch users with roles
-      const { data: usersData, error: usersError } = await supabase
-        .from('profiles')
-        .select(`
-          id,
-          user_id,
-          email,
-          full_name,
-          phone,
-          country,
-          created_at,
-          user_roles(role)
-        `)
-        .order('created_at', { ascending: false });
+      // SECURITY: Use secure RPC function that enforces superadmin check
+      const { data: transformedUsers, error: usersError } = await supabase
+        .rpc('get_users_with_profiles');
 
       if (usersError) throw usersError;
 
-      // Transform the data to flatten the role
-      const transformedUsers = usersData?.map(user => ({
-        ...user,
-        role: (user as any).user_roles?.[0]?.role || 'buyer'
-      })) || [];
-
-      setUsers(transformedUsers);
+      // Data is already transformed by the RPC function with roles included
+      setUsers(transformedUsers || []);
 
       // Fetch products
       const { data: productsData, error: productsError } = await supabase

@@ -679,6 +679,10 @@ export type Database = {
         Args: { shop_name: string }
         Returns: string
       }
+      get_2fa_status: {
+        Args: { _user_id: string }
+        Returns: Json
+      }
       get_admin_statistics: {
         Args: Record<PropertyKey, never>
         Returns: {

@@ -134,6 +134,7 @@ export const ProfileUpdateForm = () => {
             value={profileData.full_name}
             onChange={(value) => handleChange('full_name', value)}
             placeholder="Votre nom complet"
+            className="min-h-[48px] text-base px-4"
           />
         </div>
 
@@ -148,6 +149,7 @@ export const ProfileUpdateForm = () => {
             value={profileData.email}
             onChange={(e) => handleChange('email', e.target.value)}
             placeholder="votre@email.com"
+            className="min-h-[48px] text-base px-4"
           />
         </div>
 
@@ -162,15 +164,16 @@ export const ProfileUpdateForm = () => {
             value={profileData.phone}
             onChange={(e) => {
               const value = e.target.value;
-              // Accepter +, chiffres et espaces
-              if (value === '' || /^[+\d\s]*$/.test(value)) {
+              // Accepter +, 00, chiffres et espaces
+              if (value === '' || /^(\+|0{0,2})[0-9\s]*$/.test(value)) {
                 handleChange('phone', value);
               }
             }}
             placeholder="+225 0707070707"
+            className="min-h-[48px] text-base px-4"
             maxLength={20}
           />
-          <p className="text-xs text-muted-foreground">Format: +225 0707070707 ou 0707070707</p>
+          <p className="text-xs text-muted-foreground">Format: +225 0707070707, 00225 0707070707 ou 0707070707</p>
         </div>
 
         <div className="space-y-2">
@@ -183,6 +186,7 @@ export const ProfileUpdateForm = () => {
             value={profileData.city}
             onChange={(value) => handleChange('city', value)}
             placeholder="Abidjan"
+            className="min-h-[48px] text-base px-4"
           />
         </div>
 
@@ -193,6 +197,7 @@ export const ProfileUpdateForm = () => {
             value={profileData.address}
             onChange={(e) => handleChange('address', e.target.value)}
             placeholder="Votre adresse complète"
+            className="min-h-[48px] text-base px-4"
           />
         </div>
 
@@ -203,6 +208,7 @@ export const ProfileUpdateForm = () => {
             value={profileData.country}
             onChange={(e) => handleChange('country', e.target.value)}
             placeholder="Côte d'Ivoire"
+            className="min-h-[48px] text-base px-4"
           />
         </div>
       </div>

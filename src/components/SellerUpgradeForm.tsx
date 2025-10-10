@@ -119,6 +119,7 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
                 placeholder="Votre prénom"
                 value={firstName}
                 onChange={setFirstName}
+                className="min-h-[48px] text-base px-4"
                 required
               />
             </div>
@@ -130,6 +131,7 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
                 placeholder="Votre nom de famille"
                 value={lastName}
                 onChange={setLastName}
+                className="min-h-[48px] text-base px-4"
                 required
               />
             </div>
@@ -143,15 +145,16 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
                 value={phone}
                 onChange={(e) => {
                   const value = e.target.value;
-                  // Accepter +, chiffres et espaces
-                  if (value === '' || /^[+\d\s]*$/.test(value)) {
+                  // Accepter +, 00, chiffres et espaces
+                  if (value === '' || /^(\+|0{0,2})[0-9\s]*$/.test(value)) {
                     setPhone(value);
                   }
                 }}
+                className="min-h-[48px] text-base px-4"
                 required
                 maxLength={20}
               />
-              <p className="text-xs text-muted-foreground">Format: +225 0707070707 ou 0707070707</p>
+              <p className="text-xs text-muted-foreground">Format: +225 0707070707, 00225 0707070707 ou 0707070707</p>
             </div>
 
             <div className="space-y-2 bg-primary/5 p-4 rounded-lg border border-primary/20">
@@ -165,6 +168,7 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
                 placeholder="Ex: Ma Boutique Mode, Électronique Pro..."
                 value={shopName}
                 onChange={(e) => setShopName(e.target.value)}
+                className="min-h-[48px] text-base px-4"
                 maxLength={100}
               />
               <p className="text-xs text-muted-foreground">

@@ -129,7 +129,7 @@ export const CheckoutDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md w-[calc(100vw-2rem)] mx-auto max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>Finaliser votre commande</DialogTitle>
         </DialogHeader>
@@ -167,6 +167,7 @@ export const CheckoutDialog = ({
                 value={formData.customerName}
                 onChange={(e) => handleInputChange('customerName', e.target.value)}
                 placeholder="Votre nom complet"
+                className="min-h-[48px] text-base px-4"
                 required
               />
             </div>
@@ -179,16 +180,17 @@ export const CheckoutDialog = ({
                 value={formData.customerPhone}
                 onChange={(e) => {
                   const value = e.target.value;
-                  // Accepter +, chiffres et espaces
-                  if (value === '' || /^[+\d\s]*$/.test(value)) {
+                  // Accepter +, 00, chiffres et espaces
+                  if (value === '' || /^(\+|0{0,2})[0-9\s]*$/.test(value)) {
                     handleInputChange('customerPhone', value);
                   }
                 }}
                 placeholder="+225 0707070707"
+                className="min-h-[48px] text-base px-4"
                 required
                 maxLength={20}
               />
-              <p className="text-xs text-muted-foreground">Format: +225 0707070707 ou 0707070707</p>
+              <p className="text-xs text-muted-foreground">Format: +225 0707070707, 00225 0707070707 ou 0707070707</p>
             </div>
 
             <div className="space-y-2">
@@ -198,6 +200,7 @@ export const CheckoutDialog = ({
                 value={formData.deliveryLocation}
                 onChange={(e) => handleInputChange('deliveryLocation', e.target.value)}
                 placeholder="Adresse de livraison complète"
+                className="min-h-[48px] text-base px-4"
                 required
               />
             </div>

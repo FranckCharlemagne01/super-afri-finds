@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { TextInput, NumericInput } from '@/components/ui/validated-input';
+import { TextInput } from '@/components/ui/validated-input';
 import { Label } from '@/components/ui/label';
 import { ShoppingCart, Plus, Minus } from 'lucide-react';
 import { useOrders, OrderData } from '@/hooks/useOrders';
@@ -109,7 +109,7 @@ export const QuickOrderDialog = ({
           {!iconOnly && <span className="ml-2">Commander</span>}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md mx-4 sm:mx-auto max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md w-[calc(100vw-2rem)] mx-auto max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold">Commander</DialogTitle>
         </DialogHeader>
@@ -121,21 +121,30 @@ export const QuickOrderDialog = ({
               value={formData.customerName}
               onChange={(value) => handleInputChange('customerName', value)}
               placeholder="Votre nom complet"
-              className="min-h-[44px] text-base"
+              className="min-h-[48px] text-base px-4"
               required
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="customerPhone" className="text-sm font-medium">Numéro de téléphone *</Label>
-            <NumericInput
+            <Input
               id="customerPhone"
+              type="text"
               value={formData.customerPhone}
-              onChange={(value) => handleInputChange('customerPhone', value)}
-              placeholder="22501234567"
-              className="min-h-[44px] text-base"
+              onChange={(e) => {
+                const value = e.target.value;
+                // Accepter +, 00, chiffres et espaces
+                if (value === '' || /^(\+|0{0,2})[0-9\s]*$/.test(value)) {
+                  handleInputChange('customerPhone', value);
+                }
+              }}
+              placeholder="+225 0707070707"
+              className="min-h-[48px] text-base px-4"
               required
+              maxLength={20}
             />
+            <p className="text-xs text-muted-foreground">Format: +225 0707070707, 00225 0707070707 ou 0707070707</p>
           </div>
 
           <div className="space-y-2">
@@ -146,7 +155,7 @@ export const QuickOrderDialog = ({
               onChange={(value) => handleInputChange('deliveryLocation', value)}
               placeholder="Adresse de livraison"
               allowNumbers={true}
-              className="min-h-[44px] text-base"
+              className="min-h-[48px] text-base px-4"
               required
             />
           </div>

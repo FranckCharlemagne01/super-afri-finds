@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ProductCard } from "@/components/ProductCard";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { SearchBar } from "@/components/SearchBar";
 import { cn } from "@/lib/utils";
 
 interface Product {
@@ -35,6 +36,7 @@ export const CategoriesPage = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -79,55 +81,82 @@ export const CategoriesPage = () => {
     fetchProducts();
   }, []);
 
-  // Filter products based on selected category
-  const filteredProducts = selectedCategory
-    ? products.filter((product) => {
-        // Find the main category for this product
-        for (const cat of categories) {
-          if (cat.subcategories.some(sub => sub.slug === product.category)) {
-            return cat.id === selectedCategory;
-          }
+  // Filter products based on selected category and search query
+  const filteredProducts = products.filter((product) => {
+    // Filter by category if selected
+    if (selectedCategory) {
+      let matchesCategory = false;
+      for (const cat of categories) {
+        if (cat.subcategories.some(sub => sub.slug === product.category)) {
+          matchesCategory = cat.id === selectedCategory;
+          break;
         }
-        return false;
-      })
-    : products;
+      }
+      if (!matchesCategory) return false;
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      return (
+        product.title.toLowerCase().includes(query) ||
+        product.category.toLowerCase().includes(query)
+      );
+    }
+
+    return true;
+  });
 
   // Mobile layout: deux zones (sidebar + products)
   if (isMobile) {
     return (
       <div className="min-h-screen bg-background pb-20 flex flex-col">
-        {/* Header mobile */}
-        <div className="sticky top-0 z-40 bg-background border-b">
-          <div className="container mx-auto px-4 py-3 flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/')}
-              className="min-w-[44px] min-h-[44px]"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <h1 className="text-lg font-bold text-foreground">Catégories</h1>
+        {/* Header mobile avec barre de recherche */}
+        <div className="sticky top-0 z-40 bg-background border-b shadow-sm">
+          <div className="container mx-auto px-4 py-3">
+            {/* Titre et bouton retour */}
+            <div className="flex items-center gap-3 mb-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/')}
+                className="min-w-[44px] min-h-[44px] flex-shrink-0"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <h1 className="text-lg font-bold text-foreground">Catégories</h1>
+            </div>
+
+            {/* Barre de recherche intégrée */}
+            <SearchBar
+              placeholder="Rechercher un produit..."
+              className="w-full"
+              showResults={false}
+              onSearch={(term) => setSearchQuery(term)}
+            />
           </div>
         </div>
 
         {/* Layout à deux colonnes */}
         <div className="flex flex-1 overflow-hidden">
           {/* Sidebar gauche - Catégories */}
-          <ScrollArea className="w-[28%] border-r bg-muted/30">
-            <div className="py-2">
+          <ScrollArea className="w-[30%] border-r bg-muted/20">
+            <div className="py-1">
               {/* Option "Tous les produits" */}
               <button
-                onClick={() => setSelectedCategory(null)}
+                onClick={() => {
+                  setSelectedCategory(null);
+                  setSearchQuery("");
+                }}
                 className={cn(
-                  "w-full px-3 py-3 text-left transition-colors border-l-4",
+                  "w-full px-2 py-3 text-left transition-all duration-200 border-l-4 active:scale-95",
                   selectedCategory === null
-                    ? "bg-primary/10 border-primary text-primary font-semibold"
-                    : "border-transparent hover:bg-muted text-muted-foreground"
+                    ? "bg-primary/15 border-primary text-primary font-semibold"
+                    : "border-transparent hover:bg-muted/50 text-muted-foreground active:bg-muted"
                 )}
               >
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-xs leading-tight">Tous</span>
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-xs leading-tight font-medium">Tous</span>
                   <span className="text-[10px] text-muted-foreground">
                     {products.length}
                   </span>
@@ -146,17 +175,20 @@ export const CategoriesPage = () => {
                 return (
                   <button
                     key={category.id}
-                    onClick={() => setSelectedCategory(category.id)}
+                    onClick={() => {
+                      setSelectedCategory(category.id);
+                      setSearchQuery("");
+                    }}
                     className={cn(
-                      "w-full px-3 py-3 text-left transition-colors border-l-4",
+                      "w-full px-2 py-3 text-left transition-all duration-200 border-l-4 active:scale-95",
                       selectedCategory === category.id
-                        ? "bg-primary/10 border-primary text-primary font-semibold"
-                        : "border-transparent hover:bg-muted text-muted-foreground"
+                        ? "bg-primary/15 border-primary text-primary font-semibold"
+                        : "border-transparent hover:bg-muted/50 text-muted-foreground active:bg-muted"
                     )}
                   >
                     <div className="flex flex-col items-center gap-1">
-                      <Icon className="w-6 h-6" />
-                      <span className="text-[10px] leading-tight text-center line-clamp-2">
+                      <Icon className="w-6 h-6 transition-transform group-hover:scale-110" />
+                      <span className="text-[9px] leading-tight text-center line-clamp-2 font-medium px-1">
                         {category.name}
                       </span>
                       <span className="text-[9px] text-muted-foreground">
@@ -170,18 +202,32 @@ export const CategoriesPage = () => {
           </ScrollArea>
 
           {/* Zone principale droite - Produits */}
-          <ScrollArea className="flex-1">
-            <div className="p-2">
+          <ScrollArea className="flex-1 bg-background">
+            <div className="p-1.5">
+              {/* Info sur les résultats */}
+              {searchQuery && (
+                <div className="px-2 py-2 mb-1 bg-muted/30 rounded-lg">
+                  <p className="text-xs text-muted-foreground">
+                    {filteredProducts.length} résultat{filteredProducts.length !== 1 ? 's' : ''} pour "{searchQuery}"
+                  </p>
+                </div>
+              )}
+
               {loading ? (
                 <div className="flex items-center justify-center py-20">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
                 </div>
               ) : filteredProducts.length === 0 ? (
-                <div className="text-center py-20">
-                  <p className="text-muted-foreground">Aucun produit disponible</p>
+                <div className="text-center py-20 px-4">
+                  <p className="text-sm text-muted-foreground">
+                    {searchQuery 
+                      ? `Aucun produit trouvé pour "${searchQuery}"`
+                      : "Aucun produit disponible"
+                    }
+                  </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-1.5 animate-fade-in">
                   {filteredProducts.map((product) => (
                     <ProductCard
                       key={product.id}

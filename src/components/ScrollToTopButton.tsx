@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export const ScrollToTopButton = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const isMobile = useIsMobile();
 
   // Show button when page is scrolled down
   useEffect(() => {
@@ -26,7 +28,8 @@ export const ScrollToTopButton = () => {
     });
   };
 
-  if (!isVisible) {
+  // Ne pas afficher sur mobile
+  if (!isVisible || isMobile) {
     return null;
   }
 

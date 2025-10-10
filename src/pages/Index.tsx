@@ -5,6 +5,8 @@ import { SearchBar } from "@/components/SearchBar";
 import PromoBanner from "@/components/PromoBanner";
 import { FloatingChatWidget } from "@/components/FloatingChatWidget";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
+import { HelpButton } from "@/components/HelpButton";
+import { FloatingChatButton } from "@/components/FloatingChatButton";
 import FAQ from "@/components/FAQ";
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { CategorySidebar } from "@/components/CategorySidebar";
@@ -291,6 +293,11 @@ const Index = () => {
               <SearchBar placeholder="Rechercher des produits..." />
             </div>
             
+            {/* Mobile/Tablet Help Button */}
+            <div className="md:hidden">
+              <HelpButton />
+            </div>
+
             {/* Desktop Icons Only - Hidden on mobile/tablet */}
             <div className="hidden md:flex items-center gap-2">
               <Badge className="gradient-accent text-xs px-2 py-1">
@@ -512,8 +519,8 @@ const Index = () => {
         </div>
       </footer>
       
-      {/* Floating Buttons */}
-      <FloatingChatWidget />
+      {/* Floating Buttons - Desktop only */}
+      <FloatingChatButton />
       <ScrollToTopButton />
     </div>
   );

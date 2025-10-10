@@ -13,8 +13,20 @@ export const MobileBottomNav = () => {
   // Ne s'affiche que sur mobile et tablette
   if (!isMobile) return null;
 
+  const handleHomeClick = () => {
+    if (location.pathname === "/") {
+      // Si déjà sur la page d'accueil, scroll en haut et refresh
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
+    } else {
+      navigate("/");
+    }
+  };
+
   const navItems = [
-    { icon: Home, label: "Accueil", path: "/" },
+    { icon: Home, label: "Accueil", path: "/", onClick: handleHomeClick },
     { icon: Grid3x3, label: "Catégories", path: "/categories" },
     { icon: MessageSquare, label: "Messagerie", path: "/messages", badge: unreadMessages },
     { icon: ShoppingCart, label: "Panier", path: "/cart", badge: cartItems },
@@ -26,10 +38,10 @@ export const MobileBottomNav = () => {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border shadow-lg md:hidden">
       <div className="flex items-center justify-around h-16 px-2">
-        {navItems.map(({ icon: Icon, label, path, badge }) => (
+        {navItems.map(({ icon: Icon, label, path, badge, onClick }) => (
           <button
             key={path}
-            onClick={() => navigate(path)}
+            onClick={() => onClick ? onClick() : navigate(path)}
             className={cn(
               "flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors relative",
               isActive(path)

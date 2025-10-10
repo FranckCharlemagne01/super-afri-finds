@@ -3,9 +3,14 @@ import { MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatbotDialog } from './ChatbotDialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export const FloatingChatButton = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const isMobile = useIsMobile();
+
+  // Ne pas afficher sur mobile (remplacé par le bouton Aide)
+  if (isMobile) return null;
 
   return (
     <>

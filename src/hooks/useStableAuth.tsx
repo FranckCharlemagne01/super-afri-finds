@@ -25,12 +25,17 @@ export function useStableAuth() {
     auth.loading,
   ]);
 
-  // Fonctions stables - ne changent pas entre les renders
-  return {
-    ...stableAuth,
+  // Mémoriser les fonctions pour éviter les re-renderings
+  const memoizedFunctions = useMemo(() => ({
     signIn: auth.signIn,
     signUp: auth.signUp,
     resetPassword: auth.resetPassword,
     signOut: auth.signOut,
+  }), [auth.signIn, auth.signUp, auth.resetPassword, auth.signOut]);
+
+  // Fonctions stables - ne changent pas entre les renders
+  return {
+    ...stableAuth,
+    ...memoizedFunctions,
   };
 }

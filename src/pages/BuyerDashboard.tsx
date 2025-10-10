@@ -78,7 +78,7 @@ const MessageNotificationBadge = () => {
 };
 
 const BuyerDashboard = () => {
-  const { user, signOut } = useStableAuth();
+  const { user, loading: authLoading, signOut } = useStableAuth();
   const navigate = useNavigate();
   const { profile, orders, loadingProfile, updateProfile, cancelOrder } = useBuyerProfile(user?.id);
   const [editingProfile, setEditingProfile] = useState(false);
@@ -88,7 +88,7 @@ const BuyerDashboard = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/');
+    navigate('/auth', { replace: true });
   };
 
   const handleViewPublicPage = () => {
@@ -119,14 +119,19 @@ const BuyerDashboard = () => {
 
   // Redirect to auth if user is not logged in
   useEffect(() => {
-    if (!loadingProfile && !user) {
-      navigate('/auth');
+    if (!authLoading && !user) {
+      navigate('/auth', { replace: true });
     }
-  }, [user, loadingProfile, navigate]);
+  }, [user, authLoading, navigate]);
 
-  // Show skeleton while loading
-  if (loadingProfile || !user) {
+  // Show skeleton while loading auth or profile
+  if (authLoading || loadingProfile) {
     return <DashboardSkeleton />;
+  }
+
+  // Don't render anything if no user (during redirect)
+  if (!user) {
+    return null;
   }
 
   return (

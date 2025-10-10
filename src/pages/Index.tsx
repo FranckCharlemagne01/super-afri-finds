@@ -12,6 +12,8 @@ import { HeroCarousel } from "@/components/HeroCarousel";
 import { CategorySidebar } from "@/components/CategorySidebar";
 import { PopularCategories } from "@/components/PopularCategories";
 import { FeaturedProductsGrid } from "@/components/FeaturedProductsGrid";
+import { DynamicPromoBanner } from "@/components/DynamicPromoBanner";
+import { ScrollingAnnouncementBanner } from "@/components/ScrollingAnnouncementBanner";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -365,6 +367,11 @@ const Index = () => {
           </div>
         </section>
 
+        {/* Bannière dynamique rectangulaire */}
+        <section className="mb-6 sm:mb-8">
+          <DynamicPromoBanner />
+        </section>
+
         {/* Offres Spéciales / Tendances - Flash Sales */}
         {flashSaleProducts.length > 0 && (
           <section className="mb-6 sm:mb-8">
@@ -438,6 +445,9 @@ const Index = () => {
 
       {/* FAQ Section */}
       <FAQ />
+
+      {/* Bandeau d'annonces défilantes */}
+      <ScrollingAnnouncementBanner />
 
       {/* Footer - Simple et professionnel */}
       <footer className="bg-secondary mt-8 sm:mt-12 py-8 sm:py-10 border-t">

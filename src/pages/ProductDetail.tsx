@@ -82,7 +82,13 @@ const ProductDetail = () => {
       
       if (error || !data) {
         console.error('Error fetching product:', error);
-        navigate('/');
+        setLoading(false);
+        toast({
+          title: "Produit introuvable",
+          description: "Ce produit n'existe plus ou a été supprimé.",
+          variant: "destructive",
+        });
+        setTimeout(() => navigate('/'), 2000);
         return;
       }
       

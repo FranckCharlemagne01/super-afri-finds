@@ -27,14 +27,14 @@ const promoSlides: BannerSlide[] = [
     title: "Mode Femme -30%",
     subtitle: "Profitez de nos offres exclusives",
     cta: "Voir les offres",
-    link: "/categories/mode-femme"
+    link: "/category/mode-femme"
   },
   {
     type: "promo",
     title: "Offre spéciale High-Tech",
     subtitle: "Les meilleures marques aux meilleurs prix",
     cta: "Découvrir",
-    link: "/categories/technologie-electronique"
+    link: "/category/technologie-electronique"
   }
 ];
 

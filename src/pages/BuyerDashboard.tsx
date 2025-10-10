@@ -360,8 +360,8 @@ const BuyerDashboard = () => {
             </div>
 
             <Card className="border-0 shadow-sm bg-white">
-              <CardContent className="p-6 space-y-6">
-                {editingProfile && updatedProfile.email ? (
+              <CardContent className="p-4 md:p-6 space-y-6">
+                {editingProfile ? (
                   <div className="space-y-4">
                     <div className="space-y-4">
                       <div className="space-y-2">

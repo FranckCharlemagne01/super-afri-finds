@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { categories } from "@/data/categories";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ProductCard } from "@/components/ProductCard";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { SearchBar } from "@/components/SearchBar";
 import { cn } from "@/lib/utils";
 
 interface Product {
@@ -127,20 +127,24 @@ export const CategoriesPage = () => {
               <h1 className="text-lg font-bold text-foreground">Catégories</h1>
             </div>
 
-            {/* Barre de recherche intégrée */}
-            <SearchBar
-              placeholder="Rechercher un produit..."
-              className="w-full"
-              showResults={false}
-              onSearch={(term) => setSearchQuery(term)}
-            />
+            {/* Barre de recherche avec loupe visible */}
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none z-10" />
+              <Input
+                type="text"
+                placeholder="Rechercher un produit ou une catégorie..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-12 pl-11 pr-4 rounded-xl bg-muted/30 border-muted focus:bg-background focus:border-primary transition-all"
+              />
+            </div>
           </div>
         </div>
 
         {/* Layout à deux colonnes */}
         <div className="flex flex-1 overflow-hidden">
-          {/* Sidebar gauche - Catégories */}
-          <ScrollArea className="w-[30%] border-r bg-muted/20">
+          {/* Sidebar gauche - Catégories (32% pour plus d'espace) */}
+          <ScrollArea className="w-[32%] border-r bg-muted/20">
             <div className="py-1">
               {/* Option "Tous les produits" */}
               <button
@@ -149,28 +153,26 @@ export const CategoriesPage = () => {
                   setSearchQuery("");
                 }}
                 className={cn(
-                  "w-full px-2 py-3 text-left transition-all duration-200 border-l-4 active:scale-95",
+                  "w-full px-2 py-3.5 text-left transition-all duration-200 border-l-4 active:scale-95 touch-manipulation",
                   selectedCategory === null
                     ? "bg-primary/15 border-primary text-primary font-semibold"
                     : "border-transparent hover:bg-muted/50 text-muted-foreground active:bg-muted"
                 )}
               >
-                <div className="flex flex-col items-center gap-1">
-                  <span className="text-xs leading-tight font-medium">Tous</span>
-                  <span className="text-[10px] text-muted-foreground">
+                <div className="flex flex-col items-center gap-1.5">
+                  <span className="text-xs leading-tight font-semibold">Tous</span>
+                  <span className="text-[10px] text-muted-foreground font-medium">
                     {products.length}
                   </span>
                 </div>
               </button>
 
-              {/* Liste des catégories */}
+              {/* Liste des catégories - Affiche toutes les catégories */}
               {categories.map((category) => {
                 const Icon = category.icon;
                 const categoryProductCount = products.filter((product) => {
                   return category.subcategories.some(sub => sub.slug === product.category);
                 }).length;
-
-                if (categoryProductCount === 0) return null;
 
                 return (
                   <button
@@ -180,18 +182,18 @@ export const CategoriesPage = () => {
                       setSearchQuery("");
                     }}
                     className={cn(
-                      "w-full px-2 py-3 text-left transition-all duration-200 border-l-4 active:scale-95",
+                      "w-full px-2 py-3.5 text-left transition-all duration-200 border-l-4 active:scale-95 touch-manipulation",
                       selectedCategory === category.id
                         ? "bg-primary/15 border-primary text-primary font-semibold"
                         : "border-transparent hover:bg-muted/50 text-muted-foreground active:bg-muted"
                     )}
                   >
-                    <div className="flex flex-col items-center gap-1">
-                      <Icon className="w-6 h-6 transition-transform group-hover:scale-110" />
-                      <span className="text-[9px] leading-tight text-center line-clamp-2 font-medium px-1">
+                    <div className="flex flex-col items-center gap-1.5">
+                      <Icon className="w-7 h-7 transition-transform" />
+                      <span className="text-[10px] leading-tight text-center line-clamp-2 font-semibold px-1">
                         {category.name}
                       </span>
-                      <span className="text-[9px] text-muted-foreground">
+                      <span className="text-[10px] text-muted-foreground font-medium">
                         {categoryProductCount}
                       </span>
                     </div>
@@ -203,11 +205,11 @@ export const CategoriesPage = () => {
 
           {/* Zone principale droite - Produits */}
           <ScrollArea className="flex-1 bg-background">
-            <div className="p-1.5">
+            <div className="p-1">
               {/* Info sur les résultats */}
               {searchQuery && (
-                <div className="px-2 py-2 mb-1 bg-muted/30 rounded-lg">
-                  <p className="text-xs text-muted-foreground">
+                <div className="px-3 py-2.5 mb-1.5 bg-muted/30 rounded-lg mx-1">
+                  <p className="text-xs text-muted-foreground font-medium">
                     {filteredProducts.length} résultat{filteredProducts.length !== 1 ? 's' : ''} pour "{searchQuery}"
                   </p>
                 </div>
@@ -222,12 +224,14 @@ export const CategoriesPage = () => {
                   <p className="text-sm text-muted-foreground">
                     {searchQuery 
                       ? `Aucun produit trouvé pour "${searchQuery}"`
-                      : "Aucun produit disponible"
+                      : selectedCategory 
+                        ? "Aucun produit dans cette catégorie"
+                        : "Aucun produit disponible"
                     }
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-1.5 animate-fade-in">
+                <div className="grid grid-cols-2 gap-1 animate-fade-in">
                   {filteredProducts.map((product) => (
                     <ProductCard
                       key={product.id}

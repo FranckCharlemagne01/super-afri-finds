@@ -101,33 +101,10 @@ export const PopularCategories = () => {
 
   return (
     <div className="relative py-2">
-      {/* Boutons de navigation - visibles uniquement sur desktop */}
-      {!isMobile && showLeftArrow && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-background/80 shadow-sm hover:bg-background hover:shadow-md transition-all duration-200"
-          onClick={() => scroll("left")}
-        >
-          <ChevronLeft className="h-4 w-4 text-muted-foreground" />
-        </Button>
-      )}
-
-      {!isMobile && showRightArrow && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-background/80 shadow-sm hover:bg-background hover:shadow-md transition-all duration-200"
-          onClick={() => scroll("right")}
-        >
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-        </Button>
-      )}
-
-      {/* Barre défilante horizontale */}
+      {/* Barre défilante horizontale - style TEMU sans flèches */}
       <div
         ref={scrollRef}
-        className="flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth px-1 py-1"
+        className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide scroll-smooth px-1 py-1 touch-pan-x"
         style={{
           scrollbarWidth: "none",
           msOverflowStyle: "none",
@@ -138,7 +115,7 @@ export const PopularCategories = () => {
           <button
             key={category.id}
             onClick={() => navigate(`/category/${category.slug}`)}
-            className="flex-shrink-0 px-4 py-2 rounded-full bg-muted/50 hover:bg-primary/10 hover:shadow-md text-sm font-medium text-foreground whitespace-nowrap transition-all duration-200 border border-transparent hover:border-primary/20"
+            className="flex-shrink-0 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-gradient-to-br from-muted/60 to-muted/40 hover:from-primary/15 hover:to-primary/10 hover:shadow-lg text-sm sm:text-base font-semibold text-foreground whitespace-nowrap transition-all duration-300 border border-border/50 hover:border-primary/30 active:scale-95"
           >
             {category.name}
           </button>

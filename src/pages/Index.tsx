@@ -9,6 +9,7 @@ import FAQ from "@/components/FAQ";
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { CategorySidebar } from "@/components/CategorySidebar";
 import { PopularCategories } from "@/components/PopularCategories";
+import { FeaturedProductsGrid } from "@/components/FeaturedProductsGrid";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -374,16 +375,22 @@ const Index = () => {
         {/* Promotional Banner */}
         <PromoBanner onShowSellerUpgrade={() => setShowSellerUpgrade(true)} />
 
-        {/* Categories */}
+        {/* Categories - Style TEMU */}
         <section id="popular-categories" className="mb-6 sm:mb-8">
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h2 className="text-lg sm:text-xl font-bold text-foreground">Catégories populaires</h2>
-            <Button variant="ghost" size="sm" onClick={handleViewAllCategories} className="text-xs sm:text-sm">
-              Voir tout
+          <div className="flex items-center justify-between mb-4 sm:mb-5">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+              <span className="text-2xl sm:text-3xl">🏷️</span>
+              Catégories populaires
+            </h2>
+            <Button variant="ghost" size="sm" onClick={handleViewAllCategories} className="text-xs sm:text-sm hover:text-primary">
+              Voir tout →
             </Button>
           </div>
           <PopularCategories />
         </section>
+
+        {/* Featured Products Grid - Style TEMU */}
+        <FeaturedProductsGrid />
 
         {/* Flash Sales */}
         {flashSaleProducts.length > 0 && (

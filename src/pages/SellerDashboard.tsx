@@ -13,6 +13,7 @@ import { ProductsTab } from '@/components/seller/ProductsTab';
 import { MessagesOrdersTab } from '@/components/seller/MessagesOrdersTab';
 import { TokensSubscriptionTab } from '@/components/seller/TokensSubscriptionTab';
 import { ShopSettingsTab } from '@/components/seller/ShopSettingsTab';
+import { SellerDashboardSkeleton } from '@/components/seller/SellerDashboardSkeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Store, Package, MessageSquare, Coins, Settings } from 'lucide-react';
@@ -179,16 +180,7 @@ const SellerDashboard = () => {
   }, [refetchProducts, refetchShop, refreshBalance, refreshRole]);
 
   if (roleLoading || !userId || shopLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background flex items-center justify-center">
-        <Card>
-          <CardContent className="p-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-center text-muted-foreground">Chargement de votre boutique...</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <SellerDashboardSkeleton />;
   }
 
   if (isSuperAdmin) {
@@ -213,7 +205,7 @@ const SellerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background">
-      <div className="container mx-auto px-4 py-6 max-w-7xl">
+      <div className="container mx-auto px-3 py-4 max-w-md md:max-w-3xl lg:max-w-7xl md:px-6 lg:px-8 lg:py-6">
         {/* Modern Header */}
         <ModernSellerHeader
           shop={shop}

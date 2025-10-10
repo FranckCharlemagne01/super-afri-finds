@@ -108,11 +108,11 @@ export const ShopOverviewTab = ({
     <div className="space-y-6">
       {/* Welcome Section */}
       <Card className="border-0 shadow-lg bg-gradient-to-r from-primary/10 via-primary/5 to-background">
-        <CardContent className="p-6">
-          <h2 className="text-2xl font-bold mb-2">
+        <CardContent className="p-4 md:p-6">
+          <h2 className="text-xl md:text-2xl font-bold mb-2">
             Bienvenue dans votre boutique, {shop?.shop_name} ! 👋
           </h2>
-          <p className="text-muted-foreground mb-4">
+          <p className="text-sm md:text-base text-muted-foreground mb-4">
             Gérez vos produits, suivez vos performances et développez votre activité.
           </p>
           
@@ -135,17 +135,17 @@ export const ShopOverviewTab = ({
       </Card>
 
       {/* Statistics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {stats.map((stat) => (
           <Card key={stat.title} className="border-0 shadow-md hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">{stat.title}</p>
-                  <p className="text-3xl font-bold">{stat.value}</p>
+                  <p className="text-xs md:text-sm text-muted-foreground mb-1">{stat.title}</p>
+                  <p className="text-2xl md:text-3xl font-bold">{stat.value}</p>
                 </div>
-                <div className={`w-12 h-12 rounded-xl ${stat.bgColor} flex items-center justify-center`}>
-                  <stat.icon className={`h-6 w-6 bg-gradient-to-br ${stat.color} bg-clip-text text-transparent`} style={{
+                <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl ${stat.bgColor} flex items-center justify-center`}>
+                  <stat.icon className={`h-5 w-5 md:h-6 md:w-6 bg-gradient-to-br ${stat.color} bg-clip-text text-transparent`} style={{
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text'
                   }} />
@@ -164,14 +164,14 @@ export const ShopOverviewTab = ({
             Performance de votre boutique
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="h-64 flex items-center justify-center bg-muted/50 rounded-lg">
-            <div className="text-center">
-              <Activity className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-              <p className="text-muted-foreground">
+        <CardContent className="p-4 md:p-6">
+          <div className="h-48 md:h-64 flex items-center justify-center bg-muted/50 rounded-lg">
+            <div className="text-center px-4">
+              <Activity className="h-10 w-10 md:h-12 md:w-12 text-muted-foreground/30 mx-auto mb-3" />
+              <p className="text-sm md:text-base text-muted-foreground">
                 Graphiques de performance bientôt disponibles
               </p>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-xs md:text-sm text-muted-foreground mt-1">
                 Suivez vos ventes et statistiques détaillées
               </p>
             </div>

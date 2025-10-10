@@ -27,13 +27,17 @@ export const ScrollingAnnouncementBanner = () => {
   }, []);
 
   return (
-    <div className="w-full bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 py-2 sm:py-3 overflow-hidden">
+    <div className="w-full bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 py-3 sm:py-3.5 overflow-hidden shadow-md">
       <div
-        className={`text-center text-white font-medium text-xs sm:text-sm md:text-base px-4 transition-all duration-500 ${
-          isAnimating ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
+        className={`text-center text-white font-semibold text-xs sm:text-sm md:text-base px-4 transition-all duration-500 ease-out ${
+          isAnimating 
+            ? "opacity-0 translate-y-3 scale-95" 
+            : "opacity-100 translate-y-0 scale-100"
         }`}
       >
-        {announcements[currentIndex]}
+        <span className="inline-block animate-fade-in">
+          {announcements[currentIndex]}
+        </span>
       </div>
     </div>
   );

@@ -127,13 +127,14 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setFormError('');
 
     try {
       const fullPhoneNumber = `${dialCode}${phone}`;
       const fullName = `${firstName} ${lastName}`.trim();
       const shopNameToSend = userRole === 'seller' && shopName.trim() ? shopName.trim() : '';
       
-      // Étape 1: Créer le compte utilisateur avec mot de passe
+      // Créer le compte utilisateur avec confirmation email activée par défaut
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: email,
         password: password,
@@ -151,6 +152,7 @@ const Auth = () => {
       
       if (signUpError) {
         if (signUpError.message.includes('already registered') || signUpError.message.includes('already been registered')) {
+          setFormError('Un compte avec cet email existe déjà. Essayez de vous connecter.');
           toast({
             title: "⚠️ Compte existant",
             description: "Un compte avec cet email existe déjà. Essayez de vous connecter.",
@@ -158,6 +160,7 @@ const Auth = () => {
             duration: 5000,
           });
         } else if (signUpError.message.includes('Invalid email')) {
+          setFormError('Veuillez saisir une adresse email valide.');
           toast({
             title: "⚠️ Email invalide",
             description: "Veuillez saisir une adresse email valide.",
@@ -165,9 +168,10 @@ const Auth = () => {
             duration: 5000,
           });
         } else {
+          setFormError(signUpError.message || "Une erreur est survenue lors de l'inscription.");
           toast({
             title: "❌ Erreur d'inscription",
-            description: signUpError.message || "Une erreur est survenue lors de l'inscription.",
+            description: signUpError.message || "Une erreur est survenue lors de l'inscription. Veuillez vérifier votre adresse e-mail et réessayer.",
             variant: "destructive",
             duration: 5000,
           });
@@ -175,36 +179,35 @@ const Auth = () => {
         return;
       }
 
-      // Étape 2: Envoyer l'OTP pour vérification email
-      const { error: otpError } = await supabase.auth.signInWithOtp({
-        email: email,
-        options: {
-          shouldCreateUser: false, // L'utilisateur est déjà créé
-        }
+      // Succès - afficher le message de vérification
+      setOtpEmail(email);
+      setRegistrationSuccess(true);
+      toast({
+        title: "✅ Inscription réussie !",
+        description: "Un email de confirmation a été envoyé à votre adresse. Veuillez vérifier votre boîte de réception (et vos spams).",
+        duration: 6000,
       });
+
+      // Réinitialiser le formulaire
+      setEmail('');
+      setPassword('');
+      setFirstName('');
+      setLastName('');
+      setPhone('');
+      setShopName('');
       
-      if (otpError) {
-        console.error('OTP send error:', otpError);
-        // Continue même si l'OTP échoue - l'utilisateur peut se connecter avec password
-        toast({
-          title: "⚠️ Attention",
-          description: "Compte créé mais le code de vérification n'a pas pu être envoyé. Vous pouvez vous connecter avec votre mot de passe.",
-          duration: 6000,
-        });
-      } else {
-        setOtpEmail(email);
-        setShowOtpVerification(true);
-        toast({
-          title: "📧 Code envoyé",
-          description: "Un code de vérification à 6 chiffres a été envoyé à votre adresse email. Il est valide pendant 5 minutes.",
-          duration: 5000,
-        });
-      }
+      // Passer en mode connexion après 3 secondes
+      setTimeout(() => {
+        setAuthMode('signin');
+        setRegistrationSuccess(false);
+      }, 3000);
+      
     } catch (error) {
       console.error('Signup error:', error);
+      setFormError("Une erreur est survenue. Veuillez réessayer ou vérifier votre adresse e-mail.");
       toast({
         title: "❌ Erreur d'inscription",
-        description: "Une erreur est survenue. Veuillez réessayer.",
+        description: "Une erreur est survenue. Veuillez réessayer ou vérifier votre adresse e-mail.",
         variant: "destructive",
         duration: 5000,
       });

@@ -117,7 +117,7 @@ const BuyerDashboard = () => {
     setCancellingOrderId(null);
   };
 
-  // Show skeleton while loading profile
+  // Show skeleton only while loading profile data
   if (loadingProfile) {
     return <DashboardSkeleton />;
   }
@@ -128,21 +128,21 @@ const BuyerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5">
-      <div className="container mx-auto px-3 py-4 max-w-md lg:max-w-6xl lg:px-6 lg:py-8">
-        {/* Header Mobile */}
+      <div className="container mx-auto px-3 py-4 max-w-md md:max-w-3xl lg:max-w-6xl md:px-6 lg:px-8 lg:py-8">
+        {/* Header Mobile & Tablet */}
         <div className="lg:hidden mb-6">
-          <div className="flex items-center justify-between p-4 bg-white rounded-2xl shadow-sm border border-border/50">
+          <div className="flex items-center justify-between p-4 md:p-6 bg-white rounded-2xl shadow-sm border border-border/50">
             <div>
-              <h1 className="text-xl font-bold text-foreground">Mon Profil</h1>
-              <p className="text-sm text-muted-foreground">Bonjour {profile.full_name?.split(' ')[0] || 'Client'} !</p>
+              <h1 className="text-xl md:text-2xl font-bold text-foreground">Mon Profil</h1>
+              <p className="text-sm md:text-base text-muted-foreground">Bonjour {profile.full_name?.split(' ')[0] || 'Client'} !</p>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={handleSignOut}
-              className="h-10 w-10 rounded-full bg-red-50 hover:bg-red-100 text-red-600"
+              className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-red-50 hover:bg-red-100 text-red-600"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
           </div>
         </div>
@@ -177,20 +177,20 @@ const BuyerDashboard = () => {
           <>
             {/* Profile Summary Card */}
             <Card className="mb-6 border-0 shadow-sm bg-gradient-to-r from-primary/10 to-secondary/10">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center">
-                    <User className="w-8 h-8 text-primary" />
+              <CardContent className="p-4 md:p-6">
+                <div className="flex items-center gap-3 md:gap-4">
+                  <div className="w-14 h-14 md:w-16 md:h-16 bg-primary/20 rounded-full flex items-center justify-center shrink-0">
+                    <User className="w-7 h-7 md:w-8 md:h-8 text-primary" />
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold">{profile.full_name || 'Nom non renseigné'}</h3>
-                    <p className="text-sm text-muted-foreground flex items-center gap-1">
-                      <Mail className="w-3 h-3" />
-                      {profile.email}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base md:text-lg font-semibold truncate">{profile.full_name || 'Nom non renseigné'}</h3>
+                    <p className="text-xs md:text-sm text-muted-foreground flex items-center gap-1 truncate">
+                      <Mail className="w-3 h-3 shrink-0" />
+                      <span className="truncate">{profile.email}</span>
                     </p>
                     {profile.phone && (
-                      <p className="text-sm text-muted-foreground flex items-center gap-1">
-                        <Phone className="w-3 h-3" />
+                      <p className="text-xs md:text-sm text-muted-foreground flex items-center gap-1">
+                        <Phone className="w-3 h-3 shrink-0" />
                         {profile.phone}
                       </p>
                     )}
@@ -202,58 +202,58 @@ const BuyerDashboard = () => {
                       setActiveSection('profile');
                       startEdit();
                     }}
-                    className="text-primary hover:bg-primary/10"
+                    className="text-primary hover:bg-primary/10 shrink-0"
                   >
-                    <Edit className="w-4 h-4" />
+                    <Edit className="w-4 h-4 md:w-5 md:h-5" />
                   </Button>
                 </div>
               </CardContent>
             </Card>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              <Card className="border-0 shadow-sm bg-white">
-                <CardContent className="p-4 text-center">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <Package className="w-5 h-5 text-blue-600" />
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
+              <Card className="border-0 shadow-sm bg-white hover:shadow-md transition-shadow">
+                <CardContent className="p-4 md:p-5 text-center">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Package className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
                   </div>
-                  <div className="text-2xl font-bold text-blue-600">{orders.length}</div>
-                  <p className="text-xs text-muted-foreground">Commandes</p>
+                  <div className="text-2xl md:text-3xl font-bold text-blue-600">{orders.length}</div>
+                  <p className="text-xs md:text-sm text-muted-foreground">Commandes</p>
                 </CardContent>
               </Card>
-              <Card className="border-0 shadow-sm bg-white">
-                <CardContent className="p-4 text-center">
-                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <Package className="w-5 h-5 text-green-600" />
+              <Card className="border-0 shadow-sm bg-white hover:shadow-md transition-shadow">
+                <CardContent className="p-4 md:p-5 text-center">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Package className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
                   </div>
-                  <div className="text-2xl font-bold text-green-600">
+                  <div className="text-2xl md:text-3xl font-bold text-green-600">
                     {orders.filter(order => ['pending', 'confirmed', 'shipped'].includes(order.status)).length}
                   </div>
-                  <p className="text-xs text-muted-foreground">En cours</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">En cours</p>
                 </CardContent>
               </Card>
             </div>
 
             {/* Menu Dashboard */}
-            <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-foreground">Tableau de bord</h3>
+            <div className="space-y-3 md:space-y-4">
+              <h3 className="text-lg md:text-xl font-semibold text-foreground">Tableau de bord</h3>
               
               <Card 
                 className="border-0 shadow-sm bg-white hover:shadow-md transition-all cursor-pointer" 
                 onClick={() => setActiveSection('orders')}
               >
-                <CardContent className="p-4">
+                <CardContent className="p-4 md:p-5">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                        <Package className="w-6 h-6 text-blue-600" />
+                    <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                      <div className="w-12 h-12 md:w-14 md:h-14 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
+                        <Package className="w-6 h-6 md:w-7 md:h-7 text-blue-600" />
                       </div>
-                      <div>
-                        <h4 className="font-medium">Mes Commandes</h4>
-                        <p className="text-sm text-muted-foreground">Suivi des commandes en cours et historique</p>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-medium text-sm md:text-base">Mes Commandes</h4>
+                        <p className="text-xs md:text-sm text-muted-foreground truncate">Suivi des commandes en cours et historique</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                    <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground shrink-0" />
                   </div>
                 </CardContent>
               </Card>
@@ -262,18 +262,18 @@ const BuyerDashboard = () => {
                 className="border-0 shadow-sm bg-white hover:shadow-md transition-all cursor-pointer" 
                 onClick={() => navigate('/favorites')}
               >
-                <CardContent className="p-4">
+                <CardContent className="p-4 md:p-5">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-                        <Heart className="w-6 h-6 text-red-600" />
+                    <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                      <div className="w-12 h-12 md:w-14 md:h-14 bg-red-100 rounded-xl flex items-center justify-center shrink-0">
+                        <Heart className="w-6 h-6 md:w-7 md:h-7 text-red-600" />
                       </div>
-                      <div>
-                        <h4 className="font-medium">Mes Favoris</h4>
-                        <p className="text-sm text-muted-foreground">Produits sauvegardés pour plus tard</p>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-medium text-sm md:text-base">Mes Favoris</h4>
+                        <p className="text-xs md:text-sm text-muted-foreground truncate">Produits sauvegardés pour plus tard</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                    <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground shrink-0" />
                   </div>
                 </CardContent>
               </Card>
@@ -282,18 +282,18 @@ const BuyerDashboard = () => {
                 className="border-0 shadow-sm bg-white hover:shadow-md transition-all cursor-pointer" 
                 onClick={() => navigate('/cart')}
               >
-                <CardContent className="p-4">
+                <CardContent className="p-4 md:p-5">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                        <ShoppingCart className="w-6 h-6 text-orange-600" />
+                    <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                      <div className="w-12 h-12 md:w-14 md:h-14 bg-orange-100 rounded-xl flex items-center justify-center shrink-0">
+                        <ShoppingCart className="w-6 h-6 md:w-7 md:h-7 text-orange-600" />
                       </div>
-                      <div>
-                        <h4 className="font-medium">Mon Panier</h4>
-                        <p className="text-sm text-muted-foreground">Articles en attente d'achat</p>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-medium text-sm md:text-base">Mon Panier</h4>
+                        <p className="text-xs md:text-sm text-muted-foreground truncate">Articles en attente d'achat</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                    <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground shrink-0" />
                   </div>
                 </CardContent>
               </Card>
@@ -302,19 +302,19 @@ const BuyerDashboard = () => {
                 className="border-0 shadow-sm bg-white hover:shadow-md transition-all cursor-pointer" 
                 onClick={() => setActiveSection('messages')}
               >
-                <CardContent className="p-4">
+                <CardContent className="p-4 md:p-5">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center relative">
-                        <MessageSquare className="w-6 h-6 text-purple-600" />
+                    <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                      <div className="w-12 h-12 md:w-14 md:h-14 bg-purple-100 rounded-xl flex items-center justify-center relative shrink-0">
+                        <MessageSquare className="w-6 h-6 md:w-7 md:h-7 text-purple-600" />
                         <MessageNotificationBadge />
                       </div>
-                      <div>
-                        <h4 className="font-medium">Mes Messages</h4>
-                        <p className="text-sm text-muted-foreground">Conversations avec les vendeurs</p>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-medium text-sm md:text-base">Mes Messages</h4>
+                        <p className="text-xs md:text-sm text-muted-foreground truncate">Conversations avec les vendeurs</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                    <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground shrink-0" />
                   </div>
                 </CardContent>
               </Card>
@@ -326,18 +326,18 @@ const BuyerDashboard = () => {
                   startEdit();
                 }}
               >
-                <CardContent className="p-4">
+                <CardContent className="p-4 md:p-5">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
-                        <Settings className="w-6 h-6 text-gray-600" />
+                    <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                      <div className="w-12 h-12 md:w-14 md:h-14 bg-gray-100 rounded-xl flex items-center justify-center shrink-0">
+                        <Settings className="w-6 h-6 md:w-7 md:h-7 text-gray-600" />
                       </div>
-                      <div>
-                        <h4 className="font-medium">Paramètres</h4>
-                        <p className="text-sm text-muted-foreground">Modifier le profil et adresses</p>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-medium text-sm md:text-base">Paramètres</h4>
+                        <p className="text-xs md:text-sm text-muted-foreground truncate">Modifier le profil et adresses</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                    <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground shrink-0" />
                   </div>
                 </CardContent>
               </Card>

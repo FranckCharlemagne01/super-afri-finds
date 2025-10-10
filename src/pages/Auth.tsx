@@ -248,28 +248,28 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-3 md:p-4">
-      <div className="w-full max-w-md space-y-3 md:space-y-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 flex items-center justify-center p-3 md:p-6">
+      <div className="w-full max-w-[95%] md:max-w-md space-y-4">
         <Button
           variant="ghost"
           onClick={() => navigate('/')}
-          className="mb-3 md:mb-4 text-sm md:text-base"
+          className="mb-2 text-sm md:text-base h-10 md:h-11"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour à l'accueil
         </Button>
 
-        <Card className="border-border/50 shadow-lg">
-          <CardHeader className="text-center p-4 md:p-6">
-            <CardTitle className="text-xl md:text-2xl gradient-text-primary">Djassa</CardTitle>
-            <CardDescription className="text-sm md:text-base">
+        <Card className="border-0 shadow-xl bg-white/95 backdrop-blur">
+          <CardHeader className="text-center p-4 md:p-6 space-y-2">
+            <CardTitle className="text-2xl md:text-3xl font-bold gradient-text-primary">Djassa</CardTitle>
+            <CardDescription className="text-sm md:text-base text-muted-foreground">
               {updatePasswordMode 
                 ? "Créez un nouveau mot de passe" 
                 : resetMode
                 ? "Réinitialiser votre mot de passe"
                 : authMode === 'signup'
-                ? "Créer votre compte"
-                : "Connectez-vous à votre compte"
+                ? "Créez votre compte"
+                : "Connexion à votre compte"
               }
             </CardDescription>
           </CardHeader>
@@ -420,7 +420,7 @@ const Auth = () => {
             ) : authMode === 'signup' ? (
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Nom</Label>
+                  <Label htmlFor="lastName" className="text-sm md:text-base font-medium">Nom</Label>
                   <Input
                     id="lastName"
                     type="text"
@@ -429,11 +429,12 @@ const Auth = () => {
                     onChange={(e) => setLastName(e.target.value)}
                     required
                     maxLength={50}
+                    className="h-12 md:h-12 text-base rounded-lg"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">Prénom</Label>
+                  <Label htmlFor="firstName" className="text-sm md:text-base font-medium">Prénom</Label>
                   <Input
                     id="firstName"
                     type="text"
@@ -442,11 +443,12 @@ const Auth = () => {
                     onChange={(e) => setFirstName(e.target.value)}
                     required
                     maxLength={50}
+                    className="h-12 md:h-12 text-base rounded-lg"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="signupEmail">Email</Label>
+                  <Label htmlFor="signupEmail" className="text-sm md:text-base font-medium">Email</Label>
                   <Input
                     id="signupEmail"
                     type="email"
@@ -455,6 +457,7 @@ const Auth = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     maxLength={255}
+                    className="h-12 md:h-12 text-base rounded-lg"
                   />
                 </div>
 
@@ -476,13 +479,13 @@ const Auth = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Numéro de téléphone</Label>
+                  <Label htmlFor="phone" className="text-sm md:text-base font-medium">Numéro de téléphone</Label>
                   <div className="flex gap-2">
                     <Input
                       type="text"
                       value={dialCode}
                       disabled
-                      className="w-20"
+                      className="w-20 h-12 md:h-12 text-base rounded-lg"
                     />
                     <NumericInput
                       id="phone"
@@ -491,7 +494,7 @@ const Auth = () => {
                       onChange={setPhone}
                       required
                       maxLength={15}
-                      className="flex-1"
+                      className="flex-1 h-12 md:h-12 text-base rounded-lg"
                     />
                   </div>
                 </div>
@@ -541,7 +544,7 @@ const Auth = () => {
                 )}
 
                 <div className="space-y-2">
-                  <Label htmlFor="signupPassword">Mot de passe</Label>
+                  <Label htmlFor="signupPassword" className="text-sm md:text-base font-medium">Mot de passe</Label>
                   <div className="relative">
                     <Input
                       id="signupPassword"
@@ -551,13 +554,14 @@ const Auth = () => {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       minLength={6}
+                      className="h-12 md:h-12 text-base rounded-lg pr-12"
                     />
                     <button
                       type="button"
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground p-2"
                       onClick={() => setShowPassword(!showPassword)}
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
                   </div>
                   <p className="text-xs text-muted-foreground">
@@ -567,19 +571,19 @@ const Auth = () => {
 
                 <Button 
                   type="submit" 
-                  className="w-full" 
+                  className="w-full h-12 md:h-12 text-base font-semibold rounded-lg" 
                   disabled={loading}
                 >
                   {loading ? "Inscription..." : "S'inscrire"}
                 </Button>
 
-                <div className="text-center">
+                <div className="text-center pt-3">
                   <button
                     type="button"
                     onClick={() => setAuthMode('signin')}
-                    className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline transition-colors"
+                    className="text-sm md:text-base text-primary hover:underline font-medium py-2"
                   >
-                    Vous avez déjà un compte ? Se connecter
+                    Vous avez déjà un compte ? <span className="font-semibold">Connectez-vous</span>
                   </button>
                 </div>
               </form>
@@ -593,7 +597,7 @@ const Auth = () => {
                 )}
                 
                 <div className="space-y-2">
-                  <Label htmlFor="loginIdentifier" className="text-sm md:text-base">Email ou numéro de téléphone</Label>
+                  <Label htmlFor="loginIdentifier" className="text-sm md:text-base font-medium">Email ou numéro de téléphone</Label>
                   <Input
                     id="loginIdentifier"
                     type="text"
@@ -604,11 +608,11 @@ const Auth = () => {
                       if (formError) setFormError('');
                     }}
                     required
-                    className="h-10 md:h-11 text-sm md:text-base"
+                    className="h-12 md:h-12 text-base rounded-lg"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm md:text-base">Mot de passe</Label>
+                  <Label htmlFor="password" className="text-sm md:text-base font-medium">Mot de passe</Label>
                   <div className="relative">
                     <Input
                       id="password"
@@ -620,33 +624,33 @@ const Auth = () => {
                         if (formError) setFormError('');
                       }}
                       required
-                      className="h-10 md:h-11 text-sm md:text-base pr-10"
+                      className="h-12 md:h-12 text-base rounded-lg pr-12"
                     />
                     <button
                       type="button"
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground p-2"
                       onClick={() => setShowPassword(!showPassword)}
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
                   </div>
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full h-10 md:h-11 text-sm md:text-base" 
+                  className="w-full h-12 md:h-12 text-base font-semibold rounded-lg" 
                   disabled={loading}
                 >
                   {loading ? "Connexion..." : "Se connecter"}
                 </Button>
                 
-                <div className="flex flex-col gap-2 text-center pt-2 md:pt-3">
+                <div className="flex flex-col gap-3 text-center pt-3">
                   <button
                     type="button"
                     onClick={() => {
                       setResetMode(true);
                       setFormError('');
                     }}
-                    className="text-xs md:text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline transition-colors"
+                    className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline transition-colors py-1"
                   >
                     Mot de passe oublié ?
                   </button>
@@ -656,9 +660,9 @@ const Auth = () => {
                       setAuthMode('signup');
                       setFormError('');
                     }}
-                    className="text-xs md:text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline transition-colors"
+                    className="text-sm md:text-base text-primary hover:underline font-medium py-2"
                   >
-                    Pas encore de compte ? S'inscrire
+                    Pas encore de compte ? <span className="font-semibold">Créez un compte</span>
                   </button>
                 </div>
               </form>

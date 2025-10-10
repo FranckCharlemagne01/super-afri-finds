@@ -117,12 +117,15 @@ const BuyerDashboard = () => {
     setCancellingOrderId(null);
   };
 
-  // Show skeleton only while loading profile data
-  if (loadingProfile) {
-    return <DashboardSkeleton />;
-  }
+  // Redirect to auth if user is not logged in
+  useEffect(() => {
+    if (!loadingProfile && !user) {
+      navigate('/auth');
+    }
+  }, [user, loadingProfile, navigate]);
 
-  if (!user) {
+  // Show skeleton while loading
+  if (loadingProfile || !user) {
     return <DashboardSkeleton />;
   }
 

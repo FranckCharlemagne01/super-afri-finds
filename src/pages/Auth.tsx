@@ -7,12 +7,13 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Globe, Eye, EyeOff, AlertCircle, ShoppingCart, Store } from 'lucide-react';
+import { ArrowLeft, Globe, Eye, EyeOff, AlertCircle, ShoppingCart, Store, Mail } from 'lucide-react';
 import { CountrySelect } from '@/components/CountrySelect';
 import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { getCountryByCode } from '@/data/countries';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -42,6 +43,12 @@ const Auth = () => {
   const [formError, setFormError] = useState('');
   const [resetFormError, setResetFormError] = useState('');
   const [updatePasswordError, setUpdatePasswordError] = useState('');
+  const [showOtpVerification, setShowOtpVerification] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpError, setOtpError] = useState('');
+  const [resendingOtp, setResendingOtp] = useState(false);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [otpEmail, setOtpEmail] = useState('');
   const { signIn, signUp, resetPassword } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -125,20 +132,27 @@ const Auth = () => {
       const fullPhoneNumber = `${dialCode}${phone}`;
       const fullName = `${firstName} ${lastName}`.trim();
       const shopNameToSend = userRole === 'seller' && shopName.trim() ? shopName.trim() : '';
-      const { error } = await signUp(email, password, fullName, fullPhoneNumber, country, userRole, shopNameToSend);
+      
+      // Utiliser signInWithOtp pour envoyer un code OTP par email
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email,
+        options: {
+          shouldCreateUser: true,
+          data: {
+            full_name: fullName,
+            phone: fullPhoneNumber,
+            country: country || 'CI',
+            user_role: userRole || 'buyer',
+            shop_name: shopNameToSend,
+          }
+        }
+      });
       
       if (error) {
         if (error.message.includes('already registered') || error.message.includes('already been registered')) {
           toast({
             title: "⚠️ Compte existant",
             description: "Un compte avec cet email existe déjà. Essayez de vous connecter.",
-            variant: "destructive",
-            duration: 5000,
-          });
-        } else if (error.message.includes('Password should be at least')) {
-          toast({
-            title: "⚠️ Mot de passe trop court",
-            description: "Le mot de passe doit contenir au moins 6 caractères.",
             variant: "destructive",
             duration: 5000,
           });
@@ -158,10 +172,11 @@ const Auth = () => {
           });
         }
       } else {
-        setRegistrationSuccess(true);
+        setOtpEmail(email);
+        setShowOtpVerification(true);
         toast({
-          title: "✅ Inscription réussie",
-          description: "Consultez votre email pour confirmer votre compte.",
+          title: "📧 Code envoyé",
+          description: "Un code de confirmation a été envoyé à votre email.",
           duration: 4000,
         });
       }
@@ -175,6 +190,85 @@ const Auth = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
+    if (otpCode.length !== 6) {
+      setOtpError('Veuillez saisir un code à 6 chiffres.');
+      return;
+    }
+
+    setVerifyingOtp(true);
+    setOtpError('');
+
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email: otpEmail,
+        token: otpCode,
+        type: 'email'
+      });
+
+      if (error) {
+        if (error.message.includes('expired')) {
+          setOtpError('⏱️ Le code a expiré. Veuillez demander un nouveau code.');
+        } else if (error.message.includes('invalid')) {
+          setOtpError('❌ Code invalide. Vérifiez et réessayez.');
+        } else {
+          setOtpError('❌ Erreur lors de la vérification. Réessayez.');
+        }
+      } else {
+        setRegistrationSuccess(true);
+        setShowOtpVerification(false);
+        toast({
+          title: "✅ Compte confirmé",
+          description: "Votre compte a été activé avec succès !",
+          duration: 4000,
+        });
+      }
+    } catch (error) {
+      console.error('OTP verification error:', error);
+      setOtpError('❌ Erreur lors de la vérification. Réessayez.');
+    } finally {
+      setVerifyingOtp(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setResendingOtp(true);
+    setOtpError('');
+
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: otpEmail,
+        options: {
+          shouldCreateUser: false
+        }
+      });
+
+      if (error) {
+        setOtpError('❌ Erreur lors du renvoi du code.');
+        toast({
+          title: "❌ Erreur",
+          description: "Impossible de renvoyer le code. Réessayez.",
+          variant: "destructive",
+          duration: 3000,
+        });
+      } else {
+        setOtpCode('');
+        toast({
+          title: "📧 Code renvoyé",
+          description: "Un nouveau code a été envoyé à votre email.",
+          duration: 4000,
+        });
+      }
+    } catch (error) {
+      console.error('Resend OTP error:', error);
+      setOtpError('❌ Erreur lors du renvoi du code.');
+    } finally {
+      setResendingOtp(false);
     }
   };
 
@@ -335,20 +429,109 @@ const Auth = () => {
                   {loading ? "Mise à jour..." : "Mettre à jour le mot de passe"}
                 </Button>
               </form>
+            ) : showOtpVerification ? (
+              <div className="space-y-6 py-4">
+                <div className="text-center space-y-2">
+                  <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                    <Mail className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground">
+                    Vérifiez votre email
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Nous avons envoyé un code à 6 chiffres à<br />
+                    <strong className="text-foreground">{otpEmail}</strong>
+                  </p>
+                </div>
+
+                {otpError && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{otpError}</AlertDescription>
+                  </Alert>
+                )}
+
+                <form onSubmit={handleVerifyOtp} className="space-y-6">
+                  <div className="flex flex-col items-center space-y-4">
+                    <Label htmlFor="otp" className="text-sm font-medium">
+                      Code de confirmation
+                    </Label>
+                    <InputOTP
+                      maxLength={6}
+                      value={otpCode}
+                      onChange={(value) => {
+                        setOtpCode(value);
+                        setOtpError('');
+                        // Auto-submit quand le code est complet
+                        if (value.length === 6) {
+                          setTimeout(() => {
+                            handleVerifyOtp();
+                          }, 300);
+                        }
+                      }}
+                    >
+                      <InputOTPGroup>
+                        <InputOTPSlot index={0} />
+                        <InputOTPSlot index={1} />
+                        <InputOTPSlot index={2} />
+                        <InputOTPSlot index={3} />
+                        <InputOTPSlot index={4} />
+                        <InputOTPSlot index={5} />
+                      </InputOTPGroup>
+                    </InputOTP>
+                    <p className="text-xs text-muted-foreground">
+                      Le code expire dans 5 minutes
+                    </p>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={verifyingOtp || otpCode.length !== 6}
+                  >
+                    {verifyingOtp ? "Vérification..." : "Confirmer"}
+                  </Button>
+                </form>
+
+                <div className="text-center space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    Vous n'avez pas reçu le code ?
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={handleResendOtp}
+                    disabled={resendingOtp}
+                    className="w-full"
+                  >
+                    {resendingOtp ? "Envoi en cours..." : "Renvoyer le code"}
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowOtpVerification(false);
+                      setOtpCode('');
+                      setOtpError('');
+                    }}
+                    className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline transition-colors"
+                  >
+                    Modifier l'email
+                  </button>
+                </div>
+              </div>
             ) : registrationSuccess ? (
               <div className="text-center space-y-4 py-6">
                 <div className="text-6xl mb-4">🎉</div>
                 <h3 className="text-xl font-semibold text-foreground">
-                  Merci pour votre inscription sur Djassa !
+                  Bienvenue sur Djassa !
                 </h3>
                 <p className="text-muted-foreground">
-                  Pour activer votre compte et commencer à vendre ou acheter, veuillez confirmer votre adresse e-mail.
+                  Votre compte a été activé avec succès. Vous pouvez maintenant commencer à vendre ou acheter.
                 </p>
                 <Button
                   onClick={() => navigate('/')}
                   className="mt-6"
                 >
-                  Retour à l'accueil
+                  Commencer
                 </Button>
               </div>
             ) : resetMode ? (

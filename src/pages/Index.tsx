@@ -336,85 +336,51 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
-        {/* Layout with Sidebar and Hero Carousel */}
-        <div className="flex gap-4 lg:gap-6 mb-6">
-          {/* Category Sidebar - Desktop only */}
-          <CategorySidebar />
-
-          {/* Hero Carousel - Produits Vedettes (Center) */}
-          <div className="flex-1 min-w-0">
-            <HeroCarousel />
-          </div>
-
-          {/* Secondary Banners - Desktop only */}
-          <div className="hidden xl:flex flex-col gap-3 w-64">
-            <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg p-4 h-[184px] flex flex-col justify-between">
-              <div>
-                <p className="text-xs font-semibold text-purple-600 mb-1">🎁 OFFRE SPÉCIALE</p>
-                <h3 className="text-sm font-bold text-purple-900 mb-1">Nouveaux vendeurs</h3>
-                <p className="text-xs text-purple-700">28 jours gratuits</p>
-              </div>
-              <Button size="sm" className="w-full bg-purple-600 hover:bg-purple-700 text-white text-xs">
-                Commencer
-              </Button>
-            </div>
-            
-            <div className="bg-gradient-to-br from-blue-100 to-cyan-100 rounded-lg p-4 h-[184px] flex flex-col justify-between">
-              <div>
-                <p className="text-xs font-semibold text-blue-600 mb-1">⚡ LIVRAISON</p>
-                <h3 className="text-sm font-bold text-blue-900 mb-1">Rapide partout</h3>
-                <p className="text-xs text-blue-700">2-5 jours en CI</p>
-              </div>
-              <Button size="sm" variant="outline" className="w-full border-blue-600 text-blue-600 hover:bg-blue-50 text-xs">
-                En savoir +
-              </Button>
-            </div>
-          </div>
+        {/* Hero Carousel - Bannière principale avec images défilantes */}
+        <div className="mb-4 sm:mb-6">
+          <HeroCarousel />
         </div>
 
-        {/* Seller Invitation Banner */}
-        <div className="mt-3 mb-6 bg-gradient-to-r from-orange-100 via-yellow-50 to-orange-100 rounded-xl shadow-md p-8 text-center border border-orange-200/50">
-          <p className="text-lg sm:text-xl md:text-2xl font-bold text-orange-900">
-            💼 Vous aussi, vendez vos produits sur Djassa ! Créez votre boutique dès aujourd'hui.
-          </p>
-        </div>
-
-        {/* Promotional Banner */}
-        <PromoBanner onShowSellerUpgrade={() => setShowSellerUpgrade(true)} />
-
-        {/* Categories - Style TEMU */}
-        <section id="popular-categories" className="mb-6 sm:mb-8">
-          <div className="flex items-center justify-between mb-4 sm:mb-5">
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
-              <span className="text-2xl sm:text-3xl">🏷️</span>
-              Catégories populaires
-            </h2>
-            <Button variant="ghost" size="sm" onClick={handleViewAllCategories} className="text-xs sm:text-sm hover:text-primary">
-              Voir tout →
-            </Button>
-          </div>
+        {/* Categories Populaires - Style TEMU horizontal avec toutes les catégories */}
+        <section className="mb-6 sm:mb-8">
+          <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 px-1">
+            Catégories populaires
+          </h2>
           <PopularCategories />
         </section>
 
-        {/* Featured Products Grid - Style TEMU */}
-        <FeaturedProductsGrid />
+        {/* Produits Recommandés - Grille */}
+        <section className="mb-6 sm:mb-8">
+          <div className="flex items-center justify-between mb-3 sm:mb-4 px-1">
+            <h2 className="text-lg sm:text-xl font-bold text-foreground">Recommandés pour vous</h2>
+            <Button variant="ghost" size="sm" onClick={handleRefreshRecommendations} className="text-xs sm:text-sm hover:text-primary">
+              Actualiser
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4" key={refreshKey}>
+            {shuffledProducts.slice(0, 12).map((product) => (
+              <ProductCard key={`${product.id}-${refreshKey}`} {...convertToProductCardProps(product)} />
+            ))}
+          </div>
+        </section>
 
-        {/* Flash Sales */}
+        {/* Offres Spéciales / Tendances - Flash Sales */}
         {flashSaleProducts.length > 0 && (
           <section className="mb-6 sm:mb-8">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3 sm:mb-4 px-1">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 sm:w-8 sm:h-8 gradient-primary rounded-full flex items-center justify-center">
                   <span className="text-white text-sm sm:text-lg">⚡</span>
                 </div>
-                <h2 className="text-lg sm:text-xl font-bold text-foreground">Ventes Flash</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-foreground">Offres Spéciales</h2>
               </div>
               <Badge className="bg-promo text-promo-foreground animate-pulse-promo w-fit">
                 Limitées dans le temps
               </Badge>
               <div className="sm:ml-auto">
-                <Button variant="outline" size="sm" onClick={() => navigate('/flash-sales')} className="text-xs sm:text-sm">
-                  Voir tout
+                <Button variant="ghost" size="sm" onClick={() => navigate('/flash-sales')} className="text-xs sm:text-sm hover:text-primary">
+                  Voir tout →
                 </Button>
               </div>
             </div>
@@ -427,55 +393,44 @@ const Index = () => {
           </section>
         )}
 
-        {/* Recommended Products */}
+        {/* Plus de Produits */}
         <section className="mb-6 sm:mb-8">
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h2 className="text-lg sm:text-xl font-bold text-foreground">Recommandés pour vous</h2>
-            <Button variant="outline" size="sm" onClick={handleRefreshRecommendations} className="text-xs sm:text-sm">
-              Actualiser
-            </Button>
-          </div>
+          <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 sm:mb-4 px-1">
+            Tendances du moment
+          </h2>
           
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4" key={refreshKey}>
-            {shuffledProducts.slice(0, 12).map((product) => (
-              <ProductCard key={`${product.id}-${refreshKey}`} {...convertToProductCardProps(product)} />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+            {regularProducts.slice(0, 12).map((product) => (
+              <ProductCard key={product.id} {...convertToProductCardProps(product)} />
             ))}
           </div>
         </section>
 
-        {/* Promotional Banner */}
+        {/* Bannière Vendeur - Style moderne */}
         <section className="mb-6 sm:mb-8">
-          <div className="gradient-accent rounded-xl sm:rounded-2xl p-4 sm:p-6 text-center">
-            <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2">
-              ✨ Djassa – Achetez et revendez en toute simplicité et sécurité, sans bouger de chez vous ! 🚀
+          <div className="gradient-accent rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center">
+            <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-2">
+              💼 Devenez vendeur sur Djassa
             </h3>
-            <p className="text-sm sm:text-base text-muted-foreground mb-2">
-              🎁 Profitez de 28 jours d'essai gratuit pour publier vos produits ⏳
-            </p>
-            <p className="text-base sm:text-lg font-semibold text-foreground mb-4">
-              28 jours restants
+            <p className="text-sm sm:text-base text-muted-foreground mb-4">
+              🎁 28 jours d'essai gratuit pour créer votre boutique
             </p>
             <Button 
-              variant="default" 
               size="lg" 
-              className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold px-8 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               onClick={() => {
-                // Si l'utilisateur est connecté
                 if (user) {
-                  // Si c'est déjà un vendeur, aller à l'espace vendeur
                   if (isSeller) {
                     navigate('/seller-dashboard');
                   } else {
-                    // Sinon, c'est un client qui veut devenir vendeur - afficher le formulaire directement
                     setShowSellerUpgrade(true);
                   }
                 } else {
-                  // Utilisateur non connecté - rediriger vers inscription
                   navigate('/auth?mode=signup&role=seller');
                 }
               }}
             >
-              Commencez à vendre maintenant
+              Commencer maintenant
             </Button>
           </div>
         </section>
@@ -484,37 +439,78 @@ const Index = () => {
       {/* FAQ Section */}
       <FAQ />
 
-      {/* Footer */}
-      <footer className="bg-secondary mt-8 sm:mt-12 py-6 sm:py-8">
-        <div className="container mx-auto px-3 sm:px-4 text-center">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 mb-4 sm:mb-6">
+      {/* Footer - Simple et professionnel */}
+      <footer className="bg-secondary mt-8 sm:mt-12 py-8 sm:py-10 border-t">
+        <div className="container mx-auto px-3 sm:px-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8 mb-8">
             <div>
-              <h4 className="font-semibold mb-2 text-sm sm:text-base">Service Client</h4>
-              <p className="text-xs sm:text-sm text-muted-foreground">Support 24/7</p>
+              <h4 className="font-semibold mb-3 text-sm sm:text-base text-foreground">Assistance</h4>
+              <ul className="space-y-2">
+                <li>
+                  <button className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors">
+                    Centre d'aide
+                  </button>
+                </li>
+                <li>
+                  <button className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors">
+                    Support 24/7
+                  </button>
+                </li>
+                <li>
+                  <button className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors">
+                    FAQ
+                  </button>
+                </li>
+              </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-2 text-sm sm:text-base">Livraison</h4>
-              <p className="text-xs sm:text-sm text-muted-foreground">2-5 jours en CI</p>
+              <h4 className="font-semibold mb-3 text-sm sm:text-base text-foreground">Informations</h4>
+              <ul className="space-y-2">
+                <li>
+                  <button 
+                    onClick={() => navigate("/legal")}
+                    className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    Politique de confidentialité
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => navigate("/legal")}
+                    className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    Mentions légales
+                  </button>
+                </li>
+                <li>
+                  <button className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors">
+                    CGV
+                  </button>
+                </li>
+              </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-2 text-sm sm:text-base">Paiement</h4>
-              <p className="text-xs sm:text-sm text-muted-foreground">Mobile Money, CB</p>
+              <h4 className="font-semibold mb-3 text-sm sm:text-base text-foreground">Contact</h4>
+              <ul className="space-y-2">
+                <li className="text-xs sm:text-sm text-muted-foreground">Email: contact@djassa.com</li>
+                <li className="text-xs sm:text-sm text-muted-foreground">Tél: +225 XX XX XX XX</li>
+                <li className="text-xs sm:text-sm text-muted-foreground">Abidjan, Côte d'Ivoire</li>
+              </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-2 text-sm sm:text-base">Garantie</h4>
-              <p className="text-xs sm:text-sm text-muted-foreground">Satisfait ou remboursé</p>
+              <h4 className="font-semibold mb-3 text-sm sm:text-base text-foreground">Paiement & Livraison</h4>
+              <ul className="space-y-2">
+                <li className="text-xs sm:text-sm text-muted-foreground">Orange Money</li>
+                <li className="text-xs sm:text-sm text-muted-foreground">MTN Mobile Money</li>
+                <li className="text-xs sm:text-sm text-muted-foreground">Livraison 2-5 jours</li>
+              </ul>
             </div>
           </div>
-          <div className="text-xs sm:text-sm text-muted-foreground space-y-2">
-            <div>© 2025 Djassa – Achetez et revendez en ligne, simple, rapide et fiable.</div>
-            <div>
-              <button
-                onClick={() => navigate("/legal")}
-                className="text-primary hover:underline text-xs"
-              >
-                Mentions légales et Politique de confidentialité
-              </button>
-            </div>
+          
+          <div className="border-t pt-6 text-center">
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              © 2025 Djassa. Tous droits réservés. Plateforme de commerce en ligne en Côte d'Ivoire.
+            </p>
           </div>
         </div>
       </footer>

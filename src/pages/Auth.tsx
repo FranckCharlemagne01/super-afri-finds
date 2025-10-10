@@ -248,21 +248,21 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-3 md:p-4">
+      <div className="w-full max-w-md space-y-3 md:space-y-4">
         <Button
           variant="ghost"
           onClick={() => navigate('/')}
-          className="mb-4"
+          className="mb-3 md:mb-4 text-sm md:text-base"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour à l'accueil
         </Button>
 
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl gradient-text-primary">Djassa</CardTitle>
-            <CardDescription>
+        <Card className="border-border/50 shadow-lg">
+          <CardHeader className="text-center p-4 md:p-6">
+            <CardTitle className="text-xl md:text-2xl gradient-text-primary">Djassa</CardTitle>
+            <CardDescription className="text-sm md:text-base">
               {updatePasswordMode 
                 ? "Créez un nouveau mot de passe" 
                 : resetMode
@@ -273,7 +273,7 @@ const Auth = () => {
               }
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 md:p-6">
             {updatePasswordMode ? (
               <form onSubmit={handleUpdatePassword} className="space-y-4">
                 {updatePasswordError && (
@@ -584,16 +584,16 @@ const Auth = () => {
                 </div>
               </form>
             ) : (
-              <form onSubmit={handleSignIn} className="space-y-4">
+              <form onSubmit={handleSignIn} className="space-y-3 md:space-y-4">
                 {formError && (
-                  <Alert variant="destructive">
+                  <Alert variant="destructive" className="text-sm">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>{formError}</AlertDescription>
                   </Alert>
                 )}
                 
                 <div className="space-y-2">
-                  <Label htmlFor="loginIdentifier">Email ou numéro de téléphone</Label>
+                  <Label htmlFor="loginIdentifier" className="text-sm md:text-base">Email ou numéro de téléphone</Label>
                   <Input
                     id="loginIdentifier"
                     type="text"
@@ -604,10 +604,11 @@ const Auth = () => {
                       if (formError) setFormError('');
                     }}
                     required
+                    className="h-10 md:h-11 text-sm md:text-base"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Mot de passe</Label>
+                  <Label htmlFor="password" className="text-sm md:text-base">Mot de passe</Label>
                   <div className="relative">
                     <Input
                       id="password"
@@ -619,6 +620,7 @@ const Auth = () => {
                         if (formError) setFormError('');
                       }}
                       required
+                      className="h-10 md:h-11 text-sm md:text-base pr-10"
                     />
                     <button
                       type="button"
@@ -631,24 +633,30 @@ const Auth = () => {
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full" 
+                  className="w-full h-10 md:h-11 text-sm md:text-base" 
                   disabled={loading}
                 >
                   {loading ? "Connexion..." : "Se connecter"}
                 </Button>
                 
-                <div className="flex flex-col gap-2 text-center pt-2">
+                <div className="flex flex-col gap-2 text-center pt-2 md:pt-3">
                   <button
                     type="button"
-                    onClick={() => setResetMode(true)}
-                    className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline transition-colors"
+                    onClick={() => {
+                      setResetMode(true);
+                      setFormError('');
+                    }}
+                    className="text-xs md:text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline transition-colors"
                   >
                     Mot de passe oublié ?
                   </button>
                   <button
                     type="button"
-                    onClick={() => setAuthMode('signup')}
-                    className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline transition-colors"
+                    onClick={() => {
+                      setAuthMode('signup');
+                      setFormError('');
+                    }}
+                    className="text-xs md:text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline transition-colors"
                   >
                     Pas encore de compte ? S'inscrire
                   </button>

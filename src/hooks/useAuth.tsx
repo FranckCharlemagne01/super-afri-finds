@@ -105,16 +105,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      // Clear local state immediately pour éviter les clignotements
       setLoading(true);
+      
+      // Clear Supabase auth session
+      await supabase.auth.signOut({ scope: 'local' });
+      
+      // Clear local state after successful logout
       setUser(null);
       setSession(null);
-      
-      // Try to sign out from Supabase (but don't fail if session is already gone)
-      await supabase.auth.signOut();
     } catch (error) {
-      // Ignore errors - session might already be expired/invalid
-      console.log('Logout completed (session was already cleared)');
+      // Even if signOut fails, clear local state to allow re-login
+      console.log('Clearing local session after logout error');
+      setUser(null);
+      setSession(null);
     } finally {
       setLoading(false);
     }

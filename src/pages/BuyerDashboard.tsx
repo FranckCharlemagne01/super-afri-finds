@@ -82,7 +82,7 @@ const BuyerDashboard = () => {
   const navigate = useNavigate();
   const { profile, orders, loadingProfile, updateProfile, cancelOrder } = useBuyerProfile(user?.id);
   const [editingProfile, setEditingProfile] = useState(false);
-  const [updatedProfile, setUpdatedProfile] = useState({ full_name: '', phone: '', email: '' });
+  const [updatedProfile, setUpdatedProfile] = useState<UserProfile>({ full_name: '', phone: '', email: '' });
   const [activeSection, setActiveSection] = useState('dashboard');
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
 
@@ -102,8 +102,12 @@ const BuyerDashboard = () => {
     }
   };
 
-  const cancelEdit = () => {
+  const startEdit = () => {
     setUpdatedProfile(profile);
+    setEditingProfile(true);
+  };
+
+  const cancelEdit = () => {
     setEditingProfile(false);
   };
 
@@ -112,13 +116,6 @@ const BuyerDashboard = () => {
     await cancelOrder(orderId);
     setCancellingOrderId(null);
   };
-
-  // Sync updatedProfile when profile changes - using useEffect to avoid re-render loop
-  useEffect(() => {
-    if (profile.full_name && !updatedProfile.full_name) {
-      setUpdatedProfile(profile);
-    }
-  }, [profile, updatedProfile.full_name]);
 
   // Show skeleton while loading profile
   if (loadingProfile) {
@@ -201,7 +198,10 @@ const BuyerDashboard = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setActiveSection('profile')}
+                    onClick={() => {
+                      setActiveSection('profile');
+                      startEdit();
+                    }}
                     className="text-primary hover:bg-primary/10"
                   >
                     <Edit className="w-4 h-4" />
@@ -321,7 +321,10 @@ const BuyerDashboard = () => {
 
               <Card 
                 className="border-0 shadow-sm bg-white hover:shadow-md transition-all cursor-pointer" 
-                onClick={() => setActiveSection('profile')}
+                onClick={() => {
+                  setActiveSection('profile');
+                  startEdit();
+                }}
               >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -358,7 +361,7 @@ const BuyerDashboard = () => {
 
             <Card className="border-0 shadow-sm bg-white">
               <CardContent className="p-6 space-y-6">
-                {editingProfile ? (
+                {editingProfile && updatedProfile.email ? (
                   <div className="space-y-4">
                     <div className="space-y-4">
                       <div className="space-y-2">
@@ -465,7 +468,7 @@ const BuyerDashboard = () => {
                     </div>
                     
                     <Button
-                      onClick={() => setEditingProfile(true)}
+                      onClick={startEdit}
                       className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90"
                     >
                       <Edit className="h-4 w-4 mr-2" />

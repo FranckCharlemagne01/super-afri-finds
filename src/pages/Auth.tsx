@@ -133,11 +133,12 @@ const Auth = () => {
       const fullName = `${firstName} ${lastName}`.trim();
       const shopNameToSend = userRole === 'seller' && shopName.trim() ? shopName.trim() : '';
       
-      // Utiliser signInWithOtp pour envoyer un code OTP par email
-      const { error } = await supabase.auth.signInWithOtp({
+      // Étape 1: Créer le compte utilisateur avec mot de passe
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: email,
+        password: password,
         options: {
-          shouldCreateUser: true,
+          emailRedirectTo: `${window.location.origin}/`,
           data: {
             full_name: fullName,
             phone: fullPhoneNumber,
@@ -148,15 +149,15 @@ const Auth = () => {
         }
       });
       
-      if (error) {
-        if (error.message.includes('already registered') || error.message.includes('already been registered')) {
+      if (signUpError) {
+        if (signUpError.message.includes('already registered') || signUpError.message.includes('already been registered')) {
           toast({
             title: "⚠️ Compte existant",
             description: "Un compte avec cet email existe déjà. Essayez de vous connecter.",
             variant: "destructive",
             duration: 5000,
           });
-        } else if (error.message.includes('Invalid email')) {
+        } else if (signUpError.message.includes('Invalid email')) {
           toast({
             title: "⚠️ Email invalide",
             description: "Veuillez saisir une adresse email valide.",
@@ -166,18 +167,37 @@ const Auth = () => {
         } else {
           toast({
             title: "❌ Erreur d'inscription",
-            description: "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
+            description: signUpError.message || "Une erreur est survenue lors de l'inscription.",
             variant: "destructive",
             duration: 5000,
           });
         }
+        return;
+      }
+
+      // Étape 2: Envoyer l'OTP pour vérification email
+      const { error: otpError } = await supabase.auth.signInWithOtp({
+        email: email,
+        options: {
+          shouldCreateUser: false, // L'utilisateur est déjà créé
+        }
+      });
+      
+      if (otpError) {
+        console.error('OTP send error:', otpError);
+        // Continue même si l'OTP échoue - l'utilisateur peut se connecter avec password
+        toast({
+          title: "⚠️ Attention",
+          description: "Compte créé mais le code de vérification n'a pas pu être envoyé. Vous pouvez vous connecter avec votre mot de passe.",
+          duration: 6000,
+        });
       } else {
         setOtpEmail(email);
         setShowOtpVerification(true);
         toast({
           title: "📧 Code envoyé",
-          description: "Un code de confirmation a été envoyé à votre email.",
-          duration: 4000,
+          description: "Un code de vérification à 6 chiffres a été envoyé à votre adresse email. Il est valide pendant 5 minutes.",
+          duration: 5000,
         });
       }
     } catch (error) {
@@ -212,9 +232,9 @@ const Auth = () => {
       });
 
       if (error) {
-        if (error.message.includes('expired')) {
-          setOtpError('⏱️ Le code a expiré. Veuillez demander un nouveau code.');
-        } else if (error.message.includes('invalid')) {
+        if (error.message.includes('expired') || error.message.includes('Token has expired')) {
+          setOtpError('⏱️ Le code a expiré (5 min). Demandez-en un nouveau.');
+        } else if (error.message.includes('invalid') || error.message.includes('Token is invalid')) {
           setOtpError('❌ Code invalide. Vérifiez et réessayez.');
         } else {
           setOtpError('❌ Erreur lors de la vérification. Réessayez.');
@@ -223,10 +243,15 @@ const Auth = () => {
         setRegistrationSuccess(true);
         setShowOtpVerification(false);
         toast({
-          title: "✅ Compte confirmé",
-          description: "Votre compte a été activé avec succès !",
-          duration: 4000,
+          title: "✅ Compte vérifié !",
+          description: "Votre email a été confirmé. Redirection en cours...",
+          duration: 3000,
         });
+
+        // Redirection automatique vers la page d'accueil
+        setTimeout(() => {
+          navigate('/', { replace: true });
+        }, 1000);
       }
     } catch (error) {
       console.error('OTP verification error:', error);

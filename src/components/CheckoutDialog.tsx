@@ -175,11 +175,20 @@ export const CheckoutDialog = ({
               <Label htmlFor="customerPhone">Numéro de téléphone *</Label>
               <Input
                 id="customerPhone"
+                type="text"
                 value={formData.customerPhone}
-                onChange={(e) => handleInputChange('customerPhone', e.target.value)}
-                placeholder="Votre numéro de téléphone"
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Accepter +, chiffres et espaces
+                  if (value === '' || /^[+\d\s]*$/.test(value)) {
+                    handleInputChange('customerPhone', value);
+                  }
+                }}
+                placeholder="+225 0707070707"
                 required
+                maxLength={20}
               />
+              <p className="text-xs text-muted-foreground">Format: +225 0707070707 ou 0707070707</p>
             </div>
 
             <div className="space-y-2">

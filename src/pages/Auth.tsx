@@ -130,7 +130,8 @@ const Auth = () => {
     setFormError('');
 
     try {
-      const fullPhoneNumber = `${dialCode}${phone}`;
+      // Le numéro de téléphone peut contenir le code pays ou pas
+      const fullPhoneNumber = phone.trim();
       const fullName = `${firstName} ${lastName}`.trim();
       const shopNameToSend = userRole === 'seller' && shopName.trim() ? shopName.trim() : '';
       
@@ -691,23 +692,23 @@ const Auth = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="phone" className="text-sm md:text-base font-medium">Numéro de téléphone</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="text"
-                      value={dialCode}
-                      disabled
-                      className="w-20 h-12 md:h-12 text-base rounded-lg"
-                    />
-                    <NumericInput
-                      id="phone"
-                      placeholder="0123456789"
-                      value={phone}
-                      onChange={setPhone}
-                      required
-                      maxLength={15}
-                      className="flex-1 h-12 md:h-12 text-base rounded-lg"
-                    />
-                  </div>
+                  <Input
+                    id="phone"
+                    type="text"
+                    placeholder="+225 0707070707"
+                    value={phone}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Accepter +, chiffres et espaces
+                      if (value === '' || /^[+\d\s]*$/.test(value)) {
+                        setPhone(value);
+                      }
+                    }}
+                    required
+                    maxLength={20}
+                    className="h-12 md:h-12 text-base rounded-lg"
+                  />
+                  <p className="text-xs text-muted-foreground">Format: +225 0707070707 ou 0707070707</p>
                 </div>
 
                 <div className="space-y-2">

@@ -156,12 +156,21 @@ export const ProfileUpdateForm = () => {
             <Phone className="w-4 h-4" />
             Téléphone
           </Label>
-          <NumericInput
+          <Input
             id="phone"
+            type="text"
             value={profileData.phone}
-            onChange={(value) => handleChange('phone', value)}
-            placeholder="22501234567"
+            onChange={(e) => {
+              const value = e.target.value;
+              // Accepter +, chiffres et espaces
+              if (value === '' || /^[+\d\s]*$/.test(value)) {
+                handleChange('phone', value);
+              }
+            }}
+            placeholder="+225 0707070707"
+            maxLength={20}
           />
+          <p className="text-xs text-muted-foreground">Format: +225 0707070707 ou 0707070707</p>
         </div>
 
         <div className="space-y-2">

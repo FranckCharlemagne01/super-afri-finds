@@ -136,13 +136,22 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
 
             <div className="space-y-2">
               <Label htmlFor="phone">Numéro de téléphone *</Label>
-              <NumericInput
+              <Input
                 id="phone"
-                placeholder="22501234567"
+                type="text"
+                placeholder="+225 0707070707"
                 value={phone}
-                onChange={setPhone}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Accepter +, chiffres et espaces
+                  if (value === '' || /^[+\d\s]*$/.test(value)) {
+                    setPhone(value);
+                  }
+                }}
                 required
+                maxLength={20}
               />
+              <p className="text-xs text-muted-foreground">Format: +225 0707070707 ou 0707070707</p>
             </div>
 
             <div className="space-y-2 bg-primary/5 p-4 rounded-lg border border-primary/20">

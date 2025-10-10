@@ -115,8 +115,8 @@ export const ProductCard = ({
         }`} />
       </button>
 
-      {/* Product Image */}
-      <div className="relative aspect-square overflow-hidden bg-muted">
+      {/* Product Image - Optimized Rectangular Aspect Ratio */}
+      <div className="relative w-full aspect-[4/5] overflow-hidden bg-muted rounded-t-lg">
         <img
           src={image}
           alt={title}
@@ -135,8 +135,8 @@ export const ProductCard = ({
       </div>
 
       {/* Product Info */}
-      <div className="p-1.5 sm:p-2 space-y-1 relative z-10">
-        <h3 className={`text-xs sm:text-sm font-medium text-foreground line-clamp-2 leading-tight min-h-[2rem] sm:min-h-[2.5rem] ${
+      <div className="p-2 sm:p-3 space-y-1.5 sm:space-y-2 relative z-10">
+        <h3 className={`text-xs sm:text-sm font-medium text-foreground line-clamp-2 leading-tight min-h-[2.2rem] sm:min-h-[2.5rem] ${
           isActiveBoosted ? 'font-bold' : ''
         }`}>
           {title}
@@ -160,11 +160,11 @@ export const ProductCard = ({
         </div>
 
         {/* Price */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-1">
-          <span className="text-sm sm:text-base font-bold text-promo">
+        <div className="flex flex-col gap-0.5">
+          <span className="text-base sm:text-lg font-bold text-promo">
             {salePrice.toLocaleString()} FCFA
           </span>
-          <span className="text-xs text-muted-foreground line-through">
+          <span className="text-xs sm:text-sm text-muted-foreground line-through">
             {originalPrice.toLocaleString()} FCFA
           </span>
         </div>

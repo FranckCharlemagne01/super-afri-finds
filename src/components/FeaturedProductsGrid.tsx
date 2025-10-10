@@ -72,9 +72,9 @@ export const FeaturedProductsGrid = () => {
             </p>
           </div>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4">
           {[...Array(12)].map((_, i) => (
-            <Skeleton key={i} className="h-[320px] sm:h-[360px] rounded-xl" />
+            <Skeleton key={i} className="w-full aspect-[4/5] rounded-xl" />
           ))}
         </div>
       </section>
@@ -101,9 +101,9 @@ export const FeaturedProductsGrid = () => {
         </div>
       </div>
       
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4">
         {featuredProducts.map((product) => (
-          <div key={product.id} className="group relative">
+          <div key={product.id} className="group relative w-full">
             {/* Badge Vedette - Style TEMU */}
             <div className="absolute top-2 right-2 z-10 bg-gradient-to-r from-amber-500 via-orange-600 to-pink-600 text-white px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold shadow-lg flex items-center gap-1">
               <Sparkles className="w-3 h-3 fill-current" />

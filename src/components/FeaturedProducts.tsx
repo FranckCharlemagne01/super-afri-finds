@@ -106,7 +106,7 @@ export const FeaturedProducts = () => {
         >
           <CarouselContent className="-ml-2 md:-ml-4">
             {boostedProducts.map((product) => (
-              <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-1/2 md:basis-1/4">
+              <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
                 <div className="relative">
                   {/* Badge Sponsorisé */}
                   <div className="absolute top-2 right-2 z-10 bg-gradient-to-r from-amber-500 to-amber-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg flex items-center gap-1">

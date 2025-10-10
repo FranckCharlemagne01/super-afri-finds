@@ -94,7 +94,7 @@ export const HeroCarousel = () => {
   return (
     <div className="mb-6">
       {/* Main Hero Carousel */}
-      <div className="relative w-full h-64 md:h-80 lg:h-96 rounded-xl overflow-hidden mb-3 group">
+      <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] md:h-80 lg:h-96 rounded-xl overflow-hidden mb-3 group">
         {/* Background gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-red-500/10 z-10" />
         

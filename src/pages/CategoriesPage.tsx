@@ -143,8 +143,8 @@ export const CategoriesPage = () => {
 
         {/* Layout à deux colonnes */}
         <div className="flex flex-1 overflow-hidden">
-          {/* Sidebar gauche - Catégories (32% pour plus d'espace) */}
-          <ScrollArea className="w-[32%] border-r bg-muted/20">
+          {/* Sidebar gauche - Catégories (22% pour laisser plus d'espace aux produits) */}
+          <ScrollArea className="w-[22%] border-r bg-muted/20">
             <div className="py-1">
               {/* Option "Tous les produits" */}
               <button
@@ -153,15 +153,15 @@ export const CategoriesPage = () => {
                   setSearchQuery("");
                 }}
                 className={cn(
-                  "w-full px-2 py-3.5 text-left transition-all duration-200 border-l-4 active:scale-95 touch-manipulation",
+                  "w-full px-1.5 py-3 text-left transition-all duration-200 border-l-4 active:scale-95 touch-manipulation",
                   selectedCategory === null
                     ? "bg-primary/15 border-primary text-primary font-semibold"
                     : "border-transparent hover:bg-muted/50 text-muted-foreground active:bg-muted"
                 )}
               >
-                <div className="flex flex-col items-center gap-1.5">
-                  <span className="text-xs leading-tight font-semibold">Tous</span>
-                  <span className="text-[10px] text-muted-foreground font-medium">
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-[11px] leading-tight font-semibold">Tous</span>
+                  <span className="text-[9px] text-muted-foreground font-medium">
                     {products.length}
                   </span>
                 </div>
@@ -182,18 +182,18 @@ export const CategoriesPage = () => {
                       setSearchQuery("");
                     }}
                     className={cn(
-                      "w-full px-2 py-3.5 text-left transition-all duration-200 border-l-4 active:scale-95 touch-manipulation",
+                      "w-full px-1.5 py-3 text-left transition-all duration-200 border-l-4 active:scale-95 touch-manipulation",
                       selectedCategory === category.id
                         ? "bg-primary/15 border-primary text-primary font-semibold"
                         : "border-transparent hover:bg-muted/50 text-muted-foreground active:bg-muted"
                     )}
                   >
-                    <div className="flex flex-col items-center gap-1.5">
-                      <Icon className="w-7 h-7 transition-transform" />
-                      <span className="text-[10px] leading-tight text-center line-clamp-2 font-semibold px-1">
+                    <div className="flex flex-col items-center gap-1">
+                      <Icon className="w-6 h-6 transition-transform" />
+                      <span className="text-[9px] leading-tight text-center line-clamp-2 font-semibold px-0.5">
                         {category.name}
                       </span>
-                      <span className="text-[10px] text-muted-foreground font-medium">
+                      <span className="text-[9px] text-muted-foreground font-medium">
                         {categoryProductCount}
                       </span>
                     </div>
@@ -205,10 +205,10 @@ export const CategoriesPage = () => {
 
           {/* Zone principale droite - Produits */}
           <ScrollArea className="flex-1 bg-background">
-            <div className="p-1">
+            <div className="p-2">
               {/* Info sur les résultats */}
               {searchQuery && (
-                <div className="px-3 py-2.5 mb-1.5 bg-muted/30 rounded-lg mx-1">
+                <div className="px-3 py-2.5 mb-2 bg-muted/30 rounded-lg">
                   <p className="text-xs text-muted-foreground font-medium">
                     {filteredProducts.length} résultat{filteredProducts.length !== 1 ? 's' : ''} pour "{searchQuery}"
                   </p>
@@ -231,7 +231,7 @@ export const CategoriesPage = () => {
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-1 animate-fade-in">
+                <div className="grid grid-cols-2 gap-2 animate-fade-in">
                   {filteredProducts.map((product) => (
                     <ProductCard
                       key={product.id}

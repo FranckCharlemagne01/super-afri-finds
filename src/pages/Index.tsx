@@ -15,6 +15,7 @@ import { FeaturedProductsGrid } from "@/components/FeaturedProductsGrid";
 import { DynamicPromoBanner } from "@/components/DynamicPromoBanner";
 import { ScrollingAnnouncementBanner } from "@/components/ScrollingAnnouncementBanner";
 import { ShopPromoBanner } from "@/components/ShopPromoBanner";
+import { SellerPromoBanner } from "@/components/SellerPromoBanner";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -412,33 +413,9 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Bannière Vendeur - Style moderne */}
-        <section className="mb-6 sm:mb-8">
-          <div className="gradient-accent rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center">
-            <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-2">
-              💼 Devenez vendeur sur Djassa
-            </h3>
-            <p className="text-sm sm:text-base text-muted-foreground mb-4">
-              🎁 28 jours d'essai gratuit pour créer votre boutique
-            </p>
-            <Button 
-              size="lg" 
-              className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold px-8 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-              onClick={() => {
-                if (user) {
-                  if (isSeller) {
-                    navigate('/seller-dashboard');
-                  } else {
-                    setShowSellerUpgrade(true);
-                  }
-                } else {
-                  navigate('/auth?mode=signup&role=seller');
-                }
-              }}
-            >
-              Commencer maintenant
-            </Button>
-          </div>
+        {/* Bannière Vendeur - Dynamique */}
+        <section className="mb-6 sm:mb-8" data-seller-upgrade>
+          <SellerPromoBanner />
         </section>
       </main>
 

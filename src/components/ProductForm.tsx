@@ -568,8 +568,13 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
               <div className="grid grid-cols-2 gap-3">
                 <button 
                   type="button" 
-                  onClick={() => imageInputRef.current?.click()}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    imageInputRef.current?.click();
+                  }}
                   className="h-24 flex flex-col items-center justify-center space-y-2 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors touch-manipulation"
+                  aria-label="Sélectionner des images depuis votre galerie"
                 >
                   <ImageIcon className="h-8 w-8 text-primary" />
                   <span className="text-sm font-medium text-gray-700">Galerie</span>
@@ -577,8 +582,13 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
                 
                 <button 
                   type="button" 
-                  onClick={() => cameraInputRef.current?.click()}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    cameraInputRef.current?.click();
+                  }}
                   className="h-24 flex flex-col items-center justify-center space-y-2 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors touch-manipulation"
+                  aria-label="Prendre une photo avec votre appareil"
                 >
                   <Camera className="h-8 w-8 text-primary" />
                   <span className="text-sm font-medium text-gray-700">Appareil photo</span>
@@ -618,22 +628,50 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
             </div>
           )}
           
-          {/* Inputs cachés pour galerie et caméra - optimisés mobile */}
+          {/* Inputs pour galerie et caméra - optimisés pour compatibilité mobile */}
           <input
             ref={imageInputRef}
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/jpg,image/png,image/webp"
             multiple
             onChange={handleImageFileChange}
-            className="hidden"
+            style={{
+              position: 'absolute',
+              width: '1px',
+              height: '1px',
+              padding: 0,
+              margin: '-1px',
+              overflow: 'hidden',
+              clip: 'rect(0,0,0,0)',
+              whiteSpace: 'nowrap',
+              border: 0,
+              opacity: 0,
+              pointerEvents: 'none'
+            }}
+            aria-label="Sélectionner des images depuis la galerie"
+            tabIndex={-1}
           />
           <input
             ref={cameraInputRef}
             type="file"
-            accept="image/*"
-            capture="environment"
+            accept="image/jpeg,image/jpg,image/png,image/webp"
+            capture="user"
             onChange={handleImageFileChange}
-            className="hidden"
+            style={{
+              position: 'absolute',
+              width: '1px',
+              height: '1px',
+              padding: 0,
+              margin: '-1px',
+              overflow: 'hidden',
+              clip: 'rect(0,0,0,0)',
+              whiteSpace: 'nowrap',
+              border: 0,
+              opacity: 0,
+              pointerEvents: 'none'
+            }}
+            aria-label="Prendre une photo avec l'appareil"
+            tabIndex={-1}
           />
         </div>
 

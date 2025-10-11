@@ -26,8 +26,9 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { useStableRole } from "@/hooks/useStableRole";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { RealtimeNotificationBadge } from "@/components/RealtimeNotificationBadge";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { SellerUpgradeForm } from "@/components/SellerUpgradeForm";
+import { useRef } from "react";
 import { getCountryName } from "@/data/countries";
 import { 
   Smartphone, 
@@ -93,11 +94,16 @@ const Index = () => {
   const { favoriteIds } = useFavorites();
   const { role, loading: roleLoading, isSuperAdmin, isSeller } = useStableRole();
   const navigate = useNavigate();
+  const location = useLocation();
   const [refreshKey, setRefreshKey] = useState(0);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSellerUpgrade, setShowSellerUpgrade] = useState(false);
   const [userCountry, setUserCountry] = useState<string>("Côte d'Ivoire");
+  
+  // Pour gérer le double clic sur le logo
+  const logoClickTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const logoClickCountRef = useRef(0);
 
   const handleProfileClick = () => {
     if (!user) {
@@ -129,6 +135,37 @@ const Index = () => {
 
   const handleViewAllCategories = () => {
     navigate('/categories');
+  };
+
+  const handleLogoClick = () => {
+    const isOnHomePage = location.pathname === '/';
+    
+    if (!isOnHomePage) {
+      // Si on n'est pas sur la page d'accueil, rediriger vers /
+      navigate('/');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    // On est sur la page d'accueil - gérer simple/double clic
+    logoClickCountRef.current += 1;
+
+    if (logoClickTimerRef.current) {
+      clearTimeout(logoClickTimerRef.current);
+    }
+
+    logoClickTimerRef.current = setTimeout(() => {
+      if (logoClickCountRef.current === 1) {
+        // Simple clic - soft refresh (recharger les produits)
+        fetchProducts();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (logoClickCountRef.current >= 2) {
+        // Double clic - hard refresh
+        window.location.reload();
+      }
+      
+      logoClickCountRef.current = 0;
+    }, 300); // 300ms pour détecter le double clic
   };
 
   useEffect(() => {
@@ -284,10 +321,7 @@ const Index = () => {
             {/* Logo Djassa - Always visible, no lines behind */}
             <h1 
               className="text-lg md:text-xl lg:text-2xl font-bold gradient-text-primary cursor-pointer transition-transform hover:scale-105 whitespace-nowrap" 
-              onClick={() => {
-                navigate('/');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onClick={handleLogoClick}
             >
               Djassa
             </h1>

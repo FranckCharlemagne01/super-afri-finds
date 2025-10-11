@@ -26,8 +26,11 @@ export const ContactSellerButton = ({
 
   const handleOpenChat = () => {
     if (!user) {
-      // Store current URL for redirect after login
-      sessionStorage.setItem('redirectAfterLogin', window.location.pathname);
+      // SECURITY: Validate redirect URL is safe (relative path only)
+      const currentPath = window.location.pathname;
+      if (currentPath.startsWith('/') && !currentPath.startsWith('//')) {
+        sessionStorage.setItem('redirectAfterLogin', currentPath);
+      }
       window.location.href = '/auth';
       return;
     }

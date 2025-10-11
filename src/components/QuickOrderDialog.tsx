@@ -14,6 +14,7 @@ import { ShoppingCart, Plus, Minus } from 'lucide-react';
 import { useOrders, OrderData } from '@/hooks/useOrders';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
+import { validateOrderCustomer } from '@/utils/orderValidation';
 
 interface QuickOrderDialogProps {
   productId: string;
@@ -63,20 +64,34 @@ export const QuickOrderDialog = ({
     
     if (!user) {
       setOpen(false);
-      // Store current URL for redirect after login
-      sessionStorage.setItem('redirectAfterLogin', window.location.pathname);
+      // SECURITY: Validate redirect URL is safe (relative path only)
+      const currentPath = window.location.pathname;
+      if (currentPath.startsWith('/') && !currentPath.startsWith('//')) {
+        sessionStorage.setItem('redirectAfterLogin', currentPath);
+      }
       window.location.href = '/auth';
       return;
     }
     
-    if (!formData.customerName || !formData.customerPhone || !formData.deliveryLocation) {
+    // SECURITY: Validate customer data against schema to prevent injection attacks
+    const validation = validateOrderCustomer(formData);
+    
+    if (!validation.success) {
+      const errorMessage = validation.error.errors[0]?.message || 'Données invalides';
+      toast({
+        title: "Validation échouée",
+        description: errorMessage,
+        variant: "destructive",
+      });
       return;
     }
 
+    const validatedData = validation.data;
+
     const orderData: OrderData = {
-      customerName: formData.customerName,
-      customerPhone: formData.customerPhone,
-      deliveryLocation: formData.deliveryLocation,
+      customerName: validatedData.customerName,
+      customerPhone: validatedData.customerPhone,
+      deliveryLocation: validatedData.deliveryLocation,
       productId,
       productTitle,
       productPrice,

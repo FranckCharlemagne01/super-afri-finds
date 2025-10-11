@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
 import type { CartItem } from '@/hooks/useCart';
 import { toast } from '@/hooks/use-toast';
+import { validateOrderCustomer } from '@/utils/orderValidation';
 
 
 interface CheckoutDialogProps {
@@ -59,10 +60,14 @@ export const CheckoutDialog = ({
       return;
     }
     
-    if (!formData.customerName || !formData.customerPhone || !formData.deliveryLocation) {
+    // SECURITY: Validate customer data against schema to prevent injection attacks
+    const validation = validateOrderCustomer(formData);
+    
+    if (!validation.success) {
+      const errorMessage = validation.error.errors[0]?.message || 'Données invalides';
       toast({
-        title: "Champs requis",
-        description: "Veuillez remplir tous les champs obligatoires",
+        title: "Validation échouée",
+        description: errorMessage,
         variant: "destructive",
       });
       return;
@@ -71,12 +76,15 @@ export const CheckoutDialog = ({
     setIsProcessing(true);
 
     try {
+      // Use validated data
+      const validatedData = validation.data;
+      
       // Create orders for each cart item (grouped by seller if needed)
       const orderPromises = cartItems.map(async (item) => {
         const orderData: OrderData = {
-          customerName: formData.customerName,
-          customerPhone: formData.customerPhone,
-          deliveryLocation: formData.deliveryLocation,
+          customerName: validatedData.customerName,
+          customerPhone: validatedData.customerPhone,
+          deliveryLocation: validatedData.deliveryLocation,
           productId: item.product.id,
           productTitle: item.product.title,
           productPrice: item.product.price,

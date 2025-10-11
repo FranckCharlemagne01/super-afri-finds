@@ -217,6 +217,8 @@ export const ProductCard = ({
               productId={id}
               sellerId={seller_id}
               productTitle={title}
+              productPrice={salePrice}
+              productImage={image}
             />
           </div>
 
@@ -245,6 +247,8 @@ export const ProductCard = ({
               productId={id}
               sellerId={seller_id}
               productTitle={title}
+              productPrice={salePrice}
+              productImage={image}
               iconOnly={true}
             />
           </div>

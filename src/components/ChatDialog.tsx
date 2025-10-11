@@ -37,6 +37,7 @@ interface ChatDialogProps {
     product?: {
       title: string;
       images?: string[];
+      price?: number;
     };
     sender_profile?: {
       full_name?: string;
@@ -315,25 +316,49 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md sm:max-w-2xl lg:max-w-3xl h-[90vh] sm:h-[85vh] flex flex-col p-0 gap-0">
         {/* Header - Fixed */}
-        <DialogHeader className="flex-shrink-0 px-4 sm:px-6 py-4 border-b bg-gradient-to-r from-primary/5 to-accent/5">
-          <DialogTitle className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
-              {userType === 'seller' ? (
-                <User className="h-5 w-5 text-primary" />
-              ) : (
-                <Store className="h-5 w-5 text-primary" />
-              )}
+        <DialogHeader className="flex-shrink-0 border-b">
+          {/* User Info Bar */}
+          <div className="px-4 sm:px-6 py-3 bg-gradient-to-r from-primary/5 to-accent/5 flex items-center gap-3">
+            <div className="relative">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
+                {userType === 'seller' ? (
+                  <User className="h-5 w-5 text-primary" />
+                ) : (
+                  <Store className="h-5 w-5 text-primary" />
+                )}
+              </div>
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-background rounded-full" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-bold text-base sm:text-lg truncate">{otherUserName}</p>
-              <p className="text-xs text-muted-foreground">En ligne</p>
+              <p className="text-xs text-green-600 font-medium flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                En ligne
+              </p>
             </div>
-          </DialogTitle>
-          
+          </div>
+
+          {/* Product Banner */}
           {initialMessage.product && (
-            <div className="flex items-center gap-2 mt-3 p-3 bg-background/80 backdrop-blur-sm rounded-lg border shadow-sm">
-              <Package className="h-4 w-4 text-primary flex-shrink-0" />
-              <span className="text-sm font-medium truncate">{initialMessage.product.title}</span>
+            <div className="px-4 sm:px-6 py-3 bg-background border-t">
+              <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-primary/5 to-accent/5 rounded-xl border shadow-sm hover:shadow-md transition-shadow">
+                {initialMessage.product.images?.[0] && (
+                  <img 
+                    src={initialMessage.product.images[0]} 
+                    alt={initialMessage.product.title}
+                    className="w-16 h-16 object-cover rounded-lg border-2 border-background shadow-sm flex-shrink-0"
+                  />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold truncate text-foreground">{initialMessage.product.title}</p>
+                  {initialMessage.product.price && (
+                    <p className="text-lg font-bold text-primary mt-0.5">
+                      {initialMessage.product.price.toLocaleString('fr-FR')} FCFA
+                    </p>
+                  )}
+                </div>
+                <Package className="h-5 w-5 text-primary/60 flex-shrink-0" />
+              </div>
             </div>
           )}
         </DialogHeader>

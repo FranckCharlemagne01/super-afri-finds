@@ -431,6 +431,8 @@ const ProductDetail = () => {
                     productId={product.id}
                     sellerId={product.seller_id}
                     productTitle={product.title}
+                    productPrice={salePrice}
+                    productImage={productImage}
                   />
                 </div>
               </div>
@@ -455,6 +457,8 @@ const ProductDetail = () => {
               productId={product.id}
               sellerId={product.seller_id}
               productTitle={product.title}
+              productPrice={salePrice}
+              productImage={productImage}
               iconOnly={true}
             />
             <Button

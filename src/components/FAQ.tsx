@@ -210,7 +210,7 @@ const FAQ = () => {
                     Contacter le Support
                   </a>
                   <a
-                    href="https://wa.me/225788281222"
+                    href="https://wa.me/225788281222?text=Bonjour%20%F0%9F%91%8B%2C%20je%20viens%20de%20Djassa%20et%20j%27aimerais%20parler%20avec%20le%20support."
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center px-6 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-colors"

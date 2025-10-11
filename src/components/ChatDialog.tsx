@@ -6,11 +6,12 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Send, User, Store, Package, Paperclip, Image as ImageIcon, Video, X } from 'lucide-react';
+import { Send, User, Store, Package, Paperclip, Image as ImageIcon, Video, X, ArrowLeft, ShoppingBag } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { ChatInput } from '@/components/ChatInput';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useNavigate } from 'react-router-dom';
 
 interface Message {
   id: string;
@@ -52,6 +53,7 @@ interface ChatDialogProps {
 export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: ChatDialogProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -257,6 +259,39 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
     }
   };
 
+  const sendProductCard = async () => {
+    if (!initialMessage?.product || !user) return;
+
+    setSending(true);
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .insert([{
+          sender_id: user.id,
+          recipient_id: getOtherUserId(),
+          product_id: initialMessage.product_id || null,
+          subject: `Re: ${initialMessage.subject || 'Message'}`,
+          content: '[PRODUCT_SHARE]',
+        }]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Produit envoyé",
+        description: "La carte produit a été envoyée avec succès",
+      });
+    } catch (error) {
+      console.error('Error sending product card:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'envoyer la carte produit",
+        variant: "destructive",
+      });
+    } finally {
+      setSending(false);
+    }
+  };
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -305,6 +340,10 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const handleProductClick = (productId: string) => {
+    navigate(`/product/${productId}`);
+    onOpenChange(false);
+  };
 
   if (!initialMessage) return null;
 
@@ -314,11 +353,19 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md sm:max-w-2xl lg:max-w-3xl h-[90vh] sm:h-[85vh] flex flex-col p-0 gap-0">
+      <DialogContent className="max-w-full sm:max-w-3xl lg:max-w-4xl h-[100vh] sm:h-[90vh] flex flex-col p-0 gap-0">
         {/* Header - Fixed */}
-        <DialogHeader className="flex-shrink-0 border-b">
-          {/* User Info Bar */}
+        <DialogHeader className="flex-shrink-0 border-b bg-background">
+          {/* User Info Bar with Back Button */}
           <div className="px-4 sm:px-6 py-3 bg-gradient-to-r from-primary/5 to-accent/5 flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onOpenChange(false)}
+              className="flex-shrink-0 h-10 w-10 rounded-full hover:bg-background/50"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
             <div className="relative">
               <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
                 {userType === 'seller' ? (
@@ -337,30 +384,6 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
               </p>
             </div>
           </div>
-
-          {/* Product Banner */}
-          {initialMessage.product && (
-            <div className="px-4 sm:px-6 py-3 bg-background border-t">
-              <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-primary/5 to-accent/5 rounded-xl border shadow-sm hover:shadow-md transition-shadow">
-                {initialMessage.product.images?.[0] && (
-                  <img 
-                    src={initialMessage.product.images[0]} 
-                    alt={initialMessage.product.title}
-                    className="w-16 h-16 object-cover rounded-lg border-2 border-background shadow-sm flex-shrink-0"
-                  />
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate text-foreground">{initialMessage.product.title}</p>
-                  {initialMessage.product.price && (
-                    <p className="text-lg font-bold text-primary mt-0.5">
-                      {initialMessage.product.price.toLocaleString('fr-FR')} FCFA
-                    </p>
-                  )}
-                </div>
-                <Package className="h-5 w-5 text-primary/60 flex-shrink-0" />
-              </div>
-            </div>
-          )}
         </DialogHeader>
 
         {/* Messages Area - Scrollable */}
@@ -391,11 +414,41 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
                       }`}
                     >
                       {/* Message content */}
-                      {message.content && (
+                      {/* Product Share Card */}
+                      {message.content === '[PRODUCT_SHARE]' && initialMessage.product ? (
+                        <div 
+                          onClick={() => handleProductClick(initialMessage.product_id || '')}
+                          className="cursor-pointer hover:opacity-90 transition-opacity"
+                        >
+                          <div className="flex items-start gap-3 p-3 bg-background/50 rounded-lg border-2 border-primary/20 min-w-[240px] max-w-[280px]">
+                            {initialMessage.product.images?.[0] && (
+                              <img 
+                                src={initialMessage.product.images[0]} 
+                                alt={initialMessage.product.title}
+                                className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+                              />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold line-clamp-2 mb-1">
+                                {initialMessage.product.title}
+                              </p>
+                              {initialMessage.product.price && (
+                                <p className="text-base font-bold text-primary">
+                                  {initialMessage.product.price.toLocaleString('fr-FR')} FCFA
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <p className="text-xs mt-1 opacity-70 flex items-center gap-1">
+                            <Package className="h-3 w-3" />
+                            Cliquez pour voir le produit
+                          </p>
+                        </div>
+                      ) : message.content ? (
                         <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
                           {message.content}
                         </p>
-                      )}
+                      ) : null}
                       
                       {/* Media content */}
                       {message.media_url && message.media_type === 'image' && (
@@ -455,8 +508,43 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
           </div>
         </ScrollArea>
 
+        {/* Product Card - Sticky above input */}
+        {initialMessage.product && (
+          <div className="flex-shrink-0 border-t bg-muted/30 p-3 sm:p-4">
+            <div className="flex items-center gap-3 p-3 bg-background rounded-xl border shadow-sm">
+              {initialMessage.product.images?.[0] && (
+                <img 
+                  src={initialMessage.product.images[0]} 
+                  alt={initialMessage.product.title}
+                  className="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded-lg flex-shrink-0"
+                />
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-semibold truncate">
+                  {initialMessage.product.title}
+                </p>
+                {initialMessage.product.price && (
+                  <p className="text-sm sm:text-base font-bold text-primary mt-0.5">
+                    {initialMessage.product.price.toLocaleString('fr-FR')} FCFA
+                  </p>
+                )}
+              </div>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={sendProductCard}
+                disabled={sending}
+                className="flex-shrink-0 gap-2"
+              >
+                <Package className="h-4 w-4" />
+                <span className="hidden sm:inline">Envoyer</span>
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Input Area - Fixed at bottom */}
-        <div className="flex-shrink-0 border-t bg-background p-4 sm:p-6">
+        <div className="flex-shrink-0 border-t bg-background p-3 sm:p-4">
           {/* File preview */}
           {selectedFile && (
             <div className="flex items-center gap-3 p-3 mb-3 bg-muted/50 rounded-xl border animate-fade-in">

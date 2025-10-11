@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
@@ -14,7 +13,9 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, Send } from 'lucide-react';
+import { ChatInput } from '@/components/ChatInput';
+import { ChatDialog } from '@/components/ChatDialog';
 
 interface ContactSellerButtonProps {
   productId: string;
@@ -30,6 +31,8 @@ export const ContactSellerButton = ({ productId, sellerId, productTitle, iconOnl
   const [loading, setLoading] = useState(false);
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
+  const [chatOpen, setChatOpen] = useState(false);
+  const [sentMessage, setSentMessage] = useState<any>(null);
 
   // Pré-remplir les champs quand le dialogue s'ouvre
   useEffect(() => {
@@ -69,7 +72,7 @@ Merci d'avance pour votre réponse.`;
     setLoading(true);
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('messages')
         .insert([{
           sender_id: user.id,
@@ -77,18 +80,36 @@ Merci d'avance pour votre réponse.`;
           product_id: productId,
           subject,
           content: message,
-        }]);
+        }])
+        .select()
+        .single();
 
       if (error) throw error;
 
       toast({
         title: "Message envoyé",
-        description: "Votre message a été envoyé au vendeur",
+        description: "Ouverture du chat...",
+      });
+
+      // Préparer les données pour le ChatDialog
+      setSentMessage({
+        id: data.id,
+        sender_id: data.sender_id,
+        recipient_id: data.recipient_id,
+        product_id: data.product_id,
+        subject: data.subject,
+        content: data.content,
+        product: {
+          title: productTitle,
+        },
       });
 
       setSubject('');
       setMessage('');
       setOpen(false);
+      
+      // Ouvrir le ChatDialog
+      setTimeout(() => setChatOpen(true), 300);
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
@@ -102,59 +123,93 @@ Merci d'avance pour votre réponse.`;
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button 
-          variant="outline" 
-          className={iconOnly ? "p-2 min-w-[44px] min-h-[44px] flex-1" : "w-full min-h-[44px]"} 
-          size="sm"
-        >
-          <MessageSquare className="w-4 h-4" />
-          {!iconOnly && <span className="ml-2">Contacter le vendeur</span>}
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="mx-4 sm:mx-auto max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-lg font-semibold">Contacter le vendeur</DialogTitle>
-          <DialogDescription className="text-sm">
-            Envoyez un message au vendeur concernant "{productTitle}"
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="subject" className="text-sm font-medium">Sujet</Label>
-            <Input
-              id="subject"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              placeholder="Question sur le produit..."
-              className="min-h-[44px] text-base"
-            />
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button 
+            variant="outline" 
+            className={iconOnly ? "p-2 min-w-[44px] min-h-[44px] flex-1" : "w-full min-h-[44px]"} 
+            size="sm"
+          >
+            <MessageSquare className="w-4 h-4" />
+            {!iconOnly && <span className="ml-2">Contacter le vendeur</span>}
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="mx-4 sm:mx-auto w-[calc(100%-2rem)] sm:max-w-md max-h-[85vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="px-4 sm:px-6 py-4 border-b bg-gradient-to-r from-primary/5 to-accent/5">
+            <DialogTitle className="text-lg font-bold flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-primary" />
+              Contacter le vendeur
+            </DialogTitle>
+            <DialogDescription className="text-sm">
+              Envoyez un message concernant "{productTitle}"
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="subject" className="text-sm font-semibold">Sujet</Label>
+              <Input
+                id="subject"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="Question sur le produit..."
+                className="min-h-[44px] text-base"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="message" className="text-sm font-semibold">Message</Label>
+              <ChatInput
+                value={message}
+                onChange={setMessage}
+                onSend={handleSendMessage}
+                placeholder="Bonjour, j'aimerais en savoir plus sur ce produit..."
+                disabled={loading}
+                minHeight="100px"
+                maxHeight="200px"
+              />
+            </div>
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="message" className="text-sm font-medium">Message</Label>
-            <Textarea
-              id="message"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Bonjour, j'aimerais en savoir plus sur ce produit..."
-              rows={4}
-              className="min-h-[100px] text-base resize-none"
-            />
-          </div>
-          
-          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-            <Button variant="outline" onClick={() => setOpen(false)} className="flex-1 min-h-[44px]">
+          <div className="border-t bg-background px-4 sm:px-6 py-4 flex flex-col sm:flex-row gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setOpen(false)} 
+              className="flex-1 min-h-[44px]"
+              disabled={loading}
+            >
               Annuler
             </Button>
-            <Button onClick={handleSendMessage} disabled={loading} className="flex-1 min-h-[44px]">
-              {loading ? 'Envoi...' : 'Envoyer'}
+            <Button 
+              onClick={handleSendMessage} 
+              disabled={loading || !message.trim() || !subject.trim()} 
+              className="flex-1 min-h-[44px] gap-2"
+            >
+              {loading ? (
+                <>
+                  <span className="animate-spin">⏳</span>
+                  Envoi...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4" />
+                  Envoyer
+                </>
+              )}
             </Button>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+
+      {sentMessage && (
+        <ChatDialog
+          initialMessage={sentMessage}
+          open={chatOpen}
+          onOpenChange={setChatOpen}
+          userType="buyer"
+        />
+      )}
+    </>
   );
 };

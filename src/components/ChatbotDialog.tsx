@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Send, Bot, User, ShoppingCart, Package, CreditCard, Store, AlertTriangle, X } from 'lucide-react';
@@ -21,7 +21,7 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const quickOptions = [
     { id: 'acheter', icon: ShoppingCart, label: 'Comment acheter', color: 'bg-primary' },
@@ -39,22 +39,41 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
     scrollToBottom();
   }, [messages]);
 
-  // Autofocus sur l'input quand le dialog s'ouvre
+  // Autofocus sur le textarea quand le dialog s'ouvre
   useEffect(() => {
-    if (open && inputRef.current) {
+    if (open && textareaRef.current) {
       const timer = setTimeout(() => {
-        inputRef.current?.focus();
-      }, 300);
+        textareaRef.current?.focus();
+      }, 100);
       return () => clearTimeout(timer);
     }
   }, [open]);
 
-  const handleSend = () => {
+  // Auto-resize du textarea
+  const adjustTextareaHeight = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+    }
+  }, []);
+
+  useEffect(() => {
+    adjustTextareaHeight();
+  }, [message, adjustTextareaHeight]);
+
+  const handleSend = useCallback(() => {
     if (message.trim()) {
       sendMessage(message);
       setMessage('');
+      // Reset la hauteur du textarea après envoi
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.style.height = 'auto';
+        }
+      }, 0);
     }
-  };
+  }, [message, sendMessage]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -187,21 +206,22 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
         </ScrollArea>
 
         <div className="p-4 border-t bg-background/95 backdrop-blur-sm">
-          <div className="flex gap-2">
-            <Input
-              ref={inputRef}
+          <div className="flex gap-2 items-end">
+            <Textarea
+              ref={textareaRef}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyPress}
               placeholder="Tapez votre message..."
-              className="flex-1 min-h-[48px] text-sm rounded-full border-2 focus:border-primary transition-colors"
+              className="flex-1 min-h-[48px] max-h-[120px] text-sm rounded-2xl border-2 focus:border-primary transition-colors resize-none py-3 px-4"
               autoComplete="off"
+              rows={1}
             />
             <Button 
               onClick={handleSend} 
               size="icon" 
               disabled={!message.trim()} 
-              className="min-h-[48px] min-w-[48px] rounded-full shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50"
+              className="min-h-[48px] min-w-[48px] rounded-full shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 flex-shrink-0"
             >
               <Send className="h-5 w-5" />
             </Button>

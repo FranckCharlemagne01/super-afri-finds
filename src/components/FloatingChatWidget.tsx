@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -28,7 +28,7 @@ export const FloatingChatWidget = () => {
   const { messages, isTyping, sendMessage, selectQuickOption } = useChatbot();
   const { user } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const quickOptions = [
     { id: 'acheter', icon: ShoppingCart, label: 'Comment acheter', color: 'bg-primary' },
@@ -47,20 +47,39 @@ export const FloatingChatWidget = () => {
   }, [messages]);
 
   useEffect(() => {
-    if (isOpen && !isMinimized && inputRef.current) {
+    if (isOpen && !isMinimized && textareaRef.current) {
       const timer = setTimeout(() => {
-        inputRef.current?.focus();
-      }, 300);
+        textareaRef.current?.focus();
+      }, 100);
       return () => clearTimeout(timer);
     }
   }, [isOpen, isMinimized]);
 
-  const handleSend = () => {
+  // Auto-resize du textarea
+  const adjustTextareaHeight = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 100) + 'px';
+    }
+  }, []);
+
+  useEffect(() => {
+    adjustTextareaHeight();
+  }, [message, adjustTextareaHeight]);
+
+  const handleSend = useCallback(() => {
     if (message.trim()) {
       sendMessage(message);
       setMessage('');
+      // Reset la hauteur du textarea après envoi
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.style.height = 'auto';
+        }
+      }, 0);
     }
-  };
+  }, [message, sendMessage]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -216,21 +235,22 @@ export const FloatingChatWidget = () => {
 
                 {/* Input Area */}
                 <div className="p-3 border-t bg-background rounded-b-xl">
-                  <div className="flex gap-2">
-                    <Input
-                      ref={inputRef}
+                  <div className="flex gap-2 items-end">
+                    <Textarea
+                      ref={textareaRef}
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      onKeyPress={handleKeyPress}
+                      onKeyDown={handleKeyPress}
                       placeholder="Tapez votre message..."
-                      className="flex-1 text-sm h-8"
+                      className="flex-1 text-sm min-h-[32px] max-h-[100px] rounded-lg resize-none py-2 px-3"
                       autoComplete="off"
+                      rows={1}
                     />
                     <Button 
                       onClick={handleSend} 
                       size="icon" 
                       disabled={!message.trim()} 
-                      className="h-8 w-8"
+                      className="h-8 w-8 flex-shrink-0"
                     >
                       <Send className="h-3 w-3" />
                     </Button>

@@ -14,6 +14,7 @@ import { PopularCategories } from "@/components/PopularCategories";
 import { FeaturedProductsGrid } from "@/components/FeaturedProductsGrid";
 import { DynamicPromoBanner } from "@/components/DynamicPromoBanner";
 import { ScrollingAnnouncementBanner } from "@/components/ScrollingAnnouncementBanner";
+import { ShopPromoBanner } from "@/components/ShopPromoBanner";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -343,11 +344,9 @@ const Index = () => {
           <HeroCarousel />
         </div>
 
-        {/* Categories Populaires - Style TEMU horizontal avec toutes les catégories */}
+        {/* Bannière promotionnelle boutique */}
         <section className="mb-6 sm:mb-8">
-          <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 px-1">
-            EXPLOREZ VOS CENTRES D'INTÉRÊT
-          </h2>
+          <ShopPromoBanner />
           <PopularCategories />
         </section>
 

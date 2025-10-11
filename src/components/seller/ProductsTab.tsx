@@ -112,17 +112,6 @@ export const ProductsTab = ({
     refreshBalance();
   };
 
-  // Group products by category
-  const productsByCategory = React.useMemo(() => {
-    return products.reduce((acc, product) => {
-      if (!acc[product.category]) {
-        acc[product.category] = [];
-      }
-      acc[product.category].push(product);
-      return acc;
-    }, {} as Record<string, Product[]>);
-  }, [products]);
-
   return (
     <div className="space-y-6">
       <Card className="border-0 shadow-lg">
@@ -140,42 +129,13 @@ export const ProductsTab = ({
           </div>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <SellerProducts
-              products={products}
-              loading={loading}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onBoost={handleBoost}
-            />
-          ) : products.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>Aucun produit pour le moment.</p>
-              <p className="text-sm">Cliquez sur "Ajouter un produit" pour commencer.</p>
-            </div>
-          ) : (
-            <div className="space-y-8">
-              {Object.entries(productsByCategory).map(([category, categoryProducts]) => (
-                <div key={category} className="space-y-4">
-                  <div className="flex items-center gap-2 border-b pb-2">
-                    <h3 className="text-lg font-semibold capitalize">
-                      {category.replace(/-/g, ' ')}
-                    </h3>
-                    <span className="text-sm text-muted-foreground">
-                      ({categoryProducts.length} produit{categoryProducts.length > 1 ? 's' : ''})
-                    </span>
-                  </div>
-                  <SellerProducts
-                    products={categoryProducts}
-                    loading={false}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onBoost={handleBoost}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+          <SellerProducts
+            products={products}
+            loading={loading}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onBoost={handleBoost}
+          />
         </CardContent>
       </Card>
 

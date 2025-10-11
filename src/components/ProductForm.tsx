@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrialStatus } from '@/hooks/useTrialStatus';
 import { useTokens } from '@/hooks/useTokens';
@@ -13,7 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 import { Camera, Image as ImageIcon, X } from 'lucide-react';
 
 interface Product {
@@ -466,10 +466,12 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'grid-cols-1 md:grid-cols-2 gap-6'}`}>
+    <form onSubmit={handleSubmit} className="space-y-4 pb-6">
+      <div className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-1 md:grid-cols-2 gap-6'}`}>
         <div className="space-y-2">
-          <Label htmlFor="title">Titre du produit *</Label>
+          <Label htmlFor="title" className={isMobile ? "text-sm font-medium" : ""}>
+            Titre du produit *
+          </Label>
           <TextInput
             id="title"
             value={formData.title}
@@ -477,22 +479,25 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
             placeholder="Nom de votre produit"
             required
             allowNumbers={true}
-            className={isMobile ? "text-base" : ""}
+            className={isMobile ? "text-base min-h-[44px]" : ""}
+            autoComplete="off"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="category">Catégorie *</Label>
+          <Label htmlFor="category" className={isMobile ? "text-sm font-medium" : ""}>
+            Catégorie *
+          </Label>
           <Select 
             value={formData.category} 
             onValueChange={(value) => handleInputChange('category', value)}
           >
-            <SelectTrigger className={isMobile ? "text-base" : ""}>
+            <SelectTrigger className={isMobile ? "text-base min-h-[44px]" : ""}>
               <SelectValue placeholder="Sélectionnez une catégorie" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className={isMobile ? "max-h-[50vh]" : ""}>
               {categoriesFlat.map((item) => (
-                <SelectItem key={item.value} value={item.value}>
+                <SelectItem key={item.value} value={item.value} className={isMobile ? "text-base" : ""}>
                   {item.label}
                 </SelectItem>
               ))}
@@ -501,71 +506,86 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="price">Prix (FCFA) *</Label>
+          <Label htmlFor="price" className={isMobile ? "text-sm font-medium" : ""}>
+            Prix (FCFA) *
+          </Label>
           <NumericInput
             id="price"
             value={formData.price?.toString() || ''}
             onChange={(value) => handleInputChange('price', Number(value) || 0)}
             placeholder="0"
             required
-            className={isMobile ? "text-base" : ""}
+            className={isMobile ? "text-base min-h-[44px]" : ""}
+            inputMode="numeric"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="original_price">Prix original (FCFA)</Label>
+          <Label htmlFor="original_price" className={isMobile ? "text-sm font-medium" : ""}>
+            Prix original (FCFA)
+          </Label>
           <NumericInput
             id="original_price"
             value={formData.original_price?.toString() || ''}
             onChange={(value) => handleInputChange('original_price', Number(value) || 0)}
             placeholder="0"
-            className={isMobile ? "text-base" : ""}
+            className={isMobile ? "text-base min-h-[44px]" : ""}
+            inputMode="numeric"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="stock_quantity">Quantité en stock</Label>
+          <Label htmlFor="stock_quantity" className={isMobile ? "text-sm font-medium" : ""}>
+            Quantité en stock
+          </Label>
           <NumericInput
             id="stock_quantity"
             value={formData.stock_quantity?.toString() || ''}
             onChange={(value) => handleInputChange('stock_quantity', Number(value) || 0)}
             placeholder="0"
-            className={isMobile ? "text-base" : ""}
+            className={isMobile ? "text-base min-h-[44px]" : ""}
+            inputMode="numeric"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="badge">Badge (optionnel)</Label>
+          <Label htmlFor="badge" className={isMobile ? "text-sm font-medium" : ""}>
+            Badge (optionnel)
+          </Label>
           <Input
             id="badge"
             value={formData.badge}
             onChange={(e) => handleInputChange('badge', e.target.value)}
             placeholder="Nouveau, Populaire, etc."
-            className={isMobile ? "text-base" : ""}
+            className={isMobile ? "text-base min-h-[44px]" : ""}
+            autoComplete="off"
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description" className={isMobile ? "text-sm font-medium" : ""}>
+          Description
+        </Label>
         <Textarea
           id="description"
           value={formData.description}
           onChange={(e) => handleInputChange('description', e.target.value)}
           placeholder="Décrivez votre produit en détail..."
-          rows={4}
+          rows={isMobile ? 3 : 4}
+          className={isMobile ? "text-base min-h-[80px]" : ""}
         />
       </div>
 
-      <div className="space-y-4">
-        <Label>Images du produit</Label>
+      <div className="space-y-3">
+        <Label className={isMobile ? "text-sm font-medium" : ""}>Images du produit</Label>
         
         {/* Upload d'images optimisé mobile */}
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center bg-gray-50/50">
+        <div className="border-2 border-dashed rounded-lg p-3 text-center bg-muted/30">
           {isMobile ? (
             /* Interface mobile optimisée */
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-2">
                 <button 
                   type="button" 
                   onClick={(e) => {
@@ -573,11 +593,11 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
                     e.stopPropagation();
                     imageInputRef.current?.click();
                   }}
-                  className="h-24 flex flex-col items-center justify-center space-y-2 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors touch-manipulation"
+                  className="h-20 flex flex-col items-center justify-center space-y-1.5 bg-background border-2 rounded-lg active:scale-95 transition-all touch-manipulation shadow-sm"
                   aria-label="Sélectionner des images depuis votre galerie"
                 >
-                  <ImageIcon className="h-8 w-8 text-primary" />
-                  <span className="text-sm font-medium text-gray-700">Galerie</span>
+                  <ImageIcon className="h-7 w-7 text-primary" />
+                  <span className="text-xs font-medium">Galerie</span>
                 </button>
                 
                 <button 
@@ -587,19 +607,16 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
                     e.stopPropagation();
                     cameraInputRef.current?.click();
                   }}
-                  className="h-24 flex flex-col items-center justify-center space-y-2 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors touch-manipulation"
+                  className="h-20 flex flex-col items-center justify-center space-y-1.5 bg-background border-2 rounded-lg active:scale-95 transition-all touch-manipulation shadow-sm"
                   aria-label="Prendre une photo avec votre appareil"
                 >
-                  <Camera className="h-8 w-8 text-primary" />
-                  <span className="text-sm font-medium text-gray-700">Appareil photo</span>
+                  <Camera className="h-7 w-7 text-primary" />
+                  <span className="text-xs font-medium">Appareil photo</span>
                 </button>
               </div>
               
-              <p className="text-sm text-gray-600">
-                Choisissez une image depuis votre galerie ou prenez une photo
-              </p>
-              <p className="text-xs text-gray-500">
-                PNG, JPG, WebP jusqu'à 5MB chacune. Max 5 images.
+              <p className="text-xs text-muted-foreground leading-tight">
+                PNG, JPG, WebP jusqu'à 5MB. Max 5 images.
               </p>
             </div>
           ) : (
@@ -678,23 +695,23 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
         {/* Aperçu des images uploadées */}
         {previewImages.length > 0 && (
           <div className="space-y-2">
-            <Label>Aperçu des images</Label>
-            <div className={`grid ${isMobile ? 'grid-cols-2 gap-2' : 'grid-cols-2 md:grid-cols-3 gap-4'}`}>
+            <Label className={isMobile ? "text-sm font-medium" : ""}>Aperçu des images</Label>
+            <div className={`grid ${isMobile ? 'grid-cols-3 gap-2' : 'grid-cols-2 md:grid-cols-3 gap-4'}`}>
               {previewImages.map((preview, index) => (
                 <div key={index} className="relative group">
                   <img
                     src={preview}
                     alt={`Aperçu ${index + 1}`}
-                    className={`w-full ${isMobile ? 'h-24' : 'h-32'} object-cover rounded-lg border`}
+                    className={`w-full ${isMobile ? 'h-20' : 'h-32'} object-cover rounded-lg border shadow-sm`}
                   />
                   <Button
                     type="button"
                     variant="destructive"
                     size="sm"
-                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                    className={`absolute -top-1.5 -right-1.5 ${isMobile ? 'h-5 w-5' : 'h-6 w-6'} rounded-full p-0 shadow-md`}
                     onClick={() => removePreviewImage(index)}
                   >
-                    <X className="h-3 w-3" />
+                    <X className={isMobile ? "h-2.5 w-2.5" : "h-3 w-3"} />
                   </Button>
                 </div>
               ))}
@@ -703,15 +720,17 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
         )}
 
         {/* Alternative: URL d'image */}
-        <div className="space-y-2">
-          <Label htmlFor="images">Ou ajouter une image par URL (optionnel)</Label>
-          <Input
-            id="images"
-            value={formData.images}
-            onChange={(e) => handleInputChange('images', e.target.value)}
-            placeholder="https://exemple.com/image.jpg"
-          />
-        </div>
+        {!isMobile && (
+          <div className="space-y-2">
+            <Label htmlFor="images">Ou ajouter une image par URL (optionnel)</Label>
+            <Input
+              id="images"
+              value={formData.images}
+              onChange={(e) => handleInputChange('images', e.target.value)}
+              placeholder="https://exemple.com/image.jpg"
+            />
+          </div>
+        )}
       </div>
 
       {/* Video Upload Section */}
@@ -800,27 +819,29 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
         </Alert>
       )}
 
-      <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'justify-end space-x-2'}`}>
+      <div className={`flex ${isMobile ? 'flex-col-reverse space-y-reverse space-y-2 pt-2' : 'justify-end space-x-2'}`}>
         <Button 
           type="button" 
           variant="outline" 
           onClick={onCancel}
-          className={isMobile ? "w-full" : ""}
+          className={isMobile ? "w-full min-h-[44px]" : ""}
+          disabled={loading || uploadingVideo || uploadingImages}
         >
           Annuler
         </Button>
         <Button 
           type="submit" 
           disabled={loading || uploadingVideo || uploadingImages || tokensLoading || (!product?.id && tokenBalance <= 0)}
-          className={isMobile ? "w-full" : ""}
+          className={isMobile ? "w-full min-h-[44px]" : ""}
         >
+          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {loading ? 'Sauvegarde...' : 
            uploadingImages ? 'Upload images...' : 
            uploadingVideo ? 'Upload vidéo...' : 
            tokensLoading ? 'Chargement...' :
-           product?.id ? 'Modifier' : 
+           product?.id ? 'Modifier le produit' : 
            tokenBalance <= 0 ? 'Jetons insuffisants' :
-           `Publier (1 jeton)`}
+           `Publier le produit (1 jeton)`}
         </Button>
       </div>
     </form>

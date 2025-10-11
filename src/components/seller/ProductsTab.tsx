@@ -5,9 +5,11 @@ import { Plus } from 'lucide-react';
 import { ProductForm } from '@/components/ProductForm';
 import { SellerProducts } from '@/components/SellerProducts';
 import { ProductBoostDialog } from '@/components/ProductBoostDialog';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useTokens } from '@/hooks/useTokens';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Product {
   id: string;
@@ -39,6 +41,7 @@ interface ProductsTabProps {
 export const ProductsTab = ({ products, loading, shopId, onRefresh }: ProductsTabProps) => {
   const { toast } = useToast();
   const { tokenBalance, refreshBalance } = useTokens();
+  const isMobile = useIsMobile();
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [boostDialogOpen, setBoostDialogOpen] = useState(false);
@@ -90,39 +93,19 @@ export const ProductsTab = ({ products, loading, shopId, onRefresh }: ProductsTa
     refreshBalance();
   };
 
-  if (showProductForm) {
-    return (
-      <Card className="border-0 shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Plus className="h-5 w-5" />
-            {editingProduct ? 'Modifier le produit' : 'Publier un nouveau produit'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ProductForm
-            product={editingProduct || undefined}
-            onSave={handleProductSaved}
-            onCancel={() => {
-              setShowProductForm(false);
-              setEditingProduct(null);
-            }}
-            shopId={shopId}
-          />
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <Card className="border-0 shadow-lg">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Mes Produits ({products.length})</CardTitle>
-            <Button onClick={() => setShowProductForm(true)} size="lg" className="gap-2">
+            <Button 
+              onClick={() => setShowProductForm(true)} 
+              size={isMobile ? "default" : "lg"} 
+              className="gap-2"
+            >
               <Plus className="h-5 w-5" />
-              Ajouter un produit
+              {!isMobile && "Ajouter un produit"}
             </Button>
           </div>
         </CardHeader>
@@ -136,6 +119,54 @@ export const ProductsTab = ({ products, loading, shopId, onRefresh }: ProductsTa
           />
         </CardContent>
       </Card>
+
+      {/* Formulaire de produit - Sheet sur mobile/tablette, Card sur desktop */}
+      {isMobile ? (
+        <Sheet open={showProductForm} onOpenChange={setShowProductForm}>
+          <SheetContent 
+            side="bottom" 
+            className="h-[95vh] overflow-y-auto rounded-t-xl"
+          >
+            <SheetHeader className="pb-4">
+              <SheetTitle className="flex items-center gap-2">
+                <Plus className="h-5 w-5" />
+                {editingProduct ? 'Modifier le produit' : 'Publier un nouveau produit'}
+              </SheetTitle>
+            </SheetHeader>
+            <ProductForm
+              product={editingProduct || undefined}
+              onSave={handleProductSaved}
+              onCancel={() => {
+                setShowProductForm(false);
+                setEditingProduct(null);
+              }}
+              shopId={shopId}
+            />
+          </SheetContent>
+        </Sheet>
+      ) : (
+        showProductForm && (
+          <Card className="border-0 shadow-lg animate-in fade-in-0 slide-in-from-top-4 duration-300">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Plus className="h-5 w-5" />
+                {editingProduct ? 'Modifier le produit' : 'Publier un nouveau produit'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ProductForm
+                product={editingProduct || undefined}
+                onSave={handleProductSaved}
+                onCancel={() => {
+                  setShowProductForm(false);
+                  setEditingProduct(null);
+                }}
+                shopId={shopId}
+              />
+            </CardContent>
+          </Card>
+        )
+      )}
 
       {/* Boost Dialog */}
       {selectedProductForBoost && (

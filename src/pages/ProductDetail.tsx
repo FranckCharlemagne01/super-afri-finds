@@ -18,6 +18,13 @@ import {
   Plus,
   Minus
 } from "lucide-react";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 interface Product {
   id: string;
@@ -63,6 +70,7 @@ const ProductDetail = () => {
   const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
   const [similarShops, setSimilarShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   useEffect(() => {
     if (id) {
@@ -209,7 +217,8 @@ const ProductDetail = () => {
     toggleFavorite(product.id);
   };
 
-  const productImage = product.images?.[0] || "/placeholder.svg";
+  const productImages = product.images && product.images.length > 0 ? product.images : ["/placeholder.svg"];
+  const productImage = productImages[selectedImageIndex];
   const originalPrice = product.original_price || product.price;
   const salePrice = product.price;
   const discount = product.discount_percentage || 0;
@@ -242,7 +251,7 @@ const ProductDetail = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Product Image/Video */}
+          {/* Product Image/Video Gallery */}
           <div className="space-y-4">
             <div className="relative">
               {showVideo && product.video_url ? (
@@ -261,46 +270,96 @@ const ProductDetail = () => {
                     className="absolute top-3 right-3 bg-white/90"
                     onClick={() => setShowVideo(false)}
                   >
-                    Voir l'image
+                    Voir les images
                   </Button>
                 </div>
               ) : (
-                <div className="relative">
-                  <img
-                    src={productImage}
-                    alt={product.title}
-                    className="w-full h-96 lg:h-[500px] object-cover rounded-lg"
-                  />
-                  {product.video_url && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="absolute top-3 right-3 bg-white/90 flex items-center gap-2"
-                      onClick={() => setShowVideo(true)}
-                    >
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M8 5v10l7-5-7-5z"/>
-                      </svg>
-                      Voir la vidéo
-                    </Button>
+                <div className="space-y-4">
+                  {/* Image principale */}
+                  <div className="relative">
+                    <img
+                      src={productImage}
+                      alt={`${product.title} - Image ${selectedImageIndex + 1}`}
+                      className="w-full h-96 lg:h-[500px] object-cover rounded-lg"
+                    />
+                    {product.video_url && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="absolute top-3 right-3 bg-white/90 flex items-center gap-2"
+                        onClick={() => setShowVideo(true)}
+                      >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M8 5v10l7-5-7-5z"/>
+                        </svg>
+                        Voir la vidéo
+                      </Button>
+                    )}
+                    
+                    {product.badge && (
+                      <Badge className="absolute top-3 left-3 bg-promo text-promo-foreground">
+                        {product.badge}
+                      </Badge>
+                    )}
+                    {product.is_flash_sale && (
+                      <Badge className="absolute top-3 left-3 bg-primary text-primary-foreground animate-pulse-promo">
+                        ⚡ Flash Sale
+                      </Badge>
+                    )}
+                    {discount > 0 && (
+                      <Badge className="absolute bottom-3 left-3 bg-success text-success-foreground">
+                        -{discount}%
+                      </Badge>
+                    )}
+                    
+                    {productImages.length > 1 && (
+                      <Badge className="absolute bottom-3 right-3 bg-black/60 text-white border-0">
+                        {selectedImageIndex + 1}/{productImages.length}
+                      </Badge>
+                    )}
+                  </div>
+
+                  {/* Miniatures cliquables - Carousel si plus d'une image */}
+                  {productImages.length > 1 && (
+                    <div className="relative px-8">
+                      <Carousel
+                        opts={{
+                          align: "start",
+                          loop: false,
+                        }}
+                        className="w-full"
+                      >
+                        <CarouselContent className="-ml-2">
+                          {productImages.map((image, index) => (
+                            <CarouselItem key={index} className="basis-1/3 md:basis-1/4 lg:basis-1/5 pl-2">
+                              <button
+                                onClick={() => setSelectedImageIndex(index)}
+                                className={`relative w-full aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                                  selectedImageIndex === index
+                                    ? 'border-primary ring-2 ring-primary ring-offset-2'
+                                    : 'border-gray-200 hover:border-primary/50'
+                                }`}
+                              >
+                                <img
+                                  src={image}
+                                  alt={`${product.title} - Miniature ${index + 1}`}
+                                  className="w-full h-full object-cover"
+                                />
+                                {selectedImageIndex === index && (
+                                  <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                                    <Badge className="text-xs">Actuelle</Badge>
+                                  </div>
+                                )}
+                              </button>
+                            </CarouselItem>
+                          ))}
+                        </CarouselContent>
+                        <CarouselPrevious className="left-0" />
+                        <CarouselNext className="right-0" />
+                      </Carousel>
+                    </div>
                   )}
                 </div>
-              )}
-              
-              {product.badge && (
-                <Badge className="absolute top-3 left-3 bg-promo text-promo-foreground">
-                  {product.badge}
-                </Badge>
-              )}
-              {product.is_flash_sale && (
-                <Badge className="absolute top-3 left-3 bg-primary text-primary-foreground animate-pulse-promo">
-                  ⚡ Flash Sale
-                </Badge>
-              )}
-              {discount > 0 && (
-                <Badge className="absolute bottom-3 left-3 bg-success text-success-foreground">
-                  -{discount}%
-                </Badge>
               )}
             </div>
           </div>

@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -637,7 +638,15 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
       </div>
 
       <div className="space-y-3">
-        <Label className={isMobile ? "text-sm font-medium" : ""}>Images du produit</Label>
+        <div className="flex items-center justify-between">
+          <Label className={isMobile ? "text-sm font-medium" : ""}>Images du produit *</Label>
+          <span className={`text-xs ${isMobile ? 'text-muted-foreground' : 'text-muted-foreground'}`}>
+            {previewImages.length}/5 images
+          </span>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          📸 <strong>1 image obligatoire</strong>, jusqu'à <strong>4 images supplémentaires</strong> optionnelles (5 max)
+        </p>
         
         {/* Upload d'images optimisé mobile */}
         <div className="border-2 border-dashed rounded-lg p-3 text-center bg-muted/30">
@@ -675,7 +684,7 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
               </div>
               
               <p className="text-xs text-muted-foreground leading-tight">
-                PNG, JPG, WebP jusqu'à 5MB. Max 5 images.
+                PNG, JPG, WebP jusqu'à 5MB chacune. Vous pouvez télécharger jusqu'à 5 images pour ce produit.
               </p>
             </div>
           ) : (
@@ -699,7 +708,7 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
                 Glissez vos images ici ou cliquez pour les sélectionner
               </p>
               <p className="text-xs text-gray-400 mt-2">
-                PNG, JPG, WebP jusqu'à 5MB chacune. Maximum 5 images.
+                PNG, JPG, WebP jusqu'à 5MB chacune. Vous pouvez télécharger jusqu'à 5 images pour ce produit.
               </p>
             </div>
           )}
@@ -754,15 +763,25 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
         {/* Aperçu des images uploadées */}
         {previewImages.length > 0 && (
           <div className="space-y-2">
-            <Label className={isMobile ? "text-sm font-medium" : ""}>Aperçu des images</Label>
-            <div className={`grid ${isMobile ? 'grid-cols-3 gap-2' : 'grid-cols-2 md:grid-cols-3 gap-4'}`}>
+            <div className="flex items-center justify-between">
+              <Label className={isMobile ? "text-sm font-medium" : ""}>Aperçu des images</Label>
+              <span className="text-xs text-muted-foreground">
+                {previewImages.length === 1 ? '1 image' : `${previewImages.length} images`}
+              </span>
+            </div>
+            <div className={`grid ${isMobile ? 'grid-cols-3 gap-2' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4'}`}>
               {previewImages.map((preview, index) => (
                 <div key={index} className="relative group">
-                  <img
-                    src={preview}
-                    alt={`Aperçu ${index + 1}`}
-                    className={`w-full ${isMobile ? 'h-20' : 'h-32'} object-cover rounded-lg border shadow-sm`}
-                  />
+                  <div className="relative">
+                    <img
+                      src={preview}
+                      alt={`Aperçu ${index + 1}`}
+                      className={`w-full ${isMobile ? 'h-20' : 'h-32'} object-cover rounded-lg border shadow-sm`}
+                    />
+                    <Badge className="absolute bottom-1 left-1 text-xs px-1.5 py-0.5 bg-black/60 text-white border-0">
+                      {index + 1}
+                    </Badge>
+                  </div>
                   <Button
                     type="button"
                     variant="destructive"

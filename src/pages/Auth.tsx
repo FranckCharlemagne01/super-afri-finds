@@ -373,14 +373,36 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 flex items-center justify-center p-3 md:p-6">
       <div className="w-full max-w-[95%] md:max-w-md space-y-4">
-        <Button
-          variant="ghost"
-          onClick={() => navigate('/')}
-          className="mb-2 text-sm md:text-base h-10 md:h-11"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Retour à l'accueil
-        </Button>
+        {(authMode === 'signup' || resetMode) && (
+          <Button
+            variant="ghost"
+            onClick={() => {
+              if (resetMode) {
+                setResetMode(false);
+                setResetSuccess(false);
+                setResetEmail('');
+                setResetFormError('');
+              } else if (authMode === 'signup') {
+                setAuthMode('signin');
+                setFormError('');
+              }
+            }}
+            className="mb-2 text-sm md:text-base h-10 md:h-11"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Retour
+          </Button>
+        )}
+        {authMode === 'signin' && !resetMode && (
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/')}
+            className="mb-2 text-sm md:text-base h-10 md:h-11"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Retour à l'accueil
+          </Button>
+        )}
 
         <Card className="border-0 shadow-xl bg-white/95 backdrop-blur">
           <CardHeader className="text-center p-4 md:p-6 space-y-2">
@@ -614,18 +636,6 @@ const Auth = () => {
                       {loading ? "Envoi..." : "Envoyer le lien"}
                     </Button>
 
-                    <div className="text-center">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setResetMode(false);
-                          setResetFormError('');
-                        }}
-                        className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline transition-colors"
-                      >
-                        Retour à la connexion
-                      </button>
-                    </div>
                   </>
                 )}
               </form>
@@ -789,15 +799,6 @@ const Auth = () => {
                   {loading ? "Inscription..." : "S'inscrire"}
                 </Button>
 
-                <div className="text-center pt-3">
-                  <button
-                    type="button"
-                    onClick={() => setAuthMode('signin')}
-                    className="text-sm md:text-base text-primary hover:underline font-medium py-2"
-                  >
-                    Vous avez déjà un compte ? <span className="font-semibold">Connectez-vous</span>
-                  </button>
-                </div>
               </form>
             ) : (
               <form onSubmit={handleSignIn} className="space-y-3 md:space-y-4">
@@ -871,6 +872,7 @@ const Auth = () => {
                     onClick={() => {
                       setAuthMode('signup');
                       setFormError('');
+                      setPassword('');
                     }}
                     className="text-sm md:text-base text-primary hover:underline font-medium py-2"
                   >

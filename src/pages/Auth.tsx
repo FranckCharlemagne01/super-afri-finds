@@ -695,6 +695,11 @@ const Auth = () => {
                       const selectedCountry = getCountryByCode(value);
                       if (selectedCountry) {
                         setDialCode(selectedCountry.dialCode);
+                        // Préremplir le champ téléphone avec le code international
+                        // Si le champ est vide ou contient seulement un ancien code
+                        if (!phone || phone.startsWith('+')) {
+                          setPhone(selectedCountry.dialCode + ' ');
+                        }
                       }
                     }}
                   />
@@ -705,7 +710,7 @@ const Auth = () => {
                   <Input
                     id="phone"
                     type="text"
-                    placeholder="+225 0707070707"
+                    placeholder={`${dialCode} 0707070707`}
                     value={phone}
                     onChange={(e) => {
                       const value = e.target.value;
@@ -718,7 +723,7 @@ const Auth = () => {
                     maxLength={20}
                     className="h-12 md:h-12 text-base rounded-lg"
                   />
-                  <p className="text-xs text-muted-foreground">Format: +225 0707070707 ou 0707070707</p>
+                  <p className="text-xs text-muted-foreground">Format: {dialCode} 0707070707 ou 0707070707</p>
                 </div>
 
                 <div className="space-y-2">

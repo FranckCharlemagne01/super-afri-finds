@@ -29,7 +29,7 @@ export const SellerPromoBanner = () => {
   
   return (
     <div 
-      className="w-full overflow-hidden bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 py-3 rounded-lg shadow-md cursor-pointer hover:from-orange-600 hover:via-orange-700 hover:to-orange-600 transition-all duration-300"
+      className="w-full overflow-hidden bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 py-2.5 sm:py-3 rounded-lg shadow-md cursor-pointer hover:from-orange-600 hover:via-orange-700 hover:to-orange-600 transition-all duration-300 active:scale-[0.99]"
       onClick={handleClick}
       role="button"
       tabIndex={0}
@@ -42,18 +42,18 @@ export const SellerPromoBanner = () => {
     >
       <div className="relative flex">
         <div className="flex animate-[scroll_25s_linear_infinite]">
-          <span className="text-lg sm:text-xl font-bold text-white whitespace-nowrap px-6">
+          <span className="text-sm sm:text-base md:text-lg lg:text-xl font-semibold sm:font-bold text-white whitespace-nowrap px-4 sm:px-6">
             {message}
           </span>
-          <span className="text-lg sm:text-xl font-bold text-white whitespace-nowrap px-6">
+          <span className="text-sm sm:text-base md:text-lg lg:text-xl font-semibold sm:font-bold text-white whitespace-nowrap px-4 sm:px-6">
             {message}
           </span>
         </div>
         <div className="flex animate-[scroll_25s_linear_infinite]" aria-hidden="true">
-          <span className="text-lg sm:text-xl font-bold text-white whitespace-nowrap px-6">
+          <span className="text-sm sm:text-base md:text-lg lg:text-xl font-semibold sm:font-bold text-white whitespace-nowrap px-4 sm:px-6">
             {message}
           </span>
-          <span className="text-lg sm:text-xl font-bold text-white whitespace-nowrap px-6">
+          <span className="text-sm sm:text-base md:text-lg lg:text-xl font-semibold sm:font-bold text-white whitespace-nowrap px-4 sm:px-6">
             {message}
           </span>
         </div>

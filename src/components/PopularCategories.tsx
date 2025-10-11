@@ -27,9 +27,12 @@ export const PopularCategories = () => {
 
   return (
     <div className="w-full py-3">
+      <h2 className="text-lg md:text-xl font-bold mb-3 px-2 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+        Catégories Populaires
+      </h2>
       <div
         ref={scrollRef}
-        className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide scroll-smooth px-1 touch-pan-x"
+        className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide scroll-smooth px-1 touch-pan-x relative"
         style={{
           scrollbarWidth: "none",
           msOverflowStyle: "none",

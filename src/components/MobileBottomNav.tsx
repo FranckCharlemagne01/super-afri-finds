@@ -57,7 +57,7 @@ export const MobileBottomNav = () => {
                 </span>
               )}
             </div>
-            <span className="text-xs font-medium">{label}</span>
+            <span className="text-xs font-bold">{label}</span>
           </button>
         ))}
       </div>

@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProfileUpdateForm } from '@/components/ProfileUpdateForm';
 import { PasswordUpdateForm } from '@/components/PasswordUpdateForm';
-import { TwoFactorAuthForm } from '@/components/TwoFactorAuthForm';
+// TwoFactorAuthForm removed - non-functional demo that creates false security confidence
 import { PaystackSettingsDialog } from '@/components/PaystackSettingsDialog';
 import { User, Lock, Shield, Bell, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,7 +30,7 @@ export const SuperAdminSettingsDialog = ({ open, onOpenChange }: SuperAdminSetti
         </DialogHeader>
 
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <User className="w-4 h-4" />
               Profil
@@ -39,10 +39,7 @@ export const SuperAdminSettingsDialog = ({ open, onOpenChange }: SuperAdminSetti
               <Lock className="w-4 h-4" />
               Sécurité
             </TabsTrigger>
-            <TabsTrigger value="2fa" className="flex items-center gap-2">
-              <Shield className="w-4 h-4" />
-              2FA
-            </TabsTrigger>
+            {/* 2FA tab removed - non-functional demo */}
             <TabsTrigger value="notifications" className="flex items-center gap-2">
               <Bell className="w-4 h-4" />
               Notifications
@@ -81,19 +78,7 @@ export const SuperAdminSettingsDialog = ({ open, onOpenChange }: SuperAdminSetti
             </Card>
           </TabsContent>
 
-          <TabsContent value="2fa" className="space-y-4 mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Authentification à deux facteurs</CardTitle>
-                <CardDescription>
-                  Sécurisez votre compte avec la double authentification
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <TwoFactorAuthForm />
-              </CardContent>
-            </Card>
-          </TabsContent>
+          {/* 2FA tab removed - was non-functional demo that created false security confidence */}
 
           <TabsContent value="notifications" className="space-y-4 mt-6">
             <Card>

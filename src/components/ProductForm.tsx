@@ -179,10 +179,30 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
         }
       }
 
+      // Security: Validate pricing before calculating discount
+      if (formData.original_price && formData.original_price < formData.price) {
+        toast({
+          title: "Prix invalide",
+          description: "Le prix original doit être supérieur ou égal au prix de vente",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Calculate discount percentage
       const discount_percentage = formData.original_price > 0 
         ? Math.round(((formData.original_price - formData.price) / formData.original_price) * 100)
         : 0;
+
+      // Security: Ensure discount is valid (0-100%)
+      if (discount_percentage < 0 || discount_percentage > 100) {
+        toast({
+          title: "Remise invalide",
+          description: "La remise doit être entre 0% et 100%",
+          variant: "destructive",
+        });
+        return;
+      }
 
       // Get seller's shop_id (use provided shopId or fetch from database)
       let finalShopId = shopId;
@@ -410,19 +430,53 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Security: Validate file signatures (magic numbers) to prevent spoofed files
+  const validateFileSignature = async (file: File): Promise<boolean> => {
+    try {
+      const buffer = await file.slice(0, 12).arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      
+      // JPEG: FF D8 FF
+      if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) return true;
+      
+      // PNG: 89 50 4E 47 0D 0A 1A 0A
+      if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) return true;
+      
+      // WebP: RIFF....WEBP
+      if (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
+          bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50) return true;
+      
+      return false;
+    } catch (error) {
+      console.error('Error validating file signature:', error);
+      return false;
+    }
+  };
+
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     
     // Validation des fichiers
-    const validFiles = files.filter(file => {
-      // Vérifier le type de fichier
+    const validationPromises = files.map(async (file) => {
+      // Vérifier le type de fichier (MIME type)
       if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type)) {
         toast({
           title: "Format non supporté",
           description: `Le fichier ${file.name} n'est pas dans un format supporté (JPEG, PNG, WebP)`,
           variant: "destructive",
         });
-        return false;
+        return null;
+      }
+      
+      // Security: Verify file signature (magic numbers) to prevent MIME type spoofing
+      const isValidSignature = await validateFileSignature(file);
+      if (!isValidSignature) {
+        toast({
+          title: "Fichier invalide",
+          description: `Le fichier ${file.name} n'est pas une image valide. Les fichiers malveillants sont bloqués.`,
+          variant: "destructive",
+        });
+        return null;
       }
       
       // Vérifier la taille (max 5MB)
@@ -432,11 +486,16 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
           description: `Le fichier ${file.name} doit faire moins de 5MB`,
           variant: "destructive",
         });
-        return false;
+        return null;
       }
       
-      return true;
+      return file;
     });
+
+    const validatedFiles = await Promise.all(validationPromises);
+    const validFiles = validatedFiles.filter((file): file is File => file !== null);
+
+    if (validFiles.length === 0) return;
 
     if (validFiles.length > 5) {
       toast({

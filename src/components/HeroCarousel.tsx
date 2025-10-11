@@ -192,32 +192,27 @@ export const HeroCarousel = () => {
         </div>
       </div>
 
-      {/* Buy & Resell Banner - Responsive Modern Native Banner */}
-      <div className="w-full bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 rounded-xl shadow-lg border border-primary/20 overflow-hidden animate-fade-in">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 px-4 sm:px-6 py-3 sm:py-4">
-          {/* Left: Animated Icon + Text - Centered on mobile */}
-          <div className="flex items-center gap-2 sm:gap-3 z-10 flex-shrink-0">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center shadow-md animate-pulse">
-              <span className="text-base sm:text-lg">🛍️</span>
-            </div>
-            <h3 className="text-xs sm:text-sm md:text-base lg:text-lg font-extrabold bg-gradient-to-r from-primary via-primary/90 to-accent bg-clip-text text-transparent text-center sm:text-left leading-tight drop-shadow-sm">
-              Achetez & Revendez sur Djassa<br className="sm:hidden" />
-              <span className="hidden sm:inline"> – </span>
-              <span className="text-primary/80">Des milliers de produits !</span>
+      {/* Buy & Resell Banner - Fine horizontal banner */}
+      <div className="w-full bg-gradient-to-r from-orange-100 via-amber-50 to-yellow-100 rounded-lg shadow-sm border border-orange-200/30 overflow-hidden">
+        <div className="flex flex-row items-center justify-between gap-3 px-3 md:px-4 py-2">
+          {/* Left: Animated Text */}
+          <div className="flex-shrink-0 z-10">
+            <h3 className="text-sm md:text-base font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent animate-pulse-slow whitespace-nowrap">
+              🛍️ Achetez & Revendez sur Djassa – Des milliers de produits à découvrir !
             </h3>
           </div>
 
-          {/* Right: Mini Scrolling Product Cards - Hidden on very small mobile */}
-          <div className="relative flex-1 overflow-hidden max-w-xs sm:max-w-md hidden xs:block">
+          {/* Right: Mini Scrolling Product Cards */}
+          <div className="relative flex-1 overflow-hidden max-w-md">
             <div className="flex items-center gap-2 animate-scroll-products">
               {/* Duplicate products for seamless infinite loop */}
               {[...sampleProducts, ...sampleProducts].map((product, index) => (
                 <div
                   key={index}
-                  className="flex-shrink-0 bg-card rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden w-14 sm:w-16 md:w-20 hover:scale-105 cursor-pointer border border-primary/10 active:scale-95"
+                  className="flex-shrink-0 bg-white rounded-md shadow-sm hover:shadow transition-all duration-300 overflow-hidden w-16 md:w-20 hover:scale-105 cursor-pointer border border-orange-100/50"
                 >
                   {/* Mini Product Image */}
-                  <div className="aspect-square bg-muted/30 p-1">
+                  <div className="aspect-square bg-gray-50 p-1.5">
                     <img
                       src={product.image}
                       alt={product.name}
@@ -226,11 +221,11 @@ export const HeroCarousel = () => {
                   </div>
                   
                   {/* Mini Info */}
-                  <div className="px-1 py-0.5 bg-card">
-                    <p className="text-[7px] sm:text-[8px] md:text-[9px] font-bold text-primary text-center truncate">
+                  <div className="px-1 py-1 bg-white">
+                    <p className="text-[8px] md:text-[9px] font-semibold text-orange-600 text-center truncate mb-0.5">
                       {product.name}
                     </p>
-                    <p className="text-[8px] sm:text-[9px] md:text-[10px] font-extrabold text-foreground text-center bg-accent/20 rounded px-0.5 py-0.5 mt-0.5">
+                    <p className="text-[9px] md:text-[10px] font-bold text-gray-900 text-center bg-yellow-100 rounded px-0.5 py-0.5">
                       {product.price}
                     </p>
                   </div>

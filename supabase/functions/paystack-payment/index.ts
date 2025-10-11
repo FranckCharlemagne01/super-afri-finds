@@ -1,11 +1,49 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// SECURITY: Define fixed pricing for token packages (server-side source of truth)
+const TOKEN_PRICES: Record<number, number> = {
+  5: 1000,
+  12: 2000,
+  30: 5000,
+  65: 10000,
+};
+
+// SECURITY: Input validation schemas
+const productDataSchema = z.object({
+  title: z.string().trim().min(3).max(200),
+  description: z.string().trim().max(2000),
+  price: z.number().positive().max(100000000),
+  original_price: z.number().positive().max(100000000).optional(),
+  category: z.string().trim().min(3).max(50),
+  stock_quantity: z.number().int().min(0).max(100000).optional(),
+  discount_percentage: z.number().int().min(0).max(100).optional(),
+  is_flash_sale: z.boolean().optional(),
+  badge: z.string().trim().max(50).optional(),
+  images: z.array(z.string().url()).max(10).optional(),
+  video_url: z.string().url().optional(),
+}).strict();
+
+const initializePaymentSchema = z.object({
+  user_id: z.string().uuid(),
+  email: z.string().email().max(255),
+  amount: z.number().int().min(100).max(10000000),
+  payment_type: z.enum(['tokens', 'article_publication', 'subscription']),
+  tokens_amount: z.number().int().min(5).max(10000).optional(),
+  payment_method: z.enum(['card', 'orange_money', 'mtn_money', 'moov_money', 'wave_money']).optional(),
+  product_data: productDataSchema.optional(),
+}).strict();
+
+const verifyPaymentSchema = z.object({
+  reference: z.string().trim().min(1).max(200),
+}).strict();
 
 // Function to get encryption key (same method as paystack-config)
 async function getEncryptionKey(): Promise<CryptoKey> {
@@ -98,6 +136,15 @@ serve(async (req) => {
   }
 
   try {
+    // SECURITY: Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Authentication required' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -112,19 +159,78 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    const { action, ...payload } = await req.json();
+    const requestBody = await req.json();
+    const { action, ...payload } = requestBody;
 
     if (action === 'initialize_payment') {
-      const { user_id, email, amount = 1000, payment_type = 'article_publication', product_data, tokens_amount, payment_method } = payload;
+      // SECURITY: Validate input with Zod schema
+      let validatedPayload;
+      try {
+        validatedPayload = initializePaymentSchema.parse(payload);
+      } catch (error) {
+        console.error('❌ Input validation failed:', error);
+        return new Response(JSON.stringify({ 
+          error: 'Invalid input parameters',
+          details: error instanceof z.ZodError ? error.errors : 'Validation failed'
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const { user_id, email, amount, payment_type, product_data, tokens_amount, payment_method } = validatedPayload;
       
-      console.log('Initializing payment for user:', user_id);
+      // SECURITY: Server-side price validation for token purchases
+      if (payment_type === 'tokens') {
+        if (!tokens_amount) {
+          return new Response(JSON.stringify({ error: 'tokens_amount is required for token purchases' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        const expectedAmount = TOKEN_PRICES[tokens_amount];
+        if (!expectedAmount) {
+          return new Response(JSON.stringify({ 
+            error: 'Invalid token package',
+            details: `Available packages: ${Object.keys(TOKEN_PRICES).join(', ')} tokens`
+          }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        if (amount !== expectedAmount) {
+          console.error(`❌ Price manipulation attempt: Expected ${expectedAmount} FCFA for ${tokens_amount} tokens, received ${amount} FCFA`);
+          return new Response(JSON.stringify({ 
+            error: 'Invalid payment amount',
+            expected: expectedAmount,
+            received: amount
+          }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+      }
+
+      // SECURITY: Sanitize product_data if present (remove any script tags, limit HTML)
+      let sanitizedProductData = product_data;
+      if (product_data) {
+        sanitizedProductData = {
+          ...product_data,
+          title: product_data.title.replace(/<[^>]*>/g, '').trim(),
+          description: product_data.description.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').trim(),
+        };
+      }
+      
+      console.log('✅ Input validated. Initializing payment for user:', user_id);
 
       // Generate unique reference based on payment type
       const reference = payment_type === 'tokens' 
         ? `tokens_${user_id}_${Date.now()}`
         : `premium_${user_id}_${Date.now()}`;
 
-      // Store payment record in database
+      // Store payment record in database with sanitized data
       const { error: dbError } = await supabase
         .from('premium_payments')
         .insert({
@@ -134,7 +240,7 @@ serve(async (req) => {
           currency: 'XOF',
           status: 'pending',
           payment_type,
-          product_data
+          product_data: sanitizedProductData
         });
 
       if (dbError) {
@@ -214,9 +320,24 @@ serve(async (req) => {
     }
 
     if (action === 'verify_payment') {
-      const { reference } = payload;
+      // SECURITY: Validate input with Zod schema
+      let validatedPayload;
+      try {
+        validatedPayload = verifyPaymentSchema.parse(payload);
+      } catch (error) {
+        console.error('❌ Verification input validation failed:', error);
+        return new Response(JSON.stringify({ 
+          error: 'Invalid verification parameters',
+          details: error instanceof z.ZodError ? error.errors : 'Validation failed'
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const { reference } = validatedPayload;
       
-      console.log('Verifying payment for reference:', reference);
+      console.log('✅ Verification input validated. Verifying payment for reference:', reference);
 
       // Verify payment with Paystack
       const paystackResponse = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {

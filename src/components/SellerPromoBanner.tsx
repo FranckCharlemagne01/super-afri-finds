@@ -40,8 +40,16 @@ export const SellerPromoBanner = () => {
         }
       }}
     >
-      <div className="relative flex">
-        <div className="flex animate-[scroll_25s_linear_infinite]">
+      <div className="relative flex" style={{ 
+        WebkitFontSmoothing: 'antialiased',
+        MozOsxFontSmoothing: 'grayscale',
+        textRendering: 'optimizeLegibility'
+      }}>
+        <div className="flex animate-[scroll_25s_linear_infinite]" style={{
+          willChange: 'transform',
+          transform: 'translateZ(0)',
+          backfaceVisibility: 'hidden'
+        }}>
           <span className="text-sm sm:text-base md:text-lg lg:text-xl font-semibold sm:font-bold text-white whitespace-nowrap px-4 sm:px-6">
             {message}
           </span>
@@ -49,7 +57,11 @@ export const SellerPromoBanner = () => {
             {message}
           </span>
         </div>
-        <div className="flex animate-[scroll_25s_linear_infinite]" aria-hidden="true">
+        <div className="flex animate-[scroll_25s_linear_infinite]" aria-hidden="true" style={{
+          willChange: 'transform',
+          transform: 'translateZ(0)',
+          backfaceVisibility: 'hidden'
+        }}>
           <span className="text-sm sm:text-base md:text-lg lg:text-xl font-semibold sm:font-bold text-white whitespace-nowrap px-4 sm:px-6">
             {message}
           </span>

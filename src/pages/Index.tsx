@@ -346,7 +346,7 @@ const Index = () => {
         {/* Categories Populaires - Style TEMU horizontal avec toutes les catégories */}
         <section className="mb-6 sm:mb-8">
           <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 px-1">
-            Catégories populaires
+            EXPLOREZ VOS CENTRES D'INTÉRÊT
           </h2>
           <PopularCategories />
         </section>

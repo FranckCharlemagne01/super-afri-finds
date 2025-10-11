@@ -73,7 +73,10 @@ const Cart = () => {
               {cartItems.map((item) => (
                 <Card key={item.id} className="p-4">
                   <div className="flex gap-4">
-                    <div className="w-20 h-20 bg-muted rounded-lg overflow-hidden">
+                    <div 
+                      className="w-20 h-20 bg-muted rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => navigate(`/product/${item.product.id}`)}
+                    >
                       <img
                         src={item.product.images?.[0] || '/placeholder.svg'}
                         alt={item.product.title}
@@ -82,7 +85,12 @@ const Cart = () => {
                     </div>
                     
                     <div className="flex-1 space-y-2">
-                      <h3 className="font-medium text-foreground line-clamp-2">{item.product.title}</h3>
+                      <h3 
+                        className="font-medium text-foreground line-clamp-2 cursor-pointer hover:text-primary transition-colors"
+                        onClick={() => navigate(`/product/${item.product.id}`)}
+                      >
+                        {item.product.title}
+                      </h3>
                       <p className="text-lg font-bold text-promo">
                         {item.product.price.toLocaleString()} FCFA
                       </p>

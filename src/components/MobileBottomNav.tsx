@@ -43,21 +43,27 @@ export const MobileBottomNav = () => {
             key={path}
             onClick={() => onClick ? onClick() : navigate(path)}
             className={cn(
-              "flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors relative",
+              "flex flex-col items-center justify-center flex-1 h-full gap-1.5 transition-all duration-200 relative active:scale-95",
               isActive(path)
-                ? "text-primary"
-                : "text-muted-foreground hover:text-foreground"
+                ? "text-primary drop-shadow-md"
+                : "text-foreground/70 hover:text-foreground"
             )}
           >
             <div className="relative">
-              <Icon className="w-6 h-6" />
+              <Icon className={cn(
+                "transition-all duration-200",
+                isActive(path) ? "w-7 h-7" : "w-6 h-6"
+              )} />
               {badge > 0 && (
-                <span className="absolute -top-2 -right-2 bg-promo text-white text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-2 -right-2 bg-promo text-white text-[10px] font-black rounded-full w-5 h-5 flex items-center justify-center shadow-lg animate-pulse-slow">
                   {badge > 9 ? "9+" : badge}
                 </span>
               )}
             </div>
-            <span className="text-xs font-bold">{label}</span>
+            <span className={cn(
+              "text-[11px] font-extrabold tracking-tight",
+              isActive(path) && "drop-shadow-sm"
+            )}>{label}</span>
           </button>
         ))}
       </div>

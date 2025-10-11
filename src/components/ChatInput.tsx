@@ -41,10 +41,14 @@ export const ChatInput = memo(({
     adjustTextareaHeight();
   }, [value, adjustTextareaHeight]);
 
-  // Maintenir le focus si l'utilisateur était en train de taper
+  // Maintenir le focus activement
   useEffect(() => {
-    if (isFocusedRef.current && textareaRef.current) {
-      textareaRef.current.focus();
+    const textarea = textareaRef.current;
+    if (isFocusedRef.current && textarea && document.activeElement !== textarea) {
+      // Réappliquer le focus sans interrompre la saisie
+      const length = textarea.value.length;
+      textarea.focus();
+      textarea.setSelectionRange(length, length);
     }
   });
 

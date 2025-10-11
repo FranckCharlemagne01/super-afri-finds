@@ -167,15 +167,17 @@ Notre équipe vous répondra rapidement ! 😊
 💡 Ou posez-moi une autre question, je serai ravi de vous aider !`;
   };
 
-  const simulateTyping = (callback: () => void, delay = 1200) => {
+  const simulateTyping = useCallback((callback: () => void, delay = 1200) => {
     setIsTyping(true);
     setTimeout(() => {
       setIsTyping(false);
       callback();
     }, delay);
-  };
+  }, []);
 
   const sendMessage = useCallback((text: string) => {
+    if (!text.trim()) return;
+    
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       sender: 'user',
@@ -196,7 +198,7 @@ Notre équipe vous répondra rapidement ! 😊
       };
       setMessages(prev => [...prev, botMessage]);
     });
-  }, []);
+  }, [simulateTyping]);
 
   const selectQuickOption = useCallback((optionId: string) => {
     const optionLabels = {
@@ -226,7 +228,7 @@ Notre équipe vous répondra rapidement ! 😊
       };
       setMessages(prev => [...prev, botMessage]);
     });
-  }, []);
+  }, [simulateTyping]);
 
   return {
     messages,

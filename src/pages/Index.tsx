@@ -100,10 +100,6 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [showSellerUpgrade, setShowSellerUpgrade] = useState(false);
   const [userCountry, setUserCountry] = useState<string>("Côte d'Ivoire");
-  
-  // Pour gérer le double clic sur le logo
-  const logoClickTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const logoClickCountRef = useRef(0);
 
   const handleProfileClick = () => {
     if (!user) {
@@ -147,25 +143,16 @@ const Index = () => {
       return;
     }
 
-    // On est sur la page d'accueil - gérer simple/double clic
-    logoClickCountRef.current += 1;
-
-    if (logoClickTimerRef.current) {
-      clearTimeout(logoClickTimerRef.current);
+    // On est sur la page d'accueil
+    const isAtTop = window.scrollY < 100; // Considérer qu'on est en haut si scroll < 100px
+    
+    if (isAtTop) {
+      // Actualiser la page de manière fluide (recharger les produits)
+      fetchProducts();
+    } else {
+      // Remonter en haut sans actualiser
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-
-    logoClickTimerRef.current = setTimeout(() => {
-      if (logoClickCountRef.current === 1) {
-        // Simple clic - soft refresh (recharger les produits)
-        fetchProducts();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else if (logoClickCountRef.current >= 2) {
-        // Double clic - hard refresh
-        window.location.reload();
-      }
-      
-      logoClickCountRef.current = 0;
-    }, 300); // 300ms pour détecter le double clic
   };
 
   useEffect(() => {

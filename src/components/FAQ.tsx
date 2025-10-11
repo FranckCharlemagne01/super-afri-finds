@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Accordion,
   AccordionContent,
@@ -10,8 +11,16 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
 
 const FAQ = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  
   const faqCategories = [
     {
       category: "Commandes",
@@ -133,73 +142,86 @@ const FAQ = () => {
   return (
     <section className="py-8 sm:py-12 bg-background">
       <div className="container mx-auto px-3 sm:px-4">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-4">
-            Questions Fréquemment Posées
-          </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Trouvez rapidement des réponses aux questions les plus courantes sur Djassa
-          </p>
-        </div>
-        
-        <div className="max-w-6xl mx-auto">
-          <Tabs defaultValue="Commandes" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 mb-8 h-auto p-1 bg-muted/50">
-              {faqCategories.map((category) => (
-                <TabsTrigger
-                  key={category.category}
-                  value={category.category}
-                  className="text-xs sm:text-sm font-medium py-2 px-2 sm:px-4 data-[state=active]:bg-background data-[state=active]:text-foreground"
-                >
-                  {category.category}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-            
-            {faqCategories.map((category) => (
-              <TabsContent key={category.category} value={category.category} className="mt-0">
-                <Accordion type="single" collapsible className="space-y-3">
-                  {category.questions.map((faq, index) => (
-                    <AccordionItem
-                      key={index}
-                      value={`${category.category}-${index}`}
-                      className="border rounded-lg bg-card hover:bg-accent/5 transition-colors"
+        <Collapsible
+          open={isOpen}
+          onOpenChange={setIsOpen}
+          className="max-w-6xl mx-auto"
+        >
+          <CollapsibleTrigger className="w-full group">
+            <div className="flex items-center justify-between p-4 sm:p-6 bg-gradient-to-r from-primary/5 to-primary/10 hover:from-primary/10 hover:to-primary/15 border border-primary/20 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md">
+              <div className="text-left flex-1">
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground mb-1">
+                  Questions Fréquemment Posées (FAQ)
+                </h2>
+                <p className="text-sm sm:text-base text-muted-foreground">
+                  Trouvez rapidement des réponses à vos questions
+                </p>
+              </div>
+              <ChevronDown className={`h-6 w-6 sm:h-7 sm:w-7 text-primary transition-transform duration-300 flex-shrink-0 ml-4 ${isOpen ? 'rotate-180' : ''}`} />
+            </div>
+          </CollapsibleTrigger>
+          
+          <CollapsibleContent className="overflow-hidden transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+            <div className="pt-6">
+              <Tabs defaultValue="Commandes" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 mb-8 h-auto p-1 bg-muted/50">
+                  {faqCategories.map((category) => (
+                    <TabsTrigger
+                      key={category.category}
+                      value={category.category}
+                      className="text-xs sm:text-sm font-medium py-2 px-2 sm:px-4 data-[state=active]:bg-background data-[state=active]:text-foreground"
                     >
-                      <AccordionTrigger className="text-left font-medium hover:no-underline px-4 py-3">
-                        {faq.question}
-                      </AccordionTrigger>
-                      <AccordionContent className="text-muted-foreground leading-relaxed px-4 pb-4">
-                        {faq.answer}
-                      </AccordionContent>
-                    </AccordionItem>
+                      {category.category}
+                    </TabsTrigger>
                   ))}
-                </Accordion>
-              </TabsContent>
-            ))}
-          </Tabs>
-        </div>
+                </TabsList>
+                
+                {faqCategories.map((category) => (
+                  <TabsContent key={category.category} value={category.category} className="mt-0">
+                    <Accordion type="single" collapsible className="space-y-3">
+                      {category.questions.map((faq, index) => (
+                        <AccordionItem
+                          key={index}
+                          value={`${category.category}-${index}`}
+                          className="border rounded-lg bg-card hover:bg-accent/5 transition-colors"
+                        >
+                          <AccordionTrigger className="text-left font-medium hover:no-underline px-4 py-3">
+                            {faq.question}
+                          </AccordionTrigger>
+                          <AccordionContent className="text-muted-foreground leading-relaxed px-4 pb-4">
+                            {faq.answer}
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </TabsContent>
+                ))}
+              </Tabs>
 
-        <div className="text-center mt-8 pt-6 border-t">
-          <p className="text-muted-foreground mb-4">
-            Vous ne trouvez pas la réponse à votre question ?
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a
-              href="mailto:support@djassa.ci"
-              className="inline-flex items-center justify-center px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-            >
-              Contacter le Support
-            </a>
-            <a
-              href="https://wa.me/2250788281222"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-6 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-colors"
-            >
-              WhatsApp Support
-            </a>
-          </div>
-        </div>
+              <div className="text-center mt-8 pt-6 border-t">
+                <p className="text-muted-foreground mb-4">
+                  Vous ne trouvez pas la réponse à votre question ?
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <a
+                    href="mailto:support@djassa.ci"
+                    className="inline-flex items-center justify-center px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                  >
+                    Contacter le Support
+                  </a>
+                  <a
+                    href="https://wa.me/2250788281222"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center px-6 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-colors"
+                  >
+                    WhatsApp Support
+                  </a>
+                </div>
+              </div>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
     </section>
   );

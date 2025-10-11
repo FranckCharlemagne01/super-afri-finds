@@ -62,6 +62,10 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
     adjustTextareaHeight();
   }, [message, adjustTextareaHeight]);
 
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessage(e.target.value);
+  }, []);
+
   const handleSend = useCallback(() => {
     if (message.trim()) {
       sendMessage(message);
@@ -70,17 +74,18 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
       setTimeout(() => {
         if (textareaRef.current) {
           textareaRef.current.style.height = 'auto';
+          textareaRef.current.focus();
         }
       }, 0);
     }
   }, [message, sendMessage]);
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
-  };
+  }, [handleSend]);
 
   const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Client';
 
@@ -210,10 +215,10 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
             <Textarea
               ref={textareaRef}
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={handleChange}
               onKeyDown={handleKeyPress}
               placeholder="Tapez votre message..."
-              className="flex-1 min-h-[48px] max-h-[120px] text-sm rounded-2xl border-2 focus:border-primary transition-colors resize-none py-3 px-4"
+              className="flex-1 min-h-[48px] max-h-[120px] text-sm rounded-2xl border-2 focus:border-primary transition-all duration-200 resize-none py-3 px-4"
               autoComplete="off"
               rows={1}
             />

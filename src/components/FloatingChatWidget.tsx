@@ -68,6 +68,10 @@ export const FloatingChatWidget = () => {
     adjustTextareaHeight();
   }, [message, adjustTextareaHeight]);
 
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessage(e.target.value);
+  }, []);
+
   const handleSend = useCallback(() => {
     if (message.trim()) {
       sendMessage(message);
@@ -76,17 +80,18 @@ export const FloatingChatWidget = () => {
       setTimeout(() => {
         if (textareaRef.current) {
           textareaRef.current.style.height = 'auto';
+          textareaRef.current.focus();
         }
       }, 0);
     }
   }, [message, sendMessage]);
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
-  };
+  }, [handleSend]);
 
   const handleToggleWidget = () => {
     if (isOpen) {
@@ -239,10 +244,10 @@ export const FloatingChatWidget = () => {
                     <Textarea
                       ref={textareaRef}
                       value={message}
-                      onChange={(e) => setMessage(e.target.value)}
+                      onChange={handleChange}
                       onKeyDown={handleKeyPress}
                       placeholder="Tapez votre message..."
-                      className="flex-1 text-sm min-h-[32px] max-h-[100px] rounded-lg resize-none py-2 px-3"
+                      className="flex-1 text-sm min-h-[32px] max-h-[100px] rounded-lg resize-none py-2 px-3 transition-all duration-200"
                       autoComplete="off"
                       rows={1}
                     />

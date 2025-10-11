@@ -55,6 +55,16 @@ const ShopPage = () => {
   const [loading, setLoading] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  // Check URL params for category filter
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const categoryParam = params.get('category');
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchShopData = async () => {
@@ -291,7 +301,25 @@ const ShopPage = () => {
 
         {/* Products Section - Grouped by Category */}
         <div className="mb-8">
-          <h3 className="text-xl font-semibold mb-4">Produits de la boutique</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-semibold">
+              {selectedCategory 
+                ? `${selectedCategory.replace(/-/g, ' ')} - ${products.filter(p => p.category === selectedCategory).length} produit(s)` 
+                : `Produits de la boutique (${products.length})`}
+            </h3>
+            {selectedCategory && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSelectedCategory(null);
+                  navigate(`/shop/${slug}`);
+                }}
+              >
+                Voir toutes les catégories
+              </Button>
+            )}
+          </div>
           
           {products.length === 0 ? (
             <Card className="p-12 text-center">
@@ -300,8 +328,13 @@ const ShopPage = () => {
             </Card>
           ) : (
             (() => {
+              // Filter by category if selected
+              const filteredProducts = selectedCategory 
+                ? products.filter(p => p.category === selectedCategory)
+                : products;
+
               // Group products by category
-              const productsByCategory = products.reduce((acc, product) => {
+              const productsByCategory = filteredProducts.reduce((acc, product) => {
                 if (!acc[product.category]) {
                   acc[product.category] = [];
                 }
@@ -313,8 +346,9 @@ const ShopPage = () => {
                 <div className="space-y-8">
                   {Object.entries(productsByCategory).map(([category, categoryProducts]) => (
                     <div key={category}>
-                      <h4 className="text-lg font-medium mb-4 capitalize">
+                      <h4 className="text-lg font-medium mb-4 capitalize flex items-center gap-2">
                         {category.replace(/-/g, ' ')}
+                        <Badge variant="secondary">{categoryProducts.length}</Badge>
                       </h4>
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                         {categoryProducts.map((product) => (

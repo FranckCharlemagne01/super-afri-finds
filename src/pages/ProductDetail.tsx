@@ -113,11 +113,12 @@ const ProductDetail = () => {
         if (shopData) {
           setShop(shopData);
           
-          // Fetch other products from the same shop
+          // Fetch other products from the same shop (same category)
           const { data: shopProductsData } = await supabase
             .from('products')
             .select('*')
             .eq('shop_id', data.shop_id)
+            .eq('category', data.category)
             .eq('is_active', true)
             .neq('id', productId)
             .limit(6);
@@ -569,24 +570,26 @@ const ProductDetail = () => {
               )}
             </div>
             <Button
-              onClick={() => navigate(`/boutique/${shop.shop_slug}`)}
+              onClick={() => navigate(`/shop/${shop.shop_slug}?category=${product.category}`)}
               className="bg-primary hover:bg-primary/90"
             >
-              Voir la boutique
+              Voir plus dans cette catégorie
             </Button>
           </div>
         </section>
       )}
 
-      {/* Products from the Same Shop */}
+      {/* Products from the Same Shop (Same Category) */}
       {shopProducts.length > 0 && (
         <section className="container mx-auto px-4 py-6 border-t">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-foreground">Produits recommandés de cette boutique</h2>
+            <h2 className="text-2xl font-bold text-foreground">
+              Autres {product.category.replace(/-/g, ' ')} de cette boutique
+            </h2>
             {shop && (
               <Button
                 variant="outline"
-                onClick={() => navigate(`/boutique/${shop.shop_slug}`)}
+                onClick={() => navigate(`/shop/${shop.shop_slug}?category=${product.category}`)}
               >
                 Voir tous
               </Button>

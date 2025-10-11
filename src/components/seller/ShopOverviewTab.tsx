@@ -35,6 +35,7 @@ interface ShopOverviewTabProps {
   tokenBalance: number;
   trialStatus: TrialStatus;
   onRefresh: () => void;
+  onPublishProduct?: () => void;
 }
 
 export const ShopOverviewTab = ({
@@ -42,7 +43,8 @@ export const ShopOverviewTab = ({
   products,
   tokenBalance,
   trialStatus,
-  onRefresh
+  onRefresh,
+  onPublishProduct
 }: ShopOverviewTabProps) => {
   const navigate = useNavigate();
 
@@ -89,11 +91,7 @@ export const ShopOverviewTab = ({
     {
       label: 'Publier un produit',
       icon: Plus,
-      onClick: () => {
-        // Switch to products tab
-        const productsTab = document.querySelector('[value="products"]') as HTMLElement;
-        if (productsTab) productsTab.click();
-      },
+      onClick: onPublishProduct || (() => {}),
       variant: 'default' as const,
     },
     {

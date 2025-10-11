@@ -59,6 +59,7 @@ const SellerDashboard = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+  const [openProductForm, setOpenProductForm] = useState(false);
 
   // Fetch seller shop
   const { data: shop, loading: shopLoading, refetch: refetchShop } = useStableData(
@@ -179,6 +180,11 @@ const SellerDashboard = () => {
     refreshRole();
   }, [refetchProducts, refetchShop, refreshBalance, refreshRole]);
 
+  const handlePublishProduct = useCallback(() => {
+    setActiveTab('products');
+    setOpenProductForm(true);
+  }, []);
+
   if (roleLoading || !userId || shopLoading) {
     return <SellerDashboardSkeleton />;
   }
@@ -214,6 +220,7 @@ const SellerDashboard = () => {
           tokenBalance={tokenBalance}
           freeTokens={freeTokens}
           freeTokensExpiresAt={freeTokensExpiresAt}
+          onPublishProduct={handlePublishProduct}
         />
 
         {/* Main Dashboard Tabs */}
@@ -253,6 +260,7 @@ const SellerDashboard = () => {
               tokenBalance={tokenBalance}
               trialStatus={trialStatus}
               onRefresh={handleRefresh}
+              onPublishProduct={handlePublishProduct}
             />
           </TabsContent>
 
@@ -262,6 +270,8 @@ const SellerDashboard = () => {
               loading={productsLoading}
               shopId={shop?.id}
               onRefresh={handleRefresh}
+              openFormTrigger={openProductForm}
+              onFormOpenChange={setOpenProductForm}
             />
           </TabsContent>
 

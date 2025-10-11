@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import * as React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
@@ -36,9 +37,18 @@ interface ProductsTabProps {
   loading: boolean;
   shopId?: string;
   onRefresh: () => void;
+  openFormTrigger?: boolean;
+  onFormOpenChange?: (open: boolean) => void;
 }
 
-export const ProductsTab = ({ products, loading, shopId, onRefresh }: ProductsTabProps) => {
+export const ProductsTab = ({ 
+  products, 
+  loading, 
+  shopId, 
+  onRefresh, 
+  openFormTrigger = false,
+  onFormOpenChange 
+}: ProductsTabProps) => {
   const { toast } = useToast();
   const { tokenBalance, refreshBalance } = useTokens();
   const isMobile = useIsMobile();
@@ -46,6 +56,15 @@ export const ProductsTab = ({ products, loading, shopId, onRefresh }: ProductsTa
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [boostDialogOpen, setBoostDialogOpen] = useState(false);
   const [selectedProductForBoost, setSelectedProductForBoost] = useState<{ id: string; title: string } | null>(null);
+
+  // Handle external trigger to open form
+  React.useEffect(() => {
+    if (openFormTrigger) {
+      setShowProductForm(true);
+      setEditingProduct(null);
+      onFormOpenChange?.(false); // Reset trigger
+    }
+  }, [openFormTrigger, onFormOpenChange]);
 
   const handleEdit = (product: Product) => {
     setEditingProduct(product);

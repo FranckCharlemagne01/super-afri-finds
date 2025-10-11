@@ -443,11 +443,11 @@ const Index = () => {
         </section>
       </main>
 
-      {/* FAQ Section */}
-      <FAQ />
-
       {/* Bandeau d'annonces défilantes */}
       <ScrollingAnnouncementBanner />
+
+      {/* FAQ Section */}
+      <FAQ />
 
       {/* Footer - Simple et professionnel */}
       <footer className="bg-secondary mt-8 sm:mt-12 py-8 sm:py-10 border-t">

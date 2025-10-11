@@ -118,6 +118,103 @@ All colors MUST be HSL.
   }
 }
 
+/* Performance optimizations */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* Smooth scrolling with performance */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* GPU acceleration for animations */
+.animate-fade-in,
+.animate-scale-in,
+.animate-slide-in-right,
+.hover-scale,
+.animate-pulse-promo {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Remove will-change after animation completes */
+@keyframes remove-will-change {
+  to {
+    will-change: auto;
+  }
+}
+
+/* Optimize images */
+img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Better touch targets for mobile */
+button,
+a,
+input,
+textarea,
+select {
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation;
+}
+
+/* Optimize font rendering */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Smooth native scrolling on iOS */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent iOS input zoom */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="password"],
+textarea {
+  font-size: 16px !important;
+}
+
+/* Optimize card hover effects */
+.group {
+  perspective: 1000px;
+}
+
+/* Better transitions for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .hover-scale {
+    transition-duration: 0.1s;
+  }
+  
+  button:active {
+    transform: scale(0.98);
+  }
+}
+
 @layer base {
   * {
     @apply border-border;

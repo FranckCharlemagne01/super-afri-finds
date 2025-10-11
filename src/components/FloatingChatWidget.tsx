@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
@@ -16,16 +16,16 @@ import {
   Maximize2 
 } from 'lucide-react';
 import { useChatbot } from '@/hooks/useChatbot';
-import { useAuth } from '@/hooks/useAuth';
+import { useStableAuth } from '@/hooks/useStableAuth';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChatInput } from '@/components/ChatInput';
 
-export const FloatingChatWidget = () => {
+export const FloatingChatWidget = memo(() => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [message, setMessage] = useState('');
   const { messages, isTyping, sendMessage, selectQuickOption } = useChatbot();
-  const { user } = useAuth();
+  const { user } = useStableAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const quickOptions = [
@@ -243,4 +243,6 @@ export const FloatingChatWidget = () => {
       </TooltipProvider>
     </div>
   );
-};
+});
+
+FloatingChatWidget.displayName = 'FloatingChatWidget';

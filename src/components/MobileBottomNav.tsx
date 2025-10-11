@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Grid3x3, MessageSquare, ShoppingCart, User } from "lucide-react";
+import { Home, Search, MessageSquare, ShoppingCart, User } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { cn } from "@/lib/utils";
@@ -27,7 +27,7 @@ export const MobileBottomNav = () => {
 
   const navItems = [
     { icon: Home, label: "Accueil", path: "/", onClick: handleHomeClick },
-    { icon: Grid3x3, label: "Catégories", path: "/categories" },
+    { icon: Search, label: "Catégories", path: "/categories" },
     { icon: MessageSquare, label: "Messagerie", path: "/messages", badge: unreadMessages },
     { icon: ShoppingCart, label: "Panier", path: "/cart", badge: cartItems },
     { icon: User, label: "Mon Djassa", path: "/buyer-dashboard" },

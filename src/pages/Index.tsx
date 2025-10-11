@@ -290,17 +290,6 @@ const Index = () => {
               Djassa
             </h1>
             
-            {/* Icône Catégories - Visible et accessible */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/categories')}
-              className="min-w-[44px] min-h-[44px] flex-shrink-0 hover:bg-primary/10 transition-all"
-              title="Voir toutes les catégories"
-            >
-              <Search className="w-5 h-5 text-primary" />
-            </Button>
-            
             {/* Search Bar - Full width on mobile/tablet, limited on desktop */}
             <div className="flex-1 md:max-w-md">
               <SearchBar placeholder="Rechercher des produits..." />

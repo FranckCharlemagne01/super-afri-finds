@@ -2,13 +2,13 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Send, Bot, User, ShoppingCart, Package, CreditCard, Store, AlertTriangle, X } from 'lucide-react';
+import { Bot, User, ShoppingCart, Package, CreditCard, Store, AlertTriangle, X } from 'lucide-react';
 import { useChatbot } from '@/hooks/useChatbot';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ChatInput } from '@/components/ChatInput';
 
 interface ChatbotDialogProps {
   open: boolean;
@@ -21,7 +21,6 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const quickOptions = [
     { id: 'acheter', icon: ShoppingCart, label: 'Comment acheter', color: 'bg-primary' },
@@ -39,53 +38,14 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
     scrollToBottom();
   }, [messages]);
 
-  // Autofocus sur le textarea quand le dialog s'ouvre
-  useEffect(() => {
-    if (open && textareaRef.current) {
-      const timer = setTimeout(() => {
-        textareaRef.current?.focus();
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [open]);
-
-  // Auto-resize du textarea
-  const adjustTextareaHeight = useCallback(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = 'auto';
-      textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
-    }
+  const handleMessageChange = useCallback((newMessage: string) => {
+    setMessage(newMessage);
   }, []);
 
-  useEffect(() => {
-    adjustTextareaHeight();
-  }, [message, adjustTextareaHeight]);
-
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(e.target.value);
-  }, []);
-
-  const handleSend = useCallback(() => {
-    if (message.trim()) {
-      sendMessage(message);
-      setMessage('');
-      // Reset la hauteur du textarea après envoi
-      setTimeout(() => {
-        if (textareaRef.current) {
-          textareaRef.current.style.height = 'auto';
-          textareaRef.current.focus();
-        }
-      }, 0);
-    }
+  const handleSendMessage = useCallback(() => {
+    sendMessage(message);
+    setMessage('');
   }, [message, sendMessage]);
-
-  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  }, [handleSend]);
 
   const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Client';
 
@@ -211,26 +171,14 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
         </ScrollArea>
 
         <div className="p-4 border-t bg-background/95 backdrop-blur-sm">
-          <div className="flex gap-2 items-end">
-            <Textarea
-              ref={textareaRef}
-              value={message}
-              onChange={handleChange}
-              onKeyDown={handleKeyPress}
-              placeholder="Tapez votre message..."
-              className="flex-1 min-h-[48px] max-h-[120px] text-sm rounded-2xl border-2 focus:border-primary transition-all duration-200 resize-none py-3 px-4"
-              autoComplete="off"
-              rows={1}
-            />
-            <Button 
-              onClick={handleSend} 
-              size="icon" 
-              disabled={!message.trim()} 
-              className="min-h-[48px] min-w-[48px] rounded-full shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 flex-shrink-0"
-            >
-              <Send className="h-5 w-5" />
-            </Button>
-          </div>
+          <ChatInput
+            value={message}
+            onChange={handleMessageChange}
+            onSend={handleSendMessage}
+            placeholder="Tapez votre message..."
+            minHeight="48px"
+            maxHeight="120px"
+          />
         </div>
       </div>
     </>

@@ -1,11 +1,9 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { 
   MessageCircle, 
-  Send, 
   Bot, 
   User, 
   ShoppingCart, 
@@ -20,6 +18,7 @@ import {
 import { useChatbot } from '@/hooks/useChatbot';
 import { useAuth } from '@/hooks/useAuth';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ChatInput } from '@/components/ChatInput';
 
 export const FloatingChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -28,7 +27,6 @@ export const FloatingChatWidget = () => {
   const { messages, isTyping, sendMessage, selectQuickOption } = useChatbot();
   const { user } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const quickOptions = [
     { id: 'acheter', icon: ShoppingCart, label: 'Comment acheter', color: 'bg-primary' },
@@ -46,52 +44,14 @@ export const FloatingChatWidget = () => {
     scrollToBottom();
   }, [messages]);
 
-  useEffect(() => {
-    if (isOpen && !isMinimized && textareaRef.current) {
-      const timer = setTimeout(() => {
-        textareaRef.current?.focus();
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen, isMinimized]);
-
-  // Auto-resize du textarea
-  const adjustTextareaHeight = useCallback(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = 'auto';
-      textarea.style.height = Math.min(textarea.scrollHeight, 100) + 'px';
-    }
+  const handleMessageChange = useCallback((newMessage: string) => {
+    setMessage(newMessage);
   }, []);
 
-  useEffect(() => {
-    adjustTextareaHeight();
-  }, [message, adjustTextareaHeight]);
-
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(e.target.value);
-  }, []);
-
-  const handleSend = useCallback(() => {
-    if (message.trim()) {
-      sendMessage(message);
-      setMessage('');
-      // Reset la hauteur du textarea après envoi
-      setTimeout(() => {
-        if (textareaRef.current) {
-          textareaRef.current.style.height = 'auto';
-          textareaRef.current.focus();
-        }
-      }, 0);
-    }
+  const handleSendMessage = useCallback(() => {
+    sendMessage(message);
+    setMessage('');
   }, [message, sendMessage]);
-
-  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  }, [handleSend]);
 
   const handleToggleWidget = () => {
     if (isOpen) {
@@ -240,26 +200,15 @@ export const FloatingChatWidget = () => {
 
                 {/* Input Area */}
                 <div className="p-3 border-t bg-background rounded-b-xl">
-                  <div className="flex gap-2 items-end">
-                    <Textarea
-                      ref={textareaRef}
-                      value={message}
-                      onChange={handleChange}
-                      onKeyDown={handleKeyPress}
-                      placeholder="Tapez votre message..."
-                      className="flex-1 text-sm min-h-[32px] max-h-[100px] rounded-lg resize-none py-2 px-3 transition-all duration-200"
-                      autoComplete="off"
-                      rows={1}
-                    />
-                    <Button 
-                      onClick={handleSend} 
-                      size="icon" 
-                      disabled={!message.trim()} 
-                      className="h-8 w-8 flex-shrink-0"
-                    >
-                      <Send className="h-3 w-3" />
-                    </Button>
-                  </div>
+                  <ChatInput
+                    value={message}
+                    onChange={handleMessageChange}
+                    onSend={handleSendMessage}
+                    placeholder="Tapez votre message..."
+                    minHeight="32px"
+                    maxHeight="100px"
+                    className="gap-2"
+                  />
                 </div>
               </div>
             </>

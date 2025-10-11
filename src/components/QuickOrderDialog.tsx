@@ -8,7 +8,6 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { TextInput } from '@/components/ui/validated-input';
 import { Label } from '@/components/ui/label';
 import { ShoppingCart, Plus, Minus } from 'lucide-react';
 import { useOrders, OrderData } from '@/hooks/useOrders';
@@ -131,10 +130,10 @@ export const QuickOrderDialog = ({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="customerName" className="text-sm font-medium">Nom complet *</Label>
-            <TextInput
+            <Input
               id="customerName"
               value={formData.customerName}
-              onChange={(value) => handleInputChange('customerName', value)}
+              onChange={(e) => handleInputChange('customerName', e.target.value)}
               placeholder="Votre nom complet"
               className="min-h-[48px] text-base px-4"
               required
@@ -164,15 +163,15 @@ export const QuickOrderDialog = ({
 
           <div className="space-y-2">
             <Label htmlFor="deliveryLocation" className="text-sm font-medium">Lieu de livraison *</Label>
-            <TextInput
+            <Input
               id="deliveryLocation"
               value={formData.deliveryLocation}
-              onChange={(value) => handleInputChange('deliveryLocation', value)}
-              placeholder="Adresse de livraison"
-              allowNumbers={true}
+              onChange={(e) => handleInputChange('deliveryLocation', e.target.value)}
+              placeholder="Adresse de livraison (ex: Cocody Angré, Yopougon 2, Zone 4C)"
               className="min-h-[48px] text-base px-4"
               required
             />
+            <p className="text-xs text-muted-foreground">Lettres, chiffres, espaces et caractères spéciaux autorisés</p>
           </div>
 
           <div className="space-y-2">

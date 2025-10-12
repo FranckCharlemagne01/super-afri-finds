@@ -55,7 +55,6 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
   const { toast } = useToast();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -207,8 +206,8 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
     }
   };
 
-  const sendMessage = async (mediaFile?: File) => {
-    if ((!newMessage.trim() && !mediaFile) || !initialMessage || !user) return;
+  const sendMessage = async (messageText: string, mediaFile?: File) => {
+    if ((!messageText.trim() && !mediaFile) || !initialMessage || !user) return;
 
     setSending(true);
     try {
@@ -233,7 +232,7 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
           recipient_id: getOtherUserId(),
           product_id: initialMessage.product_id || null,
           subject: `Re: ${initialMessage.subject || 'Message'}`,
-          content: newMessage.trim() || (mediaFile ? `📎 ${mediaFile.name}` : ''),
+          content: messageText.trim() || (mediaFile ? `📎 ${mediaFile.name}` : ''),
           media_url: mediaUrl,
           media_type: mediaType,
           media_name: mediaName,
@@ -241,7 +240,6 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
 
       if (error) throw error;
 
-      setNewMessage('');
       setSelectedFile(null);
       toast({
         title: "Message envoyé",
@@ -328,11 +326,11 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
     }
   };
 
-  const handleSendClick = () => {
+  const handleSendClick = (messageText: string) => {
     if (selectedFile) {
-      sendMessage(selectedFile);
+      sendMessage(messageText, selectedFile);
     } else {
-      sendMessage();
+      sendMessage(messageText);
     }
   };
 
@@ -590,9 +588,7 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
             
             <div className="flex-1">
               <ChatInput
-                value={newMessage}
-                onChange={setNewMessage}
-                onSend={handleSendClick}
+                onSendMessage={handleSendClick}
                 placeholder="Tapez votre message..."
                 disabled={sending || uploading}
                 minHeight="48px"

@@ -23,7 +23,6 @@ import { ChatInput } from '@/components/ChatInput';
 export const FloatingChatWidget = memo(() => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [message, setMessage] = useState('');
   const { messages, isTyping, sendMessage, selectQuickOption } = useChatbot();
   const { user } = useStableAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -44,14 +43,9 @@ export const FloatingChatWidget = memo(() => {
     scrollToBottom();
   }, [messages]);
 
-  const handleMessageChange = useCallback((newMessage: string) => {
-    setMessage(newMessage);
-  }, []);
-
-  const handleSendMessage = useCallback(() => {
+  const handleSendMessage = useCallback((message: string) => {
     sendMessage(message);
-    setMessage('');
-  }, [message, sendMessage]);
+  }, [sendMessage]);
 
   const handleToggleWidget = () => {
     if (isOpen) {
@@ -201,9 +195,7 @@ export const FloatingChatWidget = memo(() => {
                 {/* Input Area */}
                 <div className="p-3 border-t bg-background rounded-b-xl">
                   <ChatInput
-                    value={message}
-                    onChange={handleMessageChange}
-                    onSend={handleSendMessage}
+                    onSendMessage={handleSendMessage}
                     placeholder="Tapez votre message..."
                     minHeight="32px"
                     maxHeight="100px"

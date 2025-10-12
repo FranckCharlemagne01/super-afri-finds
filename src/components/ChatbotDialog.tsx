@@ -16,7 +16,6 @@ interface ChatbotDialogProps {
 }
 
 export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange }) => {
-  const [message, setMessage] = useState('');
   const { messages, isTyping, sendMessage, selectQuickOption } = useChatbot();
   const { user } = useAuth();
   const isMobile = useIsMobile();
@@ -38,14 +37,9 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
     scrollToBottom();
   }, [messages]);
 
-  const handleMessageChange = useCallback((newMessage: string) => {
-    setMessage(newMessage);
-  }, []);
-
-  const handleSendMessage = useCallback(() => {
+  const handleSendMessage = useCallback((message: string) => {
     sendMessage(message);
-    setMessage('');
-  }, [message, sendMessage]);
+  }, [sendMessage]);
 
   const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Client';
 
@@ -172,9 +166,7 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
 
         <div className="p-4 border-t bg-background/95 backdrop-blur-sm">
           <ChatInput
-            value={message}
-            onChange={handleMessageChange}
-            onSend={handleSendMessage}
+            onSendMessage={handleSendMessage}
             placeholder="Tapez votre message..."
             minHeight="48px"
             maxHeight="120px"

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrialStatus } from '@/hooks/useTrialStatus';
 import { useTokens } from '@/hooks/useTokens';
@@ -41,6 +41,7 @@ interface ProductFormProps {
 }
 
 import { getAllCategoriesFlat } from '@/data/categories';
+import { CitySelect } from '@/components/CitySelect';
 
 const categoriesFlat = getAllCategoriesFlat();
 
@@ -52,6 +53,7 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [loading, setLoading] = useState(false);
+  const [userCountry, setUserCountry] = useState<string>('');
   
   const imageInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -68,6 +70,7 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
     badge: product?.badge || '',
     images: product?.images?.[0] || '',
     video_url: product?.video_url || '',
+    city: '', // Ville de publication du produit
   });
 
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -75,6 +78,29 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [previewImages, setPreviewImages] = useState<string[]>([]);
+
+  // Fetch user's country on mount
+  useEffect(() => {
+    const fetchUserCountry = async () => {
+      if (!user) return;
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('country, city')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (!error && data) {
+        setUserCountry(data.country || '');
+        // Pre-fill city with user's city if not editing
+        if (!product?.id && data.city) {
+          setFormData(prev => ({ ...prev, city: data.city }));
+        }
+      }
+    };
+    
+    fetchUserCountry();
+  }, [user, product?.id]);
 
 
   const uploadImages = async (): Promise<string[]> => {
@@ -232,6 +258,8 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
         video_url: videoUrl || null,
         seller_id: user.id,
         shop_id: finalShopId,
+        city: formData.city || null, // Ville de publication
+        country: userCountry || 'CI', // Pays fixe du vendeur
       };
 
       if (product?.id) {
@@ -620,6 +648,21 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
             className={isMobile ? "text-base min-h-[44px]" : ""}
             autoComplete="off"
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="city" className={isMobile ? "text-sm font-medium" : ""}>
+            Ville de publication *
+          </Label>
+          <CitySelect
+            countryCode={userCountry}
+            value={formData.city}
+            onValueChange={(value) => handleInputChange('city', value)}
+            placeholder="Sélectionnez la ville"
+          />
+          <p className="text-xs text-muted-foreground">
+            Les acheteurs de cette ville verront votre produit
+          </p>
         </div>
       </div>
 

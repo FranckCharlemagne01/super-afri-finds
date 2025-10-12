@@ -75,7 +75,7 @@ export const ProfileUpdateForm = () => {
 
     setLoading(true);
     try {
-      // Update profile
+      // Update profile (country is excluded - cannot be changed)
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
@@ -83,7 +83,6 @@ export const ProfileUpdateForm = () => {
           phone: profileData.phone,
           city: profileData.city,
           address: profileData.address,
-          country: profileData.country,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id);
@@ -106,8 +105,13 @@ export const ProfileUpdateForm = () => {
 
       toast({
         title: "Profil mis à jour",
-        description: "Vos informations ont été sauvegardées avec succès",
+        description: "Vos informations ont été sauvegardées. Les produits affichés vont se mettre à jour automatiquement.",
       });
+      
+      // Trigger a page reload to refresh products with new city
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     } catch (error: any) {
       console.error('Error updating profile:', error);
       toast({
@@ -182,28 +186,25 @@ export const ProfileUpdateForm = () => {
         <div className="space-y-2">
           <Label htmlFor="country" className="flex items-center gap-2">
             <MapPin className="w-4 h-4" />
-            Pays
+            Pays (fixe)
           </Label>
-          <CountrySelect
-            value={profileData.country}
-            onValueChange={(value) => {
-              handleChange('country', value);
-              // Reset city when country changes
-              handleChange('city', '');
-            }}
-          />
+          <div className="min-h-[48px] px-4 py-2 bg-muted rounded-md border border-border flex items-center text-muted-foreground">
+            {profileData.country ? getCountryByCode(profileData.country)?.name || profileData.country : 'Non défini'}
+          </div>
+          <p className="text-xs text-muted-foreground">Le pays ne peut pas être modifié après l'inscription</p>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="city" className="flex items-center gap-2">
             <MapPin className="w-4 h-4" />
-            Ville
+            Ville (modifiable)
           </Label>
           <CitySelect
             countryCode={profileData.country}
             value={profileData.city}
             onValueChange={(value) => handleChange('city', value)}
           />
+          <p className="text-xs text-muted-foreground">Vous pouvez changer de ville pour voir les produits d'autres villes</p>
         </div>
 
         <div className="space-y-2 md:col-span-2">

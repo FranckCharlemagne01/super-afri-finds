@@ -296,6 +296,8 @@ export type Database = {
           boosted_at: string | null
           boosted_until: string | null
           category: string
+          city: string | null
+          country: string | null
           created_at: string
           description: string | null
           discount_percentage: number | null
@@ -320,6 +322,8 @@ export type Database = {
           boosted_at?: string | null
           boosted_until?: string | null
           category: string
+          city?: string | null
+          country?: string | null
           created_at?: string
           description?: string | null
           discount_percentage?: number | null
@@ -344,6 +348,8 @@ export type Database = {
           boosted_at?: string | null
           boosted_until?: string | null
           category?: string
+          city?: string | null
+          country?: string | null
           created_at?: string
           description?: string | null
           discount_percentage?: number | null

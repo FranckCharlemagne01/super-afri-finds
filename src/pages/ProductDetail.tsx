@@ -235,7 +235,7 @@ const ProductDetail = () => {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                onClick={() => navigate('/')}
+                onClick={() => navigate(-1)}
                 className="hover:bg-secondary"
               >
                 <ArrowLeft className="w-5 h-5" />

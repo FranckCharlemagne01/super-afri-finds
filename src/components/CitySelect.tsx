@@ -23,10 +23,10 @@ export const CitySelect = ({ countryCode, value, onValueChange, placeholder = "S
 
   return (
     <Select value={value} onValueChange={onValueChange}>
-      <SelectTrigger>
+      <SelectTrigger className="h-12 rounded-xl">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="max-h-[300px] z-50">
         {availableCities.map((city) => (
           <SelectItem key={city.name} value={city.name}>
             {city.name}

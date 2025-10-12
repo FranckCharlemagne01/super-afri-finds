@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
@@ -16,47 +16,21 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useStableAuth } from '@/hooks/useStableAuth';
+import { useUserLocation } from '@/hooks/useUserLocation';
 
 export const LocationSelector = () => {
   const { user } = useStableAuth();
+  const { location, loading: locationLoading } = useUserLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [currentCity, setCurrentCity] = useState('');
-  const [currentCountry, setCurrentCountry] = useState('');
   const [newCity, setNewCity] = useState('');
-
-  useEffect(() => {
-    if (user && open) {
-      fetchLocation();
-    }
-  }, [user, open]);
-
-  const fetchLocation = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('city, country')
-        .eq('user_id', user?.id)
-        .single();
-
-      if (error) throw error;
-
-      if (data) {
-        setCurrentCity(data.city || '');
-        setCurrentCountry(data.country || '');
-        setNewCity(data.city || '');
-      }
-    } catch (error) {
-      console.error('Error fetching location:', error);
-    }
-  };
 
   const handleUpdateCity = async () => {
     if (!user || !newCity) return;
     
-    if (newCity === currentCity) {
+    if (newCity === location.city) {
       setOpen(false);
       return;
     }
@@ -84,7 +58,7 @@ export const LocationSelector = () => {
       await queryClient.invalidateQueries({ queryKey: ['categories'] });
       await queryClient.invalidateQueries({ queryKey: ['search'] });
       
-      setCurrentCity(newCity);
+      setNewCity('');
       setOpen(false);
 
       toast({
@@ -103,7 +77,8 @@ export const LocationSelector = () => {
     }
   };
 
-  const countryName = currentCountry ? getCountryByCode(currentCountry)?.name || currentCountry : 'Non défini';
+  const countryName = location.country ? getCountryByCode(location.country)?.name || location.country : 'Non défini';
+  const currentCity = newCity || location.city || '';
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -111,6 +86,7 @@ export const LocationSelector = () => {
         <Button
           variant="outline"
           className="w-full justify-start gap-3 h-auto py-4 px-4 rounded-xl border-border/50 hover:bg-accent/5"
+          disabled={locationLoading}
         >
           <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
             <MapPin className="w-6 h-6 text-primary" />
@@ -118,70 +94,78 @@ export const LocationSelector = () => {
           <div className="flex-1 text-left min-w-0">
             <h4 className="font-medium text-sm">Changer de ville</h4>
             <p className="text-xs text-muted-foreground truncate">
-              {currentCity || 'Aucune ville'} • {countryName}
+              {location.city || 'Aucune ville'} • {countryName}
             </p>
           </div>
         </Button>
       </SheetTrigger>
       <SheetContent side="bottom" className="rounded-t-3xl">
-        <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-primary" />
-            Modifier ma ville
-          </SheetTitle>
-          <SheetDescription>
-            Changez de ville pour voir les produits disponibles dans votre région
-          </SheetDescription>
-        </SheetHeader>
-        <div className="space-y-6 mt-6">
-          <div className="space-y-2">
-            <Label htmlFor="country" className="text-sm font-medium flex items-center gap-2">
-              <MapPin className="w-4 h-4" />
-              Pays (fixe)
-            </Label>
-            <div className="min-h-[48px] px-4 py-3 bg-muted/50 rounded-xl border border-border/50 flex items-center text-muted-foreground">
-              {countryName}
+        {locationLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          </div>
+        ) : (
+          <>
+            <SheetHeader>
+              <SheetTitle className="flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-primary" />
+                Modifier ma ville
+              </SheetTitle>
+              <SheetDescription>
+                Changez de ville pour voir les produits disponibles dans votre région
+              </SheetDescription>
+            </SheetHeader>
+            <div className="space-y-6 mt-6">
+              <div className="space-y-2">
+                <Label htmlFor="country" className="text-sm font-medium flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  Pays (fixe)
+                </Label>
+                <div className="min-h-[48px] px-4 py-3 bg-muted/50 rounded-xl border border-border/50 flex items-center text-muted-foreground">
+                  {countryName}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Le pays ne peut pas être modifié après l'inscription
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="city" className="text-sm font-medium flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  Ville
+                </Label>
+                <CitySelect
+                  countryCode={location.country || ''}
+                  value={currentCity}
+                  onValueChange={setNewCity}
+                  placeholder="Sélectionnez votre ville"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Choisissez une ville pour voir les produits disponibles
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setOpen(false)}
+                  className="flex-1 h-12 rounded-xl"
+                  disabled={loading}
+                >
+                  Annuler
+                </Button>
+                <Button
+                  onClick={handleUpdateCity}
+                  className="flex-1 h-12 rounded-xl"
+                  disabled={loading || !newCity || newCity === location.city}
+                >
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Confirmer
+                </Button>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Le pays ne peut pas être modifié après l'inscription
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="city" className="text-sm font-medium flex items-center gap-2">
-              <MapPin className="w-4 h-4" />
-              Ville
-            </Label>
-            <CitySelect
-              countryCode={currentCountry}
-              value={newCity}
-              onValueChange={setNewCity}
-              placeholder="Sélectionnez votre ville"
-            />
-            <p className="text-xs text-muted-foreground">
-              Choisissez une ville pour voir les produits disponibles
-            </p>
-          </div>
-
-          <div className="flex gap-3 pt-4">
-            <Button
-              variant="outline"
-              onClick={() => setOpen(false)}
-              className="flex-1 h-12 rounded-xl"
-              disabled={loading}
-            >
-              Annuler
-            </Button>
-            <Button
-              onClick={handleUpdateCity}
-              className="flex-1 h-12 rounded-xl"
-              disabled={loading || !newCity || newCity === currentCity}
-            >
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Confirmer
-            </Button>
-          </div>
-        </div>
+          </>
+        )}
       </SheetContent>
     </Sheet>
   );

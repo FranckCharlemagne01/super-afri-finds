@@ -71,6 +71,7 @@ const statusConfig = {
 // Message notification component
 import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
 import { RealtimeNotificationBadge } from '@/components/RealtimeNotificationBadge';
+import { LocationSelector } from '@/components/LocationSelector';
 
 const MessageNotificationBadge = () => {
   const { unreadMessages } = useRealtimeNotifications();
@@ -349,6 +350,11 @@ const BuyerDashboard = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Location Selector */}
+              <div className="pt-2">
+                <LocationSelector />
+              </div>
             </div>
           </>
         )}

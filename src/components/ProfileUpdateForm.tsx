@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { TextInput } from '@/components/ui/validated-input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 import { Loader2, User, Mail, Phone, MapPin } from 'lucide-react';
 import { CountrySelect } from '@/components/CountrySelect';
 import { CitySelect } from '@/components/CitySelect';
@@ -23,6 +24,7 @@ interface ProfileData {
 export const ProfileUpdateForm = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>({
     full_name: '',
@@ -103,15 +105,18 @@ export const ProfileUpdateForm = () => {
         });
       }
 
+      // Invalider tous les caches de produits pour forcer le rechargement
+      await queryClient.invalidateQueries({ queryKey: ['products'] });
+      await queryClient.invalidateQueries({ queryKey: ['featured-products'] });
+      await queryClient.invalidateQueries({ queryKey: ['boosted-products'] });
+      await queryClient.invalidateQueries({ queryKey: ['flash-sales'] });
+      await queryClient.invalidateQueries({ queryKey: ['categories'] });
+      await queryClient.invalidateQueries({ queryKey: ['search'] });
+
       toast({
         title: "Profil mis à jour",
-        description: "Vos informations ont été sauvegardées. Les produits affichés vont se mettre à jour automatiquement.",
+        description: "Vos informations ont été sauvegardées. Les produits sont maintenant filtrés selon votre nouvelle ville.",
       });
-      
-      // Trigger a page reload to refresh products with new city
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
     } catch (error: any) {
       console.error('Error updating profile:', error);
       toast({

@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Settings, Store } from 'lucide-react';
 import { ShopManagement } from '@/components/ShopManagement';
+import { LocationSelector } from '@/components/LocationSelector';
 
 interface Shop {
   id: string;
@@ -16,6 +17,19 @@ interface ShopSettingsTabProps {
 export const ShopSettingsTab = ({ shop, onRefresh }: ShopSettingsTabProps) => {
   return (
     <div className="space-y-6">
+      {/* Location Selector */}
+      <Card className="border-0 shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            Localisation
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <LocationSelector />
+        </CardContent>
+      </Card>
+
       <Card className="border-0 shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

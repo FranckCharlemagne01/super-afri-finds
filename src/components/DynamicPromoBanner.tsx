@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight, ShoppingBag, Zap, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useUserLocation } from "@/hooks/useUserLocation";
 
 interface BannerSlide {
   type: "promo" | "product" | "featured";
@@ -39,6 +40,7 @@ const promoSlides: BannerSlide[] = [
 ];
 
 export const DynamicPromoBanner = () => {
+  const { location: userLocation } = useUserLocation();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [allSlides, setAllSlides] = useState<BannerSlide[]>(promoSlides);
@@ -46,12 +48,20 @@ export const DynamicPromoBanner = () => {
 
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
-      const { data: products } = await supabase
+      let query = supabase
         .from('products')
         .select('*')
         .eq('is_boosted', true)
-        .eq('is_active', true)
-        .limit(3);
+        .eq('is_active', true);
+      
+      // Filtrage géographique : même ville ET même pays
+      if (userLocation.city && userLocation.country) {
+        query = query
+          .eq('city', userLocation.city)
+          .eq('country', userLocation.country);
+      }
+      
+      const { data: products } = await query.limit(3);
 
       if (products && products.length > 0) {
         const productSlides: BannerSlide[] = products.map(product => ({

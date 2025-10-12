@@ -2,19 +2,30 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { categories } from "@/data/categories";
 import { supabase } from "@/integrations/supabase/client";
+import { useUserLocation } from "@/hooks/useUserLocation";
 import { ChevronDown } from "lucide-react";
 
 export const CategorySidebar = () => {
+  const { location: userLocation } = useUserLocation();
   const navigate = useNavigate();
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [productCounts, setProductCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const fetchProductCounts = async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('products')
         .select('category')
         .eq('is_active', true);
+      
+      // Filtrage géographique : même ville ET même pays
+      if (userLocation.city && userLocation.country) {
+        query = query
+          .eq('city', userLocation.city)
+          .eq('country', userLocation.country);
+      }
+      
+      const { data, error } = await query;
 
       if (!error && data) {
         const counts: Record<string, number> = {};
@@ -26,7 +37,7 @@ export const CategorySidebar = () => {
     };
 
     fetchProductCounts();
-  }, []);
+  }, [userLocation.city, userLocation.country]);
 
   return (
     <div className="hidden lg:block w-64 flex-shrink-0">

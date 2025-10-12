@@ -25,6 +25,7 @@ import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useStableRole } from "@/hooks/useStableRole";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
+import { useUserLocation } from "@/hooks/useUserLocation";
 import { RealtimeNotificationBadge } from "@/components/RealtimeNotificationBadge";
 import { useNavigate, useLocation } from "react-router-dom";
 import { SellerUpgradeForm } from "@/components/SellerUpgradeForm";
@@ -100,6 +101,7 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [showSellerUpgrade, setShowSellerUpgrade] = useState(false);
   const [userCountry, setUserCountry] = useState<string>("Côte d'Ivoire");
+  const { location: userLocation } = useUserLocation();
 
   const handleProfileClick = () => {
     if (!user) {
@@ -160,7 +162,7 @@ const Index = () => {
     if (user) {
       fetchUserCountry();
     }
-  }, [user]);
+  }, [user, userLocation.city, userLocation.country]);
 
   const fetchUserCountry = async () => {
     if (!user) return;
@@ -189,14 +191,22 @@ const Index = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from('products')
         .select(`
           *,
           shop:seller_shops!shop_id(shop_slug, shop_name)
         `)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
+        .eq('is_active', true);
+      
+      // Filtrage géographique : même ville ET même pays
+      if (userLocation.city && userLocation.country) {
+        query = query
+          .eq('city', userLocation.city)
+          .eq('country', userLocation.country);
+      }
+      
+      const { data, error } = await query.order('created_at', { ascending: false });
       
       if (error) {
         console.error('Error fetching products:', error);

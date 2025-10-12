@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ContactSellerButton } from "@/components/ContactSellerButton";
 import { QuickOrderDialog } from "@/components/QuickOrderDialog";
 import { supabase } from "@/integrations/supabase/client";
+import { useUserLocation } from "@/hooks/useUserLocation";
 import { 
   ArrowLeft, 
   Heart, 
@@ -60,6 +61,7 @@ const ProductDetail = () => {
   const { addToCart } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
   const { toast } = useToast();
+  const { location: userLocation } = useUserLocation();
 
   const [quantity, setQuantity] = useState(1);
   const [personalMessage, setPersonalMessage] = useState('');
@@ -113,14 +115,22 @@ const ProductDetail = () => {
         if (shopData) {
           setShop(shopData);
           
-          // Fetch other products from the same shop
-          const { data: shopProductsData } = await supabase
+          // Fetch other products from the same shop avec filtrage géographique
+          let shopProductsQuery = supabase
             .from('products')
             .select('*')
             .eq('shop_id', data.shop_id)
             .eq('is_active', true)
-            .neq('id', productId)
-            .limit(6);
+            .neq('id', productId);
+          
+          // Filtrage géographique : même ville ET même pays
+          if (userLocation.city && userLocation.country) {
+            shopProductsQuery = shopProductsQuery
+              .eq('city', userLocation.city)
+              .eq('country', userLocation.country);
+          }
+          
+          const { data: shopProductsData } = await shopProductsQuery.limit(6);
           
           if (shopProductsData) {
             setShopProducts(shopProductsData);
@@ -128,15 +138,23 @@ const ProductDetail = () => {
         }
       }
       
-      // Fetch similar products from other shops (same category)
-      const { data: similarData } = await supabase
+      // Fetch similar products from other shops avec filtrage géographique
+      let similarQuery = supabase
         .from('products')
         .select('*')
         .eq('category', data.category)
         .eq('is_active', true)
         .neq('id', productId)
-        .neq('shop_id', data.shop_id || '')
-        .limit(6);
+        .neq('shop_id', data.shop_id || '');
+      
+      // Filtrage géographique : même ville ET même pays
+      if (userLocation.city && userLocation.country) {
+        similarQuery = similarQuery
+          .eq('city', userLocation.city)
+          .eq('country', userLocation.country);
+      }
+      
+      const { data: similarData } = await similarQuery.limit(6);
       
       if (similarData) {
         setSimilarProducts(similarData);

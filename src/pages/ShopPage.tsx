@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ProductCard } from '@/components/ProductCard';
 import { useAuth } from '@/hooks/useAuth';
 import { SellerShopDashboard } from '@/components/SellerShopDashboard';
+import { useUserLocation } from '@/hooks/useUserLocation';
 
 interface Shop {
   id: string;
@@ -48,6 +49,7 @@ const ShopPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
+  const { location: userLocation } = useUserLocation();
 
   const [shop, setShop] = useState<Shop | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -83,12 +85,21 @@ const ShopPage = () => {
 
         setShop(shopData);
 
-        // Fetch shop products
-        const { data: productsData, error: productsError } = await supabase
+        // Fetch shop products avec filtrage géographique
+        let productsQuery = supabase
           .from('products')
           .select('*')
           .eq('shop_id', shopData.id)
-          .eq('is_active', true)
+          .eq('is_active', true);
+        
+        // Filtrage géographique : même ville ET même pays
+        if (userLocation.city && userLocation.country) {
+          productsQuery = productsQuery
+            .eq('city', userLocation.city)
+            .eq('country', userLocation.country);
+        }
+        
+        const { data: productsData, error: productsError } = await productsQuery
           .order('created_at', { ascending: false });
 
         if (!productsError && productsData) {

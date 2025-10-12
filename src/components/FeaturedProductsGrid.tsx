@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard } from "./ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUserLocation } from "@/hooks/useUserLocation";
 import { Sparkles } from "lucide-react";
 
 interface Product {
@@ -26,16 +27,20 @@ interface Product {
 }
 
 export const FeaturedProductsGrid = () => {
+  const { location: userLocation } = useUserLocation();
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchFeaturedProducts();
-  }, []);
+  }, [userLocation.city, userLocation.country]);
 
   const fetchFeaturedProducts = async () => {
     try {
-      const { data, error } = await supabase
+      setLoading(true);
+      
+      const now = new Date().toISOString();
+      let query = supabase
         .from("products")
         .select(`
           *,
@@ -43,7 +48,16 @@ export const FeaturedProductsGrid = () => {
         `)
         .eq("is_active", true)
         .eq("is_boosted", true)
-        .gte("boosted_until", new Date().toISOString())
+        .gte("boosted_until", now);
+      
+      // Filtrage géographique : même ville ET même pays
+      if (userLocation.city && userLocation.country) {
+        query = query
+          .eq("city", userLocation.city)
+          .eq("country", userLocation.country);
+      }
+      
+      const { data, error } = await query
         .order("boosted_at", { ascending: false })
         .limit(12);
 

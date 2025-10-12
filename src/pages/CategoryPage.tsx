@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowLeft } from 'lucide-react';
 import { ProductCard } from '@/components/ProductCard';
 import { useToast } from '@/hooks/use-toast';
+import { useUserLocation } from '@/hooks/useUserLocation';
 
 interface Product {
   id: string;
@@ -35,6 +36,7 @@ const CategoryPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { location: userLocation } = useUserLocation();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [shops, setShops] = useState<Shop[]>([]);
@@ -53,12 +55,21 @@ const CategoryPage = () => {
         // Get all subcategory slugs for this main category
         const subcategorySlugs = categoryInfo.subcategories.map(sub => sub.slug);
 
-        // Fetch products for ALL subcategories of this main category
-        const { data: productsData, error: productsError } = await supabase
+        // Fetch products avec filtrage géographique
+        let productsQuery = supabase
           .from('products')
           .select('*')
           .in('category', subcategorySlugs)
-          .eq('is_active', true)
+          .eq('is_active', true);
+        
+        // Filtrage géographique : même ville ET même pays
+        if (userLocation.city && userLocation.country) {
+          productsQuery = productsQuery
+            .eq('city', userLocation.city)
+            .eq('country', userLocation.country);
+        }
+        
+        const { data: productsData, error: productsError } = await productsQuery
           .order('created_at', { ascending: false });
 
         if (productsError) throw productsError;

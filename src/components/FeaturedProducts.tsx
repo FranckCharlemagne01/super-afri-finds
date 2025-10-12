@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard } from "./ProductCard";
+import { useUserLocation } from "@/hooks/useUserLocation";
 import {
   Carousel,
   CarouselContent,
@@ -29,21 +30,34 @@ interface Product {
 }
 
 export const FeaturedProducts = () => {
+  const { location: userLocation } = useUserLocation();
   const [boostedProducts, setBoostedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchBoostedProducts();
-  }, []);
+  }, [userLocation.city, userLocation.country]);
 
   const fetchBoostedProducts = async () => {
     try {
-      const { data, error } = await supabase
+      setLoading(true);
+      
+      const now = new Date().toISOString();
+      let query = supabase
         .from("products")
         .select("*")
         .eq("is_active", true)
         .eq("is_boosted", true)
-        .gte("boosted_until", new Date().toISOString())
+        .gte("boosted_until", now);
+      
+      // Filtrage géographique : même ville ET même pays
+      if (userLocation.city && userLocation.country) {
+        query = query
+          .eq("city", userLocation.city)
+          .eq("country", userLocation.country);
+      }
+      
+      const { data, error } = await query
         .order("boosted_at", { ascending: false })
         .limit(12);
 

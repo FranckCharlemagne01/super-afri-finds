@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useUserLocation } from '@/hooks/useUserLocation';
 
 interface Product {
   id: string;
@@ -26,6 +27,7 @@ interface SearchSuggestion {
 }
 
 export const useSearch = () => {
+  const { location: userLocation } = useUserLocation();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
@@ -70,7 +72,7 @@ export const useSearch = () => {
     return matrix[str2.length][str1.length];
   };
 
-  // Recherche de produits avec tolérance aux fautes
+  // Recherche de produits avec tolérance aux fautes et filtrage géographique
   const searchProducts = async (query: string) => {
     if (!query.trim()) {
       setSearchResults([]);
@@ -79,10 +81,19 @@ export const useSearch = () => {
 
     setLoading(true);
     try {
-      const { data: products, error } = await supabase
+      let productsQuery = supabase
         .from('products')
         .select('*')
         .eq('is_active', true);
+      
+      // Filtrage géographique : même ville ET même pays
+      if (userLocation.city && userLocation.country) {
+        productsQuery = productsQuery
+          .eq('city', userLocation.city)
+          .eq('country', userLocation.country);
+      }
+      
+      const { data: products, error } = await productsQuery;
 
       if (error) throw error;
 
@@ -131,7 +142,7 @@ export const useSearch = () => {
     }
   };
 
-  // Génération de suggestions
+  // Génération de suggestions avec filtrage géographique
   const generateSuggestions = async (query: string) => {
     if (!query.trim() || query.length < 2) {
       setSuggestions([]);
@@ -139,11 +150,19 @@ export const useSearch = () => {
     }
 
     try {
-      const { data: products, error } = await supabase
+      let productsQuery = supabase
         .from('products')
         .select('id, title, category')
-        .eq('is_active', true)
-        .limit(10);
+        .eq('is_active', true);
+      
+      // Filtrage géographique : même ville ET même pays
+      if (userLocation.city && userLocation.country) {
+        productsQuery = productsQuery
+          .eq('city', userLocation.city)
+          .eq('country', userLocation.country);
+      }
+      
+      const { data: products, error } = await productsQuery.limit(10);
 
       if (error) throw error;
 
@@ -194,7 +213,7 @@ export const useSearch = () => {
     }
   };
 
-  // Effect pour recherche automatique
+  // Effect pour recherche automatique avec dépendances géographiques
   useEffect(() => {
     if (searchTerm.trim()) {
       const timeoutId = setTimeout(() => {
@@ -207,7 +226,7 @@ export const useSearch = () => {
       setSearchResults([]);
       setSuggestions([]);
     }
-  }, [searchTerm]);
+  }, [searchTerm, userLocation.city, userLocation.country]);
 
   return {
     searchTerm,

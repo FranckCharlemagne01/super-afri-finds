@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Clock } from 'lucide-react';
+import { useUserLocation } from '@/hooks/useUserLocation';
 
 interface Product {
   id: string;
@@ -27,22 +28,31 @@ interface Product {
 
 const FlashSales = () => {
   const navigate = useNavigate();
+  const { location: userLocation } = useUserLocation();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchFlashSaleProducts();
-  }, []);
+  }, [userLocation.city, userLocation.country]);
 
   const fetchFlashSaleProducts = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from('products')
         .select('*')
         .eq('is_active', true)
-        .eq('is_flash_sale', true)
-        .order('created_at', { ascending: false });
+        .eq('is_flash_sale', true);
+      
+      // Filtrage géographique : même ville ET même pays
+      if (userLocation.city && userLocation.country) {
+        query = query
+          .eq('city', userLocation.city)
+          .eq('country', userLocation.country);
+      }
+      
+      const { data, error } = await query.order('created_at', { ascending: false });
       
       if (error) {
         console.error('Error fetching flash sale products:', error);

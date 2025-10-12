@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Globe, Eye, EyeOff, AlertCircle, ShoppingCart, Store, Mail } from 'lucide-react';
 import { CountrySelect } from '@/components/CountrySelect';
+import { CitySelect } from '@/components/CitySelect';
 import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -26,6 +27,7 @@ const Auth = () => {
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [country, setCountry] = useState('CI');
+  const [city, setCity] = useState('');
   const [dialCode, setDialCode] = useState('+225');
   const [userRole, setUserRole] = useState<'buyer' | 'seller'>('buyer');
   const [shopName, setShopName] = useState('');
@@ -145,6 +147,7 @@ const Auth = () => {
             full_name: fullName,
             phone: fullPhoneNumber,
             country: country || 'CI',
+            city: city || '',
             user_role: userRole || 'buyer',
             shop_name: shopNameToSend,
           }
@@ -692,6 +695,7 @@ const Auth = () => {
                     value={country}
                     onValueChange={(value) => {
                       setCountry(value);
+                      setCity(''); // Réinitialiser la ville quand le pays change
                       const selectedCountry = getCountryByCode(value);
                       if (selectedCountry) {
                         setDialCode(selectedCountry.dialCode);
@@ -702,6 +706,16 @@ const Auth = () => {
                         }
                       }
                     }}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="city" className="text-sm md:text-base font-medium">Ville</Label>
+                  <CitySelect
+                    countryCode={country}
+                    value={city}
+                    onValueChange={setCity}
+                    placeholder="Sélectionnez votre ville"
                   />
                 </div>
 

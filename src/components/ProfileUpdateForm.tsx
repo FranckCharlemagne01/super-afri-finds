@@ -3,10 +3,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { TextInput, NumericInput } from '@/components/ui/validated-input';
+import { TextInput } from '@/components/ui/validated-input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, User, Mail, Phone, MapPin } from 'lucide-react';
+import { CountrySelect } from '@/components/CountrySelect';
+import { CitySelect } from '@/components/CitySelect';
+import { getCountryByCode } from '@/data/countries';
 
 interface ProfileData {
   full_name: string;
@@ -177,16 +180,29 @@ export const ProfileUpdateForm = () => {
         </div>
 
         <div className="space-y-2">
+          <Label htmlFor="country" className="flex items-center gap-2">
+            <MapPin className="w-4 h-4" />
+            Pays
+          </Label>
+          <CountrySelect
+            value={profileData.country}
+            onValueChange={(value) => {
+              handleChange('country', value);
+              // Reset city when country changes
+              handleChange('city', '');
+            }}
+          />
+        </div>
+
+        <div className="space-y-2">
           <Label htmlFor="city" className="flex items-center gap-2">
             <MapPin className="w-4 h-4" />
             Ville
           </Label>
-          <TextInput
-            id="city"
+          <CitySelect
+            countryCode={profileData.country}
             value={profileData.city}
-            onChange={(value) => handleChange('city', value)}
-            placeholder="Abidjan"
-            className="min-h-[48px] text-base px-4"
+            onValueChange={(value) => handleChange('city', value)}
           />
         </div>
 
@@ -197,17 +213,6 @@ export const ProfileUpdateForm = () => {
             value={profileData.address}
             onChange={(e) => handleChange('address', e.target.value)}
             placeholder="Votre adresse complète"
-            className="min-h-[48px] text-base px-4"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="country">Pays</Label>
-          <Input
-            id="country"
-            value={profileData.country}
-            onChange={(e) => handleChange('country', e.target.value)}
-            placeholder="Côte d'Ivoire"
             className="min-h-[48px] text-base px-4"
           />
         </div>

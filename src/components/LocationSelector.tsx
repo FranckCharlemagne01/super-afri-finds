@@ -73,6 +73,9 @@ export const LocationSelector = () => {
 
       if (error) throw error;
 
+      // Invalider le cache de localisation utilisateur en premier
+      await queryClient.invalidateQueries({ queryKey: ['user-location', user.id] });
+      
       // Invalider tous les caches de produits pour forcer le rechargement
       await queryClient.invalidateQueries({ queryKey: ['products'] });
       await queryClient.invalidateQueries({ queryKey: ['featured-products'] });

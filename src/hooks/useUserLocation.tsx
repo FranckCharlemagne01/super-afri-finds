@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useStableAuth } from './useStableAuth';
 
@@ -9,46 +9,37 @@ interface UserLocation {
 
 export const useUserLocation = () => {
   const { user } = useStableAuth();
-  const [location, setLocation] = useState<UserLocation>({
-    city: null,
-    country: null,
-  });
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchUserLocation = async () => {
+  const { data: location, isLoading: loading } = useQuery({
+    queryKey: ['user-location', user?.id],
+    queryFn: async () => {
       if (!user) {
-        setLocation({ city: null, country: null });
-        setLoading(false);
-        return;
+        return { city: null, country: null };
       }
 
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('city, country')
-          .eq('user_id', user.id)
-          .single();
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('city, country')
+        .eq('user_id', user.id)
+        .single();
 
-        if (error) {
-          console.error('Error fetching user location:', error);
-          setLocation({ city: null, country: null });
-        } else {
-          setLocation({
-            city: data?.city || null,
-            country: data?.country || null,
-          });
-        }
-      } catch (error) {
+      if (error) {
         console.error('Error fetching user location:', error);
-        setLocation({ city: null, country: null });
-      } finally {
-        setLoading(false);
+        return { city: null, country: null };
       }
-    };
 
-    fetchUserLocation();
-  }, [user]);
+      return {
+        city: data?.city || null,
+        country: data?.country || null,
+      };
+    },
+    enabled: !!user,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false,
+  });
 
-  return { location, loading };
+  return { 
+    location: location || { city: null, country: null }, 
+    loading 
+  };
 };

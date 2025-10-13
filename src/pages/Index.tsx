@@ -64,6 +64,9 @@ import categoryBeauty from "@/assets/category-beauty.jpg";
 import categoryGrocery from "@/assets/category-grocery.jpg";
 import categoryAuto from "@/assets/category-auto.jpg";
 
+// Import marketplace hero image
+import marketplaceHero from "@/assets/marketplace-hero.jpg";
+
 interface Product {
   id: string;
   title: string;
@@ -371,6 +374,16 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        {/* Marketplace Hero Section - Image dynamique style TEMU */}
+        <section className="mb-6 sm:mb-8 animate-fade-in overflow-hidden rounded-2xl shadow-lg">
+          <img 
+            src={marketplaceHero} 
+            alt="Djassa Marketplace - Découvrez nos produits" 
+            className="w-full h-auto object-cover transition-transform duration-500 hover:scale-105"
+            loading="eager"
+          />
+        </section>
+
         {/* Hero Carousel - Bannière principale avec images défilantes */}
         <div className="mb-4 sm:mb-6 animate-fade-in">
           <HeroCarousel />

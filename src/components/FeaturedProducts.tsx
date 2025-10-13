@@ -10,8 +10,12 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Flame, Sparkles } from "lucide-react";
+import { Flame, Sparkles, TrendingUp } from "lucide-react";
 import marketplaceShowcase from "@/assets/marketplace-showcase-clean.jpg";
+import { useNavigate } from "react-router-dom";
+import { useStableAuth } from "@/hooks/useStableAuth";
+import { useStableRole } from "@/hooks/useStableRole";
+import { Button } from "@/components/ui/button";
 
 interface Product {
   id: string;
@@ -34,6 +38,19 @@ export const FeaturedProducts = () => {
   const { location: userLocation } = useUserLocation();
   const [boostedProducts, setBoostedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const { isAuthenticated } = useStableAuth();
+  const { isSeller } = useStableRole();
+
+  const handleStartSelling = () => {
+    if (!isAuthenticated) {
+      navigate('/auth?role=seller');
+    } else if (isSeller) {
+      navigate('/seller/dashboard');
+    } else {
+      navigate('/?upgrade=seller');
+    }
+  };
 
   useEffect(() => {
     fetchBoostedProducts();
@@ -114,13 +131,25 @@ export const FeaturedProducts = () => {
         </p>
 
         {/* Image marketplace */}
-        <div className="mb-8 relative w-full overflow-hidden rounded-2xl shadow-lg">
+        <div className="mb-6 relative w-full overflow-hidden rounded-2xl shadow-lg">
           <img 
             src={marketplaceShowcase} 
             alt="Marketplace Djassa - Vitrine de produits vedettes"
             className="w-full h-auto object-cover transition-transform duration-500 hover:scale-[1.02]"
             loading="lazy"
           />
+        </div>
+
+        {/* Bouton Commencer à vendre */}
+        <div className="mb-8 flex justify-end">
+          <Button
+            onClick={handleStartSelling}
+            size="lg"
+            className="group bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 px-8 py-6 text-lg font-semibold rounded-xl"
+          >
+            <TrendingUp className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+            Commencer à vendre
+          </Button>
         </div>
 
         {/* Carrousel produits boostés */}

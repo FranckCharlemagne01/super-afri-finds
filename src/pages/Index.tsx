@@ -54,6 +54,7 @@ import productPhone from "@/assets/product-phone.jpg";
 import productClothing from "@/assets/product-clothing.jpg";
 import productHeadphones from "@/assets/product-headphones.jpg";
 import productBlender from "@/assets/product-blender.jpg";
+import marketplaceShowcase from "@/assets/marketplace-showcase.jpg";
 
 // Import category images
 import categoryPhones from "@/assets/category-phones.jpg";
@@ -382,9 +383,6 @@ const Index = () => {
           <PopularCategories />
         </section>
 
-        {/* Produits Vedettes - Image Marketplace */}
-        <FeaturedProductsGrid />
-
         {/* Produits Recommandés - Grille */}
         <section className="mb-6 sm:mb-8 animate-slide-up">
           <div className="flex items-center justify-between mb-3 sm:mb-4 px-1">
@@ -458,6 +456,20 @@ const Index = () => {
           <SellerPromoBanner />
         </section>
       </main>
+
+      {/* Image Marketplace - Style TEMU */}
+      <section className="mb-6 sm:mb-8 px-3 sm:px-4 animate-fade-in">
+        <div className="container mx-auto">
+          <div className="relative w-full overflow-hidden rounded-xl sm:rounded-2xl shadow-2xl">
+            <img 
+              src={marketplaceShowcase} 
+              alt="Marketplace Djassa - Découvrez des milliers de produits"
+              className="w-full h-auto object-cover transition-transform duration-700 hover:scale-[1.02]"
+              loading="lazy"
+            />
+          </div>
+        </div>
+      </section>
 
       {/* Bandeau d'annonces défilantes */}
       <ScrollingAnnouncementBanner />

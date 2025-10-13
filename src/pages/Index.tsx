@@ -376,6 +376,11 @@ const Index = () => {
           <HeroCarousel />
         </div>
 
+        {/* Offres Spéciales - Bannière dynamique rectangulaire */}
+        <section className="mb-6 sm:mb-8">
+          <DynamicPromoBanner />
+        </section>
+
         {/* Bannière promotionnelle boutique */}
         <section className="mb-6 sm:mb-8 animate-slide-up">
           <ShopPromoBanner />
@@ -398,11 +403,6 @@ const Index = () => {
               </div>
             ))}
           </div>
-        </section>
-
-        {/* Bannière dynamique rectangulaire */}
-        <section className="mb-6 sm:mb-8">
-          <DynamicPromoBanner />
         </section>
 
         {/* Offres Spéciales / Tendances - Flash Sales */}

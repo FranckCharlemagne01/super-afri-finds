@@ -8,20 +8,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { ModernSellerHeader } from '@/components/seller/ModernSellerHeader';
-import { SellerSidebar } from '@/components/seller/SellerSidebar';
-import { DashboardStatsCards } from '@/components/seller/DashboardStatsCards';
-import { RecentOrdersCard } from '@/components/seller/RecentOrdersCard';
-import { RecentMessagesCard } from '@/components/seller/RecentMessagesCard';
-import { PerformanceChart } from '@/components/seller/PerformanceChart';
-import { QuickActionsCard } from '@/components/seller/QuickActionsCard';
-import { TokenBalanceCard } from '@/components/TokenBalanceCard';
+import { ShopOverviewTab } from '@/components/seller/ShopOverviewTab';
 import { ProductsTab } from '@/components/seller/ProductsTab';
 import { MessagesOrdersTab } from '@/components/seller/MessagesOrdersTab';
 import { TokensSubscriptionTab } from '@/components/seller/TokensSubscriptionTab';
 import { ShopSettingsTab } from '@/components/seller/ShopSettingsTab';
 import { SellerDashboardSkeleton } from '@/components/seller/SellerDashboardSkeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
-import { Store } from 'lucide-react';
+import { Store, Package, MessageSquare, Coins, Settings } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -215,58 +210,61 @@ const SellerDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex w-full">
-      {/* Sidebar Navigation */}
-      <SellerSidebar 
-        activeTab={activeTab} 
-        onTabChange={setActiveTab}
-        shopName={shop?.shop_name}
-      />
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background">
+      <div className="container mx-auto px-3 py-4 max-w-md md:max-w-3xl lg:max-w-7xl md:px-6 lg:px-8 lg:py-6">
+        {/* Modern Header */}
+        <ModernSellerHeader
+          shop={shop}
+          onSignOut={handleSignOut}
+          trialStatus={trialStatus}
+          tokenBalance={tokenBalance}
+          freeTokens={freeTokens}
+          freeTokensExpiresAt={freeTokensExpiresAt}
+          onPublishProduct={handlePublishProduct}
+        />
 
-      {/* Main Content Area */}
-      <div className="flex-1 overflow-auto">
-        <div className="container max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
-          <ModernSellerHeader
-            shop={shop}
-            onSignOut={handleSignOut}
-            trialStatus={trialStatus}
-            tokenBalance={tokenBalance}
-            freeTokens={freeTokens}
-            freeTokensExpiresAt={freeTokensExpiresAt}
-            onPublishProduct={handlePublishProduct}
-          />
+        {/* Main Dashboard Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full bg-card/50 backdrop-blur-sm border shadow-sm h-auto p-1">
+            <TabsTrigger value="overview" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-3">
+              <Store className="h-4 w-4" />
+              <span className="hidden sm:inline">Ma Boutique</span>
+              <span className="sm:hidden">Boutique</span>
+            </TabsTrigger>
+            <TabsTrigger value="products" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-3">
+              <Package className="h-4 w-4" />
+              <span className="hidden sm:inline">Produits</span>
+              <span className="sm:hidden">Produits</span>
+            </TabsTrigger>
+            <TabsTrigger value="messages-orders" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-3">
+              <MessageSquare className="h-4 w-4" />
+              <span className="hidden sm:inline">Messages & Commandes</span>
+              <span className="sm:hidden">Messages</span>
+            </TabsTrigger>
+            <TabsTrigger value="tokens" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-3">
+              <Coins className="h-4 w-4" />
+              <span className="hidden sm:inline">Jetons & Abonnement</span>
+              <span className="sm:hidden">Jetons</span>
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-3">
+              <Settings className="h-4 w-4" />
+              <span className="hidden sm:inline">Paramètres Boutique</span>
+              <span className="sm:hidden">Paramètres</span>
+            </TabsTrigger>
+          </TabsList>
 
-          {/* Overview Tab - Dashboard */}
-          {activeTab === 'overview' && (
-            <div className="space-y-6">
-              <DashboardStatsCards products={products || []} />
-              
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 space-y-6">
-                  <PerformanceChart />
-                  <RecentOrdersCard onViewAll={() => setActiveTab('messages-orders')} />
-                </div>
-                
-                <div className="space-y-6">
-                  <TokenBalanceCard 
-                    totalTokens={tokenBalance}
-                    freeTokens={freeTokens}
-                    paidTokens={paidTokens}
-                    expiresAt={freeTokensExpiresAt}
-                  />
-                  <QuickActionsCard
-                    shopSlug={shop?.shop_slug}
-                    onPublishProduct={handlePublishProduct}
-                    onSettings={() => setActiveTab('settings')}
-                  />
-                  <RecentMessagesCard onViewAll={() => setActiveTab('messages-orders')} />
-                </div>
-              </div>
-            </div>
-          )}
+          <TabsContent value="overview" className="space-y-6 mt-6">
+            <ShopOverviewTab
+              shop={shop}
+              products={products || []}
+              tokenBalance={tokenBalance}
+              trialStatus={trialStatus}
+              onRefresh={handleRefresh}
+              onPublishProduct={handlePublishProduct}
+            />
+          </TabsContent>
 
-          {/* Products Tab */}
-          {activeTab === 'products' && (
+          <TabsContent value="products" className="space-y-6 mt-6">
             <ProductsTab
               products={products || []}
               loading={productsLoading}
@@ -275,15 +273,13 @@ const SellerDashboard = () => {
               openFormTrigger={openProductForm}
               onFormOpenChange={setOpenProductForm}
             />
-          )}
+          </TabsContent>
 
-          {/* Messages & Orders Tab */}
-          {activeTab === 'messages-orders' && (
+          <TabsContent value="messages-orders" className="space-y-6 mt-6">
             <MessagesOrdersTab userId={userId} />
-          )}
+          </TabsContent>
 
-          {/* Tokens Tab */}
-          {activeTab === 'tokens' && (
+          <TabsContent value="tokens" className="space-y-6 mt-6">
             <TokensSubscriptionTab
               tokenBalance={tokenBalance}
               freeTokens={freeTokens}
@@ -293,16 +289,15 @@ const SellerDashboard = () => {
               products={products || []}
               onRefresh={handleRefresh}
             />
-          )}
+          </TabsContent>
 
-          {/* Settings Tab */}
-          {activeTab === 'settings' && (
+          <TabsContent value="settings" className="space-y-6 mt-6">
             <ShopSettingsTab
               shop={shop}
               onRefresh={handleRefresh}
             />
-          )}
-        </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

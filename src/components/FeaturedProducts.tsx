@@ -141,14 +141,13 @@ export const FeaturedProducts = () => {
         </div>
 
         {/* Bouton Commencer à vendre */}
-        <div className="mb-8 flex justify-end">
+        <div className="mb-8 flex justify-end md:justify-end justify-center">
           <Button
             onClick={handleStartSelling}
-            size="lg"
-            className="group bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 px-8 py-6 text-lg font-semibold rounded-xl"
+            className="group bg-[#FF6600] hover:bg-[#FF8533] text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 px-8 py-3 rounded-full"
           >
             <TrendingUp className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
-            Commencer à vendre
+            Commencer à vendre sur Djassa
           </Button>
         </div>
 

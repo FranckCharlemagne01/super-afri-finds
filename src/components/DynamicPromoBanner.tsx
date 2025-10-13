@@ -106,7 +106,18 @@ export const DynamicPromoBanner = () => {
     if (slide.link) {
       navigate(slide.link);
     } else if (slide.cta === "Découvrir" && slide.type === "promo") {
-      navigate('/auth?mode=signup&role=seller');
+      // Scroll fluide vers la section "Offres Spéciales"
+      const offresSpecialesSection = document.querySelector('section:has(h2:contains("Offres Spéciales"))');
+      if (!offresSpecialesSection) {
+        // Fallback: rechercher par texte
+        const allH2 = document.querySelectorAll('h2');
+        const targetH2 = Array.from(allH2).find(h2 => h2.textContent?.includes('Offres Spéciales'));
+        if (targetH2) {
+          targetH2.closest('section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      } else {
+        offresSpecialesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
   };
 

@@ -72,24 +72,26 @@ export const FeaturedProductsGrid = () => {
 
   if (loading) {
     return (
-      <section className="mb-8">
-        <div className="flex items-center gap-3 mb-5">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-pink-500 flex items-center justify-center shadow-xl">
-            <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+      <section className="mb-12 animate-fade-in">
+        <div className="bg-gradient-to-br from-muted/30 via-muted/10 to-transparent p-6 rounded-2xl">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-500 to-pink-500 flex items-center justify-center shadow-xl animate-float">
+              <Sparkles className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-amber-600 via-orange-600 to-pink-600 bg-clip-text text-transparent">
+                ✨ PRODUITS VEDETTES
+              </h2>
+              <p className="text-sm sm:text-base text-muted-foreground mt-1">
+                Découvrez nos boutiques partenaires • Offres exclusives du moment
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-amber-600 via-orange-600 to-pink-600 bg-clip-text text-transparent">
-              ✨ Produits Vedettes
-            </h2>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              Mis en avant par nos vendeurs • Offres exclusives
-            </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 md:gap-5">
+            {[...Array(12)].map((_, i) => (
+              <Skeleton key={i} className="w-full aspect-[3/4] rounded-2xl shadow-md" />
+            ))}
           </div>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4">
-          {[...Array(12)].map((_, i) => (
-            <Skeleton key={i} className="w-full aspect-[4/5] rounded-xl" />
-          ))}
         </div>
       </section>
     );
@@ -100,49 +102,55 @@ export const FeaturedProductsGrid = () => {
   }
 
   return (
-    <section className="mb-8">
-      <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-pink-500 flex items-center justify-center shadow-xl animate-pulse-slow">
-          <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-        </div>
-        <div>
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-amber-600 via-orange-600 to-pink-600 bg-clip-text text-transparent">
-            ✨ Produits Vedettes
-          </h2>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            Mis en avant par nos vendeurs • {featuredProducts.length} produits exclusifs
-          </p>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4">
-        {featuredProducts.map((product) => (
-          <div key={product.id} className="group relative w-full">
-            {/* Badge Vedette - Style TEMU */}
-            <div className="absolute top-2 right-2 z-10 bg-gradient-to-r from-amber-500 via-orange-600 to-pink-600 text-white px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold shadow-lg flex items-center gap-1">
-              <Sparkles className="w-3 h-3 fill-current" />
-              Vedette
-            </div>
-            <ProductCard
-              id={product.id}
-              image={product.images?.[0] || "/placeholder.svg"}
-              title={product.title}
-              originalPrice={product.original_price || undefined}
-              salePrice={product.price}
-              discount={product.discount_percentage || undefined}
-              rating={product.rating}
-              reviews={product.reviews_count}
-              badge={product.badge || undefined}
-              isFlashSale={product.is_flash_sale}
-              seller_id={product.seller_id}
-              videoUrl={product.video_url || undefined}
-              isBoosted={product.is_boosted}
-              boostedUntil={product.boosted_until || undefined}
-              shop_slug={product.seller_shops?.shop_slug}
-              shop_name={product.seller_shops?.shop_name}
-            />
+    <section className="mb-12 animate-fade-in">
+      <div className="bg-gradient-to-br from-muted/30 via-muted/10 to-transparent p-6 sm:p-8 rounded-2xl shadow-sm border border-border/30">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-500 to-pink-500 flex items-center justify-center shadow-xl animate-float">
+            <Sparkles className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
           </div>
-        ))}
+          <div className="flex-1">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-amber-600 via-orange-600 to-pink-600 bg-clip-text text-transparent">
+              ✨ PRODUITS VEDETTES
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1">
+              Découvrez nos boutiques partenaires • {featuredProducts.length} produits exclusifs
+            </p>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 md:gap-5">
+          {featuredProducts.map((product, index) => (
+            <div 
+              key={product.id} 
+              className="group relative w-full animate-fade-in"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
+              {/* Badge Vedette modernisé */}
+              <div className="absolute top-3 right-3 z-10 bg-gradient-to-r from-amber-500 via-orange-600 to-pink-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1.5 animate-pulse-slow">
+                <Sparkles className="w-3.5 h-3.5 fill-current" />
+                <span className="hidden sm:inline">Vedette</span>
+              </div>
+              <ProductCard
+                id={product.id}
+                image={product.images?.[0] || "/placeholder.svg"}
+                title={product.title}
+                originalPrice={product.original_price || undefined}
+                salePrice={product.price}
+                discount={product.discount_percentage || undefined}
+                rating={product.rating}
+                reviews={product.reviews_count}
+                badge={product.badge || undefined}
+                isFlashSale={product.is_flash_sale}
+                seller_id={product.seller_id}
+                videoUrl={product.video_url || undefined}
+                isBoosted={product.is_boosted}
+                boostedUntil={product.boosted_until || undefined}
+                shop_slug={product.seller_shops?.shop_slug}
+                shop_name={product.seller_shops?.shop_name}
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

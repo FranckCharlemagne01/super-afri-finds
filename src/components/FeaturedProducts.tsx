@@ -109,10 +109,6 @@ export const FeaturedProducts = () => {
     );
   }
 
-  if (boostedProducts.length === 0) {
-    return null;
-  }
-
   return (
     <section className="py-12 px-4 bg-gradient-to-b from-amber-50/30 to-background relative overflow-hidden">
       {/* Effet de lumière douce en arrière-plan */}
@@ -141,62 +137,66 @@ export const FeaturedProducts = () => {
         </div>
 
         {/* Bouton Commencer à vendre */}
-        <div className="mb-8 flex justify-end md:justify-end justify-center">
+        <div className="mb-8 flex justify-center md:justify-end">
           <Button
             onClick={handleStartSelling}
-            className="group bg-[#FF6600] hover:bg-[#FF8533] text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 px-8 py-3 rounded-full"
+            className="group bg-[#FF6600] hover:bg-[#FF8533] text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 px-6 py-3 rounded-full"
           >
             <TrendingUp className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
             Commencer à vendre sur Djassa
           </Button>
         </div>
 
-        {/* Carrousel produits boostés */}
-        <Carousel
-          opts={{
-            align: "start",
-            loop: true,
-          }}
-          className="w-full"
-        >
-          <CarouselContent className="-ml-2 md:-ml-4">
-            {boostedProducts.map((product) => (
-              <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
-                <div className="relative">
-                  {/* Badge Sponsorisé */}
-                  <div className="absolute top-2 right-2 z-10 bg-gradient-to-r from-amber-500 to-amber-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg flex items-center gap-1">
-                    ⭐ Sponsorisé
-                  </div>
-                  <ProductCard
-                    id={product.id}
-                    image={product.images?.[0] || "/placeholder.svg"}
-                    title={product.title}
-                    originalPrice={product.original_price || undefined}
-                    salePrice={product.price}
-                    discount={product.discount_percentage || undefined}
-                    rating={product.rating}
-                    reviews={product.reviews_count}
-                    badge={product.badge || undefined}
-                    isFlashSale={product.is_flash_sale}
-                    seller_id={product.seller_id}
-                    videoUrl={product.video_url || undefined}
-                    isBoosted={product.is_boosted}
-                    boostedUntil={product.boosted_until || undefined}
-                  />
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="hidden md:flex -left-4 bg-background/80 backdrop-blur-sm hover:bg-background" />
-          <CarouselNext className="hidden md:flex -right-4 bg-background/80 backdrop-blur-sm hover:bg-background" />
-        </Carousel>
+        {/* Carrousel produits boostés - affiché seulement s'il y a des produits */}
+        {boostedProducts.length > 0 && (
+          <>
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {boostedProducts.map((product) => (
+                  <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
+                    <div className="relative">
+                      {/* Badge Sponsorisé */}
+                      <div className="absolute top-2 right-2 z-10 bg-gradient-to-r from-amber-500 to-amber-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg flex items-center gap-1">
+                        ⭐ Sponsorisé
+                      </div>
+                      <ProductCard
+                        id={product.id}
+                        image={product.images?.[0] || "/placeholder.svg"}
+                        title={product.title}
+                        originalPrice={product.original_price || undefined}
+                        salePrice={product.price}
+                        discount={product.discount_percentage || undefined}
+                        rating={product.rating}
+                        reviews={product.reviews_count}
+                        badge={product.badge || undefined}
+                        isFlashSale={product.is_flash_sale}
+                        seller_id={product.seller_id}
+                        videoUrl={product.video_url || undefined}
+                        isBoosted={product.is_boosted}
+                        boostedUntil={product.boosted_until || undefined}
+                      />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden md:flex -left-4 bg-background/80 backdrop-blur-sm hover:bg-background" />
+              <CarouselNext className="hidden md:flex -right-4 bg-background/80 backdrop-blur-sm hover:bg-background" />
+            </Carousel>
 
-        {/* Indicateur du nombre de produits sponsorisés */}
-        <div className="text-center mt-6">
-          <p className="text-sm text-muted-foreground">
-            {boostedProducts.length} produit{boostedProducts.length > 1 ? "s" : ""} sponsorisé{boostedProducts.length > 1 ? "s" : ""} actuellement
-          </p>
-        </div>
+            {/* Indicateur du nombre de produits sponsorisés */}
+            <div className="text-center mt-6">
+              <p className="text-sm text-muted-foreground">
+                {boostedProducts.length} produit{boostedProducts.length > 1 ? "s" : ""} sponsorisé{boostedProducts.length > 1 ? "s" : ""} actuellement
+              </p>
+            </div>
+          </>
+        )}
       </div>
     </section>
   );

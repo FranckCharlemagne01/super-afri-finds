@@ -416,7 +416,7 @@ const Index = () => {
 
         {/* Bannière promotionnelle boutique */}
         <section className="mb-6 sm:mb-8 animate-slide-up">
-          <ShopPromoBanner />
+          <SellerPromoBanner />
           <PopularCategories />
         </section>
 

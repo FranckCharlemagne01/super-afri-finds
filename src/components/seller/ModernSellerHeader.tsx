@@ -146,18 +146,6 @@ export const ModernSellerHeader = ({
                 <span className="sm:hidden">Retour</span>
               </Button>
               
-              {onPublishProduct && (
-                <Button
-                  onClick={onPublishProduct}
-                  className="flex-1 sm:flex-none text-sm md:text-base gap-1 md:gap-2"
-                  size="sm"
-                >
-                  <Plus className="h-3 w-3 md:h-4 md:w-4" />
-                  <span className="hidden md:inline">Publier un produit</span>
-                  <span className="md:hidden">Publier</span>
-                </Button>
-              )}
-              
               {shop && (
                 <Button
                   variant="outline"

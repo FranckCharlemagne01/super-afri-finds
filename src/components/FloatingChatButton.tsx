@@ -19,15 +19,16 @@ export const FloatingChatButton = () => {
           <TooltipTrigger asChild>
             <Button
               onClick={() => setIsOpen(true)}
-              className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-gradient-to-br from-primary to-primary-hover text-primary-foreground shadow-lg hover:shadow-xl animate-bounce-subtle hover:animate-none z-50 transition-all duration-300 hover:scale-110 min-w-[56px] min-h-[56px]"
+              className="fixed bottom-6 right-6 h-16 w-16 rounded-full bg-gradient-to-br from-primary via-primary-hover to-primary text-primary-foreground shadow-2xl hover:shadow-[0_8px_30px_rgba(var(--primary-rgb),0.5)] animate-bounce-subtle hover:animate-none z-50 transition-all duration-300 hover:scale-110 active:scale-95 border-2 border-white/20"
               size="icon"
               aria-label="Ouvrir le chat d'aide"
             >
-              <MessageCircle className="h-6 w-6 sm:h-7 sm:w-7" />
+              <MessageCircle className="h-7 w-7" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="left" className="mb-2 hidden sm:block">
-            <p className="text-sm">Besoin d'aide ? Posez votre question</p>
+          <TooltipContent side="left" className="mb-2 bg-card border shadow-lg">
+            <p className="text-sm font-medium">Besoin d'aide ?</p>
+            <p className="text-xs text-muted-foreground">Discutez avec Boza</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

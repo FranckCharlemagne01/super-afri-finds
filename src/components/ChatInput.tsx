@@ -80,14 +80,14 @@ export const ChatInput = ({
   }, [handleSend]);
 
   return (
-    <div className={`flex gap-2 items-end ${className}`}>
+    <div className={`flex gap-2.5 items-end ${className}`}>
       <Textarea
         ref={textareaRef}
         value={localValue}
         onChange={handleChange}
         onKeyDown={handleKeyPress}
         placeholder={placeholder}
-        className="flex-1 text-sm rounded-2xl border-2 focus:border-primary transition-all duration-200 resize-none py-3 px-4 animate-fade-in"
+        className="flex-1 text-sm rounded-2xl border border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/20 transition-all duration-200 resize-none py-3 px-4 bg-background shadow-sm hover:shadow-md"
         style={{ minHeight, maxHeight }}
         autoComplete="off"
         rows={1}
@@ -97,7 +97,7 @@ export const ChatInput = ({
         onClick={handleSend} 
         size="icon" 
         disabled={!localValue.trim() || disabled} 
-        className="min-h-[48px] min-w-[48px] rounded-full shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 flex-shrink-0 hover:scale-105 active:scale-95"
+        className="min-h-[50px] min-w-[50px] rounded-full shadow-md hover:shadow-xl transition-all duration-200 disabled:opacity-40 flex-shrink-0 hover:scale-110 active:scale-95 bg-gradient-to-br from-primary to-primary-hover"
       >
         <Send className="h-5 w-5" />
       </Button>

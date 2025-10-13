@@ -10,7 +10,8 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Flame } from "lucide-react";
+import { Flame, Sparkles } from "lucide-react";
+import marketplaceShowcase from "@/assets/marketplace-showcase-clean.jpg";
 
 interface Product {
   id: string;
@@ -101,16 +102,28 @@ export const FeaturedProducts = () => {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-200/20 via-transparent to-transparent pointer-events-none" />
       
       <div className="container mx-auto max-w-7xl relative z-10">
+        {/* Titre de la section */}
         <div className="flex items-center gap-3 mb-2">
-          <Flame className="w-7 h-7 text-amber-500 animate-pulse" />
+          <Sparkles className="w-7 h-7 text-amber-500 animate-pulse" />
           <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-amber-800 bg-clip-text text-transparent">
-            Produits mis en avant par nos vendeurs
+            Produits Vedette
           </h2>
         </div>
         <p className="text-muted-foreground mb-8">
-          Découvrez les articles les plus populaires et sponsorisés de la semaine !
+          Découvrez nos boutiques partenaires • Marketplace dynamique
         </p>
 
+        {/* Image marketplace */}
+        <div className="mb-8 relative w-full overflow-hidden rounded-2xl shadow-lg">
+          <img 
+            src={marketplaceShowcase} 
+            alt="Marketplace Djassa - Vitrine de produits vedettes"
+            className="w-full h-auto object-cover transition-transform duration-500 hover:scale-[1.02]"
+            loading="lazy"
+          />
+        </div>
+
+        {/* Carrousel produits boostés */}
         <Carousel
           opts={{
             align: "start",

@@ -8,6 +8,29 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// SECURITY: Rate limiting implementation
+const RATE_LIMITS = new Map<string, number[]>();
+const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const MAX_REQUESTS = 10;
+
+function checkRateLimit(identifier: string): boolean {
+  const now = Date.now();
+  const userLimits = RATE_LIMITS.get(identifier) || [];
+  
+  // Remove old requests outside window
+  const validRequests = userLimits.filter(
+    (timestamp: number) => now - timestamp < WINDOW_MS
+  );
+  
+  if (validRequests.length >= MAX_REQUESTS) {
+    return false; // Rate limit exceeded
+  }
+  
+  validRequests.push(now);
+  RATE_LIMITS.set(identifier, validRequests);
+  return true;
+}
+
 // SECURITY: Define fixed pricing for token packages (server-side source of truth)
 const TOKEN_PRICES: Record<number, number> = {
   5: 1000,
@@ -143,6 +166,22 @@ serve(async (req) => {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
+
+    // SECURITY: Rate limiting check
+    const ip = req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown';
+    const identifier = `${ip}-${authHeader.substring(0, 20)}`;
+    
+    if (!checkRateLimit(identifier)) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Trop de requêtes. Veuillez réessayer plus tard.' 
+        }),
+        { 
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '900' }
+        }
+      );
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;

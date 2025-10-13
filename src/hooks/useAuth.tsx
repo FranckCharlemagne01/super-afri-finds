@@ -62,6 +62,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (emailOrPhone: string, password: string) => {
+    const MAX_ATTEMPTS = 5;
+    const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
+    
+    // SECURITY: Rate limiting - check login attempts
+    const attempts = JSON.parse(
+      localStorage.getItem('login_attempts') || '{}'
+    );
+    
+    const userAttempts = attempts[emailOrPhone] || { count: 0, lockedUntil: null };
+    
+    // Check if account is locked
+    if (userAttempts.lockedUntil && Date.now() < userAttempts.lockedUntil) {
+      const minutes = Math.ceil(
+        (userAttempts.lockedUntil - Date.now()) / 60000
+      );
+      return { 
+        error: { 
+          message: `Compte temporairement verrouillé. Réessayez dans ${minutes} minute${minutes > 1 ? 's' : ''}.` 
+        } 
+      };
+    }
+    
     // Déterminer si l'identifiant est un email ou un téléphone
     const isEmail = emailOrPhone.includes('@');
     
@@ -70,6 +92,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       phone: !isEmail ? emailOrPhone : undefined,
       password,
     });
+    
+    // SECURITY: Update login attempts
+    if (error) {
+      userAttempts.count++;
+      if (userAttempts.count >= MAX_ATTEMPTS) {
+        userAttempts.lockedUntil = Date.now() + LOCKOUT_DURATION;
+        userAttempts.count = 0;
+      }
+      attempts[emailOrPhone] = userAttempts;
+      localStorage.setItem('login_attempts', JSON.stringify(attempts));
+    } else {
+      // Clear attempts on successful login
+      delete attempts[emailOrPhone];
+      localStorage.setItem('login_attempts', JSON.stringify(attempts));
+    }
+    
     return { error };
   };
 

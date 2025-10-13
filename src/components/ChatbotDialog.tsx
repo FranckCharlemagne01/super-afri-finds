@@ -196,12 +196,26 @@ export const ChatbotDialog: React.FC<ChatbotDialogProps> = ({ open, onOpenChange
     );
   }
 
-  // Sur desktop : Dialog élégant avec position fixe
+  // Sur desktop : Panel latéral à droite avec animation slide
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg h-[650px] flex flex-col p-0 gap-0 sm:rounded-2xl overflow-hidden shadow-2xl border-0">
-        <ChatContent />
-      </DialogContent>
-    </Dialog>
+    <>
+      {/* Overlay semi-transparent */}
+      {open && (
+        <div 
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 animate-fade-in"
+          onClick={() => onOpenChange(false)}
+        />
+      )}
+      
+      {/* Panel latéral */}
+      <div
+        className={`fixed top-0 right-0 h-full w-[90%] sm:w-[450px] lg:w-[500px] bg-background shadow-2xl z-50 flex flex-col transition-transform duration-300 ease-out ${
+          open ? 'translate-x-0 animate-slide-in-right' : 'translate-x-full'
+        }`}
+        style={{ maxWidth: '40vw' }}
+      >
+        {open && <ChatContent />}
+      </div>
+    </>
   );
 };

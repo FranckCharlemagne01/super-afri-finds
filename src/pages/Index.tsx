@@ -382,6 +382,9 @@ const Index = () => {
           <PopularCategories />
         </section>
 
+        {/* Section Produits Vedettes - Marketplace Showcase */}
+        <FeaturedProductsGrid />
+
         {/* Produits Recommandés - Grille */}
         <section className="mb-6 sm:mb-8 animate-slide-up">
           <div className="flex items-center justify-between mb-3 sm:mb-4 px-1">

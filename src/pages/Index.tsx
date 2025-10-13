@@ -376,6 +376,9 @@ const Index = () => {
           <HeroCarousel />
         </div>
 
+        {/* Bannière d'annonce défilante */}
+        <ScrollingAnnouncementBanner />
+
         {/* Offres Spéciales - Bannière dynamique rectangulaire */}
         <section className="mb-6 sm:mb-8">
           <DynamicPromoBanner />

@@ -376,6 +376,36 @@ const Index = () => {
           <HeroCarousel />
         </div>
 
+        {/* Offres Spéciales / Tendances - Flash Sales */}
+        {flashSaleProducts.length > 0 && (
+          <section className="mb-6 sm:mb-8 animate-slide-up">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3 sm:mb-4 px-1">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 gradient-primary rounded-full flex items-center justify-center animate-pulse">
+                  <span className="text-white text-sm sm:text-lg">⚡</span>
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold text-foreground">Offres Spéciales</h2>
+              </div>
+              <Badge className="bg-promo text-promo-foreground animate-pulse-promo w-fit">
+                Limitées dans le temps
+              </Badge>
+              <div className="sm:ml-auto">
+                <Button variant="ghost" size="sm" onClick={() => navigate('/flash-sales')} className="text-xs sm:text-sm hover:text-primary transition-all hover:scale-105">
+                  Voir tout →
+                </Button>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4">
+              {flashSaleProducts.slice(0, 6).map((product, index) => (
+                <div key={product.id} style={{ animationDelay: `${index * 0.05}s` }} className="animate-fade-in">
+                  <ProductCard {...convertToProductCardProps(product)} />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Bannière d'annonce défilante */}
         <ScrollingAnnouncementBanner />
 
@@ -408,35 +438,6 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Offres Spéciales / Tendances - Flash Sales */}
-        {flashSaleProducts.length > 0 && (
-          <section className="mb-6 sm:mb-8 animate-slide-up">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3 sm:mb-4 px-1">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 gradient-primary rounded-full flex items-center justify-center animate-pulse">
-                  <span className="text-white text-sm sm:text-lg">⚡</span>
-                </div>
-                <h2 className="text-lg sm:text-xl font-bold text-foreground">Offres Spéciales</h2>
-              </div>
-              <Badge className="bg-promo text-promo-foreground animate-pulse-promo w-fit">
-                Limitées dans le temps
-              </Badge>
-              <div className="sm:ml-auto">
-                <Button variant="ghost" size="sm" onClick={() => navigate('/flash-sales')} className="text-xs sm:text-sm hover:text-primary transition-all hover:scale-105">
-                  Voir tout →
-                </Button>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4">
-              {flashSaleProducts.slice(0, 6).map((product, index) => (
-                <div key={product.id} style={{ animationDelay: `${index * 0.05}s` }} className="animate-fade-in">
-                  <ProductCard {...convertToProductCardProps(product)} />
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
 
         {/* Plus de Produits */}
         <section className="mb-6 sm:mb-8 animate-slide-up">

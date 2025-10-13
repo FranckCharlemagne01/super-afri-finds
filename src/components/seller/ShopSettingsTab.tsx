@@ -1,7 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Settings, Store } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Settings, Store, Share2 } from 'lucide-react';
 import { ShopManagement } from '@/components/ShopManagement';
 import { LocationSelector } from '@/components/LocationSelector';
+import { useToast } from '@/hooks/use-toast';
 
 interface Shop {
   id: string;
@@ -15,6 +17,8 @@ interface ShopSettingsTabProps {
 }
 
 export const ShopSettingsTab = ({ shop, onRefresh }: ShopSettingsTabProps) => {
+  const { toast } = useToast();
+  
   return (
     <div className="space-y-6">
       {/* Location Selector */}
@@ -51,14 +55,32 @@ export const ShopSettingsTab = ({ shop, onRefresh }: ShopSettingsTabProps) => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="p-4 bg-muted/50 rounded-lg">
-              <h4 className="font-semibold mb-2">URL de votre boutique</h4>
-              <p className="text-sm text-muted-foreground mb-2">
-                Votre boutique est accessible publiquement via l'URL suivante :
-              </p>
-              <code className="block p-2 bg-card rounded border text-sm">
-                {window.location.origin}/shop/{shop?.shop_slug || 'votre-boutique'}
-              </code>
+            <div className="p-4 bg-muted/50 rounded-lg space-y-3">
+              <h4 className="font-semibold mb-2">Accès à votre boutique</h4>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  variant="default"
+                  className="flex-1 transition-all hover:scale-105"
+                  onClick={() => window.open(`/shop/${shop?.shop_slug}`, '_blank')}
+                >
+                  <Store className="h-4 w-4 mr-2" />
+                  Voir ma boutique
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1 transition-all hover:scale-105"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/shop/${shop?.shop_slug}`);
+                    toast({
+                      title: "Copié !",
+                      description: "Le lien de votre boutique a été copié dans le presse-papier.",
+                    });
+                  }}
+                >
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Partager ma boutique
+                </Button>
+              </div>
             </div>
 
             <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">

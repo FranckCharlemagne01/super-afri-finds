@@ -9,7 +9,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Store, Upload, Image as ImageIcon, Check, ExternalLink, Edit } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface Shop {
   id: string;
@@ -266,22 +265,31 @@ export const ShopManagement = () => {
             </div>
           </div>
 
-          {/* Shop URL */}
-          <Alert>
-            <Check className="h-4 w-4" />
-            <AlertDescription className="flex items-center justify-between">
-              <span className="text-sm">
-                URL: <code className="text-primary">djassa.com/boutique/{shop.shop_slug}</code>
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => window.open(`/boutique/${shop.shop_slug}`, '_blank')}
-              >
-                <ExternalLink className="h-4 w-4" />
-              </Button>
-            </AlertDescription>
-          </Alert>
+          {/* Shop Access Buttons */}
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button
+              variant="default"
+              className="flex-1 transition-all hover:scale-105"
+              onClick={() => window.open(`/shop/${shop.shop_slug}`, '_blank')}
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Voir ma boutique
+            </Button>
+            <Button
+              variant="outline"
+              className="flex-1 transition-all hover:scale-105"
+              onClick={() => {
+                navigator.clipboard.writeText(`${window.location.origin}/shop/${shop.shop_slug}`);
+                toast({
+                  title: "Copié !",
+                  description: "Le lien de votre boutique a été copié.",
+                });
+              }}
+            >
+              <Check className="h-4 w-4 mr-2" />
+              Partager ma boutique
+            </Button>
+          </div>
         </div>
       </Card>
     );

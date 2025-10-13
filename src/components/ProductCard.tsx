@@ -68,10 +68,10 @@ export const ProductCard = ({
   const isActiveBoosted = isBoosted && boostedUntil && new Date(boostedUntil) > new Date();
 
   return (
-    <Card className={`relative overflow-hidden cursor-pointer border-0 shadow-lg transition-all duration-300 ${
+    <Card className={`relative overflow-hidden cursor-pointer border-0 shadow-md transition-all duration-500 animate-fade-in ${
       isActiveBoosted 
-        ? 'ring-2 ring-amber-400 hover:ring-amber-500 hover:shadow-2xl hover:shadow-amber-200/50 hover:-translate-y-1' 
-        : 'hover-lift'
+        ? 'ring-2 ring-amber-400 hover:ring-amber-500 hover:shadow-2xl hover:shadow-amber-200/50 hover:-translate-y-2 hover:scale-[1.03]' 
+        : 'hover-lift hover:shadow-xl'
     }`} onClick={handleProductClick}>
       {/* Gradient overlay pour produits boostés */}
       {isActiveBoosted && (
@@ -120,7 +120,8 @@ export const ProductCard = ({
         <img
           src={image}
           alt={title}
-          className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+          loading="lazy"
+          className="w-full h-full object-cover transition-transform duration-700 ease-out hover:scale-110 hover:rotate-1"
         />
         {videoUrl && (
           <div className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 z-10">

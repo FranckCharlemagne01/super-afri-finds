@@ -310,7 +310,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0">
+    <div className="min-h-screen bg-background pb-20 md:pb-8">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-3">
@@ -439,19 +439,30 @@ const Index = () => {
         </section>
 
 
-        {/* Plus de Produits */}
+        {/* Tendances du moment */}
         <section className="mb-6 sm:mb-8 animate-slide-up">
-          <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 sm:mb-4 px-1">
-            Tendances du moment
-          </h2>
-          
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4">
-            {regularProducts.slice(0, 12).map((product, index) => (
-              <div key={product.id} style={{ animationDelay: `${index * 0.05}s` }} className="animate-fade-in">
-                <ProductCard {...convertToProductCardProps(product)} />
-              </div>
-            ))}
+          <div className="flex items-center justify-between mb-3 sm:mb-4 px-1">
+            <h2 className="text-lg sm:text-xl font-bold text-foreground">
+              Tendances du moment
+            </h2>
+            <Badge variant="outline" className="text-xs">
+              {regularProducts.length} produits
+            </Badge>
           </div>
+          
+          {regularProducts.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4">
+              {regularProducts.map((product, index) => (
+                <div key={product.id} style={{ animationDelay: `${index * 0.05}s` }} className="animate-fade-in">
+                  <ProductCard {...convertToProductCardProps(product)} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 px-4 bg-muted/30 rounded-lg">
+              <p className="text-muted-foreground">Aucun produit disponible pour le moment</p>
+            </div>
+          )}
         </section>
 
         {/* Bannière Vendeur - Dynamique */}

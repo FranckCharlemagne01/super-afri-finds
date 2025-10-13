@@ -40,11 +40,11 @@ export const PopularCategories = () => {
   };
 
   return (
-    <div className="w-full py-4">
-      <h2 className="text-xl md:text-2xl font-black mb-4 px-2 bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent drop-shadow-sm animate-fade-in">
-        ✨ EXPLOREZ VOS CENTRES D'INTÉRÊT
+    <div className="w-full py-6 bg-muted/30 rounded-xl">
+      <h2 className="text-xl md:text-2xl font-black mb-6 px-4 md:px-6 uppercase bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent drop-shadow-sm animate-fade-in">
+        ✨ Explorez vos centres d'intérêt
       </h2>
-      <div className="relative group">
+      <div className="relative group px-2">
         {/* Flèche gauche */}
         <button
           onClick={scrollLeft}
@@ -71,7 +71,7 @@ export const PopularCategories = () => {
 
         <div
           ref={scrollRef}
-          className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide scroll-smooth px-8 md:px-10 touch-pan-x relative"
+          className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide scroll-smooth px-8 md:px-10 touch-pan-x relative pb-2"
           style={{
             scrollbarWidth: "none",
             msOverflowStyle: "none",
@@ -84,12 +84,12 @@ export const PopularCategories = () => {
               <button
                 key={category.id}
                 onClick={() => navigate(`/category/${category.slug}`)}
-                className="flex-shrink-0 flex flex-col items-center gap-2 p-3 min-w-[90px] sm:min-w-[100px] rounded-lg hover:bg-accent/50 transition-all duration-200 active:scale-95 hover:shadow-md"
+                className="flex-shrink-0 flex flex-col items-center gap-2 p-4 min-w-[100px] sm:min-w-[110px] rounded-2xl bg-card border border-border/40 hover:border-primary/30 hover:bg-accent/30 transition-all duration-300 active:scale-95 hover:shadow-lg hover:-translate-y-1"
               >
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center shadow-sm">
-                  <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center shadow-sm border border-primary/10">
+                  <Icon className="w-7 h-7 sm:w-8 sm:h-8 text-primary" />
                 </div>
-                <span className="text-xs sm:text-sm font-medium text-foreground text-center line-clamp-2">
+                <span className="text-xs sm:text-sm font-semibold text-foreground text-center line-clamp-2">
                   {category.name}
                 </span>
               </button>

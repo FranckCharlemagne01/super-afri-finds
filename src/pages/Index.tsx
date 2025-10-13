@@ -515,8 +515,24 @@ const Index = () => {
             <div>
               <h4 className="font-semibold mb-3 text-sm sm:text-base text-foreground">Contact</h4>
               <ul className="space-y-2">
-                <li className="text-xs sm:text-sm text-muted-foreground">Email: contact@djassa.com</li>
-                <li className="text-xs sm:text-sm text-muted-foreground">Tél: +225 XX XX XX XX</li>
+                <li>
+                  <a 
+                    href="mailto:djassa@djassa.tech" 
+                    className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    Email: djassa@djassa.tech
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="https://wa.me/2250788281222" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    WhatsApp: +225 07 88 28 12 22
+                  </a>
+                </li>
                 <li className="text-xs sm:text-sm text-muted-foreground">Abidjan, Côte d'Ivoire</li>
               </ul>
             </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { useStableAuth } from '@/hooks/useStableAuth';
+import { useStableRole } from '@/hooks/useStableRole';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -80,6 +81,7 @@ const MessageNotificationBadge = () => {
 
 const BuyerDashboard = () => {
   const { user, loading: authLoading, signOut } = useStableAuth();
+  const { role, loading: roleLoading, isSeller } = useStableRole();
   const navigate = useNavigate();
   const { profile, orders, loadingProfile, updateProfile, cancelOrder } = useBuyerProfile(user?.id);
   const [editingProfile, setEditingProfile] = useState(false);
@@ -135,12 +137,18 @@ const BuyerDashboard = () => {
     setCancellingOrderId(null);
   };
 
-  // Redirect to auth if user is not logged in
+  // Redirection automatique : vendeurs vers leur tableau de bord vendeur
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/auth', { replace: true });
+      return;
     }
-  }, [user, authLoading, navigate]);
+
+    // Si l'utilisateur est vendeur, le rediriger vers son tableau de bord vendeur
+    if (user && !roleLoading && isSeller) {
+      navigate('/seller-dashboard', { replace: true });
+    }
+  }, [user, authLoading, roleLoading, isSeller, navigate]);
 
   // Show skeleton while loading auth or profile
   if (authLoading || loadingProfile) {

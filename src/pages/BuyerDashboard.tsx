@@ -86,6 +86,7 @@ const BuyerDashboard = () => {
   const [updatedProfile, setUpdatedProfile] = useState<UserProfile>({ full_name: '', phone: '', email: '' });
   const [activeSection, setActiveSection] = useState('dashboard');
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+  const [editingSettings, setEditingSettings] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
@@ -103,13 +104,29 @@ const BuyerDashboard = () => {
     }
   };
 
-  const startEdit = () => {
+  const startEditProfile = () => {
     setUpdatedProfile(profile);
     setEditingProfile(true);
   };
 
-  const cancelEdit = () => {
+  const cancelEditProfile = () => {
     setEditingProfile(false);
+  };
+
+  const startEditSettings = () => {
+    setUpdatedProfile(profile);
+    setEditingSettings(true);
+  };
+
+  const cancelEditSettings = () => {
+    setEditingSettings(false);
+  };
+
+  const handleUpdateSettings = async () => {
+    const result = await updateProfile(updatedProfile);
+    if (result.success) {
+      setEditingSettings(false);
+    }
   };
 
   const handleCancelOrder = async (orderId: string) => {
@@ -207,13 +224,10 @@ const BuyerDashboard = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => {
-                      setActiveSection('profile');
-                      startEdit();
-                    }}
+                    onClick={() => setActiveSection('profile')}
                     className="text-primary hover:bg-primary/10 shrink-0"
                   >
-                    <Edit className="w-4 h-4 md:w-5 md:h-5" />
+                    <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
                   </Button>
                 </div>
               </CardContent>
@@ -330,10 +344,7 @@ const BuyerDashboard = () => {
 
               <Card 
                 className="border-0 shadow-sm bg-white hover:shadow-md transition-all cursor-pointer" 
-                onClick={() => {
-                  setActiveSection('profile');
-                  startEdit();
-                }}
+                onClick={() => setActiveSection('settings')}
               >
                 <CardContent className="p-4 md:p-5">
                   <div className="flex items-center justify-between">
@@ -343,18 +354,13 @@ const BuyerDashboard = () => {
                       </div>
                       <div className="min-w-0 flex-1">
                         <h4 className="font-medium text-sm md:text-base">Paramètres</h4>
-                        <p className="text-xs md:text-sm text-muted-foreground truncate">Modifier le profil et adresses</p>
+                        <p className="text-xs md:text-sm text-muted-foreground truncate">Email, téléphone, ville</p>
                       </div>
                     </div>
                     <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground shrink-0" />
                   </div>
                 </CardContent>
               </Card>
-
-              {/* Location Selector */}
-              <div className="pt-2">
-                <LocationSelector />
-              </div>
             </div>
           </>
         )}
@@ -370,29 +376,72 @@ const BuyerDashboard = () => {
               >
                 <ChevronRight className="w-4 h-4 rotate-180" />
               </Button>
-              <h2 className="text-xl font-semibold">Informations Personnelles</h2>
+              <h2 className="text-xl font-semibold">Mon Profil</h2>
             </div>
 
             <Card className="border-0 shadow-sm bg-white">
               <CardContent className="p-4 md:p-6 space-y-6">
-                {editingProfile ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center">
+                        <User className="w-6 h-6 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Nom complet</p>
+                        <p className="font-semibold text-base">{profile.full_name || 'Non renseigné'}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-blue-100/50 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                        <Mail className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Email</p>
+                        <p className="font-medium text-base">{profile.email}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {activeSection === 'settings' && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 mb-6">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setActiveSection('dashboard')}
+                className="p-2"
+              >
+                <ChevronRight className="w-4 h-4 rotate-180" />
+              </Button>
+              <h2 className="text-xl font-semibold">Paramètres</h2>
+            </div>
+
+            <Card className="border-0 shadow-sm bg-white">
+              <CardContent className="p-4 md:p-6 space-y-6">
+                {editingSettings ? (
                   <div className="space-y-4">
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="firstName" className="flex items-center gap-2 text-sm font-medium">
-                          <User className="w-4 h-4" />
-                          Nom complet
+                        <Label htmlFor="email" className="flex items-center gap-2 text-sm font-medium">
+                          <Mail className="w-4 h-4" />
+                          Email
                         </Label>
                         <Input
-                          id="firstName"
-                          value={updatedProfile.full_name}
-                          onChange={(e) => setUpdatedProfile({
-                            ...updatedProfile,
-                            full_name: e.target.value
-                          })}
-                          placeholder="Votre nom complet"
-                          className="h-12 rounded-xl border-border/50"
+                          id="email"
+                          value={updatedProfile.email}
+                          disabled
+                          className="h-12 rounded-xl bg-muted border-border/50"
                         />
+                        <p className="text-xs text-muted-foreground">L'email ne peut pas être modifié</p>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="phone" className="flex items-center gap-2 text-sm font-medium">
@@ -410,23 +459,10 @@ const BuyerDashboard = () => {
                           className="h-12 rounded-xl border-border/50"
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="email" className="flex items-center gap-2 text-sm font-medium">
-                          <Mail className="w-4 h-4" />
-                          Email
-                        </Label>
-                        <Input
-                          id="email"
-                          value={updatedProfile.email}
-                          disabled
-                          className="h-12 rounded-xl bg-muted border-border/50"
-                        />
-                        <p className="text-xs text-muted-foreground">L'email ne peut pas être modifié depuis ce profil</p>
-                      </div>
                     </div>
                     <div className="flex gap-3 pt-4">
                       <Button 
-                        onClick={handleUpdateProfile} 
+                        onClick={handleUpdateSettings} 
                         className="flex-1 h-12 rounded-xl bg-primary hover:bg-primary/90"
                       >
                         <Save className="h-4 w-4 mr-2" />
@@ -434,7 +470,7 @@ const BuyerDashboard = () => {
                       </Button>
                       <Button 
                         variant="outline" 
-                        onClick={cancelEdit} 
+                        onClick={cancelEditSettings} 
                         className="h-12 px-6 rounded-xl border-border/50"
                       >
                         <X className="h-4 w-4" />
@@ -446,12 +482,12 @@ const BuyerDashboard = () => {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
-                            <User className="w-5 h-5 text-primary" />
+                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                            <Mail className="w-5 h-5 text-blue-600" />
                           </div>
                           <div>
-                            <p className="text-sm text-muted-foreground">Nom complet</p>
-                            <p className="font-medium">{profile.full_name || 'Non renseigné'}</p>
+                            <p className="text-sm text-muted-foreground">Email</p>
+                            <p className="font-medium">{profile.email}</p>
                           </div>
                         </div>
                       </div>
@@ -467,26 +503,18 @@ const BuyerDashboard = () => {
                           </div>
                         </div>
                       </div>
-                      
-                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                            <Mail className="w-5 h-5 text-blue-600" />
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">Email</p>
-                            <p className="font-medium">{profile.email}</p>
-                          </div>
-                        </div>
+
+                      <div className="pt-2">
+                        <LocationSelector />
                       </div>
                     </div>
                     
                     <Button
-                      onClick={startEdit}
+                      onClick={startEditSettings}
                       className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90"
                     >
                       <Edit className="h-4 w-4 mr-2" />
-                      Modifier mes informations
+                      Modifier mes paramètres
                     </Button>
                   </div>
                 )}

@@ -72,7 +72,7 @@ serve(async (req) => {
 
     // Envoyer l'email via Resend
     const { error } = await resend.emails.send({
-      from: 'Djassa <contact@djassa.com>',
+      from: 'Djassa <contact@djassa.tech>',
       to: [user.email],
       subject: '🎉 Bienvenue sur Djassa – Confirmez votre adresse e-mail',
       html,

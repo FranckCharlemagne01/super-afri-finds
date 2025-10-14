@@ -70,8 +70,8 @@ export const WelcomeEmail = ({
 
         <Text style={footer}>
           💼 <strong>Djassa</strong> – Achetez. Vendez. Gagnez.<br />
-          📧 <Link href="mailto:contact@djassa.com" style={link}>contact@djassa.com</Link><br />
-          🌐 <Link href="https://djassa.djassa.tech" target="_blank" style={link}>www.djassa.djassa.tech</Link>
+          📧 <Link href="mailto:contact@djassa.tech" style={link}>contact@djassa.tech</Link><br />
+          🌐 <Link href="https://djassa.tech" target="_blank" style={link}>www.djassa.tech</Link>
         </Text>
 
         <Text style={signature}>

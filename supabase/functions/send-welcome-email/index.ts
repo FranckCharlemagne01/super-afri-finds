@@ -1,7 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import React from 'npm:react@18.3.1';
-import { Webhook } from 'https://esm.sh/standardwebhooks@1.0.0';
 import { Resend } from 'npm:resend@4.0.0';
 import { renderAsync } from 'npm:@react-email/components@0.0.22';
 import { WelcomeEmail } from './_templates/welcome-email.tsx';
@@ -35,51 +34,49 @@ serve(async (req) => {
       );
     }
     
-    // SECURITY: Vérifier la signature du webhook Supabase Auth
-    let user, emailData;
-    
-    if (headers['webhook-signature']) {
-      // Webhook Supabase Auth - vérification obligatoire de la signature
-      try {
-        const wh = new Webhook(hookSecret);
-        const webhookData = wh.verify(payload, headers) as {
-          user: {
-            email: string;
-            user_metadata?: {
-              full_name?: string;
-            };
-          };
-          email_data: {
-            token: string;
-            token_hash: string;
-            redirect_to: string;
-            email_action_type: string;
-          };
-        };
-        
-        user = webhookData.user;
-        emailData = webhookData.email_data;
-      } catch (error) {
-        console.error('Webhook signature verification failed:', error);
-        return new Response(
-          JSON.stringify({ error: 'Invalid webhook signature' }),
-          {
-            status: 401,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          }
-        );
-      }
-    } else {
-      // Pas de signature webhook - rejeter la requête
-      console.error('Missing webhook signature');
+    // SECURITY: Vérifier l'authentification du Auth Hook (Authorization Bearer)
+    const authHeader = headers['authorization'];
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error('Missing or invalid Authorization header');
       return new Response(
-        JSON.stringify({ error: 'Missing webhook signature' }),
+        JSON.stringify({ error: 'Missing or invalid Authorization header' }),
         {
           status: 401,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
     }
+    
+    const token = authHeader.replace('Bearer ', '');
+    if (token !== hookSecret) {
+      console.error('Invalid hook secret');
+      return new Response(
+        JSON.stringify({ error: 'Invalid hook secret' }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+    
+    // Parser le payload du webhook
+    const webhookData = JSON.parse(payload) as {
+      user: {
+        email: string;
+        user_metadata?: {
+          full_name?: string;
+        };
+      };
+      email_data: {
+        token: string;
+        token_hash: string;
+        redirect_to: string;
+        email_action_type: string;
+      };
+    };
+    
+    const user = webhookData.user;
+    const emailData = webhookData.email_data;
 
     console.log('Sending welcome email to:', user.email);
 

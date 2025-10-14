@@ -23,34 +23,62 @@ serve(async (req) => {
     const payload = await req.text();
     const headers = Object.fromEntries(req.headers);
     
-    // Vérifier si c'est un webhook Supabase ou un appel direct
+    // SECURITY: Vérifier que le secret du webhook est configuré
+    if (!hookSecret) {
+      console.error('SEND_WELCOME_EMAIL_HOOK_SECRET not configured');
+      return new Response(
+        JSON.stringify({ error: 'Webhook secret not configured' }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+    
+    // SECURITY: Vérifier la signature du webhook Supabase Auth
     let user, emailData;
     
-    if (hookSecret && headers['webhook-signature']) {
-      // Webhook Supabase Auth
-      const wh = new Webhook(hookSecret);
-      const webhookData = wh.verify(payload, headers) as {
-        user: {
-          email: string;
-          user_metadata?: {
-            full_name?: string;
+    if (headers['webhook-signature']) {
+      // Webhook Supabase Auth - vérification obligatoire de la signature
+      try {
+        const wh = new Webhook(hookSecret);
+        const webhookData = wh.verify(payload, headers) as {
+          user: {
+            email: string;
+            user_metadata?: {
+              full_name?: string;
+            };
+          };
+          email_data: {
+            token: string;
+            token_hash: string;
+            redirect_to: string;
+            email_action_type: string;
           };
         };
-        email_data: {
-          token: string;
-          token_hash: string;
-          redirect_to: string;
-          email_action_type: string;
-        };
-      };
-      
-      user = webhookData.user;
-      emailData = webhookData.email_data;
+        
+        user = webhookData.user;
+        emailData = webhookData.email_data;
+      } catch (error) {
+        console.error('Webhook signature verification failed:', error);
+        return new Response(
+          JSON.stringify({ error: 'Invalid webhook signature' }),
+          {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
     } else {
-      // Appel direct depuis l'application
-      const data = JSON.parse(payload);
-      user = data.user;
-      emailData = data.email_data;
+      // Pas de signature webhook - rejeter la requête
+      console.error('Missing webhook signature');
+      return new Response(
+        JSON.stringify({ error: 'Missing webhook signature' }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     console.log('Sending welcome email to:', user.email);

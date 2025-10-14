@@ -34,8 +34,12 @@ serve(async (req) => {
       );
     }
     
+    console.log('Expected secret (first 20 chars):', hookSecret.substring(0, 20));
+    
     // SECURITY: Vérifier l'authentification du Auth Hook
     const authHeader = headers['authorization'];
+    console.log('Received Authorization header:', authHeader ? authHeader.substring(0, 20) + '...' : 'MISSING');
+    
     if (!authHeader) {
       console.error('Missing Authorization header');
       return new Response(
@@ -47,13 +51,18 @@ serve(async (req) => {
       );
     }
     
-    // Support both "Bearer <secret>" and direct "<secret>" formats
-    const token = authHeader.startsWith('Bearer ') 
-      ? authHeader.replace('Bearer ', '') 
-      : authHeader;
+    // Supabase Auth sends the secret directly (not Bearer format)
+    // Format: "v1,whsec_..."
+    const receivedSecret = authHeader.trim();
     
-    if (token !== hookSecret) {
-      console.error('Invalid hook secret. Expected format: v1,whsec_...');
+    console.log('Secret comparison:', {
+      received_length: receivedSecret.length,
+      expected_length: hookSecret.length,
+      matches: receivedSecret === hookSecret
+    });
+    
+    if (receivedSecret !== hookSecret) {
+      console.error('Invalid hook secret. Received does not match expected.');
       return new Response(
         JSON.stringify({ error: 'Invalid hook secret' }),
         {
@@ -62,6 +71,8 @@ serve(async (req) => {
         }
       );
     }
+    
+    console.log('✓ Secret validation successful');
     
     // Parser le payload du webhook
     const webhookData = JSON.parse(payload) as {

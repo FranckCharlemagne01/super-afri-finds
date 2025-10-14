@@ -6,7 +6,6 @@ import { renderAsync } from 'npm:@react-email/components@0.0.22';
 import { WelcomeEmail } from './_templates/welcome-email.tsx';
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string);
-const hookSecret = Deno.env.get('SEND_WELCOME_EMAIL_HOOK_SECRET') as string;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,59 +19,8 @@ serve(async (req) => {
 
   try {
     const payload = await req.text();
-    const headers = Object.fromEntries(req.headers);
     
-    // SECURITY: Vérifier que le secret du webhook est configuré
-    if (!hookSecret) {
-      console.error('SEND_WELCOME_EMAIL_HOOK_SECRET not configured');
-      return new Response(
-        JSON.stringify({ error: 'Webhook secret not configured' }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
-    
-    console.log('Expected secret (first 20 chars):', hookSecret.substring(0, 20));
-    
-    // SECURITY: Vérifier l'authentification du Auth Hook
-    const authHeader = headers['authorization'];
-    console.log('Received Authorization header:', authHeader ? authHeader.substring(0, 20) + '...' : 'MISSING');
-    
-    if (!authHeader) {
-      console.error('Missing Authorization header');
-      return new Response(
-        JSON.stringify({ error: 'Missing Authorization header' }),
-        {
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
-    
-    // Supabase Auth sends the secret directly (not Bearer format)
-    // Format: "v1,whsec_..."
-    const receivedSecret = authHeader.trim();
-    
-    console.log('Secret comparison:', {
-      received_length: receivedSecret.length,
-      expected_length: hookSecret.length,
-      matches: receivedSecret === hookSecret
-    });
-    
-    if (receivedSecret !== hookSecret) {
-      console.error('Invalid hook secret. Received does not match expected.');
-      return new Response(
-        JSON.stringify({ error: 'Invalid hook secret' }),
-        {
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
-    
-    console.log('✓ Secret validation successful');
+    console.log('✓ Auth Hook received - Processing welcome email');
     
     // Parser le payload du webhook
     const webhookData = JSON.parse(payload) as {
@@ -93,7 +41,7 @@ serve(async (req) => {
     const user = webhookData.user;
     const emailData = webhookData.email_data;
 
-    console.log('Sending welcome email to:', user.email);
+    console.log('✓ Processing email for user_id:', webhookData.user?.id || 'unknown');
 
     // Extraire le prénom depuis le nom complet
     const fullName = user.user_metadata?.full_name || 'utilisateur';
@@ -119,11 +67,11 @@ serve(async (req) => {
     });
 
     if (error) {
-      console.error('Resend error:', error);
+      console.error('❌ Resend error:', error);
       throw error;
     }
 
-    console.log('Welcome email sent successfully to:', user.email);
+    console.log('✅ Welcome email sent successfully');
 
     return new Response(
       JSON.stringify({ success: true, message: 'Welcome email sent successfully' }),

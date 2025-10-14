@@ -34,12 +34,12 @@ serve(async (req) => {
       );
     }
     
-    // SECURITY: Vérifier l'authentification du Auth Hook (Authorization Bearer)
+    // SECURITY: Vérifier l'authentification du Auth Hook
     const authHeader = headers['authorization'];
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.error('Missing or invalid Authorization header');
+    if (!authHeader) {
+      console.error('Missing Authorization header');
       return new Response(
-        JSON.stringify({ error: 'Missing or invalid Authorization header' }),
+        JSON.stringify({ error: 'Missing Authorization header' }),
         {
           status: 401,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -47,9 +47,13 @@ serve(async (req) => {
       );
     }
     
-    const token = authHeader.replace('Bearer ', '');
+    // Support both "Bearer <secret>" and direct "<secret>" formats
+    const token = authHeader.startsWith('Bearer ') 
+      ? authHeader.replace('Bearer ', '') 
+      : authHeader;
+    
     if (token !== hookSecret) {
-      console.error('Invalid hook secret');
+      console.error('Invalid hook secret. Expected format: v1,whsec_...');
       return new Response(
         JSON.stringify({ error: 'Invalid hook secret' }),
         {

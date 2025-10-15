@@ -60,7 +60,7 @@ serve(async (req) => {
 
     // Envoyer l'email via Resend
     const { error } = await resend.emails.send({
-      from: 'Djassa <onboarding@resend.dev>',
+      from: 'Djassa <djassa@djassa.tech>',
       to: [user.email],
       subject: 'Bienvenue sur Djassa – Votre aventure e-commerce commence maintenant 🚀',
       html,
@@ -68,10 +68,21 @@ serve(async (req) => {
 
     if (error) {
       console.error('❌ Resend error:', error);
-      throw error;
+      // Ne pas bloquer l'inscription si l'email échoue
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'User created successfully, but email sending failed',
+          emailError: error.message 
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
-    console.log('✅ Email envoyé avec succès');
+    console.log('✅ Email envoyé avec succès à:', user.email);
 
     return new Response(
       JSON.stringify({ success: true, message: 'Welcome email sent successfully' }),
@@ -81,14 +92,16 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Error in send-welcome-email function:', error);
+    console.error('❌ Error in send-welcome-email function:', error);
+    // Toujours retourner 200 pour ne pas bloquer l'inscription
     return new Response(
       JSON.stringify({
+        success: true,
+        message: 'User created successfully, but email sending encountered an error',
         error: error.message,
-        success: false,
       }),
       {
-        status: 500,
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );

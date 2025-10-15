@@ -23,60 +23,43 @@ export const WelcomeEmail = ({
 }: WelcomeEmailProps) => (
   <Html>
     <Head />
-    <Preview>🎉 Bienvenue sur Djassa – Confirmez votre adresse e-mail</Preview>
+    <Preview>Bienvenue sur Djassa – Votre aventure e-commerce commence maintenant 🚀</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Bienvenue sur Djassa !</Heading>
+        <Heading style={h1}>Bienvenue sur Djassa 🚀</Heading>
         
         <Text style={text}>
           Bonjour <strong>{firstName}</strong>,
         </Text>
 
         <Text style={text}>
-          Merci de vous être inscrit(e) sur <strong>Djassa</strong>, la plateforme de commerce en ligne qui connecte acheteurs et vendeurs autour de milliers de produits.
+          Bienvenue sur <strong>Djassa</strong>, la marketplace #1 en Côte d'Ivoire !
         </Text>
 
         <Text style={text}>
-          Vous êtes désormais à un clic de :
-        </Text>
-
-        <Section style={benefitsList}>
-          <Text style={benefitItem}>✅ Profiter d'offres exclusives</Text>
-          <Text style={benefitItem}>🛒 Explorer des catégories comme mode, maison, beauté, électronique, et bien plus</Text>
-          <Text style={benefitItem}>🏪 Créer et gérer votre propre boutique en ligne</Text>
-        </Section>
-
-        <Text style={text}>
-          👉 Veuillez confirmer votre adresse e-mail pour activer votre compte :
+          Vous pouvez dès maintenant explorer nos offres, acheter ou créer votre propre boutique gratuitement pendant 28 jours.
         </Text>
 
         <Section style={buttonContainer}>
-          <Button href={confirmationUrl} style={button}>
-            🔗 Confirmer mon adresse e-mail
+          <Button href="https://djassa.tech/login" style={button}>
+            🔗 Accédez à votre compte
           </Button>
         </Section>
 
-        <Text style={smallText}>
-          Si le bouton ne fonctionne pas, copiez-collez ce lien dans votre navigateur :
+        <Text style={text}>
+          Si vous avez des questions, notre équipe reste disponible à tout moment :
         </Text>
-        <Text style={urlText}>{confirmationUrl}</Text>
 
-        <Section style={securitySection}>
-          <Text style={securityText}>
-            🔐 <strong>Sécurité :</strong><br />
-            Si vous n'êtes pas à l'origine de cette inscription, ignorez simplement ce message ou contactez notre support.
+        <Section style={contactSection}>
+          <Text style={contactText}>
+            📧 <Link href="mailto:djassa@djassa.tech" style={link}>djassa@djassa.tech</Link><br />
+            📱 WhatsApp : <Link href="https://wa.me/2250788281222" style={link}>+225 07 88 28 12 22</Link>
           </Text>
         </Section>
 
-        <Text style={footer}>
-          💼 <strong>Djassa</strong> – Achetez. Vendez. Gagnez.<br />
-          📧 <Link href="mailto:contact@djassa.tech" style={link}>contact@djassa.tech</Link><br />
-          🌐 <Link href="https://djassa.tech" target="_blank" style={link}>www.djassa.tech</Link>
-        </Text>
-
         <Text style={signature}>
-          Merci et bienvenue dans la communauté Djassa !<br />
-          — L'équipe Djassa 💛
+          Merci de faire partie de l'aventure Djassa 💛<br /><br />
+          — L'équipe Djassa
         </Text>
       </Container>
     </Body>
@@ -159,18 +142,19 @@ const urlText = {
   wordBreak: 'break-all' as const,
 }
 
-const securitySection = {
+const contactSection = {
   padding: '20px',
   backgroundColor: '#f9f9f9',
   borderRadius: '8px',
   margin: '20px',
 }
 
-const securityText = {
-  color: '#555',
-  fontSize: '14px',
-  lineHeight: '22px',
+const contactText = {
+  color: '#333',
+  fontSize: '15px',
+  lineHeight: '26px',
   margin: '0',
+  textAlign: 'center' as const,
 }
 
 const footer = {

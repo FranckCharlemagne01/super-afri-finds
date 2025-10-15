@@ -1,11 +1,13 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { Webhook } from 'https://esm.sh/standardwebhooks@1.0.0';
 import React from 'npm:react@18.3.1';
 import { Resend } from 'npm:resend@4.0.0';
 import { renderAsync } from 'npm:@react-email/components@0.0.22';
 import { WelcomeEmail } from './_templates/welcome-email.tsx';
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string);
+const hookSecret = Deno.env.get('SEND_WELCOME_EMAIL_HOOK_SECRET') as string;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,11 +21,13 @@ serve(async (req) => {
 
   try {
     const payload = await req.text();
+    const headers = Object.fromEntries(req.headers);
     
     console.log('✓ Auth Hook received - Processing welcome email');
     
-    // Parser le payload du webhook
-    const webhookData = JSON.parse(payload) as {
+    // Vérifier la signature du webhook avec standardwebhooks
+    const wh = new Webhook(hookSecret);
+    const webhookData = wh.verify(payload, headers) as {
       user: {
         email: string;
         user_metadata?: {
@@ -60,7 +64,7 @@ serve(async (req) => {
 
     // Envoyer l'email via Resend
     const { error } = await resend.emails.send({
-      from: 'Djassa <contact@djassa.tech>',
+      from: 'Djassa <djassa@djassa.tech>',
       to: [user.email],
       subject: '🎉 Bienvenue sur Djassa – Confirmez votre adresse e-mail',
       html,

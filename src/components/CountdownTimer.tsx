@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Clock } from 'lucide-react';
+import { Flame } from 'lucide-react';
 
 interface CountdownTimerProps {
   expiryDate?: string;
@@ -88,16 +88,18 @@ export const CountdownTimer = ({
 
   // Couleurs selon l'urgence
   const urgencyColors = {
-    high: 'text-red-600 bg-red-50 border-red-200',
-    medium: 'text-orange-600 bg-orange-50 border-orange-200',
-    low: 'text-green-600 bg-green-50 border-green-200'
+    high: 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border-red-300 dark:border-red-800',
+    medium: 'text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30 border-orange-300 dark:border-orange-800',
+    low: 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/30 border-green-300 dark:border-green-800'
   };
 
+  const iconAnimation = urgencyLevel === 'high' ? 'animate-pulse' : '';
+
   return (
-    <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md border transition-all duration-300 ${urgencyColors[urgencyLevel]} ${className}`}>
-      <Clock className="w-3.5 h-3.5 animate-pulse" />
-      <span className="font-semibold text-xs">
-        {endTime ? timeLeft : `⏳ Expire dans ${timeLeft}`}
+    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border-2 transition-all duration-300 ${urgencyColors[urgencyLevel]} ${className}`}>
+      <Flame className={`w-4 h-4 ${iconAnimation}`} />
+      <span className="font-bold text-xs whitespace-nowrap">
+        {endTime ? timeLeft : `Expire dans ${timeLeft}`}
       </span>
     </div>
   );

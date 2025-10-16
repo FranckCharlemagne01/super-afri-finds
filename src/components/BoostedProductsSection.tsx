@@ -142,11 +142,9 @@ export const BoostedProductsSection = () => {
                 
                 {/* Compte à rebours visible sous la carte */}
                 {product.boosted_until && (
-                  <div className="mt-2 flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 px-3 py-2 rounded-lg border border-amber-200 dark:border-amber-800">
-                    <Flame className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                  <div className="mt-2 flex justify-center">
                     <CountdownTimer 
-                      expiryDate={product.boosted_until} 
-                      className="text-xs font-semibold text-amber-700 dark:text-amber-300" 
+                      expiryDate={product.boosted_until}
                     />
                   </div>
                 )}
@@ -214,11 +212,9 @@ export const BoostedProductsSection = () => {
                   
                   {/* Compte à rebours visible sous la carte */}
                   {product.boosted_until && (
-                    <div className="mt-2 flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 px-3 py-2 rounded-lg border border-amber-200 dark:border-amber-800">
-                      <Flame className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                    <div className="mt-2 flex justify-center">
                       <CountdownTimer 
-                        expiryDate={product.boosted_until} 
-                        className="text-xs font-semibold text-amber-700 dark:text-amber-300" 
+                        expiryDate={product.boosted_until}
                       />
                     </div>
                   )}

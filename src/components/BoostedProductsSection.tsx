@@ -35,6 +35,13 @@ export const BoostedProductsSection = () => {
 
   useEffect(() => {
     fetchBoostedProducts();
+    
+    // Rafraîchir toutes les 30 secondes pour retirer les produits expirés
+    const interval = setInterval(() => {
+      fetchBoostedProducts();
+    }, 30000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const fetchBoostedProducts = async () => {

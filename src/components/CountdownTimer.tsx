@@ -17,25 +17,20 @@ export const CountdownTimer = ({
   className = '' 
 }: CountdownTimerProps) => {
   const [timeLeft, setTimeLeft] = useState<string>('');
+  const [urgencyLevel, setUrgencyLevel] = useState<'high' | 'medium' | 'low'>('low');
 
   useEffect(() => {
     const calculateTimeLeft = () => {
       const now = new Date().getTime();
       const expiry = expiryDate ? new Date(expiryDate).getTime() : endTime?.getTime();
       
-      console.log('CountdownTimer - expiryDate:', expiryDate, 'endTime:', endTime, 'expiry:', expiry, 'now:', now);
-      
       if (!expiry) {
-        console.log('CountdownTimer - No expiry date provided');
         return;
       }
       
       const difference = expiry - now;
-      
-      console.log('CountdownTimer - difference:', difference);
 
       if (difference <= 0) {
-        console.log('CountdownTimer - Product expired');
         setTimeLeft('Expiré');
         if (onExpire) onExpire();
         return;
@@ -45,6 +40,16 @@ export const CountdownTimer = ({
       const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+      // Déterminer le niveau d'urgence
+      const totalHours = difference / (1000 * 60 * 60);
+      if (totalHours <= 6) {
+        setUrgencyLevel('high');
+      } else if (totalHours <= 24) {
+        setUrgencyLevel('medium');
+      } else {
+        setUrgencyLevel('low');
+      }
 
       // Pour le format endTime (HeroSection), afficher les secondes
       if (endTime) {
@@ -56,32 +61,44 @@ export const CountdownTimer = ({
           setTimeLeft(`${minutes}m ${seconds}s`);
         }
       } else {
-        // Pour le format expiryDate (boost), ne pas afficher les secondes
+        // Pour le format expiryDate (boost), afficher un format lisible
         if (days > 0) {
-          setTimeLeft(compact ? `${days}j ${hours}h` : `${days} jour${days > 1 ? 's' : ''} ${hours}h`);
+          setTimeLeft(`${days}j ${hours}h ${minutes}m`);
         } else if (hours > 0) {
-          setTimeLeft(compact ? `${hours}h ${minutes}m` : `${hours}h ${minutes}m`);
+          setTimeLeft(`${hours}h ${minutes}m`);
         } else {
-          setTimeLeft(compact ? `${minutes}m` : `${minutes} minute${minutes > 1 ? 's' : ''}`);
+          setTimeLeft(`${minutes}m ${seconds}s`);
         }
       }
     };
 
     calculateTimeLeft();
-    // Update every second for real-time countdown
     const interval = setInterval(calculateTimeLeft, 1000);
 
     return () => clearInterval(interval);
   }, [expiryDate, endTime, onExpire, compact]);
 
-  if (!timeLeft || timeLeft === 'Expiré') {
+  if (timeLeft === 'Expiré') {
     return null;
   }
 
+  if (!timeLeft) {
+    return null;
+  }
+
+  // Couleurs selon l'urgence
+  const urgencyColors = {
+    high: 'text-red-600 bg-red-50 border-red-200',
+    medium: 'text-orange-600 bg-orange-50 border-orange-200',
+    low: 'text-green-600 bg-green-50 border-green-200'
+  };
+
   return (
-    <div className={`flex items-center gap-1.5 ${className}`}>
-      <Clock className="w-3.5 h-3.5" />
-      <span>{endTime ? timeLeft : `Expire dans ${timeLeft}`}</span>
+    <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md border transition-all duration-300 ${urgencyColors[urgencyLevel]} ${className}`}>
+      <Clock className="w-3.5 h-3.5 animate-pulse" />
+      <span className="font-semibold text-xs">
+        {endTime ? timeLeft : `⏳ Expire dans ${timeLeft}`}
+      </span>
     </div>
   );
 };

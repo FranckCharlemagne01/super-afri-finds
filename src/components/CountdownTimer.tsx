@@ -23,11 +23,19 @@ export const CountdownTimer = ({
       const now = new Date().getTime();
       const expiry = expiryDate ? new Date(expiryDate).getTime() : endTime?.getTime();
       
-      if (!expiry) return;
+      console.log('CountdownTimer - expiryDate:', expiryDate, 'endTime:', endTime, 'expiry:', expiry, 'now:', now);
+      
+      if (!expiry) {
+        console.log('CountdownTimer - No expiry date provided');
+        return;
+      }
       
       const difference = expiry - now;
+      
+      console.log('CountdownTimer - difference:', difference);
 
       if (difference <= 0) {
+        console.log('CountdownTimer - Product expired');
         setTimeLeft('Expiré');
         if (onExpire) onExpire();
         return;

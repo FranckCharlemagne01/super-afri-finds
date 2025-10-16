@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2, Eye, EyeOff, Zap } from 'lucide-react';
 import { SmoothListSkeleton } from '@/components/ui/smooth-skeleton';
+import { CountdownTimer } from './CountdownTimer';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -196,11 +197,16 @@ export const SellerProducts = ({ products, loading, onEdit, onDelete, onBoost, t
                 </Button>
               )}
               
-              {isProductBoosted(product) && (
-                <div className="text-xs text-center text-muted-foreground">
-                  <Zap className="w-3 h-3 inline mr-1" />
-                  Boosté jusqu'au {new Date(product.boosted_until!).toLocaleDateString()}
-                </div>
+              {isProductBoosted(product) && product.boosted_until && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled
+                  className="w-full"
+                >
+                  <Zap className="w-4 h-4 mr-1" />
+                  <CountdownTimer expiryDate={product.boosted_until} compact className="text-xs" />
+                </Button>
               )}
             </div>
           </CardContent>

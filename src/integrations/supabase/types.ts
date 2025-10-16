@@ -654,7 +654,13 @@ export type Database = {
         Returns: string
       }
       boost_product: {
-        Args: { _product_id: string; _seller_id: string }
+        Args:
+          | {
+              _duration_hours?: number
+              _product_id: string
+              _seller_id: string
+            }
+          | { _product_id: string; _seller_id: string }
         Returns: boolean
       }
       can_publish_products: {

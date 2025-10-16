@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard } from "./ProductCard";
+import { CountdownTimer } from "./CountdownTimer";
 import {
   Carousel,
   CarouselContent,
@@ -44,7 +45,7 @@ export const BoostedProductsSection = () => {
         .eq("is_active", true)
         .eq("is_boosted", true)
         .gte("boosted_until", new Date().toISOString())
-        .order("boosted_at", { ascending: false })
+        .order("boosted_until", { ascending: true }) // Ceux qui expirent bientôt d'abord
         .limit(10);
 
       if (error) throw error;
@@ -95,10 +96,10 @@ export const BoostedProductsSection = () => {
           </div>
           <div>
             <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-              Produits Vedettes
+              Offres Spéciales
             </h2>
             <p className="text-sm text-muted-foreground">
-              Mis en avant par nos vendeurs
+              Produits boostés par nos vendeurs
             </p>
           </div>
         </div>
@@ -106,10 +107,17 @@ export const BoostedProductsSection = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {boostedProducts.map((product) => (
             <div key={product.id} className="group relative hover-scale">
-              {/* Badge Vedette */}
-              <div className="absolute top-2 right-2 z-10 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-xl flex items-center gap-1.5">
-                <Star className="w-3.5 h-3.5 fill-current" />
-                Vedette
+              {/* Badge En vedette avec countdown */}
+              <div className="absolute top-2 right-2 z-10 space-y-1">
+                <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-xl flex items-center gap-1.5">
+                  <Star className="w-3.5 h-3.5 fill-current" />
+                  En vedette
+                </div>
+                {product.boosted_until && (
+                  <div className="bg-background/95 backdrop-blur-sm text-foreground px-2.5 py-1 rounded-full text-xs font-medium shadow-lg">
+                    <CountdownTimer expiryDate={product.boosted_until} compact className="text-[10px]" />
+                  </div>
+                )}
               </div>
               <div className="relative">
                 <ProductCard
@@ -145,10 +153,10 @@ export const BoostedProductsSection = () => {
         </div>
         <div>
           <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-            Produits Vedettes
+            Offres Spéciales
           </h2>
           <p className="text-sm text-muted-foreground">
-            Mis en avant par nos vendeurs • {boostedProducts.length} produits
+            Produits boostés par nos vendeurs • {boostedProducts.length} produits
           </p>
         </div>
       </div>
@@ -164,10 +172,17 @@ export const BoostedProductsSection = () => {
           {boostedProducts.map((product) => (
             <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
               <div className="group relative hover-scale">
-                {/* Badge Vedette */}
-                <div className="absolute top-2 right-2 z-10 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-xl flex items-center gap-1.5">
-                  <Star className="w-3.5 h-3.5 fill-current" />
-                  Vedette
+                {/* Badge En vedette avec countdown */}
+                <div className="absolute top-2 right-2 z-10 space-y-1">
+                  <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-xl flex items-center gap-1.5">
+                    <Star className="w-3.5 h-3.5 fill-current" />
+                    En vedette
+                  </div>
+                  {product.boosted_until && (
+                    <div className="bg-background/95 backdrop-blur-sm text-foreground px-2.5 py-1 rounded-full text-xs font-medium shadow-lg">
+                      <CountdownTimer expiryDate={product.boosted_until} compact className="text-[10px]" />
+                    </div>
+                  )}
                 </div>
                 <div className="relative">
                   <ProductCard

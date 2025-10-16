@@ -26,8 +26,15 @@ export const ProductBoostDialog = ({
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [selectedDuration, setSelectedDuration] = useState<number>(168); // Default 7 days
 
   const BOOST_COST = 2;
+
+  const durationOptions = [
+    { label: '24 heures', hours: 24, description: 'Boost court pour un effet immédiat' },
+    { label: '3 jours', hours: 72, description: 'Idéal pour les promotions courtes' },
+    { label: '7 jours', hours: 168, description: 'Maximum de visibilité pendant une semaine' },
+  ];
 
   const handleBoost = async () => {
     if (!user) return;
@@ -47,14 +54,16 @@ export const ProductBoostDialog = ({
       const { data, error } = await supabase.rpc('boost_product', {
         _seller_id: user.id,
         _product_id: productId,
+        _duration_hours: selectedDuration,
       });
 
       if (error) throw error;
 
       if (data) {
+        const durationLabel = durationOptions.find(d => d.hours === selectedDuration)?.label || '7 jours';
         toast({
           title: 'Produit boosté !',
-          description: `"${productTitle}" sera mis en avant pendant 7 jours dans les Meilleurs choix.`,
+          description: `"${productTitle}" sera mis en avant pendant ${durationLabel} dans les Offres Spéciales.`,
         });
         onBoostComplete();
         onOpenChange(false);
@@ -100,6 +109,36 @@ export const ProductBoostDialog = ({
 
           <div className="space-y-4">
             <h4 className="text-sm font-semibold flex items-center gap-2">
+              <Clock className="h-4 w-4 text-primary" />
+              Choisissez la durée du boost
+            </h4>
+            <div className="space-y-2">
+              {durationOptions.map((option) => (
+                <button
+                  key={option.hours}
+                  onClick={() => setSelectedDuration(option.hours)}
+                  className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
+                    selectedDuration === option.hours
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border bg-accent/30 hover:border-primary/50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-semibold">{option.label}</span>
+                    {selectedDuration === option.hours && (
+                      <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                        <span className="text-white text-xs">✓</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">{option.description}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold flex items-center gap-2">
               <span className="text-lg">⚡</span>
               Avantages du boost
             </h4>
@@ -111,18 +150,7 @@ export const ProductBoostDialog = ({
                 <div>
                   <p className="font-semibold text-sm">Meilleur positionnement</p>
                   <p className="text-xs text-muted-foreground">
-                    Affiché en priorité dans "Meilleurs choix" et "Actualités"
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-4 p-3 rounded-xl bg-accent/50 border border-border">
-                <div className="bg-primary/10 p-2 rounded-lg flex-shrink-0">
-                  <Clock className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-semibold text-sm">Durée de 7 jours</p>
-                  <p className="text-xs text-muted-foreground">
-                    Visibilité garantie pendant une semaine complète
+                    Affiché en priorité dans les "Offres Spéciales"
                   </p>
                 </div>
               </div>

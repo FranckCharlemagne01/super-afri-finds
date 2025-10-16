@@ -10,7 +10,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Star, Flame } from "lucide-react";
+import { Star } from "lucide-react";
 
 interface Product {
   id: string;

@@ -107,18 +107,14 @@ export const BoostedProductsSection = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {boostedProducts.map((product) => (
             <div key={product.id} className="group relative hover-scale">
-              {/* Badge En vedette avec countdown */}
-              <div className="absolute top-2 right-2 z-10 space-y-1">
+              {/* Badge En vedette */}
+              <div className="absolute top-2 right-2 z-10">
                 <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-xl flex items-center gap-1.5">
                   <Star className="w-3.5 h-3.5 fill-current" />
-                  En vedette
+                  Boosté
                 </div>
-                {product.boosted_until && (
-                  <div className="bg-background/95 backdrop-blur-sm text-foreground px-2.5 py-1 rounded-full text-xs font-medium shadow-lg">
-                    <CountdownTimer expiryDate={product.boosted_until} compact className="text-[10px]" />
-                  </div>
-                )}
               </div>
+              
               <div className="relative">
                 <ProductCard
                   id={product.id}
@@ -136,6 +132,17 @@ export const BoostedProductsSection = () => {
                   isBoosted={product.is_boosted}
                   boostedUntil={product.boosted_until || undefined}
                 />
+                
+                {/* Compte à rebours visible sous la carte */}
+                {product.boosted_until && (
+                  <div className="mt-2 flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 px-3 py-2 rounded-lg border border-amber-200 dark:border-amber-800">
+                    <Flame className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                    <CountdownTimer 
+                      expiryDate={product.boosted_until} 
+                      className="text-xs font-semibold text-amber-700 dark:text-amber-300" 
+                    />
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -172,18 +179,14 @@ export const BoostedProductsSection = () => {
           {boostedProducts.map((product) => (
             <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
               <div className="group relative hover-scale">
-                {/* Badge En vedette avec countdown */}
-                <div className="absolute top-2 right-2 z-10 space-y-1">
+                {/* Badge Boosté */}
+                <div className="absolute top-2 right-2 z-10">
                   <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-xl flex items-center gap-1.5">
                     <Star className="w-3.5 h-3.5 fill-current" />
-                    En vedette
+                    Boosté
                   </div>
-                  {product.boosted_until && (
-                    <div className="bg-background/95 backdrop-blur-sm text-foreground px-2.5 py-1 rounded-full text-xs font-medium shadow-lg">
-                      <CountdownTimer expiryDate={product.boosted_until} compact className="text-[10px]" />
-                    </div>
-                  )}
                 </div>
+                
                 <div className="relative">
                   <ProductCard
                     id={product.id}
@@ -201,6 +204,17 @@ export const BoostedProductsSection = () => {
                     isBoosted={product.is_boosted}
                     boostedUntil={product.boosted_until || undefined}
                   />
+                  
+                  {/* Compte à rebours visible sous la carte */}
+                  {product.boosted_until && (
+                    <div className="mt-2 flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 px-3 py-2 rounded-lg border border-amber-200 dark:border-amber-800">
+                      <Flame className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                      <CountdownTimer 
+                        expiryDate={product.boosted_until} 
+                        className="text-xs font-semibold text-amber-700 dark:text-amber-300" 
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </CarouselItem>

@@ -60,8 +60,8 @@ export const CountdownTimer = ({
     };
 
     calculateTimeLeft();
-    // Update every second for endTime, every minute for expiryDate
-    const interval = setInterval(calculateTimeLeft, endTime ? 1000 : 60000);
+    // Update every second for real-time countdown
+    const interval = setInterval(calculateTimeLeft, 1000);
 
     return () => clearInterval(interval);
   }, [expiryDate, endTime, onExpire, compact]);

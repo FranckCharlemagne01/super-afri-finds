@@ -306,6 +306,7 @@ export type Database = {
           is_active: boolean | null
           is_boosted: boolean | null
           is_flash_sale: boolean | null
+          is_sold: boolean | null
           original_price: number | null
           price: number
           rating: number | null
@@ -332,6 +333,7 @@ export type Database = {
           is_active?: boolean | null
           is_boosted?: boolean | null
           is_flash_sale?: boolean | null
+          is_sold?: boolean | null
           original_price?: number | null
           price: number
           rating?: number | null
@@ -358,6 +360,7 @@ export type Database = {
           is_active?: boolean | null
           is_boosted?: boolean | null
           is_flash_sale?: boolean | null
+          is_sold?: boolean | null
           original_price?: number | null
           price?: number
           rating?: number | null

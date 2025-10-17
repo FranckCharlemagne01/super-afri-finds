@@ -28,6 +28,8 @@ interface ProductCardProps {
   boostedAt?: string;
   shop_slug?: string;
   shop_name?: string;
+  isSold?: boolean;
+  stockQuantity?: number;
 }
 
 export const ProductCard = ({
@@ -48,6 +50,8 @@ export const ProductCard = ({
   boostedAt,
   shop_slug,
   shop_name,
+  isSold = false,
+  stockQuantity = 0,
 }: ProductCardProps) => {
   const { addToCart } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
@@ -69,6 +73,7 @@ export const ProductCard = ({
   };
 
   const isActiveBoosted = isBoosted && boostedUntil && new Date(boostedUntil) > new Date();
+  const isProductSold = isSold || stockQuantity === 0;
 
   return (
     <Card className={`relative overflow-hidden cursor-pointer border-0 shadow-md transition-all duration-500 animate-fade-in ${
@@ -83,23 +88,28 @@ export const ProductCard = ({
       
       {/* Badges */}
       <div className="absolute top-1 sm:top-2 left-1 sm:left-2 z-10 flex flex-col gap-1">
-        {isActiveBoosted && (
+        {isProductSold && (
+          <Badge className="bg-destructive text-destructive-foreground text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-1.5 font-bold shadow-lg">
+            🔴 VENDU
+          </Badge>
+        )}
+        {!isProductSold && isActiveBoosted && (
           <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs px-2 sm:px-2.5 py-0.5 sm:py-1 font-semibold shadow-lg animate-pulse flex items-center gap-1">
             <span className="text-xs">⭐</span>
             En vedette
           </Badge>
         )}
-        {badge && !isActiveBoosted && (
+        {!isProductSold && badge && !isActiveBoosted && (
           <Badge className="bg-success text-success-foreground text-xs px-1.5 sm:px-2 py-0.5 sm:py-1">
             {badge}
           </Badge>
         )}
-        {isFlashSale && (
+        {!isProductSold && isFlashSale && (
           <Badge className="gradient-primary text-white text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 animate-pulse-promo">
             ⚡ FLASH
           </Badge>
         )}
-        {discount > 0 && (
+        {!isProductSold && discount > 0 && (
           <Badge className="bg-promo text-promo-foreground text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 font-bold">
             -{discount}%
           </Badge>
@@ -211,9 +221,10 @@ export const ProductCard = ({
               size="sm" 
               className="w-full text-xs min-h-[44px]"
               onClick={handleAddToCart}
+              disabled={isProductSold}
             >
               <ShoppingCart className="w-3 h-3 mr-1" />
-              Ajouter au panier
+              {isProductSold ? 'Épuisé' : 'Ajouter au panier'}
             </Button>
             
             <div onClick={(e) => e.stopPropagation()}>
@@ -241,6 +252,7 @@ export const ProductCard = ({
               size="sm" 
               className="flex-1 text-xs p-2 min-h-[44px] min-w-[44px]"
               onClick={handleAddToCart}
+              disabled={isProductSold}
             >
               <ShoppingCart className="w-4 h-4" />
             </Button>

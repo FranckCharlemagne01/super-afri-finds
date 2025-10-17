@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { User, Phone, MapPin, Package, DollarSign, Calendar, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { DeliveryConfirmationDialog } from '@/components/DeliveryConfirmationDialog';
 
 interface Order {
   id: string;
@@ -53,10 +54,52 @@ const statusLabels = {
 export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }: OrderDetailDialogProps) => {
   const { toast } = useToast();
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [showDeliveryConfirm, setShowDeliveryConfirm] = useState(false);
+  const [productStock, setProductStock] = useState(0);
 
   if (!order) return null;
 
   const updateOrderStatus = async (newStatus: string) => {
+    // Si le statut passe à "delivered", afficher la modale de confirmation
+    if (newStatus === 'delivered') {
+      setUpdatingStatus(true);
+      try {
+        // Récupérer le stock du produit
+        const { data: productData, error: productError } = await supabase
+          .from('products')
+          .select('stock_quantity')
+          .eq('id', order.product_id)
+          .single();
+
+        if (productError) throw productError;
+
+        setProductStock(productData?.stock_quantity || 0);
+        
+        // D'abord mettre à jour le statut de la commande
+        const { error } = await supabase
+          .rpc('update_order_status', {
+            order_id: order.id,
+            new_status: newStatus
+          });
+
+        if (error) throw error;
+
+        // Puis afficher la modale de confirmation
+        setShowDeliveryConfirm(true);
+        setUpdatingStatus(false);
+      } catch (error) {
+        console.error('Error updating order status:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de mettre à jour le statut",
+          variant: "destructive",
+        });
+        setUpdatingStatus(false);
+      }
+      return;
+    }
+
+    // Pour les autres statuts, mise à jour normale
     setUpdatingStatus(true);
     try {
       const { error } = await supabase
@@ -91,7 +134,8 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xs sm:max-w-2xl max-h-[90vh] overflow-y-auto mx-4">
         <DialogHeader>
           <DialogTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -266,5 +310,18 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
         </div>
       </DialogContent>
     </Dialog>
+
+      <DeliveryConfirmationDialog
+        open={showDeliveryConfirm}
+        onOpenChange={setShowDeliveryConfirm}
+        productId={order.product_id}
+        productTitle={order.product_title}
+        currentStock={productStock}
+        onConfirm={() => {
+          onOrderUpdated();
+          onOpenChange(false);
+        }}
+      />
+    </>
   );
 };

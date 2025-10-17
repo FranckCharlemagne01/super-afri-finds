@@ -21,25 +21,37 @@ serve(async (req) => {
     const payload = await req.text();
     
     console.log('✓ Auth Hook received - Processing welcome email');
+    console.log('📦 Payload received:', payload);
     
-    // Parser le payload JSON directement (pas de validation de signature nécessaire pour les Auth Hooks internes)
+    // Vérifier que le payload n'est pas vide
+    if (!payload || payload.trim() === '') {
+      console.error('❌ Empty payload received');
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Empty payload received from Auth Hook' 
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+    
+    // Parser le payload JSON des Auth Hooks Supabase
     const webhookData = JSON.parse(payload) as {
+      type: string;
       user: {
+        id: string;
         email: string;
         user_metadata?: {
           full_name?: string;
         };
       };
-      email_data: {
-        token: string;
-        token_hash: string;
-        redirect_to: string;
-        email_action_type: string;
-      };
     };
     
     const user = webhookData.user;
-    const userId = webhookData.user?.id;
+    const userId = user.id;
 
     console.log('✓ Processing email for user_id:', userId || 'unknown');
 

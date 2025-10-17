@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { ContactSellerButton } from "@/components/ContactSellerButton";
 import { QuickOrderDialog } from "@/components/QuickOrderDialog";
+import { CountdownTimer } from "@/components/CountdownTimer";
 
 interface ProductCardProps {
   id?: string;
@@ -169,6 +170,13 @@ export const ProductCard = ({
             {originalPrice.toLocaleString()} FCFA
           </span>
         </div>
+
+        {/* Countdown Timer for boosted products */}
+        {isActiveBoosted && boostedUntil && (
+          <div className="flex justify-center py-1">
+            <CountdownTimer expiryDate={boostedUntil} />
+          </div>
+        )}
 
         {/* Boutique du vendeur */}
         {shop_slug && shop_name && (

@@ -114,41 +114,22 @@ export const BoostedProductsSection = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {boostedProducts.map((product) => (
             <div key={product.id} className="group relative hover-scale">
-              {/* Badge En vedette */}
-              <div className="absolute top-2 right-2 z-10">
-                <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-xl flex items-center gap-1.5">
-                  <Star className="w-3.5 h-3.5 fill-current" />
-                  Boosté
-                </div>
-              </div>
-              
-              <div className="relative">
-                <ProductCard
-                  id={product.id}
-                  image={product.images?.[0] || "/placeholder.svg"}
-                  title={product.title}
-                  originalPrice={product.original_price || undefined}
-                  salePrice={product.price}
-                  discount={product.discount_percentage || undefined}
-                  rating={product.rating}
-                  reviews={product.reviews_count}
-                  badge={product.badge || undefined}
-                  isFlashSale={product.is_flash_sale}
-                  seller_id={product.seller_id}
-                  videoUrl={product.video_url || undefined}
-                  isBoosted={product.is_boosted}
-                  boostedUntil={product.boosted_until || undefined}
-                />
-                
-                {/* Compte à rebours visible sous la carte */}
-                {product.boosted_until && (
-                  <div className="mt-2 flex justify-center">
-                    <CountdownTimer 
-                      expiryDate={product.boosted_until}
-                    />
-                  </div>
-                )}
-              </div>
+              <ProductCard
+                id={product.id}
+                image={product.images?.[0] || "/placeholder.svg"}
+                title={product.title}
+                originalPrice={product.original_price || undefined}
+                salePrice={product.price}
+                discount={product.discount_percentage || undefined}
+                rating={product.rating}
+                reviews={product.reviews_count}
+                badge={product.badge || undefined}
+                isFlashSale={product.is_flash_sale}
+                seller_id={product.seller_id}
+                videoUrl={product.video_url || undefined}
+                isBoosted={product.is_boosted}
+                boostedUntil={product.boosted_until || undefined}
+              />
             </div>
           ))}
         </div>
@@ -184,41 +165,22 @@ export const BoostedProductsSection = () => {
           {boostedProducts.map((product) => (
             <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
               <div className="group relative hover-scale">
-                {/* Badge Boosté */}
-                <div className="absolute top-2 right-2 z-10">
-                  <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-xl flex items-center gap-1.5">
-                    <Star className="w-3.5 h-3.5 fill-current" />
-                    Boosté
-                  </div>
-                </div>
-                
-                <div className="relative">
-                  <ProductCard
-                    id={product.id}
-                    image={product.images?.[0] || "/placeholder.svg"}
-                    title={product.title}
-                    originalPrice={product.original_price || undefined}
-                    salePrice={product.price}
-                    discount={product.discount_percentage || undefined}
-                    rating={product.rating}
-                    reviews={product.reviews_count}
-                    badge={product.badge || undefined}
-                    isFlashSale={product.is_flash_sale}
-                    seller_id={product.seller_id}
-                    videoUrl={product.video_url || undefined}
-                    isBoosted={product.is_boosted}
-                    boostedUntil={product.boosted_until || undefined}
-                  />
-                  
-                  {/* Compte à rebours visible sous la carte */}
-                  {product.boosted_until && (
-                    <div className="mt-2 flex justify-center">
-                      <CountdownTimer 
-                        expiryDate={product.boosted_until}
-                      />
-                    </div>
-                  )}
-                </div>
+                <ProductCard
+                  id={product.id}
+                  image={product.images?.[0] || "/placeholder.svg"}
+                  title={product.title}
+                  originalPrice={product.original_price || undefined}
+                  salePrice={product.price}
+                  discount={product.discount_percentage || undefined}
+                  rating={product.rating}
+                  reviews={product.reviews_count}
+                  badge={product.badge || undefined}
+                  isFlashSale={product.is_flash_sale}
+                  seller_id={product.seller_id}
+                  videoUrl={product.video_url || undefined}
+                  isBoosted={product.is_boosted}
+                  boostedUntil={product.boosted_until || undefined}
+                />
               </div>
             </CarouselItem>
           ))}

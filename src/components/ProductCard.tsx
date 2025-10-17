@@ -175,13 +175,10 @@ export const ProductCard = ({
 
         {/* Countdown Timer for boosted products */}
         {isActiveBoosted && boostedUntil && (
-          <div className="py-2">
-            <CountdownTimer 
-              expiryDate={boostedUntil} 
-              boostedAt={boostedAt}
-              showProgressBar={true}
-            />
-          </div>
+          <CountdownTimer 
+            expiryDate={boostedUntil} 
+            boostedAt={boostedAt}
+          />
         )}
 
         {/* Boutique du vendeur */}

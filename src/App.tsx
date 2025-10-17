@@ -10,6 +10,7 @@ import { SmoothSkeleton } from "@/components/ui/smooth-skeleton";
 import { lazy, Suspense } from "react";
 
 const Verify = lazy(() => import("./pages/Verify"));
+const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
 const SellerDashboard = lazy(() => import("./pages/SellerDashboard"));
@@ -55,9 +56,10 @@ const App = () => (
         <BrowserRouter>
           <Suspense fallback={<PageLoadingFallback />}>
             <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/verify" element={<Verify />} />
+          <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/verify" element={<Verify />} />
               <Route 
                 path="/seller-dashboard" 
                 element={

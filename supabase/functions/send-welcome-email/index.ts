@@ -85,8 +85,8 @@ serve(async (req) => {
       console.error('❌ Failed to save verification token');
     }
 
-    // Construire l'URL de vérification
-    const verificationUrl = `https://djassa.tech/verify?token=${verificationToken}`;
+    // Construire l'URL de vérification avec le callback Supabase
+    const verificationUrl = `https://zqskpspbyzptzjcoitwt.supabase.co/auth/v1/verify?token=${verificationToken}&type=email&redirect_to=https://djassa.tech/auth/callback`;
 
     // Générer le HTML de l'email avec React Email
     const html = await renderAsync(

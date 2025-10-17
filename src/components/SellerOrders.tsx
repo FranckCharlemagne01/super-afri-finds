@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useStableAuth } from '@/hooks/useStableAuth';
-import { useStableData } from '@/hooks/useStableData';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -51,38 +50,55 @@ export const SellerOrders = () => {
   const { toast } = useToast();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderDetailOpen, setOrderDetailOpen] = useState(false);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Utiliser useStableData pour les commandes avec gestion d'erreurs silencieuses
-  const { data: orders, loading, error, refetch } = useStableData(
-    async () => {
-      if (!user?.id) return [];
-      
+  // Fonction pour récupérer les commandes
+  const fetchOrders = useCallback(async () => {
+    if (!user?.id) return;
+    
+    try {
       const { data, error } = await supabase.rpc('get_seller_orders');
       if (error) throw error;
-      return data || [];
-    },
-    [user?.id],
-    {
-      keepPreviousData: true,
-      loadingDelay: 250,
-      debounceMs: 200
-    }
-  );
-
-  // Gestion discrète des erreurs
-  useEffect(() => {
-    if (error && !loading) {
+      setOrders(data || []);
+    } catch (error) {
       console.error('Error loading orders:', error);
-      // Ne pas afficher de toast sauf si vraiment nécessaire
-      if (!orders || orders.length === 0) {
-        toast({
-          title: "Chargement...",
-          description: "Connexion en cours, veuillez patienter",
-          variant: "default",
-        });
-      }
+    } finally {
+      setLoading(false);
     }
-  }, [error, loading, orders, toast]);
+  }, [user?.id]);
+
+  // Chargement initial
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  // 🔥 Temps réel: Écouter les nouvelles commandes et mises à jour
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel('seller-orders-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: 'orders',
+          filter: `seller_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('🔄 Realtime order change:', payload);
+          // Rafraîchir la liste des commandes
+          fetchOrders();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, fetchOrders]);
 
   const handleOrderClick = (order: Order) => {
     setSelectedOrder(order);
@@ -90,7 +106,7 @@ export const SellerOrders = () => {
   };
 
   const handleOrderUpdated = () => {
-    refetch();
+    fetchOrders();
   };
 
   const getStatusBadgeVariant = (status: string) => {

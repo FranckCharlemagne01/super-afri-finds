@@ -43,6 +43,33 @@ export const SellerMessages = () => {
     }
   }, [user]);
 
+  // 🔥 Temps réel: Écouter les nouveaux messages
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel('seller-messages-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // INSERT, UPDATE
+          schema: 'public',
+          table: 'messages',
+          filter: `recipient_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('🔄 Realtime message change:', payload);
+          // Rafraîchir la liste des messages
+          fetchMessages();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
+
   const fetchMessages = async () => {
     try {
       const { data, error } = await supabase

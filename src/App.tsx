@@ -9,7 +9,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { SmoothSkeleton } from "@/components/ui/smooth-skeleton";
 import { lazy, Suspense } from "react";
 
-// Lazy load all pages for optimal performance
+const Verify = lazy(() => import("./pages/Verify"));
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
 const SellerDashboard = lazy(() => import("./pages/SellerDashboard"));
@@ -57,6 +57,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/verify" element={<Verify />} />
               <Route 
                 path="/seller-dashboard" 
                 element={

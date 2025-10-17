@@ -39,30 +39,56 @@ serve(async (req) => {
     };
     
     const user = webhookData.user;
-    const emailData = webhookData.email_data;
+    const userId = webhookData.user?.id;
 
-    console.log('✓ Processing email for user_id:', webhookData.user?.id || 'unknown');
+    console.log('✓ Processing email for user_id:', userId || 'unknown');
 
     // Extraire le prénom depuis le nom complet
     const fullName = user.user_metadata?.full_name || 'utilisateur';
     const firstName = fullName.split(' ')[0];
 
-    // Construire l'URL de confirmation
-    const confirmationUrl = `${Deno.env.get('SUPABASE_URL') || 'https://zqskpspbyzptzjcoitwt.supabase.co'}/auth/v1/verify?token=${emailData.token_hash}&type=${emailData.email_action_type}&redirect_to=${emailData.redirect_to}`;
+    // Générer un token de vérification unique
+    const verificationToken = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+    // Sauvegarder le token dans la base de données
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') || 'https://zqskpspbyzptzjcoitwt.supabase.co';
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    const updateResponse = await fetch(`${supabaseUrl}/rest/v1/profiles?user_id=eq.${userId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': supabaseServiceKey,
+        'Authorization': `Bearer ${supabaseServiceKey}`,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        email_verification_token: verificationToken,
+        email_verification_expires_at: expiresAt.toISOString(),
+      })
+    });
+
+    if (!updateResponse.ok) {
+      console.error('❌ Failed to save verification token');
+    }
+
+    // Construire l'URL de vérification
+    const verificationUrl = `https://djassa.tech/verify?token=${verificationToken}`;
 
     // Générer le HTML de l'email avec React Email
     const html = await renderAsync(
       React.createElement(WelcomeEmail, {
         firstName,
-        confirmationUrl,
+        verificationUrl,
       })
     );
 
     // Envoyer l'email via Resend
     const { error } = await resend.emails.send({
-      from: 'Djassa <djassa@djassa.tech>',
+      from: 'Djassa <noreply@djassa.tech>',
       to: [user.email],
-      subject: 'Bienvenue sur Djassa – Votre aventure e-commerce commence maintenant 🚀',
+      subject: 'Vérifiez votre compte Djassa',
       html,
     });
 

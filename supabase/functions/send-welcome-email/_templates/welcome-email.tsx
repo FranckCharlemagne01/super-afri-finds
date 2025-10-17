@@ -8,58 +8,62 @@ import {
   Preview,
   Section,
   Text,
-  Button,
 } from 'npm:@react-email/components@0.0.22'
 import * as React from 'npm:react@18.3.1'
 
 interface WelcomeEmailProps {
   firstName: string
-  confirmationUrl: string
+  verificationUrl: string
 }
 
 export const WelcomeEmail = ({
   firstName,
-  confirmationUrl,
+  verificationUrl,
 }: WelcomeEmailProps) => (
   <Html>
     <Head />
-    <Preview>Bienvenue sur Djassa – Votre aventure e-commerce commence maintenant 🚀</Preview>
+    <Preview>Vérifiez votre compte Djassa</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Bienvenue sur Djassa 🚀</Heading>
+        <Heading style={h1}>Bienvenue sur Djassa ! 👋</Heading>
         
         <Text style={text}>
           Bonjour <strong>{firstName}</strong>,
         </Text>
 
         <Text style={text}>
-          Bienvenue sur <strong>Djassa</strong>, la marketplace #1 en Côte d'Ivoire !
+          Merci pour votre inscription sur <strong>Djassa</strong>, la plateforme e-commerce 100 % ivoirienne !
         </Text>
 
         <Text style={text}>
-          Vous pouvez dès maintenant explorer nos offres, acheter ou créer votre propre boutique gratuitement pendant 28 jours.
+          <strong>Veuillez cliquer sur le lien ci-dessous pour vérifier votre compte :</strong>
         </Text>
 
         <Section style={buttonContainer}>
-          <Button href="https://djassa.tech/login" style={button}>
-            🔗 Accédez à votre compte
-          </Button>
+          <Link href={verificationUrl} style={button}>
+            Vérifier mon compte
+          </Link>
         </Section>
 
+        <Text style={warningText}>
+          ⚠️ <strong>Ce lien expirera dans 15 minutes.</strong>
+        </Text>
+
         <Text style={text}>
-          Si vous avez des questions, notre équipe reste disponible à tout moment :
+          Si vous n'avez pas créé de compte sur Djassa, vous pouvez ignorer cet email en toute sécurité.
         </Text>
 
         <Section style={contactSection}>
           <Text style={contactText}>
-            📧 <Link href="mailto:djassa@djassa.tech" style={link}>djassa@djassa.tech</Link><br />
+            Besoin d'aide ?<br />
+            📧 <Link href="mailto:support@djassa.tech" style={link}>support@djassa.tech</Link><br />
             📱 WhatsApp : <Link href="https://wa.me/2250788281222" style={link}>+225 07 88 28 12 22</Link>
           </Text>
         </Section>
 
         <Text style={signature}>
-          Merci de faire partie de l'aventure Djassa 💛<br /><br />
-          — L'équipe Djassa
+          Cordialement,<br />
+          L'équipe Djassa
         </Text>
       </Container>
     </Body>
@@ -97,15 +101,13 @@ const text = {
   margin: '10px 0',
 }
 
-const benefitsList = {
+const warningText = {
+  color: '#d97706',
+  fontSize: '14px',
+  lineHeight: '22px',
   padding: '10px 20px',
-}
-
-const benefitItem = {
-  color: '#333',
-  fontSize: '15px',
-  lineHeight: '24px',
-  margin: '8px 0',
+  margin: '10px 0',
+  textAlign: 'center' as const,
 }
 
 const buttonContainer = {
@@ -114,32 +116,15 @@ const buttonContainer = {
 }
 
 const button = {
-  backgroundColor: '#F7941D',
-  borderRadius: '8px',
+  backgroundColor: '#2563EB',
+  borderRadius: '6px',
   color: '#fff',
   fontSize: '16px',
   fontWeight: 'bold',
   textDecoration: 'none',
   textAlign: 'center' as const,
   display: 'inline-block',
-  padding: '14px 32px',
-}
-
-const smallText = {
-  color: '#666',
-  fontSize: '13px',
-  lineHeight: '20px',
-  padding: '0 20px',
-  margin: '10px 0',
-}
-
-const urlText = {
-  color: '#F7941D',
-  fontSize: '12px',
-  lineHeight: '18px',
-  padding: '0 20px',
-  margin: '5px 0',
-  wordBreak: 'break-all' as const,
+  padding: '10px 20px',
 }
 
 const contactSection = {
@@ -151,24 +136,14 @@ const contactSection = {
 
 const contactText = {
   color: '#333',
-  fontSize: '15px',
-  lineHeight: '26px',
+  fontSize: '14px',
+  lineHeight: '24px',
   margin: '0',
   textAlign: 'center' as const,
 }
 
-const footer = {
-  color: '#666',
-  fontSize: '14px',
-  lineHeight: '22px',
-  padding: '20px 20px 10px',
-  textAlign: 'center' as const,
-  borderTop: '1px solid #eee',
-  marginTop: '30px',
-}
-
 const link = {
-  color: '#F7941D',
+  color: '#2563EB',
   textDecoration: 'none',
 }
 
@@ -178,6 +153,5 @@ const signature = {
   lineHeight: '24px',
   padding: '0 20px',
   textAlign: 'center' as const,
-  fontStyle: 'italic',
-  marginTop: '20px',
+  marginTop: '30px',
 }

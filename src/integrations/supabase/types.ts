@@ -390,6 +390,9 @@ export type Database = {
           country: string | null
           created_at: string
           email: string | null
+          email_verification_expires_at: string | null
+          email_verification_token: string | null
+          email_verified: boolean | null
           full_name: string | null
           id: string
           is_premium: boolean | null
@@ -411,6 +414,9 @@ export type Database = {
           country?: string | null
           created_at?: string
           email?: string | null
+          email_verification_expires_at?: string | null
+          email_verification_token?: string | null
+          email_verified?: boolean | null
           full_name?: string | null
           id?: string
           is_premium?: boolean | null
@@ -432,6 +438,9 @@ export type Database = {
           country?: string | null
           created_at?: string
           email?: string | null
+          email_verification_expires_at?: string | null
+          email_verification_token?: string | null
+          email_verified?: boolean | null
           full_name?: string | null
           id?: string
           is_premium?: boolean | null
@@ -831,6 +840,10 @@ export type Database = {
       }
       upgrade_to_seller: {
         Args: { _first_name: string; _last_name: string; _phone: string }
+        Returns: Json
+      }
+      verify_email_with_token: {
+        Args: { _token: string }
         Returns: Json
       }
     }

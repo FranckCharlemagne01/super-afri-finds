@@ -27,6 +27,11 @@ interface Product {
   video_url: string | null;
   is_boosted: boolean;
   boosted_until: string | null;
+  boosted_at: string | null;
+  seller_shops?: {
+    shop_slug: string;
+    shop_name: string;
+  };
 }
 
 export const BoostedProductsSection = () => {
@@ -48,11 +53,17 @@ export const BoostedProductsSection = () => {
     try {
       const { data, error } = await supabase
         .from("products")
-        .select("*")
+        .select(`
+          *,
+          seller_shops!products_shop_id_fkey (
+            shop_slug,
+            shop_name
+          )
+        `)
         .eq("is_active", true)
         .eq("is_boosted", true)
         .gte("boosted_until", new Date().toISOString())
-        .order("boosted_until", { ascending: true }) // Ceux qui expirent bientôt d'abord
+        .order("boosted_until", { ascending: true })
         .limit(10);
 
       if (error) throw error;
@@ -129,6 +140,9 @@ export const BoostedProductsSection = () => {
                 videoUrl={product.video_url || undefined}
                 isBoosted={product.is_boosted}
                 boostedUntil={product.boosted_until || undefined}
+                boostedAt={product.boosted_at || undefined}
+                shop_slug={product.seller_shops?.shop_slug}
+                shop_name={product.seller_shops?.shop_name}
               />
             </div>
           ))}
@@ -180,6 +194,9 @@ export const BoostedProductsSection = () => {
                   videoUrl={product.video_url || undefined}
                   isBoosted={product.is_boosted}
                   boostedUntil={product.boosted_until || undefined}
+                  boostedAt={product.boosted_at || undefined}
+                  shop_slug={product.seller_shops?.shop_slug}
+                  shop_name={product.seller_shops?.shop_name}
                 />
               </div>
             </CarouselItem>

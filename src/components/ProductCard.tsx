@@ -25,6 +25,7 @@ interface ProductCardProps {
   videoUrl?: string;
   isBoosted?: boolean;
   boostedUntil?: string;
+  boostedAt?: string;
   shop_slug?: string;
   shop_name?: string;
 }
@@ -44,6 +45,7 @@ export const ProductCard = ({
   videoUrl,
   isBoosted = false,
   boostedUntil,
+  boostedAt,
   shop_slug,
   shop_name,
 }: ProductCardProps) => {
@@ -173,8 +175,12 @@ export const ProductCard = ({
 
         {/* Countdown Timer for boosted products */}
         {isActiveBoosted && boostedUntil && (
-          <div className="flex justify-center py-1">
-            <CountdownTimer expiryDate={boostedUntil} />
+          <div className="py-2">
+            <CountdownTimer 
+              expiryDate={boostedUntil} 
+              boostedAt={boostedAt}
+              showProgressBar={true}
+            />
           </div>
         )}
 

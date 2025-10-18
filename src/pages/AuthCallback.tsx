@@ -15,19 +15,17 @@ const AuthCallback = () => {
       try {
         console.log('[AuthCallback] Processing callback URL:', window.location.href);
         
-        // Récupérer les paramètres depuis l'URL (query params et hash)
+        // Récupérer les paramètres depuis l'URL
         const params = new URLSearchParams(window.location.search);
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         
         const code = params.get('code') || hashParams.get('code');
-        const accessToken = params.get('access_token') || hashParams.get('access_token');
         const type = params.get('type') || hashParams.get('type');
         const errorParam = params.get('error') || hashParams.get('error');
         const errorDescription = params.get('error_description') || hashParams.get('error_description');
 
         console.log('[AuthCallback] Parameters found:', { 
           hasCode: !!code, 
-          hasAccessToken: !!accessToken, 
           type,
           error: errorParam 
         });
@@ -38,14 +36,12 @@ const AuthCallback = () => {
           throw new Error(errorDescription || errorParam);
         }
 
-        // Si on a un code ou un access_token, on échange contre une session
-        if (code || accessToken) {
+        // Vérifier si on a un code de vérification
+        if (code) {
           console.log('[AuthCallback] Exchanging code for session...');
           
           // Échanger le code contre une session active
-          const { data, error } = await supabase.auth.exchangeCodeForSession(
-            code ? code : window.location.href
-          );
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
           if (error) {
             console.error('[AuthCallback] Exchange error:', error);
@@ -55,12 +51,12 @@ const AuthCallback = () => {
           if (data?.session?.user) {
             console.log('[AuthCallback] Session established successfully for user:', data.session.user.id);
             setStatus('success');
-            setMessage('✅ Compte vérifié avec succès ! Redirection...');
+            setMessage('Email vérifié avec succès !');
 
-            // Redirection immédiate vers la page de bienvenue
+            // Redirection vers la page de bienvenue après un court délai
             setTimeout(() => {
               navigate('/auth/welcome', { replace: true });
-            }, 500);
+            }, 1000);
           } else {
             throw new Error('Aucune session retournée après l\'échange du token');
           }
@@ -71,17 +67,17 @@ const AuthCallback = () => {
         console.error('[AuthCallback] Verification error:', error);
         setStatus('error');
         
-        // Messages d'erreur détaillés selon le type
-        let errorMessage = '⚠️ Le lien de vérification est invalide ou expiré.';
+        // Messages d'erreur détaillés
+        let errorMessage = 'Le lien de vérification est invalide ou expiré.';
         
         if (error.message?.toLowerCase().includes('expired')) {
-          errorMessage = '⏱️ Le lien de vérification a expiré. Veuillez demander un nouveau lien depuis la page de connexion.';
+          errorMessage = 'Le lien de vérification a expiré. Veuillez demander un nouveau lien depuis la page de connexion.';
         } else if (error.message?.toLowerCase().includes('invalid')) {
-          errorMessage = '❌ Le lien de vérification est invalide. Assurez-vous d\'utiliser le lien le plus récent envoyé par email.';
+          errorMessage = 'Le lien de vérification est invalide. Assurez-vous d\'utiliser le lien le plus récent envoyé par email.';
         } else if (error.message?.toLowerCase().includes('already') || error.message?.toLowerCase().includes('used')) {
-          errorMessage = '✅ Ce lien a déjà été utilisé. Votre compte est déjà vérifié. Connectez-vous directement.';
+          errorMessage = 'Ce lien a déjà été utilisé. Votre compte est déjà vérifié. Connectez-vous directement.';
         } else if (error.message?.toLowerCase().includes('not authorized') || error.message?.toLowerCase().includes('domain')) {
-          errorMessage = '🚫 Ce domaine n\'est pas autorisé. Contactez le support technique Djassa.';
+          errorMessage = 'Ce domaine n\'est pas autorisé. Contactez le support technique Djassa.';
         }
         
         setMessage(errorMessage);
@@ -92,42 +88,55 @@ const AuthCallback = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
+      <Card className="w-full max-w-md border-0 shadow-2xl">
+        <CardHeader className="text-center pb-4">
+          <div className="flex justify-center mb-6">
             {status === 'loading' && (
-              <Loader2 className="h-16 w-16 text-primary animate-spin" />
+              <div className="relative">
+                <Loader2 className="h-16 w-16 text-primary animate-spin" />
+                <div className="absolute inset-0 h-16 w-16 rounded-full bg-primary/10 animate-pulse" />
+              </div>
             )}
             {status === 'success' && (
-              <CheckCircle2 className="h-16 w-16 text-green-600" />
+              <div className="relative animate-scale-in">
+                <div className="absolute inset-0 h-20 w-20 rounded-full bg-success/20 animate-pulse" />
+                <CheckCircle2 className="h-20 w-20 text-success relative z-10" />
+              </div>
             )}
             {status === 'error' && (
-              <XCircle className="h-16 w-16 text-destructive" />
+              <XCircle className="h-16 w-16 text-destructive animate-scale-in" />
             )}
           </div>
-          <CardTitle className="text-2xl">
+          <CardTitle className="text-2xl md:text-3xl font-bold">
             {status === 'loading' && 'Vérification en cours...'}
-            {status === 'success' && 'Compte vérifié ! ✅'}
+            {status === 'success' && (
+              <span className="gradient-text-primary">Vérification réussie !</span>
+            )}
             {status === 'error' && 'Erreur de vérification'}
           </CardTitle>
-          <CardDescription className="mt-2">
+          <CardDescription className="mt-3 text-base">
             {message}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pt-2">
           {status === 'success' && (
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">
-                Redirection automatique dans quelques secondes...
-              </p>
+            <div className="text-center space-y-3 animate-fade-in">
+              <div className="p-4 bg-success/10 rounded-lg border border-success/20">
+                <p className="text-sm text-foreground font-medium">
+                  🎉 Bienvenue sur Djassa !
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Votre compte est maintenant actif
+                </p>
+              </div>
             </div>
           )}
           {status === 'error' && (
-            <div className="space-y-3">
+            <div className="space-y-3 animate-fade-in">
               <Button 
                 onClick={() => navigate('/auth')} 
-                className="w-full h-11 font-semibold"
+                className="w-full h-12 text-base font-semibold gradient-bg-primary hover:opacity-90 transition-opacity"
                 size="lg"
               >
                 Retour à la connexion

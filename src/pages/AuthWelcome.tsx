@@ -10,6 +10,7 @@ const AuthWelcome = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [redirecting, setRedirecting] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -45,14 +46,21 @@ const AuthWelcome = () => {
 
           console.log('[AuthWelcome] Redirecting user with role:', role);
 
-          // Redirection automatique après 2 secondes
-          setTimeout(() => {
-            if (role === 'seller' || role === 'admin' || role === 'superadmin') {
-              navigate('/seller-dashboard', { replace: true });
-            } else {
-              navigate('/', { replace: true });
-            }
-          }, 2000);
+          // Compte à rebours de 5 secondes
+          const timer = setInterval(() => {
+            setCountdown((prev) => {
+              if (prev <= 1) {
+                clearInterval(timer);
+                if (role === 'seller' || role === 'admin' || role === 'superadmin') {
+                  navigate('/seller-dashboard', { replace: true });
+                } else {
+                  navigate('/', { replace: true });
+                }
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
         } else {
           console.log('[AuthWelcome] No active session found');
           setIsAuthenticated(false);
@@ -67,59 +75,65 @@ const AuthWelcome = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
-      <Card className="w-full max-w-lg shadow-2xl border-primary/20">
-        <CardHeader className="text-center space-y-4 pb-6">
-          <div className="flex justify-center mb-2">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-accent/5 to-success/5 p-4">
+      <Card className="w-full max-w-md border-0 shadow-2xl">
+        <CardHeader className="text-center pb-4">
+          <div className="flex justify-center mb-6">
             {isAuthenticated === null ? (
               <div className="relative">
-                <Loader2 className="h-20 w-20 text-primary animate-spin" />
-                <Sparkles className="h-8 w-8 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                <Loader2 className="h-16 w-16 text-primary animate-spin" />
+                <div className="absolute inset-0 h-16 w-16 rounded-full bg-primary/10 animate-pulse" />
+              </div>
+            ) : isAuthenticated ? (
+              <div className="relative animate-scale-in">
+                <div className="absolute inset-0 h-20 w-20 rounded-full bg-success/20 animate-pulse" />
+                <CheckCircle2 className="h-20 w-20 text-success relative z-10" />
               </div>
             ) : (
               <div className="relative">
-                <CheckCircle2 className="h-20 w-20 text-green-600 animate-in zoom-in-50 duration-300" />
-                <div className="absolute inset-0 bg-green-600/20 rounded-full blur-2xl animate-pulse" />
+                <div className="absolute inset-0 h-20 w-20 rounded-full bg-primary/10 animate-pulse" />
+                <Sparkles className="h-20 w-20 text-primary relative z-10" />
               </div>
             )}
           </div>
-          <CardTitle className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
-            Bienvenue sur Djassa 👋
+          <CardTitle className="text-2xl md:text-3xl font-bold">
+            {isAuthenticated === null && 'Vérification...'}
+            {isAuthenticated && (
+              <span className="gradient-text-primary">Bienvenue sur Djassa ! 🎉</span>
+            )}
+            {isAuthenticated === false && (
+              <span className="gradient-text-primary">Email vérifié ! ✅</span>
+            )}
           </CardTitle>
-          <CardDescription className="text-base md:text-lg space-y-2">
-            {isAuthenticated === true ? (
-              <p className="text-foreground/90 font-medium">
-                ✅ Votre compte a été vérifié avec succès !
-              </p>
-            ) : (
-              <p className="text-foreground/80">
-                Votre adresse email a été confirmée.
-              </p>
+          <CardDescription className="mt-3 text-base">
+            {isAuthenticated === null && 'Vérification de votre session en cours...'}
+            {isAuthenticated && redirecting && (
+              <span className="text-foreground font-medium">
+                Nous sommes ravis de vous revoir !
+              </span>
+            )}
+            {isAuthenticated === false && (
+              <span className="text-foreground">
+                Votre adresse e-mail a été vérifiée avec succès ! Vous pouvez maintenant vous connecter à votre compte Djassa.
+              </span>
             )}
           </CardDescription>
         </CardHeader>
-
-        <CardContent className="space-y-6 pb-8">
-          {isAuthenticated === null && (
-            <div className="flex flex-col items-center space-y-4 py-6">
-              <p className="text-sm text-muted-foreground animate-pulse">
-                Vérification de votre session...
-              </p>
-            </div>
-          )}
-
-          {isAuthenticated === true && (
-            <div className="space-y-4 py-4 animate-in fade-in-50 duration-500">
-              <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/30 rounded-xl p-6 text-center space-y-3">
-                <p className="text-lg font-bold text-foreground">
-                  🎉 Félicitations !
-                </p>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Vous allez être redirigé vers votre espace personnel dans quelques instants...
+        <CardContent className="space-y-4 pt-2">
+          {isAuthenticated && redirecting && (
+            <div className="space-y-4 animate-fade-in">
+              <div className="p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border border-primary/20">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                  <p className="text-sm text-foreground font-semibold">
+                    Redirection automatique dans {countdown}s
+                  </p>
+                </div>
+                <p className="text-xs text-muted-foreground text-center">
+                  Préparation de votre espace personnel...
                 </p>
               </div>
-
-              <Button
+              <Button 
                 onClick={() => {
                   if (userRole === 'seller' || userRole === 'admin' || userRole === 'superadmin') {
                     navigate('/seller-dashboard', { replace: true });
@@ -127,43 +141,30 @@ const AuthWelcome = () => {
                     navigate('/', { replace: true });
                   }
                 }}
-                className="w-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
+                className="w-full h-12 text-base font-semibold gradient-bg-primary hover:opacity-90 transition-opacity"
                 size="lg"
               >
-                Accéder à mon espace maintenant
+                Accéder maintenant
               </Button>
-
-              {redirecting && (
-                <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground animate-pulse">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Redirection en cours...</span>
-                </div>
-              )}
             </div>
           )}
-
           {isAuthenticated === false && (
-            <div className="space-y-4 py-4 animate-in fade-in-50 duration-500">
-              <div className="bg-muted/30 border border-muted rounded-xl p-6 text-center space-y-3">
-                <p className="text-base font-medium text-foreground">
-                  📧 Votre email est confirmé
-                </p>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Connectez-vous maintenant pour accéder à votre compte et commencer à utiliser Djassa.
+            <div className="space-y-4 animate-fade-in">
+              <div className="p-4 bg-success/10 rounded-lg border border-success/20 mb-4">
+                <p className="text-sm text-center text-foreground font-medium">
+                  ✅ Votre compte est maintenant actif
                 </p>
               </div>
-
-              <Button
-                onClick={() => navigate('/auth')}
-                className="w-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
+              <Button 
+                onClick={() => navigate('/auth')} 
+                className="w-full h-12 text-base font-semibold gradient-bg-primary hover:opacity-90 transition-opacity"
                 size="lg"
               >
-                <LogIn className="h-5 w-5 mr-2" />
+                <LogIn className="w-5 h-5 mr-2" />
                 Se connecter
               </Button>
-
               <p className="text-xs text-center text-muted-foreground">
-                Besoin d'assistance ? Contactez le support Djassa
+                Nouveau sur Djassa ? Créez un compte pour commencer à acheter et vendre
               </p>
             </div>
           )}

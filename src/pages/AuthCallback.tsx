@@ -13,29 +13,33 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleEmailVerification = async () => {
       try {
-        // Récupérer le code depuis les paramètres de l'URL
+        // Récupérer les paramètres depuis l'URL (query params et hash)
         const params = new URLSearchParams(window.location.search);
-        const code = params.get('code');
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        
+        const code = params.get('code') || hashParams.get('code');
+        const accessToken = params.get('access_token') || hashParams.get('access_token');
 
-        if (!code) {
-          throw new Error('Code de vérification manquant');
-        }
+        // Si on a un code ou un access_token, on échange contre une session
+        if (code || accessToken) {
+          // Utiliser l'URL complète pour gérer tous les types de tokens
+          const { data, error } = await supabase.auth.exchangeCodeForSession(window.location.href);
 
-        // Échanger le code contre une session
-        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) throw error;
 
-        if (error) throw error;
+          if (data.session) {
+            setStatus('success');
+            setMessage('✅ Vérification réussie ! Redirection en cours...');
 
-        if (data.session) {
-          setStatus('success');
-          setMessage('✅ Vérification réussie ! Redirection en cours...');
-
-          // Redirection vers la page de bienvenue après 1 seconde
-          setTimeout(() => {
-            navigate('/auth/welcome');
-          }, 1000);
+            // Redirection vers la page de bienvenue après 1 seconde
+            setTimeout(() => {
+              navigate('/auth/welcome');
+            }, 1000);
+          } else {
+            throw new Error('Session invalide');
+          }
         } else {
-          throw new Error('Session invalide');
+          throw new Error('Code de vérification manquant');
         }
       } catch (error) {
         console.error('Erreur de vérification:', error);

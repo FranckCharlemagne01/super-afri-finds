@@ -28,27 +28,12 @@ const AuthCallback = () => {
 
             if (user) {
               setStatus('success');
-              setMessage('✅ Vérification réussie ! Redirection en cours vers votre compte...');
+              setMessage('✅ Vérification réussie ! Redirection en cours...');
 
-              // Récupérer le rôle de l'utilisateur pour rediriger correctement
-              const { data: roleData } = await supabase
-                .from('user_roles')
-                .select('role')
-                .eq('user_id', user.id)
-                .order('role', { ascending: true })
-                .limit(1)
-                .single();
-
-              // Redirection après 2 secondes
+              // Redirection vers la page de bienvenue après 1 seconde
               setTimeout(() => {
-                if (roleData?.role === 'seller') {
-                  navigate('/seller-dashboard');
-                } else if (roleData?.role === 'buyer') {
-                  navigate('/buyer-dashboard');
-                } else {
-                  navigate('/');
-                }
-              }, 2000);
+                navigate('/auth/welcome');
+              }, 1000);
             }
           } else {
             throw new Error('Token de vérification manquant');

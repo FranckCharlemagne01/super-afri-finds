@@ -11,6 +11,7 @@ import { lazy, Suspense } from "react";
 
 const Verify = lazy(() => import("./pages/Verify"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
+const AuthWelcome = lazy(() => import("./pages/AuthWelcome"));
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
 const SellerDashboard = lazy(() => import("./pages/SellerDashboard"));
@@ -57,8 +58,9 @@ const App = () => (
           <Suspense fallback={<PageLoadingFallback />}>
             <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/auth/welcome" element={<AuthWelcome />} />
           <Route path="/verify" element={<Verify />} />
               <Route 
                 path="/seller-dashboard" 

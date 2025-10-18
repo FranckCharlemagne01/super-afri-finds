@@ -14,40 +14,51 @@ const AuthWelcome = () => {
   useEffect(() => {
     const checkSession = async () => {
       try {
+        console.log('[AuthWelcome] Checking session...');
         const { data: { session }, error } = await supabase.auth.getSession();
 
-        if (error) throw error;
+        if (error) {
+          console.error('[AuthWelcome] Session error:', error);
+          throw error;
+        }
 
         if (session?.user) {
+          console.log('[AuthWelcome] Valid session found for user:', session.user.id);
           setIsAuthenticated(true);
           
           // Récupérer le rôle de l'utilisateur
-          const { data: roleData } = await supabase
+          const { data: roleData, error: roleError } = await supabase
             .from('user_roles')
             .select('role')
             .eq('user_id', session.user.id)
             .order('role', { ascending: true })
             .limit(1)
-            .single();
+            .maybeSingle();
 
-          setUserRole(roleData?.role || null);
+          if (roleError) {
+            console.error('[AuthWelcome] Role fetch error:', roleError);
+          }
+
+          const role = roleData?.role || 'buyer';
+          setUserRole(role);
           setRedirecting(true);
 
-          // Redirection automatique après 3 secondes
+          console.log('[AuthWelcome] Redirecting user with role:', role);
+
+          // Redirection automatique après 2 secondes
           setTimeout(() => {
-            if (roleData?.role === 'seller') {
-              navigate('/seller-dashboard');
-            } else if (roleData?.role === 'buyer') {
-              navigate('/buyer-dashboard');
+            if (role === 'seller' || role === 'admin' || role === 'superadmin') {
+              navigate('/seller-dashboard', { replace: true });
             } else {
-              navigate('/');
+              navigate('/', { replace: true });
             }
-          }, 3000);
+          }, 2000);
         } else {
+          console.log('[AuthWelcome] No active session found');
           setIsAuthenticated(false);
         }
       } catch (error) {
-        console.error('Erreur lors de la vérification de la session:', error);
+        console.error('[AuthWelcome] Error checking session:', error);
         setIsAuthenticated(false);
       }
     };
@@ -72,17 +83,17 @@ const AuthWelcome = () => {
               </div>
             )}
           </div>
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            🎉 Bienvenue sur Djassa !
+          <CardTitle className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
+            Bienvenue sur Djassa 👋
           </CardTitle>
-          <CardDescription className="text-base space-y-2">
+          <CardDescription className="text-base md:text-lg space-y-2">
             {isAuthenticated === true ? (
-              <p className="text-foreground/80 font-medium">
-                Votre compte est maintenant vérifié.
+              <p className="text-foreground/90 font-medium">
+                ✅ Votre compte a été vérifié avec succès !
               </p>
             ) : (
               <p className="text-foreground/80">
-                ✅ Votre adresse email est bien confirmée.
+                Votre adresse email a été confirmée.
               </p>
             )}
           </CardDescription>
@@ -99,33 +110,31 @@ const AuthWelcome = () => {
 
           {isAuthenticated === true && (
             <div className="space-y-4 py-4 animate-in fade-in-50 duration-500">
-              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/30 rounded-lg p-5 text-center space-y-3">
-                <p className="text-base font-semibold text-foreground">
-                  🎊 Félicitations !
+              <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/30 rounded-xl p-6 text-center space-y-3">
+                <p className="text-lg font-bold text-foreground">
+                  🎉 Félicitations !
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  Redirection automatique vers votre tableau de bord dans quelques secondes...
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Vous allez être redirigé vers votre espace personnel dans quelques instants...
                 </p>
               </div>
 
               <Button
                 onClick={() => {
-                  if (userRole === 'seller') {
-                    navigate('/seller-dashboard');
-                  } else if (userRole === 'buyer') {
-                    navigate('/buyer-dashboard');
+                  if (userRole === 'seller' || userRole === 'admin' || userRole === 'superadmin') {
+                    navigate('/seller-dashboard', { replace: true });
                   } else {
-                    navigate('/');
+                    navigate('/', { replace: true });
                   }
                 }}
                 className="w-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
                 size="lg"
               >
-                Accéder à mon tableau de bord
+                Accéder à mon espace maintenant
               </Button>
 
               {redirecting && (
-                <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground">
+                <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground animate-pulse">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span>Redirection en cours...</span>
                 </div>
@@ -135,9 +144,12 @@ const AuthWelcome = () => {
 
           {isAuthenticated === false && (
             <div className="space-y-4 py-4 animate-in fade-in-50 duration-500">
-              <div className="bg-muted/50 border rounded-lg p-5 text-center space-y-2">
-                <p className="text-sm text-foreground/80">
-                  Veuillez vous reconnecter pour accéder à votre compte.
+              <div className="bg-muted/30 border border-muted rounded-xl p-6 text-center space-y-3">
+                <p className="text-base font-medium text-foreground">
+                  📧 Votre email est confirmé
+                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Connectez-vous maintenant pour accéder à votre compte et commencer à utiliser Djassa.
                 </p>
               </div>
 
@@ -147,11 +159,11 @@ const AuthWelcome = () => {
                 size="lg"
               >
                 <LogIn className="h-5 w-5 mr-2" />
-                Se connecter maintenant
+                Se connecter
               </Button>
 
               <p className="text-xs text-center text-muted-foreground">
-                Besoin d'aide ? Contactez le support Djassa.
+                Besoin d'assistance ? Contactez le support Djassa
               </p>
             </div>
           )}

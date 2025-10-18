@@ -34,6 +34,7 @@ const AuthCallback = () => {
 
         // Si Supabase retourne une erreur dans l'URL
         if (errorParam) {
+          console.error('[AuthCallback] Error in URL:', errorParam, errorDescription);
           throw new Error(errorDescription || errorParam);
         }
 
@@ -41,42 +42,46 @@ const AuthCallback = () => {
         if (code || accessToken) {
           console.log('[AuthCallback] Exchanging code for session...');
           
-          // Utiliser l'URL complète pour gérer tous les types de tokens
-          const { data, error } = await supabase.auth.exchangeCodeForSession(window.location.href);
+          // Échanger le code contre une session active
+          const { data, error } = await supabase.auth.exchangeCodeForSession(
+            code ? code : window.location.href
+          );
 
           if (error) {
             console.error('[AuthCallback] Exchange error:', error);
             throw error;
           }
 
-          if (data.session) {
-            console.log('[AuthCallback] Session established successfully');
+          if (data?.session?.user) {
+            console.log('[AuthCallback] Session established successfully for user:', data.session.user.id);
             setStatus('success');
-            setMessage('✅ Vérification réussie ! Redirection en cours...');
+            setMessage('✅ Compte vérifié avec succès ! Redirection...');
 
-            // Redirection vers la page de bienvenue après 1 seconde
+            // Redirection immédiate vers la page de bienvenue
             setTimeout(() => {
-              navigate('/auth/welcome');
-            }, 1000);
+              navigate('/auth/welcome', { replace: true });
+            }, 500);
           } else {
-            throw new Error('Session invalide - aucune session retournée');
+            throw new Error('Aucune session retournée après l\'échange du token');
           }
         } else {
-          throw new Error('Code de vérification manquant dans l\'URL');
+          throw new Error('Aucun code de vérification trouvé dans l\'URL');
         }
       } catch (error: any) {
         console.error('[AuthCallback] Verification error:', error);
         setStatus('error');
         
-        // Message d'erreur plus détaillé selon le type d'erreur
+        // Messages d'erreur détaillés selon le type
         let errorMessage = '⚠️ Le lien de vérification est invalide ou expiré.';
         
-        if (error.message?.includes('invalid') || error.message?.includes('expired')) {
-          errorMessage = '⚠️ Le lien de vérification a expiré. Veuillez demander un nouveau lien.';
-        } else if (error.message?.includes('already_used')) {
-          errorMessage = '⚠️ Ce lien a déjà été utilisé. Essayez de vous connecter directement.';
-        } else if (error.message?.includes('not authorized')) {
-          errorMessage = '⚠️ Ce domaine n\'est pas autorisé. Contactez le support.';
+        if (error.message?.toLowerCase().includes('expired')) {
+          errorMessage = '⏱️ Le lien de vérification a expiré. Veuillez demander un nouveau lien depuis la page de connexion.';
+        } else if (error.message?.toLowerCase().includes('invalid')) {
+          errorMessage = '❌ Le lien de vérification est invalide. Assurez-vous d\'utiliser le lien le plus récent envoyé par email.';
+        } else if (error.message?.toLowerCase().includes('already') || error.message?.toLowerCase().includes('used')) {
+          errorMessage = '✅ Ce lien a déjà été utilisé. Votre compte est déjà vérifié. Connectez-vous directement.';
+        } else if (error.message?.toLowerCase().includes('not authorized') || error.message?.toLowerCase().includes('domain')) {
+          errorMessage = '🚫 Ce domaine n\'est pas autorisé. Contactez le support technique Djassa.';
         }
         
         setMessage(errorMessage);
@@ -119,15 +124,16 @@ const AuthCallback = () => {
             </div>
           )}
           {status === 'error' && (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Button 
                 onClick={() => navigate('/auth')} 
-                className="w-full"
+                className="w-full h-11 font-semibold"
+                size="lg"
               >
                 Retour à la connexion
               </Button>
               <p className="text-xs text-center text-muted-foreground">
-                Si le problème persiste, contactez le support Djassa
+                Besoin d'aide ? Contactez le support Djassa
               </p>
             </div>
           )}

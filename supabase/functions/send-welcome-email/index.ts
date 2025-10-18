@@ -86,7 +86,7 @@ serve(async (req) => {
     }
 
     // Construire l'URL de vérification avec le callback Supabase
-    const verificationUrl = `https://zqskpspbyzptzjcoitwt.supabase.co/auth/v1/verify?token=${verificationToken}&type=email&redirect_to=https://djassa.tech/auth/callback`;
+    const verificationUrl = `https://zqskpspbyzptzjcoitwt.supabase.co/auth/v1/verify?token=${verificationToken}&type=email&redirect_to=https://www.djassa.tech/auth/callback`;
 
     // Générer le HTML de l'email avec React Email
     const html = await renderAsync(

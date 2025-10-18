@@ -18,25 +18,15 @@ const AuthCallback = () => {
         const accessToken = hashParams.get('access_token');
         const type = hashParams.get('type');
 
-        // Vérifier si c'est bien une vérification d'email
-        if (type === 'signup' || type === 'email') {
+        // Vérifier si c'est bien une vérification d'email ou signup
+        if (type === 'signup' || type === 'email' || type === 'magiclink') {
           if (accessToken) {
-            // L'utilisateur est maintenant connecté automatiquement
+            // L'utilisateur est maintenant connecté automatiquement par Supabase
             const { data: { user }, error } = await supabase.auth.getUser();
 
             if (error) throw error;
 
             if (user) {
-              // Marquer l'email comme vérifié dans la table profiles
-              await supabase
-                .from('profiles')
-                .update({ 
-                  email_verified: true,
-                  email_verification_token: null,
-                  email_verification_expires_at: null
-                })
-                .eq('user_id', user.id);
-
               setStatus('success');
               setMessage('✅ Vérification réussie ! Redirection en cours vers votre compte...');
 
@@ -49,7 +39,7 @@ const AuthCallback = () => {
                 .limit(1)
                 .single();
 
-              // Redirection après 3 secondes
+              // Redirection après 2 secondes
               setTimeout(() => {
                 if (roleData?.role === 'seller') {
                   navigate('/seller-dashboard');
@@ -58,7 +48,7 @@ const AuthCallback = () => {
                 } else {
                   navigate('/');
                 }
-              }, 3000);
+              }, 2000);
             }
           } else {
             throw new Error('Token de vérification manquant');

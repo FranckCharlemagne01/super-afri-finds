@@ -59,34 +59,33 @@ serve(async (req) => {
     const fullName = user.user_metadata?.full_name || 'utilisateur';
     const firstName = fullName.split(' ')[0];
 
-    // Générer un token de vérification unique
-    const verificationToken = crypto.randomUUID();
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
-
-    // Sauvegarder le token dans la base de données
+    // Créer un client Supabase admin pour générer le lien de vérification
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || 'https://zqskpspbyzptzjcoitwt.supabase.co';
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-    const updateResponse = await fetch(`${supabaseUrl}/rest/v1/profiles?user_id=eq.${userId}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': supabaseServiceKey,
-        'Authorization': `Bearer ${supabaseServiceKey}`,
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({
-        email_verification_token: verificationToken,
-        email_verification_expires_at: expiresAt.toISOString(),
-      })
+    
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
     });
 
-    if (!updateResponse.ok) {
-      console.error('❌ Failed to save verification token');
+    // Générer un lien de vérification Supabase natif
+    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+      type: 'signup',
+      email: user.email,
+      options: {
+        redirectTo: 'https://djassa.djassa.tech/auth/callback'
+      }
+    });
+
+    if (linkError || !linkData?.properties?.action_link) {
+      console.error('❌ Failed to generate verification link:', linkError);
+      throw new Error('Failed to generate verification link');
     }
 
-    // Construire l'URL de vérification avec le callback Supabase
-    const verificationUrl = `https://zqskpspbyzptzjcoitwt.supabase.co/auth/v1/verify?token=${verificationToken}&type=email&redirect_to=https://djassa.djassa.tech/auth/callback`;
+    const verificationUrl = linkData.properties.action_link;
 
     // Générer le HTML de l'email avec React Email
     const html = await renderAsync(

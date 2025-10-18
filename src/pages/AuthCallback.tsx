@@ -13,33 +13,29 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleEmailVerification = async () => {
       try {
-        // Récupérer le hash de l'URL (Supabase l'ajoute automatiquement)
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-        const type = hashParams.get('type');
+        // Récupérer le code depuis les paramètres de l'URL
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get('code');
 
-        // Vérifier si c'est bien une vérification d'email ou signup
-        if (type === 'signup' || type === 'email' || type === 'magiclink') {
-          if (accessToken) {
-            // L'utilisateur est maintenant connecté automatiquement par Supabase
-            const { data: { user }, error } = await supabase.auth.getUser();
+        if (!code) {
+          throw new Error('Code de vérification manquant');
+        }
 
-            if (error) throw error;
+        // Échanger le code contre une session
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-            if (user) {
-              setStatus('success');
-              setMessage('✅ Vérification réussie ! Redirection en cours...');
+        if (error) throw error;
 
-              // Redirection vers la page de bienvenue après 1 seconde
-              setTimeout(() => {
-                navigate('/auth/welcome');
-              }, 1000);
-            }
-          } else {
-            throw new Error('Token de vérification manquant');
-          }
+        if (data.session) {
+          setStatus('success');
+          setMessage('✅ Vérification réussie ! Redirection en cours...');
+
+          // Redirection vers la page de bienvenue après 1 seconde
+          setTimeout(() => {
+            navigate('/auth/welcome');
+          }, 1000);
         } else {
-          throw new Error('Type de vérification invalide');
+          throw new Error('Session invalide');
         }
       } catch (error) {
         console.error('Erreur de vérification:', error);

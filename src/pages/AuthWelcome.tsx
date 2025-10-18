@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, Loader2, LogIn } from 'lucide-react';
+import { CheckCircle2, Loader2, LogIn, Sparkles } from 'lucide-react';
 
 const AuthWelcome = () => {
   const navigate = useNavigate();
@@ -56,53 +56,73 @@ const AuthWelcome = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 p-4">
-      <Card className="w-full max-w-lg shadow-xl animate-fade-in">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
+      <Card className="w-full max-w-lg shadow-2xl border-primary/20">
         <CardHeader className="text-center space-y-4 pb-6">
           <div className="flex justify-center mb-2">
-            <div className="relative">
-              <CheckCircle2 className="h-20 w-20 text-green-600 animate-scale-in" />
-              <div className="absolute inset-0 bg-green-600/20 rounded-full blur-xl animate-pulse" />
-            </div>
+            {isAuthenticated === null ? (
+              <div className="relative">
+                <Loader2 className="h-20 w-20 text-primary animate-spin" />
+                <Sparkles className="h-8 w-8 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+              </div>
+            ) : (
+              <div className="relative">
+                <CheckCircle2 className="h-20 w-20 text-green-600 animate-in zoom-in-50 duration-300" />
+                <div className="absolute inset-0 bg-green-600/20 rounded-full blur-2xl animate-pulse" />
+              </div>
+            )}
           </div>
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
             🎉 Bienvenue sur Djassa !
           </CardTitle>
           <CardDescription className="text-base space-y-2">
-            <p className="text-foreground/80">
-              Votre adresse e-mail a bien été confirmée.
-            </p>
-            <p className="text-foreground/70">
-              Nous sommes ravis de vous accueillir dans la communauté Djassa.
-            </p>
+            {isAuthenticated === true ? (
+              <p className="text-foreground/80 font-medium">
+                Votre compte est maintenant vérifié.
+              </p>
+            ) : (
+              <p className="text-foreground/80">
+                ✅ Votre adresse email est bien confirmée.
+              </p>
+            )}
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 pb-8">
           {isAuthenticated === null && (
             <div className="flex flex-col items-center space-y-4 py-6">
-              <Loader2 className="h-12 w-12 text-primary animate-spin" />
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground animate-pulse">
                 Vérification de votre session...
               </p>
             </div>
           )}
 
           {isAuthenticated === true && (
-            <div className="space-y-4 py-4">
-              <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                <div className="flex items-start space-x-3">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="font-medium text-green-900 dark:text-green-100">
-                      Vous êtes déjà connecté
-                    </p>
-                    <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                      Redirection vers votre espace personnel dans quelques secondes...
-                    </p>
-                  </div>
-                </div>
+            <div className="space-y-4 py-4 animate-in fade-in-50 duration-500">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/30 rounded-lg p-5 text-center space-y-3">
+                <p className="text-base font-semibold text-foreground">
+                  🎊 Félicitations !
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Redirection automatique vers votre tableau de bord dans quelques secondes...
+                </p>
               </div>
+
+              <Button
+                onClick={() => {
+                  if (userRole === 'seller') {
+                    navigate('/seller-dashboard');
+                  } else if (userRole === 'buyer') {
+                    navigate('/buyer-dashboard');
+                  } else {
+                    navigate('/');
+                  }
+                }}
+                className="w-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
+                size="lg"
+              >
+                Accéder à mon tableau de bord
+              </Button>
 
               {redirecting && (
                 <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground">
@@ -114,24 +134,16 @@ const AuthWelcome = () => {
           )}
 
           {isAuthenticated === false && (
-            <div className="space-y-4 py-4">
-              <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                <div className="flex items-start space-x-3">
-                  <LogIn className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="font-medium text-blue-900 dark:text-blue-100">
-                      🔐 Veuillez vous reconnecter
-                    </p>
-                    <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                      Pour accéder à votre compte, veuillez vous connecter.
-                    </p>
-                  </div>
-                </div>
+            <div className="space-y-4 py-4 animate-in fade-in-50 duration-500">
+              <div className="bg-muted/50 border rounded-lg p-5 text-center space-y-2">
+                <p className="text-sm text-foreground/80">
+                  Veuillez vous reconnecter pour accéder à votre compte.
+                </p>
               </div>
 
               <Button
                 onClick={() => navigate('/auth')}
-                className="w-full"
+                className="w-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
                 size="lg"
               >
                 <LogIn className="h-5 w-5 mr-2" />
@@ -139,7 +151,7 @@ const AuthWelcome = () => {
               </Button>
 
               <p className="text-xs text-center text-muted-foreground">
-                Vous serez redirigé vers la page de connexion
+                Besoin d'aide ? Contactez le support Djassa.
               </p>
             </div>
           )}

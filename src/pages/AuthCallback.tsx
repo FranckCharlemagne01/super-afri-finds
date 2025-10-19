@@ -15,7 +15,7 @@ const AuthCallback = () => {
       try {
         console.log('[AuthCallback] Processing callback URL:', window.location.href);
         
-        // Récupérer les paramètres depuis l'URL
+        // Récupérer les paramètres depuis l'URL (query et hash)
         const params = new URLSearchParams(window.location.search);
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         
@@ -23,9 +23,11 @@ const AuthCallback = () => {
         const type = params.get('type') || hashParams.get('type');
         const errorParam = params.get('error') || hashParams.get('error');
         const errorDescription = params.get('error_description') || hashParams.get('error_description');
+        const accessToken = params.get('access_token') || hashParams.get('access_token');
 
         console.log('[AuthCallback] Parameters found:', { 
           hasCode: !!code, 
+          hasAccessToken: !!accessToken,
           type,
           error: errorParam 
         });
@@ -33,18 +35,44 @@ const AuthCallback = () => {
         // Si Supabase retourne une erreur dans l'URL
         if (errorParam) {
           console.error('[AuthCallback] Error in URL:', errorParam, errorDescription);
+          
+          // Si l'erreur dit que l'utilisateur est déjà confirmé, considérer comme succès
+          if (errorDescription?.toLowerCase().includes('already') || 
+              errorDescription?.toLowerCase().includes('confirmed') ||
+              errorDescription?.toLowerCase().includes('verified')) {
+            console.log('[AuthCallback] User already verified, redirecting to welcome');
+            setStatus('success');
+            setMessage('Votre compte est déjà vérifié !');
+            setTimeout(() => {
+              navigate('/auth/welcome', { replace: true });
+            }, 1500);
+            return;
+          }
+          
           throw new Error(errorDescription || errorParam);
         }
 
-        // Vérifier si on a un code de vérification
+        // Cas 1 : Échange de code PKCE (méthode moderne)
         if (code) {
-          console.log('[AuthCallback] Exchanging code for session...');
+          console.log('[AuthCallback] Exchanging PKCE code for session...');
           
-          // Échanger le code contre une session active
           const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
           if (error) {
             console.error('[AuthCallback] Exchange error:', error);
+            
+            // Si l'erreur indique que l'utilisateur est déjà vérifié
+            if (error.message?.toLowerCase().includes('already') || 
+                error.message?.toLowerCase().includes('verified')) {
+              console.log('[AuthCallback] User already verified despite error');
+              setStatus('success');
+              setMessage('Votre compte est déjà vérifié !');
+              setTimeout(() => {
+                navigate('/auth/welcome', { replace: true });
+              }, 1500);
+              return;
+            }
+            
             throw error;
           }
 
@@ -53,31 +81,58 @@ const AuthCallback = () => {
             setStatus('success');
             setMessage('Email vérifié avec succès !');
 
-            // Redirection vers la page de bienvenue après un court délai
+            // Redirection vers la page de bienvenue
             setTimeout(() => {
               navigate('/auth/welcome', { replace: true });
-            }, 1000);
-          } else {
-            throw new Error('Aucune session retournée après l\'échange du token');
+            }, 1500);
+            return;
           }
-        } else {
-          throw new Error('Aucun code de vérification trouvé dans l\'URL');
         }
+        
+        // Cas 2 : Token d'accès direct dans l'URL (ancienne méthode)
+        if (accessToken) {
+          console.log('[AuthCallback] Direct access token found, verifying session...');
+          
+          const { data: { session }, error } = await supabase.auth.getSession();
+          
+          if (error) {
+            console.error('[AuthCallback] Session error:', error);
+            throw error;
+          }
+          
+          if (session?.user) {
+            console.log('[AuthCallback] Session active for user:', session.user.id);
+            setStatus('success');
+            setMessage('Email vérifié avec succès !');
+            
+            setTimeout(() => {
+              navigate('/auth/welcome', { replace: true });
+            }, 1500);
+            return;
+          }
+        }
+        
+        // Si aucun code ou token n'est trouvé
+        throw new Error('Aucun code de vérification trouvé dans l\'URL');
+        
       } catch (error: any) {
         console.error('[AuthCallback] Verification error:', error);
         setStatus('error');
         
-        // Messages d'erreur détaillés
+        // Messages d'erreur détaillés et contextuels
         let errorMessage = 'Le lien de vérification est invalide ou expiré.';
         
         if (error.message?.toLowerCase().includes('expired')) {
           errorMessage = 'Le lien de vérification a expiré. Veuillez demander un nouveau lien depuis la page de connexion.';
         } else if (error.message?.toLowerCase().includes('invalid')) {
           errorMessage = 'Le lien de vérification est invalide. Assurez-vous d\'utiliser le lien le plus récent envoyé par email.';
-        } else if (error.message?.toLowerCase().includes('already') || error.message?.toLowerCase().includes('used')) {
-          errorMessage = 'Ce lien a déjà été utilisé. Votre compte est déjà vérifié. Connectez-vous directement.';
-        } else if (error.message?.toLowerCase().includes('not authorized') || error.message?.toLowerCase().includes('domain')) {
+        } else if (error.message?.toLowerCase().includes('pkce')) {
+          errorMessage = 'Erreur de sécurité lors de la vérification. Veuillez réessayer de vous inscrire.';
+        } else if (error.message?.toLowerCase().includes('not authorized') || 
+                   error.message?.toLowerCase().includes('domain')) {
           errorMessage = 'Ce domaine n\'est pas autorisé. Contactez le support technique Djassa.';
+        } else if (!error.message || error.message === 'Aucun code de vérification trouvé dans l\'URL') {
+          errorMessage = 'Lien de vérification incomplet. Veuillez utiliser le lien complet reçu par email.';
         }
         
         setMessage(errorMessage);
@@ -139,9 +194,9 @@ const AuthCallback = () => {
                 className="w-full h-12 text-base font-semibold gradient-bg-primary hover:opacity-90 transition-opacity"
                 size="lg"
               >
-                Retour à la connexion
+                Se reconnecter
               </Button>
-              <p className="text-xs text-center text-muted-foreground">
+              <p className="text-xs text-center text-muted-foreground mt-2">
                 Besoin d'aide ? Contactez le support Djassa
               </p>
             </div>

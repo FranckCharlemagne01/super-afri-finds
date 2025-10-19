@@ -161,7 +161,7 @@ const AuthWelcome = () => {
                 size="lg"
               >
                 <LogIn className="w-5 h-5 mr-2" />
-                Se connecter
+                Se connecter maintenant
               </Button>
               <p className="text-xs text-center text-muted-foreground">
                 Nouveau sur Djassa ? Créez un compte pour commencer à acheter et vendre

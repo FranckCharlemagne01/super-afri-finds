@@ -187,7 +187,7 @@ const Auth = () => {
         email: email,
         password: password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: 'https://djassa.djassa.tech/auth/callback',
           data: {
             full_name: fullName,
             phone: fullPhoneNumber,

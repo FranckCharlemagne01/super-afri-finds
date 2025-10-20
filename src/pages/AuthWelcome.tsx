@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, Loader2, LogIn, Sparkles } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 const AuthWelcome = () => {
   const navigate = useNavigate();
@@ -26,6 +27,13 @@ const AuthWelcome = () => {
         if (session?.user) {
           console.log('[AuthWelcome] Valid session found for user:', session.user.id);
           setIsAuthenticated(true);
+          
+          // Afficher le toast de bienvenue
+          toast({
+            title: "Bienvenue à nouveau sur Djassa 👋",
+            description: "Nous sommes ravis de vous revoir !",
+            duration: 4000,
+          });
           
           // Récupérer le rôle de l'utilisateur
           const { data: roleData, error: roleError } = await supabase
@@ -75,9 +83,18 @@ const AuthWelcome = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-accent/5 to-success/5 p-4">
-      <Card className="w-full max-w-md border-0 shadow-2xl">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-accent/5 to-success/5 p-4 animate-fade-in">
+      <Card className="w-full max-w-md border-0 shadow-2xl animate-scale-in">
         <CardHeader className="text-center pb-4">
+          {/* Logo Djassa centré */}
+          <div className="flex justify-center mb-4">
+            <img 
+              src="/lovable-uploads/f5b1043e-2d80-47f4-bc73-a58dfe091db1.png" 
+              alt="Djassa Logo" 
+              className="h-16 w-auto animate-fade-in"
+            />
+          </div>
+          
           <div className="flex justify-center mb-6">
             {isAuthenticated === null ? (
               <div className="relative">
@@ -96,25 +113,25 @@ const AuthWelcome = () => {
               </div>
             )}
           </div>
-          <CardTitle className="text-2xl md:text-3xl font-bold">
+          <CardTitle className="text-2xl md:text-3xl font-bold animate-fade-in">
             {isAuthenticated === null && 'Vérification...'}
             {isAuthenticated && (
-              <span className="gradient-text-primary">Bienvenue sur Djassa ! 🎉</span>
+              <span className="gradient-text-primary">🎉 Votre compte a été confirmé avec succès. Bienvenue sur Djassa !</span>
             )}
             {isAuthenticated === false && (
-              <span className="gradient-text-primary">Email vérifié ! ✅</span>
+              <span className="gradient-text-primary">Bienvenue sur Djassa 👋</span>
             )}
           </CardTitle>
-          <CardDescription className="mt-3 text-base">
+          <CardDescription className="mt-3 text-base animate-fade-in">
             {isAuthenticated === null && 'Vérification de votre session en cours...'}
             {isAuthenticated && redirecting && (
               <span className="text-foreground font-medium">
-                Nous sommes ravis de vous revoir !
+                Nous sommes ravis de vous revoir ! Préparation de votre espace personnel...
               </span>
             )}
             {isAuthenticated === false && (
               <span className="text-foreground">
-                Votre adresse e-mail a été vérifiée avec succès ! Vous pouvez maintenant vous connecter à votre compte Djassa.
+                Veuillez vous connecter pour accéder à votre compte.
               </span>
             )}
           </CardDescription>
@@ -150,21 +167,16 @@ const AuthWelcome = () => {
           )}
           {isAuthenticated === false && (
             <div className="space-y-4 animate-fade-in">
-              <div className="p-4 bg-success/10 rounded-lg border border-success/20 mb-4">
-                <p className="text-sm text-center text-foreground font-medium">
-                  ✅ Votre compte est maintenant actif
-                </p>
-              </div>
               <Button 
                 onClick={() => navigate('/auth')} 
                 className="w-full h-12 text-base font-semibold gradient-bg-primary hover:opacity-90 transition-opacity"
                 size="lg"
               >
                 <LogIn className="w-5 h-5 mr-2" />
-                Se connecter maintenant
+                Se connecter
               </Button>
               <p className="text-xs text-center text-muted-foreground">
-                Nouveau sur Djassa ? Créez un compte pour commencer à acheter et vendre
+                Pas encore de compte ? Inscrivez-vous pour commencer à acheter et vendre
               </p>
             </div>
           )}

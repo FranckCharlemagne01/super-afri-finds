@@ -73,7 +73,10 @@ export const ProductCard = ({
   };
 
   const isActiveBoosted = isBoosted && boostedUntil && new Date(boostedUntil) > new Date();
-  const isProductSold = isSold || stockQuantity === 0;
+  // Le badge VENDU n'apparaît que si le vendeur a confirmé manuellement la vente
+  const isProductSold = isSold === true;
+  // Désactiver les boutons si vendu OU stock épuisé
+  const isUnavailable = isSold || stockQuantity === 0;
 
   return (
     <Card className={`relative overflow-hidden cursor-pointer border-0 shadow-md transition-all duration-500 animate-fade-in ${
@@ -221,10 +224,10 @@ export const ProductCard = ({
               size="sm" 
               className="w-full text-xs min-h-[44px]"
               onClick={handleAddToCart}
-              disabled={isProductSold}
+              disabled={isUnavailable}
             >
               <ShoppingCart className="w-3 h-3 mr-1" />
-              {isProductSold ? 'Épuisé' : 'Ajouter au panier'}
+              {isUnavailable ? 'Épuisé' : 'Ajouter au panier'}
             </Button>
             
             <div onClick={(e) => e.stopPropagation()}>
@@ -252,7 +255,7 @@ export const ProductCard = ({
               size="sm" 
               className="flex-1 text-xs p-2 min-h-[44px] min-w-[44px]"
               onClick={handleAddToCart}
-              disabled={isProductSold}
+              disabled={isUnavailable}
             >
               <ShoppingCart className="w-4 h-4" />
             </Button>

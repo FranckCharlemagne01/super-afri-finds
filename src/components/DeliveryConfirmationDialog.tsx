@@ -32,28 +32,23 @@ export const DeliveryConfirmationDialog = ({
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
-  const handleMarkAsSold = async () => {
+  const handleConfirmDelivery = async () => {
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from("products")
-        .update({ is_sold: true, is_active: false })
-        .eq("id", productId);
-
-      if (error) throw error;
-
+      // Ne plus marquer automatiquement comme vendu
+      // Le vendeur doit confirmer manuellement via la commande
       toast({
-        title: "Produit marqué comme vendu",
-        description: `"${productTitle}" a été retiré du catalogue.`,
+        title: "Livraison confirmée",
+        description: "Vous pourrez confirmer la vente depuis la commande",
       });
 
       onConfirm();
       onOpenChange(false);
     } catch (error) {
-      console.error("Erreur lors du marquage du produit:", error);
+      console.error("Erreur lors de la confirmation:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de marquer le produit comme vendu",
+        description: "Impossible de confirmer la livraison",
         variant: "destructive",
       });
     } finally {
@@ -109,13 +104,18 @@ export const DeliveryConfirmationDialog = ({
               🎉 Livraison confirmée !
             </AlertDialogTitle>
           </div>
-          <AlertDialogDescription className="text-base space-y-2">
-            <p className="font-medium text-foreground">
-              Que souhaitez-vous faire avec ce produit ?
-            </p>
+          <AlertDialogDescription className="text-base space-y-3">
             <p className="text-sm text-muted-foreground">
               "{productTitle}"
             </p>
+            <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
+              <p className="text-sm font-medium text-foreground">
+                ℹ️ La confirmation de vente se fait maintenant depuis la commande
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Vous pourrez choisir de marquer le produit comme vendu ou de le garder actif
+              </p>
+            </div>
             {currentStock > 1 && (
               <p className="text-sm text-muted-foreground">
                 Stock actuel : {currentStock} unités
@@ -124,26 +124,28 @@ export const DeliveryConfirmationDialog = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         
-        <AlertDialogFooter className="flex-col sm:flex-col gap-2">
+        <AlertDialogFooter className="flex-col sm:flex-row gap-2">
           <Button
-            onClick={handleMarkAsSold}
-            disabled={loading}
-            variant="destructive"
-            className="w-full"
-          >
-            <CheckCircle className="mr-2 h-4 w-4" />
-            Marquer comme VENDU
-          </Button>
-          
-          <Button
-            onClick={handleKeepActive}
+            onClick={handleConfirmDelivery}
             disabled={loading}
             variant="default"
             className="w-full"
           >
-            <Package className="mr-2 h-4 w-4" />
-            Laisser l'annonce active – j'ai encore ce produit
+            <CheckCircle className="mr-2 h-4 w-4" />
+            Confirmer la livraison
           </Button>
+          
+          {currentStock > 1 && (
+            <Button
+              onClick={handleKeepActive}
+              disabled={loading}
+              variant="outline"
+              className="w-full"
+            >
+              <Package className="mr-2 h-4 w-4" />
+              Réduire le stock (-1)
+            </Button>
+          )}
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

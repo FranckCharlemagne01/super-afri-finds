@@ -169,6 +169,7 @@ export type Database = {
           customer_phone: string
           delivery_location: string
           id: string
+          is_confirmed_by_seller: boolean | null
           product_id: string
           product_price: number
           product_title: string
@@ -185,6 +186,7 @@ export type Database = {
           customer_phone: string
           delivery_location: string
           id?: string
+          is_confirmed_by_seller?: boolean | null
           product_id: string
           product_price: number
           product_title: string
@@ -201,6 +203,7 @@ export type Database = {
           customer_phone?: string
           delivery_location?: string
           id?: string
+          is_confirmed_by_seller?: boolean | null
           product_id?: string
           product_price?: number
           product_title?: string
@@ -685,6 +688,10 @@ export type Database = {
       }
       check_token_balance: {
         Args: { _seller_id: string }
+        Returns: Json
+      }
+      confirm_sale_by_seller: {
+        Args: { _mark_product_as_sold?: boolean; _order_id: string }
         Returns: Json
       }
       consume_token_for_publication: {

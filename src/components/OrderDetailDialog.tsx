@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { User, Phone, MapPin, Package, DollarSign, Calendar, CheckCircle } from 'lucide-react';
+import { User, Phone, MapPin, Package, DollarSign, Calendar, CheckCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { DeliveryConfirmationDialog } from '@/components/DeliveryConfirmationDialog';
@@ -24,6 +24,7 @@ interface Order {
   status: string;
   created_at: string;
   updated_at: string;
+  is_confirmed_by_seller?: boolean;
 }
 
 interface OrderDetailDialogProps {
@@ -56,6 +57,7 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [showDeliveryConfirm, setShowDeliveryConfirm] = useState(false);
   const [productStock, setProductStock] = useState(0);
+  const [confirmingSale, setConfirmingSale] = useState(false);
 
   if (!order) return null;
 
@@ -126,6 +128,43 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
       });
     } finally {
       setUpdatingStatus(false);
+    }
+  };
+
+  const handleConfirmSale = async (markAsSold: boolean = true) => {
+    setConfirmingSale(true);
+    
+    try {
+      const { data, error } = await supabase.rpc('confirm_sale_by_seller', {
+        _order_id: order.id,
+        _mark_product_as_sold: markAsSold
+      });
+
+      if (error) throw error;
+
+      const result = data as { success: boolean; error?: string; message?: string };
+
+      if (result.success) {
+        toast({
+          title: "Vente confirmée",
+          description: markAsSold 
+            ? "Le produit est maintenant marqué comme vendu" 
+            : "Vente confirmée, le produit reste actif",
+        });
+        onOrderUpdated();
+        onOpenChange(false);
+      } else {
+        throw new Error(result.error || 'Erreur lors de la confirmation');
+      }
+    } catch (error: any) {
+      console.error('Error confirming sale:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de confirmer la vente",
+        variant: "destructive",
+      });
+    } finally {
+      setConfirmingSale(false);
     }
   };
 
@@ -307,6 +346,56 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
               </Button>
             </div>
           </div>
+
+          {/* Bouton de confirmation de vente après livraison */}
+          {order.status === 'delivered' && !order.is_confirmed_by_seller && (
+            <div className="mt-6 p-4 bg-success/10 border border-success/20 rounded-lg">
+              <div className="flex items-start gap-3 mb-4">
+                <CheckCircle2 className="h-5 w-5 text-success mt-0.5" />
+                <div className="flex-1">
+                  <h4 className="font-semibold text-success mb-1">
+                    Commande livrée - Confirmation requise
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Le produit a été livré au client. Veuillez confirmer la vente pour marquer le produit comme vendu.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  onClick={() => handleConfirmSale(true)}
+                  disabled={confirmingSale}
+                  className="flex-1"
+                  variant="default"
+                >
+                  {confirmingSale ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                  )}
+                  Confirmer la vente
+                </Button>
+                <Button
+                  onClick={() => handleConfirmSale(false)}
+                  disabled={confirmingSale}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Confirmer sans marquer vendu
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Badge de vente confirmée */}
+          {order.status === 'delivered' && order.is_confirmed_by_seller && (
+            <div className="mt-4 p-3 bg-success/10 border border-success/20 rounded-lg flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-success" />
+              <span className="text-sm font-medium text-success">
+                Vente confirmée par le vendeur
+              </span>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

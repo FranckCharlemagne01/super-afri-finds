@@ -25,6 +25,7 @@ interface Order {
   status: string;
   created_at: string;
   updated_at: string;
+  is_confirmed_by_seller?: boolean;
 }
 
 const statusColors = {
@@ -146,9 +147,21 @@ export const SellerOrders = () => {
                     <Package className="h-4 w-4 text-primary" />
                     Commande #{order.id.slice(-8)}
                   </CardTitle>
-                  <Badge variant={getStatusBadgeVariant(order.status)} className="w-fit">
-                    {statusLabels[order.status as keyof typeof statusLabels]}
-                  </Badge>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant={getStatusBadgeVariant(order.status)} className="w-fit">
+                      {statusLabels[order.status as keyof typeof statusLabels]}
+                    </Badge>
+                    {order.status === 'delivered' && !order.is_confirmed_by_seller && (
+                      <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20 w-fit">
+                        En attente de confirmation
+                      </Badge>
+                    )}
+                    {order.is_confirmed_by_seller && (
+                      <Badge variant="outline" className="bg-success/10 text-success border-success/20 w-fit">
+                        Vente confirmée
+                      </Badge>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Calendar className="h-3 w-3" />

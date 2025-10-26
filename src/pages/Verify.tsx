@@ -11,116 +11,42 @@ const Verify = () => {
 
   useEffect(() => {
     const verifyEmail = async () => {
-      try {
-        console.log('[Verify] Processing verification URL:', window.location.href);
-        
-        // Récupérer les paramètres depuis l'URL
-        const tokenHash = searchParams.get('token_hash') || searchParams.get('token');
-        const type = searchParams.get('type') || 'email';
-        const code = searchParams.get('code');
-        const errorParam = searchParams.get('error');
-        const errorDescription = searchParams.get('error_description');
+      const token = searchParams.get('token');
 
-        console.log('[Verify] Parameters:', { 
-          hasTokenHash: !!tokenHash, 
-          hasCode: !!code,
-          type,
-          error: errorParam 
+      if (!token) {
+        // Rediriger vers la page de bienvenue même sans token
+        navigate('/auth/welcome', { replace: true });
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase.rpc('verify_email_with_token', {
+          _token: token
         });
 
-        // Si erreur dans l'URL
-        if (errorParam) {
-          console.error('[Verify] Error in URL:', errorParam, errorDescription);
-          
-          // Si l'utilisateur est déjà vérifié, rediriger vers login
-          if (errorDescription?.toLowerCase().includes('already') || 
-              errorDescription?.toLowerCase().includes('confirmed') ||
-              errorDescription?.toLowerCase().includes('verified')) {
-            setStatus('success');
-            setTimeout(() => {
-              navigate('/auth?verified=already', { replace: true });
-            }, 1500);
-            return;
-          }
-          
-          throw new Error(errorDescription || errorParam);
+        if (error) throw error;
+
+        const result = data as { success: boolean; error?: string; message?: string };
+
+        if (result.success) {
+          setStatus('success');
+          // Rediriger vers la page de bienvenue après vérification réussie
+          setTimeout(() => {
+            navigate('/auth/welcome', { replace: true });
+          }, 1000);
+        } else {
+          setStatus('error');
+          // Même en cas d'erreur, rediriger vers la page de bienvenue
+          setTimeout(() => {
+            navigate('/auth/welcome', { replace: true });
+          }, 2000);
         }
-
-        // Cas 1 : Code PKCE (méthode moderne)
-        if (code) {
-          console.log('[Verify] Exchanging PKCE code...');
-          
-          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-
-          if (error) {
-            console.error('[Verify] Exchange error:', error);
-            
-            // Si déjà vérifié malgré l'erreur
-            if (error.message?.toLowerCase().includes('already')) {
-              setStatus('success');
-              setTimeout(() => {
-                navigate('/auth?verified=already', { replace: true });
-              }, 1500);
-              return;
-            }
-            
-            throw error;
-          }
-
-          if (data?.session) {
-            console.log('[Verify] Session established for user:', data.session.user.id);
-            setStatus('success');
-            setTimeout(() => {
-              navigate('/auth/welcome', { replace: true });
-            }, 1500);
-            return;
-          }
-        }
-
-        // Cas 2 : Token hash OTP (lien magique)
-        if (tokenHash) {
-          console.log('[Verify] Verifying OTP token...');
-          
-          const { data, error } = await supabase.auth.verifyOtp({
-            token_hash: tokenHash,
-            type: type as any,
-          });
-
-          if (error) {
-            console.error('[Verify] OTP verification error:', error);
-            
-            // Si déjà vérifié
-            if (error.message?.toLowerCase().includes('already')) {
-              setStatus('success');
-              setTimeout(() => {
-                navigate('/auth?verified=already', { replace: true });
-              }, 1500);
-              return;
-            }
-            
-            throw error;
-          }
-
-          if (data?.session) {
-            console.log('[Verify] OTP verified, session created');
-            setStatus('success');
-            setTimeout(() => {
-              navigate('/auth/welcome', { replace: true });
-            }, 1500);
-            return;
-          }
-        }
-
-        // Si aucun paramètre de vérification
-        throw new Error('Aucun code de vérification trouvé');
-        
-      } catch (error: any) {
-        console.error('[Verify] Verification error:', error);
+      } catch (error) {
+        console.error('Error verifying email:', error);
         setStatus('error');
-        
-        // Rediriger vers auth avec message d'erreur après 2 secondes
+        // Rediriger vers la page de bienvenue même en cas d'erreur
         setTimeout(() => {
-          navigate('/auth?error=verification_failed', { replace: true });
+          navigate('/auth/welcome', { replace: true });
         }, 2000);
       }
     };
@@ -143,8 +69,8 @@ const Verify = () => {
           </CardTitle>
           <CardDescription className="mt-2">
             {status === 'loading' && 'Validation de votre adresse email...'}
-            {status === 'success' && '✅ Votre compte a été vérifié avec succès !'}
-            {status === 'error' && 'Erreur lors de la vérification. Redirection...'}
+            {status === 'success' && 'Email vérifié ! Redirection...'}
+            {status === 'error' && 'Préparation de votre espace...'}
           </CardDescription>
         </CardHeader>
         <CardContent>

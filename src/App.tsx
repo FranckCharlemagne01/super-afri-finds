@@ -8,6 +8,10 @@ import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { SmoothSkeleton } from "@/components/ui/smooth-skeleton";
 import { lazy, Suspense } from "react";
+import { SplashScreen } from "@/components/SplashScreen";
+import { PageTransition } from "@/components/PageTransition";
+import { useAppInitialization } from "@/hooks/useAppInitialization";
+import { useTouchOptimization } from "@/hooks/useTouchOptimization";
 
 const Verify = lazy(() => import("./pages/Verify"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
@@ -48,16 +52,24 @@ const PageLoadingFallback = () => (
   </div>
 );
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Suspense fallback={<PageLoadingFallback />}>
-            <Routes>
-          <Route path="/" element={<Index />} />
+const AppContent = () => {
+  const { isReady, showSplash, handleSplashComplete } = useAppInitialization();
+  useTouchOptimization();
+
+  if (showSplash) {
+    return <SplashScreen onComplete={handleSplashComplete} />;
+  }
+
+  if (!isReady) {
+    return <PageLoadingFallback />;
+  }
+
+  return (
+    <>
+      <Suspense fallback={<PageLoadingFallback />}>
+        <PageTransition>
+          <Routes>
+            <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/auth/welcome" element={<AuthWelcome />} />
@@ -100,8 +112,21 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </Suspense>
-          <MobileBottomNav />
+        </PageTransition>
+      </Suspense>
+      <MobileBottomNav />
+    </>
+  );
+};
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppContent />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

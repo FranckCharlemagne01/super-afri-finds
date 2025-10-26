@@ -1,4 +1,5 @@
 import { Sparkles } from "lucide-react";
+import { OptimizedImage } from "@/components/OptimizedImage";
 import marketplaceShowcase from "@/assets/marketplace-showcase.jpg";
 
 export const FeaturedProductsGrid = () => {
@@ -20,11 +21,12 @@ export const FeaturedProductsGrid = () => {
         </div>
         
         <div className="relative w-full overflow-hidden rounded-2xl shadow-lg">
-          <img 
-            src={marketplaceShowcase} 
+          <OptimizedImage
+            src={marketplaceShowcase}
             alt="Marketplace Djassa - Vitrine de produits"
-            className="w-full h-auto object-cover transition-transform duration-500 hover:scale-105"
-            loading="lazy"
+            aspectRatio="16/9"
+            priority={true}
+            className="w-full h-auto"
           />
         </div>
       </div>

@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import './styles/mobile-optimizations.css';
-
 /* E-commerce Platform Design System - Temu Style 
 All colors MUST be HSL.
 */
@@ -120,28 +118,10 @@ All colors MUST be HSL.
   }
 }
 
-/* Performance optimizations - ULTRA MOBILE */
+/* Performance optimizations */
 * {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Hardware acceleration for smoother animations */
-.will-change-transform {
-  will-change: transform;
-}
-
-.will-change-opacity {
-  will-change: opacity;
-}
-
-/* GPU acceleration */
-.gpu-accelerated {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  perspective: 1000px;
 }
 
 /* Smooth scrolling with performance */
@@ -154,7 +134,6 @@ html {
 
 body {
   overflow-x: hidden;
-  overscroll-behavior-y: none; /* Prevent rubber band effect */
 }
 
 @media (prefers-reduced-motion: reduce) {

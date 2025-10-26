@@ -9,7 +9,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { ContactSellerButton } from "@/components/ContactSellerButton";
 import { QuickOrderDialog } from "@/components/QuickOrderDialog";
 import { CountdownTimer } from "@/components/CountdownTimer";
-import { OptimizedImage } from "@/components/OptimizedImage";
 
 interface ProductCardProps {
   id?: string;
@@ -80,7 +79,7 @@ export const ProductCard = ({
   const isUnavailable = isSold || stockQuantity === 0;
 
   return (
-    <Card className={`group relative overflow-hidden cursor-pointer border-0 shadow-md tap-optimized gpu-accelerated transition-all duration-300 animate-fade-in ${
+    <Card className={`relative overflow-hidden cursor-pointer border-0 shadow-md transition-all duration-500 animate-fade-in ${
       isActiveBoosted 
         ? 'ring-2 ring-amber-400 hover:ring-amber-500 hover:shadow-2xl hover:shadow-amber-200/50 hover:-translate-y-2 hover:scale-[1.03]' 
         : 'hover-lift hover:shadow-xl'
@@ -123,7 +122,7 @@ export const ProductCard = ({
       {/* Heart Icon */}
       <button 
         onClick={handleToggleFavorite}
-        className="absolute top-1 sm:top-2 right-1 sm:right-2 z-10 p-1.5 sm:p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white tap-optimized transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center"
+        className="absolute top-1 sm:top-2 right-1 sm:right-2 z-10 p-1.5 sm:p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
       >
         <Heart className={`w-4 h-4 sm:w-4 sm:h-4 transition-colors ${
           isFavorite(id) 
@@ -134,11 +133,11 @@ export const ProductCard = ({
 
       {/* Product Image - Optimized Rectangular Aspect Ratio */}
       <div className="relative w-full aspect-[4/5] overflow-hidden bg-muted rounded-t-lg">
-        <OptimizedImage
+        <img
           src={image}
           alt={title}
-          aspectRatio="4/5"
-          className="w-full h-full transition-transform duration-700 ease-out group-hover:scale-110 group-hover:rotate-1"
+          loading="lazy"
+          className="w-full h-full object-cover transition-transform duration-700 ease-out hover:scale-110 hover:rotate-1"
         />
         {videoUrl && (
           <div className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 z-10">

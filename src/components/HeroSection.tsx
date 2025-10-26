@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { Gift, Zap } from "lucide-react";
-import { OptimizedImage } from "@/components/OptimizedImage";
 import heroBanner from "@/assets/hero-banner.jpg";
 
 export const HeroSection = () => {
@@ -10,16 +9,14 @@ export const HeroSection = () => {
 
   return (
     <div className="relative overflow-hidden rounded-xl sm:rounded-2xl mb-4 sm:mb-6">
-      <div className="absolute inset-0 gradient-primary opacity-90 z-10" />
-      <OptimizedImage
-        src={heroBanner}
-        alt="Promotions exceptionnelles"
-        aspectRatio="16/9"
-        priority={true}
-        className="w-full h-32 sm:h-40 md:h-48 lg:h-64"
+      <div className="absolute inset-0 gradient-primary opacity-90" />
+      <img 
+        src={heroBanner} 
+        alt="Promotions exceptionnelles" 
+        className="w-full h-32 sm:h-40 md:h-48 lg:h-64 object-cover"
       />
       
-      <div className="absolute inset-0 flex flex-col justify-center p-4 sm:p-6 text-white z-20">
+      <div className="absolute inset-0 flex flex-col justify-center p-4 sm:p-6 text-white">
         <div className="max-w-xs sm:max-w-md">
           <div className="flex items-center gap-2 mb-2">
             <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-accent animate-bounce-subtle" />

@@ -59,11 +59,35 @@ const Auth = () => {
     const type = searchParams.get('type');
     const access_token = searchParams.get('access_token');
     const refresh_token = searchParams.get('refresh_token');
+    const verified = searchParams.get('verified');
+    const error = searchParams.get('error');
     
     if (type === 'recovery' && access_token && refresh_token) {
       setUpdatePasswordMode(true);
     }
-  }, [searchParams]);
+
+    // Gérer les messages de vérification
+    if (verified === 'already') {
+      toast({
+        title: "✅ Compte déjà vérifié",
+        description: "Votre compte est déjà actif. Connectez-vous pour continuer.",
+        duration: 5000,
+      });
+      // Nettoyer l'URL
+      window.history.replaceState({}, '', '/auth');
+    }
+
+    if (error === 'verification_failed') {
+      toast({
+        variant: "destructive",
+        title: "❌ Erreur de vérification",
+        description: "Le lien de vérification est invalide ou a expiré. Essayez de vous connecter ou demandez un nouveau lien.",
+        duration: 7000,
+      });
+      // Nettoyer l'URL
+      window.history.replaceState({}, '', '/auth');
+    }
+  }, [searchParams, toast]);
 
   // Rediriger automatiquement les utilisateurs connectés vers leur dashboard
   useEffect(() => {

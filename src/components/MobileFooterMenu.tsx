@@ -17,9 +17,6 @@ export const MobileFooterMenu = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  // Afficher uniquement sur mobile/tablette
-  if (!isMobile) return null;
-
   // Vérifier si c'est la première ouverture
   useEffect(() => {
     if (isOpen) {
@@ -33,6 +30,9 @@ export const MobileFooterMenu = () => {
       }
     }
   }, [isOpen]);
+
+  // Afficher uniquement sur mobile/tablette
+  if (!isMobile) return null;
 
   return (
     <>

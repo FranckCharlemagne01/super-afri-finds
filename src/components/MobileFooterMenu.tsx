@@ -8,6 +8,12 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -16,6 +22,87 @@ export const MobileFooterMenu = () => {
   const [showWelcome, setShowWelcome] = useState(false);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+
+  // Données FAQ structurées par catégorie
+  const faqCategories = [
+    {
+      category: "Compte",
+      questions: [
+        {
+          question: "Comment créer un compte sur Djassa ?",
+          answer: "Cliquez sur 'S'inscrire', remplissez vos informations (nom, email, téléphone), puis validez. Vous recevrez un email ou SMS de confirmation pour activer votre compte."
+        },
+        {
+          question: "Est-ce que l'inscription est gratuite ?",
+          answer: "Oui, l'inscription est 100 % gratuite, et vous bénéficiez de 28 jours d'essai gratuit avec 50 jetons offerts pour publier vos produits."
+        },
+        {
+          question: "Puis-je utiliser Djassa sans compte ?",
+          answer: "Vous pouvez consulter les produits librement, mais pour acheter, vendre ou créer une boutique, il faut avoir un compte utilisateur."
+        }
+      ]
+    },
+    {
+      category: "Achat",
+      questions: [
+        {
+          question: "Comment acheter un produit sur Djassa ?",
+          answer: "Connectez-vous, choisissez un produit, ajoutez-le au panier et suivez les étapes de paiement sécurisé."
+        },
+        {
+          question: "Quels sont les modes de paiement disponibles ?",
+          answer: "Orange Money, MTN Mobile Money, Moov Money, carte bancaire, et bientôt PayPal. Tous les paiements passent par Paystack (test ou live)."
+        },
+        {
+          question: "Comment suivre ma commande ?",
+          answer: "Allez dans 'Mes commandes' pour voir l'état de votre achat (en attente, expédié, livré)."
+        }
+      ]
+    },
+    {
+      category: "Vente",
+      questions: [
+        {
+          question: "Comment vendre sur Djassa ?",
+          answer: "Créez un compte vendeur et accédez à votre tableau de bord vendeur. Vous pouvez alors ajouter vos produits et gérer vos ventes depuis un espace professionnel."
+        },
+        {
+          question: "Est-ce que je peux créer ma propre boutique ?",
+          answer: "Oui ! Avec Djassa, chaque vendeur peut créer sa boutique personnalisée avec un nom, une catégorie principale et un lien unique vers sa boutique."
+        },
+        {
+          question: "Comment obtenir plus de jetons ?",
+          answer: "Vous pouvez acheter des jetons depuis votre tableau de bord via Paystack. Après paiement, vos jetons sont crédités automatiquement."
+        }
+      ]
+    },
+    {
+      category: "Livraison",
+      questions: [
+        {
+          question: "Comment se passe la livraison ?",
+          answer: "Les vendeurs choisissent leur mode de livraison (locale, transporteur, remise en main propre). L'acheteur voit les frais de livraison avant de confirmer sa commande."
+        },
+        {
+          question: "Quels sont les délais de livraison ?",
+          answer: "Généralement 2-5 jours en Côte d'Ivoire, selon votre localisation et le mode de livraison choisi par le vendeur."
+        }
+      ]
+    },
+    {
+      category: "Sécurité",
+      questions: [
+        {
+          question: "Mes paiements sont-ils sécurisés ?",
+          answer: "Oui, toutes les transactions passent par Paystack avec un chiffrement SSL. Djassa ne conserve jamais vos informations bancaires."
+        },
+        {
+          question: "Comment éviter les arnaques ?",
+          answer: "Ne payez jamais en dehors de la plateforme. Djassa garantit la sécurité des paiements et la transparence entre vendeurs et acheteurs."
+        }
+      ]
+    }
+  ];
 
   // Vérifier si c'est la première ouverture
   useEffect(() => {
@@ -70,21 +157,44 @@ export const MobileFooterMenu = () => {
           )}
 
           <div className="space-y-6 pb-6">
-            {/* Questions Fréquemment Posées */}
+            {/* FAQ - Questions Fréquemment Posées */}
             <section className="space-y-3">
               <div className="flex items-center gap-2 pb-2 border-b">
                 <HelpCircle className="w-5 h-5 text-primary" />
-                <h3 className="font-semibold text-lg">Questions Fréquemment Posées</h3>
+                <h3 className="font-semibold text-lg">FAQ</h3>
               </div>
+              <Accordion type="single" collapsible className="pl-2 space-y-2">
+                {faqCategories.map((category, catIndex) => (
+                  <div key={catIndex} className="space-y-2">
+                    <h4 className="font-medium text-sm text-foreground pt-2">{category.category}</h4>
+                    {category.questions.map((faq, qIndex) => (
+                      <AccordionItem
+                        key={`${catIndex}-${qIndex}`}
+                        value={`faq-${catIndex}-${qIndex}`}
+                        className="border-none"
+                      >
+                        <AccordionTrigger className="text-sm text-muted-foreground hover:text-primary py-2 hover:no-underline">
+                          {faq.question}
+                        </AccordionTrigger>
+                        <AccordionContent className="text-sm text-muted-foreground pb-2">
+                          {faq.answer}
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </div>
+                ))}
+              </Accordion>
+            </section>
+
+            {/* Assistance */}
+            <section className="space-y-3">
+              <h3 className="font-semibold text-lg pb-2 border-b">Assistance</h3>
               <div className="space-y-2 pl-2">
                 <button className="text-sm text-muted-foreground hover:text-primary transition-colors block w-full text-left py-2">
                   Centre d'aide
                 </button>
                 <button className="text-sm text-muted-foreground hover:text-primary transition-colors block w-full text-left py-2">
                   Support 24/7
-                </button>
-                <button className="text-sm text-muted-foreground hover:text-primary transition-colors block w-full text-left py-2">
-                  FAQ
                 </button>
               </div>
             </section>

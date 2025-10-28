@@ -476,8 +476,10 @@ const Index = () => {
       {/* Bandeau d'annonces défilantes */}
       <ScrollingAnnouncementBanner />
 
-      {/* FAQ Section */}
-      <FAQ />
+      {/* FAQ Section - Masqué sur mobile/tablette, visible sur desktop */}
+      <div className="hidden lg:block">
+        <FAQ />
+      </div>
 
       {/* Footer - Masqué sur mobile/tablette, visible sur desktop */}
       <footer className="bg-secondary mt-8 sm:mt-12 py-8 sm:py-10 border-t hidden lg:block">

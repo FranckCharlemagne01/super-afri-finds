@@ -17,7 +17,8 @@ import {
   Star, 
   ShoppingCart,
   Plus,
-  Minus
+  Minus,
+  Store
 } from "lucide-react";
 import {
   Carousel,
@@ -62,6 +63,14 @@ const ProductDetail = () => {
   const { toggleFavorite, isFavorite } = useFavorites();
   const { toast } = useToast();
   const { location: userLocation } = useUserLocation();
+
+  const handleBackNavigation = () => {
+    if (shop?.shop_slug) {
+      navigate(`/boutique/${shop.shop_slug}`);
+    } else {
+      navigate('/');
+    }
+  };
 
   const [quantity, setQuantity] = useState(1);
   const [personalMessage, setPersonalMessage] = useState('');
@@ -244,7 +253,7 @@ const ProductDetail = () => {
   const reviewsCount = product.reviews_count || 0;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background animate-fade-in">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-3">
@@ -253,21 +262,47 @@ const ProductDetail = () => {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                onClick={() => navigate(-1)}
-                className="hover:bg-secondary"
+                onClick={handleBackNavigation}
+                className="hover:bg-secondary transition-all"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
-              <h1 className="text-lg font-semibold text-foreground">
-                Détails du produit
+              <h1 
+                className="text-lg md:text-xl font-bold gradient-text-primary cursor-pointer transition-transform hover:scale-105" 
+                onClick={() => navigate('/')}
+              >
+                Djassa
               </h1>
             </div>
+            {shop && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBackNavigation}
+                className="hidden md:flex items-center gap-2 transition-all hover:bg-secondary"
+              >
+                <Store className="w-4 h-4" />
+                Retour à la boutique
+              </Button>
+            )}
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
+        {/* Back to Shop Button - Mobile & Desktop */}
+        {shop && (
+          <Button
+            variant="ghost"
+            onClick={handleBackNavigation}
+            className="mb-4 flex items-center gap-2 text-primary hover:bg-primary/10 transition-all"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Retour à {shop.shop_name}</span>
+          </Button>
+        )}
+        
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Product Image/Video Gallery */}
           <div className="space-y-4">

@@ -224,13 +224,20 @@ const ShopPage = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/')}
+            className="transition-all hover:bg-secondary"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div className="flex items-center gap-2">
+          <h1 
+            className="text-lg font-bold gradient-text-primary cursor-pointer transition-transform hover:scale-105" 
+            onClick={() => navigate('/')}
+          >
+            Djassa
+          </h1>
+          <div className="flex items-center gap-2 ml-2">
             <Store className="h-5 w-5 text-primary" />
-            <h1 className="text-lg font-semibold">{shop.shop_name}</h1>
+            <span className="text-lg font-semibold">{shop.shop_name}</span>
           </div>
           {shop.subscription_active && (
             <Badge variant="secondary" className="ml-auto">
@@ -363,7 +370,7 @@ const ShopPage = () => {
                 <Card
                   key={similarShop.id}
                   className="p-4 cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => navigate(`/shop/${similarShop.shop_slug}`)}
+                  onClick={() => navigate(`/boutique/${similarShop.shop_slug}`)}
                 >
                   <div className="flex items-center gap-3 mb-2">
                     {similarShop.logo_url ? (

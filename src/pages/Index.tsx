@@ -6,6 +6,7 @@ import PromoBanner from "@/components/PromoBanner";
 import { FloatingChatWidget } from "@/components/FloatingChatWidget";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 import { HelpButton } from "@/components/HelpButton";
+import { MobileFooterMenu } from "@/components/MobileFooterMenu";
 import { FloatingChatButton } from "@/components/FloatingChatButton";
 import FAQ from "@/components/FAQ";
 import { HeroCarousel } from "@/components/HeroCarousel";
@@ -328,9 +329,10 @@ const Index = () => {
               <SearchBar placeholder="Rechercher des produits..." />
             </div>
             
-            {/* Mobile/Tablet Help Button */}
-            <div className="md:hidden">
+            {/* Mobile/Tablet Help Button & Footer Menu */}
+            <div className="md:hidden flex items-center gap-2">
               <HelpButton />
+              <MobileFooterMenu />
             </div>
 
             {/* Desktop Icons Only - Hidden on mobile/tablet */}
@@ -474,11 +476,13 @@ const Index = () => {
       {/* Bandeau d'annonces défilantes */}
       <ScrollingAnnouncementBanner />
 
-      {/* FAQ Section */}
-      <FAQ />
+      {/* FAQ Section - Masqué sur mobile/tablette, visible sur desktop */}
+      <div className="hidden lg:block">
+        <FAQ />
+      </div>
 
-      {/* Footer - Simple et professionnel */}
-      <footer className="bg-secondary mt-8 sm:mt-12 py-8 sm:py-10 border-t">
+      {/* Footer - Masqué sur mobile/tablette, visible sur desktop */}
+      <footer className="bg-secondary mt-8 sm:mt-12 py-8 sm:py-10 border-t hidden lg:block">
         <div className="container mx-auto px-3 sm:px-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8 mb-8">
             <div>

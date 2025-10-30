@@ -270,7 +270,7 @@ export const ShopManagement = () => {
             <Button
               variant="default"
               className="flex-1 transition-all hover:scale-105"
-              onClick={() => window.open(`/shop/${shop.shop_slug}`, '_blank')}
+              onClick={() => window.open(`/boutique/${shop.shop_slug}`, '_blank')}
             >
               <ExternalLink className="h-4 w-4 mr-2" />
               Voir ma boutique
@@ -279,7 +279,7 @@ export const ShopManagement = () => {
               variant="outline"
               className="flex-1 transition-all hover:scale-105"
               onClick={() => {
-                navigator.clipboard.writeText(`${window.location.origin}/shop/${shop.shop_slug}`);
+                navigator.clipboard.writeText(`${window.location.origin}/boutique/${shop.shop_slug}`);
                 toast({
                   title: "Copié !",
                   description: "Le lien de votre boutique a été copié.",

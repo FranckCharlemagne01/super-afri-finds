@@ -75,7 +75,7 @@ export const OptimizedProductCard = memo(({
   const handleShopClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     if (shop_slug) {
-      navigate(`/shop/${shop_slug}`);
+      navigate(`/boutique/${shop_slug}`);
     }
   }, [navigate, shop_slug]);
 

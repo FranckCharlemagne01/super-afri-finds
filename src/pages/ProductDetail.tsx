@@ -17,7 +17,8 @@ import {
   Star, 
   ShoppingCart,
   Plus,
-  Minus
+  Minus,
+  Store
 } from "lucide-react";
 import {
   Carousel,
@@ -235,6 +236,16 @@ const ProductDetail = () => {
     toggleFavorite(product.id);
   };
 
+  const handleBackNavigation = () => {
+    // Si on a les infos de la boutique, retourner à la boutique
+    if (shop?.shop_slug) {
+      navigate(`/boutique/${shop.shop_slug}`);
+    } else {
+      // Sinon retourner à la page d'accueil
+      navigate('/');
+    }
+  };
+
   const productImages = product.images && product.images.length > 0 ? product.images : ["/placeholder.svg"];
   const productImage = productImages[selectedImageIndex];
   const originalPrice = product.original_price || product.price;
@@ -253,8 +264,8 @@ const ProductDetail = () => {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                onClick={() => navigate(-1)}
-                className="hover:bg-secondary"
+                onClick={handleBackNavigation}
+                className="hover:bg-secondary transition-all"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
@@ -262,13 +273,36 @@ const ProductDetail = () => {
                 Détails du produit
               </h1>
             </div>
+            {shop && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBackNavigation}
+                className="hidden md:flex items-center gap-2 transition-all hover:bg-secondary"
+              >
+                <Store className="w-4 h-4" />
+                Retour à la boutique
+              </Button>
+            )}
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Breadcrumb / Back to Shop button */}
+        {shop && (
+          <Button
+            variant="ghost"
+            onClick={handleBackNavigation}
+            className="mb-4 text-muted-foreground hover:text-primary transition-all animate-fade-in"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Retour à {shop.shop_name}
+          </Button>
+        )}
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fade-in">
           {/* Product Image/Video Gallery */}
           <div className="space-y-4">
             <div className="relative">

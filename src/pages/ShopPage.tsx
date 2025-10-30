@@ -460,7 +460,7 @@ const ShopPage = () => {
                 <Card
                   key={similarShop.id}
                   className="p-4 cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => navigate(`/shop/${similarShop.shop_slug}`)}
+                  onClick={() => navigate(`/boutique/${similarShop.shop_slug}`)}
                 >
                   <div className="flex items-center gap-3 mb-2">
                     {similarShop.logo_url ? (

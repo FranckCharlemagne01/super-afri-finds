@@ -4,15 +4,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Store, Plus, Calendar, Grid3x3 } from 'lucide-react';
+import { ArrowLeft, Store, Plus, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ProductCard } from '@/components/ProductCard';
 import { useAuth } from '@/hooks/useAuth';
 import { SellerShopDashboard } from '@/components/SellerShopDashboard';
 import { useUserLocation } from '@/hooks/useUserLocation';
-import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface Shop {
   id: string;
@@ -60,10 +57,6 @@ const ShopPage = () => {
   const [loading, setLoading] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [categoryTransition, setCategoryTransition] = useState(false);
-  
-  const isMobile = useIsMobile();
 
   useEffect(() => {
     const fetchShopData = async () => {
@@ -222,31 +215,6 @@ const ShopPage = () => {
     );
   }
 
-  // Extract unique categories with counts
-  const categories = products.reduce((acc, product) => {
-    acc[product.category] = (acc[product.category] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-  
-  const categoryList = Object.entries(categories).map(([name, count]) => ({
-    name,
-    count,
-    displayName: name.replace(/-/g, ' ')
-  }));
-  
-  const hasMultipleCategories = categoryList.length > 1;
-  
-  // Filter products by selected category
-  const filteredProducts = selectedCategory === 'all' 
-    ? products 
-    : products.filter(p => p.category === selectedCategory);
-  
-  const handleCategoryChange = (category: string) => {
-    setCategoryTransition(true);
-    setSelectedCategory(category);
-    setTimeout(() => setCategoryTransition(false), 300);
-  };
-
   // Public shop view for visitors
   return (
     <div className="min-h-screen bg-background">
@@ -332,122 +300,57 @@ const ShopPage = () => {
           </Card>
         </div>
 
-        {/* Welcome Message */}
-        {products.length > 0 && (
-          <Card className="p-4 mb-6 bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
-            <p className="text-center text-sm md:text-base">
-              👋 <span className="font-semibold">Bienvenue dans la boutique de {shop.shop_name}</span> — découvrez {hasMultipleCategories ? 'ses produits par catégorie' : 'ses produits'}
-            </p>
-          </Card>
-        )}
-
-        {/* Products Section with Category Navigation */}
+        {/* Products Section - Grouped by Category */}
         <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4">Produits de la boutique</h3>
+          
           {products.length === 0 ? (
             <Card className="p-12 text-center">
               <Store className="h-16 w-16 mx-auto text-muted-foreground/30 mb-4" />
               <p className="text-muted-foreground">Cette boutique n'a pas encore de produits.</p>
             </Card>
           ) : (
-            <div className={cn(
-              "flex gap-6",
-              hasMultipleCategories && !isMobile ? "flex-row" : "flex-col"
-            )}>
-              {/* Category Sidebar (Desktop) / Category Bar (Mobile) */}
-              {hasMultipleCategories && (
-                isMobile ? (
-                  <div className="w-full mb-4">
-                    <ScrollArea className="w-full">
-                      <div className="flex gap-2 pb-2">
-                        <Button
-                          variant={selectedCategory === 'all' ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => handleCategoryChange('all')}
-                          className="whitespace-nowrap"
-                        >
-                          <Grid3x3 className="h-4 w-4 mr-2" />
-                          Tout ({products.length})
-                        </Button>
-                        {categoryList.map((cat) => (
-                          <Button
-                            key={cat.name}
-                            variant={selectedCategory === cat.name ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={() => handleCategoryChange(cat.name)}
-                            className="whitespace-nowrap capitalize"
-                          >
-                            {cat.displayName} ({cat.count})
-                          </Button>
+            (() => {
+              // Group products by category
+              const productsByCategory = products.reduce((acc, product) => {
+                if (!acc[product.category]) {
+                  acc[product.category] = [];
+                }
+                acc[product.category].push(product);
+                return acc;
+              }, {} as Record<string, Product[]>);
+
+              return (
+                <div className="space-y-8">
+                  {Object.entries(productsByCategory).map(([category, categoryProducts]) => (
+                    <div key={category}>
+                      <h4 className="text-lg font-medium mb-4 capitalize">
+                        {category.replace(/-/g, ' ')}
+                      </h4>
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                        {categoryProducts.map((product) => (
+                          <ProductCard
+                            key={product.id}
+                            id={product.id}
+                            title={product.title}
+                            originalPrice={product.original_price || product.price}
+                            salePrice={product.price}
+                            image={product.images[0] || ''}
+                            rating={product.rating}
+                            reviews={product.reviews_count}
+                            badge={product.badge || undefined}
+                            isFlashSale={product.is_flash_sale}
+                            discount={product.discount_percentage || 0}
+                            seller_id={product.seller_id}
+                            isBoosted={false}
+                          />
                         ))}
                       </div>
-                    </ScrollArea>
-                  </div>
-                ) : (
-                  <Card className="w-64 h-fit p-4 sticky top-24">
-                    <h3 className="font-semibold mb-4 flex items-center gap-2">
-                      <Grid3x3 className="h-5 w-5 text-primary" />
-                      Catégories
-                    </h3>
-                    <div className="space-y-2">
-                      <Button
-                        variant={selectedCategory === 'all' ? 'default' : 'ghost'}
-                        className="w-full justify-between"
-                        onClick={() => handleCategoryChange('all')}
-                      >
-                        <span>Tous les produits</span>
-                        <Badge variant="secondary">{products.length}</Badge>
-                      </Button>
-                      {categoryList.map((cat) => (
-                        <Button
-                          key={cat.name}
-                          variant={selectedCategory === cat.name ? 'default' : 'ghost'}
-                          className="w-full justify-between capitalize"
-                          onClick={() => handleCategoryChange(cat.name)}
-                        >
-                          <span>{cat.displayName}</span>
-                          <Badge variant="secondary">{cat.count}</Badge>
-                        </Button>
-                      ))}
                     </div>
-                  </Card>
-                )
-              )}
-
-              {/* Products Grid */}
-              <div className="flex-1">
-                <div className={cn(
-                  "transition-opacity duration-300",
-                  categoryTransition ? "opacity-0" : "opacity-100"
-                )}>
-                  {filteredProducts.length === 0 ? (
-                    <Card className="p-12 text-center">
-                      <Store className="h-16 w-16 mx-auto text-muted-foreground/30 mb-4" />
-                      <p className="text-muted-foreground">Aucun produit dans cette catégorie.</p>
-                    </Card>
-                  ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                      {filteredProducts.map((product) => (
-                        <ProductCard
-                          key={product.id}
-                          id={product.id}
-                          title={product.title}
-                          originalPrice={product.original_price || product.price}
-                          salePrice={product.price}
-                          image={product.images[0] || ''}
-                          rating={product.rating}
-                          reviews={product.reviews_count}
-                          badge={product.badge || undefined}
-                          isFlashSale={product.is_flash_sale}
-                          discount={product.discount_percentage || 0}
-                          seller_id={product.seller_id}
-                          isBoosted={false}
-                        />
-                      ))}
-                    </div>
-                  )}
+                  ))}
                 </div>
-              </div>
-            </div>
+              );
+            })()
           )}
         </div>
 
@@ -460,7 +363,7 @@ const ShopPage = () => {
                 <Card
                   key={similarShop.id}
                   className="p-4 cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => navigate(`/boutique/${similarShop.shop_slug}`)}
+                  onClick={() => navigate(`/shop/${similarShop.shop_slug}`)}
                 >
                   <div className="flex items-center gap-3 mb-2">
                     {similarShop.logo_url ? (

@@ -6,6 +6,7 @@ import PromoBanner from "@/components/PromoBanner";
 import { FloatingChatWidget } from "@/components/FloatingChatWidget";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 import { HelpButton } from "@/components/HelpButton";
+import { MobileInfoDrawer } from "@/components/MobileInfoDrawer";
 import { FloatingChatButton } from "@/components/FloatingChatButton";
 import FAQ from "@/components/FAQ";
 import { HeroCarousel } from "@/components/HeroCarousel";
@@ -328,9 +329,10 @@ const Index = () => {
               <SearchBar placeholder="Rechercher des produits..." />
             </div>
             
-            {/* Mobile/Tablet Help Button */}
-            <div className="md:hidden">
+            {/* Mobile/Tablet Help Button & Info Menu */}
+            <div className="md:hidden flex items-center gap-1">
               <HelpButton />
+              <MobileInfoDrawer />
             </div>
 
             {/* Desktop Icons Only - Hidden on mobile/tablet */}

@@ -1,4 +1,4 @@
-import { Menu, HelpCircle, Shield, FileText, ShoppingBag, Mail, MessageCircle, MapPin, CreditCard, Truck } from "lucide-react";
+import { Menu, HelpCircle, Shield, Mail, MessageCircle, MapPin, CreditCard, Truck, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -12,10 +12,12 @@ import {
 } from "@/components/ui/drawer";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useNavigate } from "react-router-dom";
 
 export const MobileInfoDrawer = () => {
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
 
   // Afficher uniquement sur mobile/tablette
   if (!isMobile) return null;
@@ -42,19 +44,25 @@ export const MobileInfoDrawer = () => {
           
           <ScrollArea className="flex-1 px-4">
             <div className="space-y-6 pb-6">
-              {/* Support & Aide */}
+              {/* Assistance & Informations */}
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold text-primary flex items-center gap-2">
-                  <HelpCircle className="w-4 h-4" />
-                  Support & Aide
+                  <Info className="w-4 h-4" />
+                  Assistance & Informations
                 </h3>
                 <div className="space-y-2 pl-6">
-                  <a href="/faq" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <button 
+                    onClick={() => {
+                      setIsOpen(false);
+                      // FAQ sera visible une fois le drawer fermé sur mobile
+                    }}
+                    className="block text-sm text-muted-foreground hover:text-foreground transition-colors text-left w-full"
+                  >
                     Questions Fréquemment Posées (FAQ)
-                  </a>
-                  <a href="/support" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  </button>
+                  <button className="block text-sm text-muted-foreground hover:text-foreground transition-colors text-left w-full">
                     Centre d'aide
-                  </a>
+                  </button>
                   <p className="text-sm text-muted-foreground">
                     Support 24/7
                   </p>
@@ -63,22 +71,34 @@ export const MobileInfoDrawer = () => {
 
               <Separator />
 
-              {/* Légal */}
+              {/* Informations légales */}
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold text-primary flex items-center gap-2">
                   <Shield className="w-4 h-4" />
-                  Légal
+                  Informations légales
                 </h3>
                 <div className="space-y-2 pl-6">
-                  <a href="/privacy" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <button 
+                    onClick={() => {
+                      setIsOpen(false);
+                      navigate("/legal");
+                    }}
+                    className="block text-sm text-muted-foreground hover:text-foreground transition-colors text-left w-full"
+                  >
                     Politique de confidentialité
-                  </a>
-                  <a href="/legal" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setIsOpen(false);
+                      navigate("/legal");
+                    }}
+                    className="block text-sm text-muted-foreground hover:text-foreground transition-colors text-left w-full"
+                  >
                     Mentions légales
-                  </a>
-                  <a href="/terms" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  </button>
+                  <button className="block text-sm text-muted-foreground hover:text-foreground transition-colors text-left w-full">
                     CGV
-                  </a>
+                  </button>
                 </div>
               </div>
 
@@ -119,7 +139,7 @@ export const MobileInfoDrawer = () => {
               {/* Paiement & Livraison */}
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold text-primary flex items-center gap-2">
-                  <ShoppingBag className="w-4 h-4" />
+                  <CreditCard className="w-4 h-4" />
                   Paiement & Livraison
                 </h3>
                 <div className="space-y-2 pl-6">
@@ -136,6 +156,18 @@ export const MobileInfoDrawer = () => {
                     Livraison 2-5 jours
                   </p>
                 </div>
+              </div>
+
+              <Separator />
+
+              {/* Copyright */}
+              <div className="pt-2 text-center">
+                <p className="text-xs text-muted-foreground">
+                  © 2025 Djassa. Tous droits réservés.
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Plateforme de commerce en ligne en Côte d'Ivoire.
+                </p>
               </div>
             </div>
           </ScrollArea>

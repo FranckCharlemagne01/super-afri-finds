@@ -476,11 +476,13 @@ const Index = () => {
       {/* Bandeau d'annonces défilantes */}
       <ScrollingAnnouncementBanner />
 
-      {/* FAQ Section */}
-      <FAQ />
+      {/* FAQ Section - Hidden on mobile/tablet */}
+      <div className="hidden md:block">
+        <FAQ />
+      </div>
 
-      {/* Footer - Simple et professionnel */}
-      <footer className="bg-secondary mt-8 sm:mt-12 py-8 sm:py-10 border-t">
+      {/* Footer - Simple et professionnel - Hidden on mobile/tablet */}
+      <footer className="hidden md:block bg-secondary mt-8 sm:mt-12 py-8 sm:py-10 border-t">
         <div className="container mx-auto px-3 sm:px-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8 mb-8">
             <div>

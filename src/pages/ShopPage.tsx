@@ -342,14 +342,18 @@ const ShopPage = () => {
                   {/* Show category menu only if multiple categories */}
                   {hasMultipleCategories && (
                     <div className="mb-6">
-                      <ScrollArea className="w-full whitespace-nowrap">
-                        <div className="flex gap-2 pb-2">
+                      <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">
+                        Catégories
+                      </h3>
+                      <ScrollArea className="w-full whitespace-nowrap rounded-lg">
+                        <div className="flex gap-2 pb-3 px-1">
                           <Button
                             variant={selectedCategory === null ? "default" : "outline"}
                             onClick={() => setSelectedCategory(null)}
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-2 min-w-fit px-4 py-2 text-sm font-medium transition-all hover:scale-105"
+                            size="sm"
                           >
-                            <Grid3x3 className="h-4 w-4" />
+                            <Grid3x3 className="h-3.5 w-3.5" />
                             Tout ({products.length})
                           </Button>
                           {categories.map((category) => (
@@ -357,7 +361,8 @@ const ShopPage = () => {
                               key={category}
                               variant={selectedCategory === category ? "default" : "outline"}
                               onClick={() => setSelectedCategory(category)}
-                              className="capitalize"
+                              className="capitalize min-w-fit px-4 py-2 text-sm font-medium transition-all hover:scale-105"
+                              size="sm"
                             >
                               {category.replace(/-/g, ' ')} ({productsByCategory[category].length})
                             </Button>

@@ -21,7 +21,7 @@ export const CategoryCard = ({
     // New image-based design for realistic product presentation
     return (
       <div 
-        className="relative overflow-hidden rounded-lg sm:rounded-xl hover-lift cursor-pointer transition-all duration-300 hover:scale-105 group"
+        className="relative overflow-hidden rounded-lg sm:rounded-xl hover-lift cursor-pointer transition-all duration-300 group animate-fade-in"
         onClick={onClick}
         style={{ transform: 'scale(0.85)' }}
       >
@@ -29,10 +29,12 @@ export const CategoryCard = ({
           <img
             src={image}
             alt={title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+            loading="lazy"
+            decoding="async"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 group-hover:rotate-1"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-1 sm:p-1.5 text-center">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent transition-opacity duration-300 group-hover:from-black/80" />
+          <div className="absolute bottom-0 left-0 right-0 p-1 sm:p-1.5 text-center transition-transform duration-300 group-hover:translate-y-[-2px]">
             <h3 className="text-[11px] sm:text-xs font-semibold text-white mb-0.5 line-clamp-2 leading-tight">{title}</h3>
             <p className="text-[9px] sm:text-[10px] text-white/80">{itemCount} articles</p>
           </div>
@@ -44,7 +46,7 @@ export const CategoryCard = ({
   // Fallback to icon-based design
   return (
     <div 
-      className={`${bgColor || 'bg-primary'} p-2 sm:p-2.5 rounded-lg hover-lift cursor-pointer transition-all duration-300 hover:scale-105`}
+      className={`${bgColor || 'bg-primary'} p-2 sm:p-2.5 rounded-lg hover-lift cursor-pointer transition-all duration-300 animate-fade-in`}
       onClick={onClick}
       style={{ transform: 'scale(0.85)' }}
     >

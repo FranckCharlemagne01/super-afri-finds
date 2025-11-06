@@ -79,9 +79,9 @@ export const ProductCard = ({
   const isUnavailable = isSold || stockQuantity === 0;
 
   return (
-    <Card className={`relative overflow-hidden cursor-pointer border-0 shadow-md transition-all duration-500 animate-fade-in ${
+    <Card className={`relative overflow-hidden cursor-pointer border-0 shadow-md transition-all duration-300 animate-fade-in ${
       isActiveBoosted 
-        ? 'ring-2 ring-amber-400 hover:ring-amber-500 hover:shadow-2xl hover:shadow-amber-200/50 hover:-translate-y-2 hover:scale-[1.03]' 
+        ? 'ring-2 ring-amber-400 hover:ring-amber-500 hover:shadow-2xl hover:shadow-amber-200/50 hover:-translate-y-3 hover:scale-[1.04]' 
         : 'hover-lift hover:shadow-xl'
     }`} onClick={handleProductClick}>
       {/* Gradient overlay pour produits boostés */}
@@ -131,13 +131,15 @@ export const ProductCard = ({
         }`} />
       </button>
 
-      {/* Product Image - Optimized Rectangular Aspect Ratio */}
-      <div className="relative w-full aspect-[4/5] overflow-hidden bg-muted rounded-t-lg">
+      {/* Product Image - Optimized Fixed Aspect Ratio */}
+      <div className="relative w-full aspect-[4/5] overflow-hidden bg-muted/50 rounded-t-lg">
         <img
           src={image}
           alt={title}
           loading="lazy"
-          className="w-full h-full object-cover transition-transform duration-700 ease-out hover:scale-110 hover:rotate-1"
+          decoding="async"
+          className="w-full h-full object-cover transition-all duration-500 ease-out hover:scale-110 hover:rotate-1 hover:brightness-105"
+          style={{ willChange: 'transform' }}
         />
         {videoUrl && (
           <div className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 z-10">

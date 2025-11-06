@@ -93,53 +93,55 @@ export const HeroCarousel = () => {
 
   return (
     <div className="mb-6">
-      {/* Main Hero Carousel */}
-      <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] md:h-80 lg:h-96 rounded-xl overflow-hidden mb-3 group">
+      {/* Main Hero Carousel - Optimized aspect ratio for mobile/tablet */}
+      <div className="relative w-full aspect-[16/9] sm:aspect-[2/1] md:aspect-[21/9] lg:h-96 rounded-xl overflow-hidden mb-3 group shadow-xl transition-shadow duration-300 hover:shadow-2xl">
         {/* Background gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-red-500/10 z-10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-red-500/10 z-10 transition-opacity duration-300" />
         
-        {/* Product image */}
+        {/* Product image - Optimized loading */}
         <img
           src={currentProduct.images[0] || "/placeholder.svg"}
           alt={currentProduct.title}
-          className="absolute inset-0 w-full h-full object-cover"
+          loading="eager"
+          decoding="async"
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
         
         {/* Dark overlay for text readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent z-20" />
 
-        {/* Content */}
+        {/* Content - Responsive text sizing */}
         <div className="absolute inset-0 z-30 flex items-center">
           <div className="container mx-auto px-4 md:px-6 lg:px-8">
             <div className="max-w-xl">
               {/* Badge */}
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-full mb-4 shadow-lg">
-                <Star className="w-4 h-4 fill-current" />
-                <span className="text-sm font-bold">Produit Vedette</span>
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full mb-3 md:mb-4 shadow-lg animate-fade-in">
+                <Star className="w-3 h-3 md:w-4 md:h-4 fill-current" />
+                <span className="text-xs md:text-sm font-bold">Produit Vedette</span>
               </div>
 
-              {/* Title */}
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-3 line-clamp-2">
+              {/* Title - Optimized for mobile */}
+              <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2 md:mb-3 line-clamp-2 leading-tight animate-slide-up">
                 {currentProduct.title}
               </h2>
 
-              {/* Description */}
-              <p className="text-white/90 text-sm md:text-base mb-4 line-clamp-2">
+              {/* Description - Hidden on small mobile */}
+              <p className="hidden sm:block text-white/90 text-sm md:text-base mb-3 md:mb-4 line-clamp-2 animate-fade-in">
                 {currentProduct.description}
               </p>
 
-              {/* Price */}
-              <div className="flex items-baseline gap-3 mb-6">
-                <span className="text-3xl md:text-4xl font-bold text-amber-400">
+              {/* Price - Responsive sizing */}
+              <div className="flex items-baseline gap-2 md:gap-3 mb-4 md:mb-6 animate-scale-in">
+                <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-amber-400">
                   {currentProduct.price.toLocaleString()} FCFA
                 </span>
                 {currentProduct.original_price && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg text-white/60 line-through">
+                  <div className="flex items-center gap-1.5 md:gap-2">
+                    <span className="text-sm md:text-lg text-white/60 line-through">
                       {currentProduct.original_price.toLocaleString()} FCFA
                     </span>
                     {currentProduct.discount_percentage && (
-                      <span className="bg-red-500 text-white px-2 py-1 rounded text-sm font-bold">
+                      <span className="bg-red-500 text-white px-1.5 py-0.5 md:px-2 md:py-1 rounded text-xs md:text-sm font-bold">
                         -{currentProduct.discount_percentage}%
                       </span>
                     )}
@@ -147,10 +149,10 @@ export const HeroCarousel = () => {
                 )}
               </div>
 
-              {/* CTA Button */}
+              {/* CTA Button - Responsive sizing */}
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold shadow-xl"
+                className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold shadow-xl transition-all duration-300 hover:scale-105 text-sm md:text-base px-4 py-2 md:px-6 md:py-3 min-h-[44px]"
                 onClick={() => navigate(`/product/${currentProduct.id}`)}
               >
                 Découvrir maintenant

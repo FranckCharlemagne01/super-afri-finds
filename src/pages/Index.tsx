@@ -371,8 +371,8 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
+      {/* Main Content - Optimized for mobile/tablet */}
+      <main className="container mx-auto px-4 sm:px-6 py-4 sm:py-6 max-w-[100vw] overflow-x-hidden">
         {/* Hero Carousel - Bannière principale avec images défilantes */}
         <div className="mb-4 sm:mb-6 animate-fade-in">
           <HeroCarousel />
@@ -398,7 +398,7 @@ const Index = () => {
               </div>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 md:gap-5">
               {flashSaleProducts.slice(0, 6).map((product, index) => (
                 <div key={product.id} style={{ animationDelay: `${index * 0.05}s` }} className="animate-fade-in">
                   <ProductCard {...convertToProductCardProps(product)} />
@@ -431,7 +431,7 @@ const Index = () => {
             </Button>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4" key={refreshKey}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 md:gap-5" key={refreshKey}>
             {shuffledProducts.slice(0, 12).map((product, index) => (
               <div key={`${product.id}-${refreshKey}`} style={{ animationDelay: `${index * 0.05}s` }} className="animate-fade-in">
                 <ProductCard {...convertToProductCardProps(product)} />
@@ -453,7 +453,7 @@ const Index = () => {
           </div>
           
           {regularProducts.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 md:gap-5">
               {regularProducts.map((product, index) => (
                 <div key={product.id} style={{ animationDelay: `${index * 0.05}s` }} className="animate-fade-in">
                   <ProductCard {...convertToProductCardProps(product)} />

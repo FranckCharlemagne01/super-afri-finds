@@ -78,13 +78,14 @@ export const PopularCategories = () => {
             WebkitOverflowScrolling: "touch",
           }}
         >
-          {categories.map((category) => {
+          {categories.map((category, index) => {
             const Icon = category.icon;
             return (
               <button
                 key={category.id}
                 onClick={() => navigate(`/category/${category.slug}`)}
-                className="flex-shrink-0 flex flex-col items-center gap-2 p-4 min-w-[100px] sm:min-w-[110px] rounded-2xl bg-card border border-border/40 hover:border-primary/30 hover:bg-accent/30 transition-all duration-300 active:scale-95 hover:shadow-lg hover:-translate-y-1"
+                style={{ animationDelay: `${index * 0.05}s` }}
+                className="flex-shrink-0 flex flex-col items-center gap-2 p-4 min-w-[100px] sm:min-w-[110px] rounded-2xl bg-card border border-border/40 hover:border-primary/30 hover:bg-accent/30 transition-all duration-300 active:scale-95 hover:shadow-lg hover:-translate-y-1 animate-fade-in"
               >
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center shadow-sm border border-primary/10">
                   <Icon className="w-7 h-7 sm:w-8 sm:h-8 text-primary" />

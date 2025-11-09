@@ -112,12 +112,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, fullName: string, phone: string, country?: string, role?: 'buyer' | 'seller', shopName?: string) => {
+    // Utiliser l'URL actuelle pour le redirect (fonctionne en dev et prod)
+    const redirectUrl = `${window.location.origin}/auth/callback`;
+    
     const { error } = await supabase.auth.signUp({
       email,
       phone,
       password,
       options: {
-        emailRedirectTo: 'https://djassa.djassa.tech/auth/callback',
+        emailRedirectTo: redirectUrl,
         data: {
           full_name: fullName,
           phone: phone,
@@ -127,6 +130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     });
+    
     return { error };
   };
 

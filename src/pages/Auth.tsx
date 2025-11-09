@@ -182,22 +182,16 @@ const Auth = () => {
       const fullName = `${firstName} ${lastName}`.trim();
       const shopNameToSend = userRole === 'seller' && shopName.trim() ? shopName.trim() : '';
       
-      // Créer le compte utilisateur avec confirmation email activée par défaut
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: email,
-        password: password,
-        options: {
-          emailRedirectTo: 'https://djassa.djassa.tech/auth/callback',
-          data: {
-            full_name: fullName,
-            phone: fullPhoneNumber,
-            country: country || 'CI',
-            city: city || '',
-            user_role: userRole || 'buyer',
-            shop_name: shopNameToSend,
-          }
-        }
-      });
+      // Utiliser la fonction signUp du hook useAuth
+      const { error: signUpError } = await signUp(
+        email,
+        password,
+        fullName,
+        fullPhoneNumber,
+        country || 'CI',
+        userRole || 'buyer',
+        shopNameToSend
+      );
       
       if (signUpError) {
         if (signUpError.message.includes('already registered') || signUpError.message.includes('already been registered')) {
@@ -231,10 +225,11 @@ const Auth = () => {
       // Succès - afficher le message de vérification
       setOtpEmail(email);
       setRegistrationSuccess(true);
+      
       toast({
         title: "✅ Inscription réussie !",
-        description: "Un email de confirmation a été envoyé à votre adresse. Veuillez vérifier votre boîte de réception (et vos spams).",
-        duration: 6000,
+        description: "Un email de confirmation vous a été envoyé. Vérifiez votre boîte mail et vos spams.",
+        duration: 8000,
       });
 
       // Réinitialiser le formulaire
@@ -245,11 +240,14 @@ const Auth = () => {
       setPhone('');
       setShopName('');
       
-      // Passer en mode connexion après 3 secondes
+      // Afficher un message persistant
       setTimeout(() => {
-        setAuthMode('signin');
-        setRegistrationSuccess(false);
-      }, 3000);
+        toast({
+          title: "📧 Vérification requise",
+          description: "N'oubliez pas de cliquer sur le lien dans l'email de confirmation pour activer votre compte.",
+          duration: 10000,
+        });
+      }, 1500);
       
     } catch (error) {
       console.error('Signup error:', error);

@@ -93,19 +93,27 @@ export const HeroCarousel = () => {
 
   return (
     <div className="mb-6">
-      {/* Main Hero Carousel - Optimized aspect ratio for mobile/tablet */}
-      <div className="relative w-full aspect-[16/9] sm:aspect-[2/1] md:aspect-[21/9] lg:h-96 rounded-xl overflow-hidden mb-3 group shadow-xl transition-shadow duration-300 hover:shadow-2xl">
+      {/* Main Hero Carousel - Fixed heights for stability */}
+      <div className="relative w-full h-40 sm:h-52 md:h-64 lg:h-[260px] rounded-xl overflow-hidden mb-3 group shadow-xl transition-shadow duration-300 hover:shadow-2xl">
         {/* Background gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-red-500/10 z-10 transition-opacity duration-300" />
         
-        {/* Product image - Optimized loading */}
-        <img
-          src={currentProduct.images[0] || "/placeholder.svg"}
-          alt={currentProduct.title}
-          loading="eager"
-          decoding="async"
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-        />
+        {/* Product images with fade transition */}
+        {boostedProducts.map((product, index) => (
+          <img
+            key={product.id}
+            src={product.images[0] || "/placeholder.svg"}
+            alt={product.title}
+            loading={index === 0 ? "eager" : "lazy"}
+            decoding="async"
+            className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ${
+              index === currentIndex 
+                ? "opacity-100 scale-100" 
+                : "opacity-0 scale-105"
+            }`}
+            style={{ pointerEvents: index === currentIndex ? 'auto' : 'none' }}
+          />
+        ))}
         
         {/* Dark overlay for text readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent z-20" />

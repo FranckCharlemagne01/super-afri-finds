@@ -191,7 +191,7 @@ const Landing = () => {
             </div>
             <h3 className="text-xl md:text-2xl font-bold">Paiements sécurisés</h3>
             <p className="text-muted-foreground leading-relaxed">
-              Accepte tous les modes de paiement populaires : Mobile Money, cartes bancaires. Transactions 100% sécurisées avec Paystack.
+              Accepte tous les modes de paiement populaires : Mobile Money (Orange Money, MTN Money, Moov Money) et cartes bancaires. Transactions sécurisées et rapides, adaptées aux réalités locales.
             </p>
           </div>
         </div>

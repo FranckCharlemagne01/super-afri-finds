@@ -3,6 +3,7 @@ import { Home, Search, MessageSquare, ShoppingCart, User } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { cn } from "@/lib/utils";
+import { toast } from "@/hooks/use-toast";
 
 export const MobileBottomNav = () => {
   const navigate = useNavigate();
@@ -13,20 +14,44 @@ export const MobileBottomNav = () => {
   // Ne s'affiche que sur mobile et tablette
   if (!isMobile) return null;
 
-  const handleHomeClick = () => {
-    if (location.pathname === "/") {
-      // Si déjà sur la page d'accueil, scroll en haut et refresh
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      setTimeout(() => {
+  const handleHomeClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const isOnMarketplace = location.pathname === "/marketplace" || location.pathname === "/";
+    const isAtTop = window.scrollY < 100;
+    
+    if (isOnMarketplace) {
+      if (isAtTop) {
+        // Si déjà en haut, rafraîchir pour afficher les nouveaux produits
         window.location.reload();
-      }, 300);
+        toast({
+          title: "✅ Produits actualisés",
+          description: "Affichage des derniers produits disponibles",
+          duration: 2000,
+        });
+      } else {
+        // Si en bas, remonter en haut
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        toast({
+          title: "Retour en haut",
+          description: "Retour au début de la page",
+          duration: 1500,
+        });
+      }
     } else {
-      navigate("/");
+      // Rediriger vers la page publique
+      navigate("/marketplace");
+      toast({
+        title: "Retour à l'accueil",
+        description: "Bienvenue sur la boutique publique",
+        duration: 2000,
+      });
     }
   };
 
   const navItems = [
-    { icon: Home, label: "Accueil", path: "/", onClick: handleHomeClick },
+    { icon: Home, label: "Accueil", path: "/marketplace", onClick: handleHomeClick },
     { icon: Search, label: "Catégories", path: "/categories" },
     { icon: MessageSquare, label: "Messagerie", path: "/messages", badge: unreadMessages },
     { icon: ShoppingCart, label: "Panier", path: "/cart", badge: cartItems },
@@ -41,9 +66,9 @@ export const MobileBottomNav = () => {
         {navItems.map(({ icon: Icon, label, path, badge, onClick }) => (
           <button
             key={path}
-            onClick={() => onClick ? onClick() : navigate(path)}
+            onClick={(e) => onClick ? onClick(e) : navigate(path)}
             className={cn(
-              "flex flex-col items-center justify-center flex-1 h-full gap-1.5 transition-all duration-200 relative active:scale-95",
+              "flex flex-col items-center justify-center flex-1 h-full gap-1.5 transition-all duration-200 relative active:scale-95 touch-manipulation",
               isActive(path)
                 ? "text-primary drop-shadow-md"
                 : "text-foreground/70 hover:text-foreground"

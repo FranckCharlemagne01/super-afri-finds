@@ -15,6 +15,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { getCountryByCode } from '@/data/countries';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import GoogleAuthButton from '@/components/GoogleAuthButton';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -411,6 +412,41 @@ const Auth = () => {
     } catch (error) {
       console.error('Update password error:', error);
       setUpdatePasswordError('Une erreur est survenue. Veuillez réessayer.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setLoading(true);
+      setFormError('');
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+
+      if (error) {
+        console.error('Google sign in error:', error);
+        
+        if (error.message.includes('already registered')) {
+          setFormError('Ce compte Google est déjà enregistré. Veuillez vous connecter avec votre email et mot de passe.');
+        } else if (error.message.includes('Email link is invalid')) {
+          setFormError('La connexion Google a échoué. Veuillez réessayer.');
+        } else {
+          setFormError(`Erreur de connexion: ${error.message}`);
+        }
+      }
+    } catch (error) {
+      console.error('Google auth error:', error);
+      setFormError('Une erreur est survenue lors de la connexion avec Google. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
@@ -861,6 +897,23 @@ const Auth = () => {
                   {loading ? "Inscription..." : "S'inscrire"}
                 </Button>
 
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      Ou continuer avec
+                    </span>
+                  </div>
+                </div>
+
+                <GoogleAuthButton 
+                  onClick={handleGoogleSignIn}
+                  disabled={loading}
+                  mode="signup"
+                />
+
               </form>
             ) : (
               <form onSubmit={handleSignIn} className="space-y-3 md:space-y-4">
@@ -917,6 +970,23 @@ const Auth = () => {
                 >
                   {loading ? "Connexion..." : "Se connecter"}
                 </Button>
+
+                <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      Ou continuer avec
+                    </span>
+                  </div>
+                </div>
+
+                <GoogleAuthButton 
+                  onClick={handleGoogleSignIn}
+                  disabled={loading}
+                  mode="signin"
+                />
                 
                 <div className="flex flex-col gap-3 text-center pt-3">
                   <button

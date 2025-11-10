@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { Store, ExternalLink, LogOut, Coins, Clock, CheckCircle2, ArrowLeft, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { toast } from '@/hooks/use-toast';
 
 interface Shop {
   id: string;
@@ -54,6 +55,17 @@ export const ModernSellerHeader = ({
 
   const daysRemaining = getDaysRemaining();
   const trialProgress = trialStatus.isInTrial ? ((28 - daysRemaining) / 28) * 100 : 100;
+
+  const handleNavigateToMarketplace = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate('/marketplace');
+    toast({
+      title: "Retour à la boutique publique",
+      description: "Vous êtes maintenant sur la page principale.",
+      duration: 2000,
+    });
+  };
 
   return (
     <Card className="mb-4 md:mb-6 border-0 shadow-lg bg-gradient-to-r from-primary/10 via-primary/5 to-background overflow-hidden">
@@ -137,13 +149,13 @@ export const ModernSellerHeader = ({
             <div className="flex flex-wrap gap-2">
               <Button
                 variant="outline"
-                onClick={() => navigate('/marketplace')}
-                className="bg-card hover:bg-primary/10 border-primary/30 flex-1 sm:flex-none text-sm md:text-base transition-all duration-300 hover:scale-105"
+                onClick={handleNavigateToMarketplace}
+                className="bg-card hover:bg-primary/10 border-primary/30 min-w-[100px] sm:flex-none text-sm md:text-base transition-all duration-300 hover:scale-105 touch-manipulation active:scale-95"
                 size="sm"
+                type="button"
               >
                 <ArrowLeft className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
-                <span className="hidden sm:inline">Accueil</span>
-                <span className="sm:hidden">Accueil</span>
+                <span>Accueil</span>
               </Button>
               
               {shop && (

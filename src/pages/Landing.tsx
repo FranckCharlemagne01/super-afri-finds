@@ -96,10 +96,7 @@ const Landing = () => {
               <Button
                 size="lg"
                 variant="outline"
-                onClick={() => {
-                  const marketElement = document.getElementById('market');
-                  marketElement?.scrollIntoView({ behavior: 'smooth' });
-                }}
+                onClick={() => navigate('/marketplace')}
                 className="h-14 px-8 text-lg font-medium"
               >
                 Découvrir le marché
@@ -228,7 +225,7 @@ const Landing = () => {
           <Button
             size="lg"
             variant="outline"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/marketplace')}
             className="h-12 px-8 text-base font-medium"
           >
             Voir tous les produits

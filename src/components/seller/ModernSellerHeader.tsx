@@ -137,13 +137,13 @@ export const ModernSellerHeader = ({
             <div className="flex flex-wrap gap-2">
               <Button
                 variant="outline"
-                onClick={() => navigate('/')}
-                className="bg-card hover:bg-primary/10 border-primary/30 flex-1 sm:flex-none text-sm md:text-base"
+                onClick={() => navigate('/marketplace')}
+                className="bg-card hover:bg-primary/10 border-primary/30 flex-1 sm:flex-none text-sm md:text-base transition-all duration-300 hover:scale-105"
                 size="sm"
               >
                 <ArrowLeft className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
-                <span className="hidden sm:inline">Retour</span>
-                <span className="sm:hidden">Retour</span>
+                <span className="hidden sm:inline">Accueil</span>
+                <span className="sm:hidden">Accueil</span>
               </Button>
               
               {shop && (

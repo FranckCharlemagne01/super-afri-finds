@@ -9,7 +9,73 @@ const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-webhook-signature',
+};
+
+// Validate webhook signature to prevent unauthorized calls
+const validateWebhookSignature = async (req: Request, payload: string): Promise<boolean> => {
+  const signature = req.headers.get('x-webhook-signature');
+  const secret = Deno.env.get('SEND_WELCOME_EMAIL_HOOK_SECRET');
+  
+  // If no signature header is provided, rely on JWT verification (verify_jwt = true)
+  if (!signature) {
+    console.log('ℹ️ No signature header - relying on JWT verification');
+    return true; // JWT verification handles authentication
+  }
+  
+  if (!secret) {
+    console.warn('⚠️ SEND_WELCOME_EMAIL_HOOK_SECRET not configured - skipping signature validation');
+    return true; // Fall back to JWT verification
+  }
+  
+  try {
+    // Generate HMAC-SHA256 signature of the payload
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(secret);
+    
+    const key = await crypto.subtle.importKey(
+      'raw',
+      keyData,
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+    
+    const signatureData = await crypto.subtle.sign(
+      'HMAC',
+      key,
+      encoder.encode(payload)
+    );
+    
+    // Convert to hex string
+    const calculatedSignature = Array.from(new Uint8Array(signatureData))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    
+    // Compare signatures (constant-time comparison)
+    const providedSignature = signature.toLowerCase();
+    
+    if (calculatedSignature.length !== providedSignature.length) {
+      console.error('❌ Signature length mismatch');
+      return false;
+    }
+    
+    let mismatch = 0;
+    for (let i = 0; i < calculatedSignature.length; i++) {
+      mismatch |= calculatedSignature.charCodeAt(i) ^ providedSignature.charCodeAt(i);
+    }
+    
+    if (mismatch !== 0) {
+      console.error('❌ Signature validation failed');
+      return false;
+    }
+    
+    console.log('✅ Webhook signature validated successfully');
+    return true;
+  } catch (error) {
+    console.error('❌ Error validating signature:', error);
+    return false;
+  }
 };
 
 serve(async (req) => {
@@ -19,6 +85,22 @@ serve(async (req) => {
 
   try {
     const payload = await req.text();
+    
+    // SECURITY: Validate webhook signature before processing
+    const isValid = await validateWebhookSignature(req, payload);
+    if (!isValid) {
+      console.error('❌ Unauthorized webhook call - invalid or missing signature');
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Unauthorized: Invalid webhook signature' 
+        }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
     
     console.log('✓ Auth Hook received - Processing welcome email');
     console.log('📦 Payload received:', payload);

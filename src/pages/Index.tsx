@@ -17,6 +17,8 @@ import { DynamicPromoBanner } from "@/components/DynamicPromoBanner";
 import { ScrollingAnnouncementBanner } from "@/components/ScrollingAnnouncementBanner";
 import { ShopPromoBanner } from "@/components/ShopPromoBanner";
 import { SellerPromoBanner } from "@/components/SellerPromoBanner";
+import { BoostedProductsSection } from "@/components/BoostedProductsSection";
+import { OffersPromoBanner } from "@/components/OffersPromoBanner";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -411,7 +413,13 @@ const Index = () => {
         {/* Bannière d'annonce défilante */}
         <ScrollingAnnouncementBanner />
 
-        {/* Offres Spéciales - Bannière dynamique rectangulaire */}
+        {/* Bannière fixe promotionnelle pour les offres */}
+        <OffersPromoBanner />
+
+        {/* Section Offres Spéciales - Produits Boostés */}
+        <BoostedProductsSection />
+
+        {/* Bannière dynamique rectangulaire */}
         <section className="mb-6 sm:mb-8">
           <DynamicPromoBanner />
         </section>

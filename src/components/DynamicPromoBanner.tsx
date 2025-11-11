@@ -46,48 +46,8 @@ export const DynamicPromoBanner = () => {
   const [allSlides, setAllSlides] = useState<BannerSlide[]>(promoSlides);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchFeaturedProducts = async () => {
-      let query = supabase
-        .from('products')
-        .select('*')
-        .eq('is_boosted', true)
-        .eq('is_active', true);
-      
-      // Filtrage géographique : même ville ET même pays
-      if (userLocation.city && userLocation.country) {
-        query = query
-          .eq('city', userLocation.city)
-          .eq('country', userLocation.country);
-      }
-      
-      const { data: products } = await query.limit(3);
-
-      if (products && products.length > 0) {
-        const productSlides: BannerSlide[] = products.map(product => ({
-          type: "featured" as const,
-          title: product.title,
-          subtitle: product.category,
-          image: product.images?.[0] || "",
-          price: Number(product.price),
-          originalPrice: product.original_price ? Number(product.original_price) : undefined,
-          cta: "Voir",
-          link: `/product/${product.id}`
-        }));
-
-        // Mélanger les slides: promo, produit, promo, produit...
-        const mixed: BannerSlide[] = [];
-        const maxLength = Math.max(promoSlides.length, productSlides.length);
-        for (let i = 0; i < maxLength; i++) {
-          if (i < promoSlides.length) mixed.push(promoSlides[i]);
-          if (i < productSlides.length) mixed.push(productSlides[i]);
-        }
-        setAllSlides(mixed);
-      }
-    };
-
-    fetchFeaturedProducts();
-  }, []);
+  // Utiliser seulement les slides promotionnelles statiques
+  // Les produits boostés sont maintenant affichés dans BoostedProductsSection
 
   useEffect(() => {
     const interval = setInterval(() => {

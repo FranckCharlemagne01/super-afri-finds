@@ -325,7 +325,7 @@ serve(async (req) => {
           amount: amount * 100, // Paystack expects smallest currency unit
           reference,
           currency: 'XOF',
-          callback_url: `${req.headers.get('origin')}/seller?payment=success&reference=${reference}`,
+          callback_url: `${req.headers.get('origin')}/seller-dashboard?payment=success&reference=${reference}`,
           metadata: {
             user_id,
             payment_type,

@@ -5,6 +5,7 @@ import { Zap, Coins, TrendingUp, Clock, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { TokenPurchaseDialog } from './TokenPurchaseDialog';
 
 interface ProductBoostDialogProps {
   open: boolean;
@@ -28,6 +29,7 @@ export const ProductBoostDialog = ({
   const [loading, setLoading] = useState(false);
   const [selectedDuration, setSelectedDuration] = useState<number>(168); // Default 7 days
   const [actualTokenBalance, setActualTokenBalance] = useState<number>(currentTokens);
+  const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
 
   const BOOST_COST = 2;
 
@@ -129,9 +131,35 @@ export const ProductBoostDialog = ({
     }
   };
 
+  const handlePurchaseComplete = async () => {
+    setShowPurchaseDialog(false);
+    // Rafraîchir le solde de jetons après l'achat
+    if (user) {
+      try {
+        await supabase.rpc('initialize_seller_tokens', { _seller_id: user.id });
+        const { data: tokenData } = await supabase
+          .from('seller_tokens')
+          .select('token_balance')
+          .eq('seller_id', user.id)
+          .maybeSingle();
+        
+        if (tokenData) {
+          setActualTokenBalance(tokenData.token_balance);
+          toast({
+            title: '✅ Jetons ajoutés',
+            description: 'Vous pouvez maintenant booster votre produit.',
+          });
+        }
+      } catch (error) {
+        console.error('Erreur lors de la mise à jour du solde:', error);
+      }
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <div className="bg-primary/10 p-2 rounded-full">
@@ -210,34 +238,55 @@ export const ProductBoostDialog = ({
             </div>
           </div>
 
-          <Button
-            onClick={handleBoost}
-            disabled={loading || actualTokenBalance < BOOST_COST}
-            className="w-full"
-            size="lg"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Activation du boost...
-              </>
-            ) : (
-              <>
-                <Zap className="mr-2 h-5 w-5" />
-                Booster pour {BOOST_COST} jetons
-              </>
-            )}
-          </Button>
-
-          {actualTokenBalance < BOOST_COST && (
-            <div className="bg-destructive/10 border border-destructive/20 p-3 rounded-lg">
-              <p className="text-xs text-center text-destructive font-medium">
-                ⚠️ Vous avez besoin de {BOOST_COST - actualTokenBalance} jeton{(BOOST_COST - actualTokenBalance) > 1 ? 's' : ''} supplémentaire{(BOOST_COST - actualTokenBalance) > 1 ? 's' : ''}
-              </p>
+          {actualTokenBalance < BOOST_COST ? (
+            <div className="space-y-3">
+              <div className="bg-destructive/10 border border-destructive/20 p-3 rounded-lg">
+                <p className="text-sm text-center text-destructive font-medium">
+                  ⚠️ Vous n'avez pas assez de jetons
+                </p>
+                <p className="text-xs text-center text-muted-foreground mt-1">
+                  Il vous manque {BOOST_COST - actualTokenBalance} jeton{(BOOST_COST - actualTokenBalance) > 1 ? 's' : ''}
+                </p>
+              </div>
+              <Button
+                onClick={() => setShowPurchaseDialog(true)}
+                variant="default"
+                className="w-full"
+                size="lg"
+              >
+                <Coins className="mr-2 h-5 w-5" />
+                Acheter des jetons
+              </Button>
             </div>
+          ) : (
+            <Button
+              onClick={handleBoost}
+              disabled={loading}
+              className="w-full"
+              size="lg"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Activation du boost...
+                </>
+              ) : (
+                <>
+                  <Zap className="mr-2 h-5 w-5" />
+                  Booster pour {BOOST_COST} jetons
+                </>
+              )}
+            </Button>
           )}
         </div>
       </DialogContent>
     </Dialog>
+
+    <TokenPurchaseDialog
+      open={showPurchaseDialog}
+      onOpenChange={setShowPurchaseDialog}
+      onPurchaseComplete={handlePurchaseComplete}
+    />
+    </>
   );
 };

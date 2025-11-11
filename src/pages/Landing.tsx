@@ -35,9 +35,9 @@ const Landing = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 animate-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 animate-fade-in scroll-smooth-mobile">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-300">
+      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 md:backdrop-blur md:supports-[backdrop-filter]:bg-background/60 transition-all duration-300 will-change-transform">
         <div className="container flex h-14 sm:h-16 md:h-20 items-center justify-between px-4 sm:px-6 md:px-8 max-w-full">
           <div 
             className="flex items-center gap-1.5 sm:gap-2 cursor-pointer touch-manipulation active:scale-95 transition-transform flex-shrink-0" 
@@ -73,7 +73,7 @@ const Landing = () => {
       <section className="container px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-20 lg:py-28 max-w-full overflow-hidden">
         <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
           {/* Left Content */}
-          <div className="flex flex-col gap-4 sm:gap-6 md:gap-8 animate-fade-in max-w-full">
+          <div className="flex flex-col gap-4 sm:gap-6 md:gap-8 animate-fade-in max-w-full stable-scroll">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs sm:text-sm font-medium w-fit touch-manipulation">
               <Zap className="h-3 w-3 sm:h-4 sm:w-4 animate-pulse flex-shrink-0" />
               <span className="whitespace-nowrap">Lancez votre business en ligne</span>
@@ -132,12 +132,12 @@ const Landing = () => {
           </div>
 
           {/* Right Image */}
-          <div className="relative animate-fade-in mt-8 lg:mt-0" style={{ animationDelay: '0.2s' }}>
-            <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-accent/20 rounded-2xl sm:rounded-3xl blur-3xl opacity-50 animate-pulse-slow" />
+          <div className="relative animate-fade-in mt-8 lg:mt-0 stable-scroll" style={{ animationDelay: '0.2s' }}>
+            <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-accent/20 rounded-2xl sm:rounded-3xl blur-3xl opacity-50" />
             <img
               src={showcaseImage}
               alt="Djassa Marketplace - Plateforme de vente en ligne moderne"
-              className="relative rounded-2xl sm:rounded-3xl shadow-2xl border border-border/50 w-full hover:scale-105 transition-transform duration-500 touch-manipulation"
+              className="relative rounded-2xl sm:rounded-3xl shadow-2xl border border-border/50 w-full md:hover:scale-105 transition-transform duration-500 touch-manipulation"
               loading="lazy"
               width="800"
               height="600"
@@ -147,7 +147,7 @@ const Landing = () => {
       </section>
 
       {/* Early Adopters Section */}
-      <section className="container px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16 animate-fade-in max-w-full">
+      <section className="container px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16 animate-fade-in max-w-full stable-scroll">
         <div className="max-w-4xl mx-auto text-center">
           <div className="px-4 sm:px-6 py-6 sm:py-8 bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-xl sm:rounded-2xl border border-border/50 hover:border-primary/30 transition-all duration-300">
             <p className="text-sm sm:text-base md:text-lg text-foreground leading-relaxed break-words">
@@ -158,7 +158,7 @@ const Landing = () => {
       </section>
 
       {/* Features Section */}
-      <section className="container px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 animate-fade-in max-w-full">
+      <section className="container px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 animate-fade-in max-w-full stable-scroll">
         <div className="text-center mb-8 sm:mb-12 md:mb-16 px-4">
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 break-words">
             Pourquoi choisir <span className="gradient-text-primary">Djassa</span> ?
@@ -170,7 +170,7 @@ const Landing = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
           {/* Feature 1 */}
-          <div className="flex flex-col items-center text-center gap-3 sm:gap-4 p-4 sm:p-6 rounded-xl bg-card border border-border/50 hover:border-primary/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 touch-manipulation">
+          <div className="flex flex-col items-center text-center gap-3 sm:gap-4 p-4 sm:p-6 rounded-xl bg-card border border-border/50 md:hover:border-primary/50 md:hover:shadow-lg transition-all duration-300 md:hover:-translate-y-1 touch-manipulation stable-scroll">
             <div className="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
               <Store className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
             </div>
@@ -181,7 +181,7 @@ const Landing = () => {
           </div>
 
           {/* Feature 2 */}
-          <div className="flex flex-col items-center text-center gap-3 sm:gap-4 p-4 sm:p-6 rounded-xl bg-card border border-border/50 hover:border-primary/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 touch-manipulation">
+          <div className="flex flex-col items-center text-center gap-3 sm:gap-4 p-4 sm:p-6 rounded-xl bg-card border border-border/50 md:hover:border-primary/50 md:hover:shadow-lg transition-all duration-300 md:hover:-translate-y-1 touch-manipulation stable-scroll">
             <div className="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 rounded-xl bg-success/10 flex items-center justify-center flex-shrink-0">
               <ShoppingBag className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-success" />
             </div>
@@ -192,7 +192,7 @@ const Landing = () => {
           </div>
 
           {/* Feature 3 */}
-          <div className="flex flex-col items-center text-center gap-3 sm:gap-4 p-4 sm:p-6 rounded-xl bg-card border border-border/50 hover:border-primary/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 touch-manipulation sm:col-span-2 md:col-span-1">
+          <div className="flex flex-col items-center text-center gap-3 sm:gap-4 p-4 sm:p-6 rounded-xl bg-card border border-border/50 md:hover:border-primary/50 md:hover:shadow-lg transition-all duration-300 md:hover:-translate-y-1 touch-manipulation sm:col-span-2 md:col-span-1 stable-scroll">
             <div className="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0">
               <CreditCard className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-accent-foreground" />
             </div>
@@ -205,7 +205,7 @@ const Landing = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="container px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 animate-fade-in max-w-full">
+      <section className="container px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 animate-fade-in max-w-full stable-scroll">
         <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-primary via-primary-hover to-promo p-0.5 sm:p-1">
           <div className="relative bg-background rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 lg:p-16">
             <div className="flex flex-col lg:flex-row items-center justify-between gap-6 sm:gap-8">
@@ -238,7 +238,7 @@ const Landing = () => {
       </section>
 
       {/* Market Preview Section */}
-      <section id="market" className="container px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 animate-fade-in max-w-full">
+      <section id="market" className="container px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 animate-fade-in max-w-full stable-scroll">
         <div className="text-center mb-8 sm:mb-12 px-4">
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 break-words">
             Explore le marché
@@ -258,7 +258,7 @@ const Landing = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/40 bg-muted/30 animate-fade-in">
+      <footer className="border-t border-border/40 bg-muted/30 animate-fade-in stable-scroll">
         <div className="container px-4 sm:px-6 md:px-8 py-6 sm:py-8 md:py-12 max-w-full">
           <div className="flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
             <div className="flex items-center gap-1.5 sm:gap-2 touch-manipulation flex-shrink-0">

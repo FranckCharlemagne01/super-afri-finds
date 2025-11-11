@@ -408,17 +408,16 @@ const Index = () => {
           </section>
         )}
 
-        {/* Bannière d'annonce défilante */}
-        <ScrollingAnnouncementBanner />
-
-        {/* Offres Spéciales - Bannière dynamique rectangulaire */}
+        {/* Bannière statique promotionnelle - Remplace le bloc produits boostés */}
         <section className="mb-6 sm:mb-8">
           <DynamicPromoBanner />
         </section>
 
-        {/* Bannière promotionnelle boutique */}
+        {/* Bannière d'annonce défilante */}
+        <ShopPromoBanner />
+
+        {/* Catégories populaires */}
         <section className="mb-6 sm:mb-8 animate-slide-up">
-          <SellerPromoBanner />
           <PopularCategories />
         </section>
 

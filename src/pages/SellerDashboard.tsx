@@ -157,10 +157,21 @@ const SellerDashboard = () => {
         return;
       }
 
-      if (data?.status === 'success') {
+      // Check if edge function returned an error response
+      if (data && !data.success && data.status !== 'success') {
+        console.error('Payment verification failed:', data.error);
+        toast({
+          title: "Erreur de vérification",
+          description: data.error || "Le paiement n'a pas pu être vérifié",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data?.status === 'success' || data?.success) {
         toast({
           title: "🎉 Paiement réussi !",
-          description: data.message || "Paiement effectué avec succès !",
+          description: data.message || "Vos jetons ont été ajoutés à votre compte !",
         });
         refetchProducts();
         refreshBalance();

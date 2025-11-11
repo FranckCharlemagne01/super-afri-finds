@@ -20,7 +20,12 @@ export const usePaystackPublicKey = () => {
 
         if (functionError) throw functionError;
 
-        if (data.success && data.public_key) {
+        // Check if edge function returned an error response
+        if (data && !data.success) {
+          throw new Error(data.error || 'Failed to fetch Paystack public key');
+        }
+
+        if (data && data.success && data.public_key) {
           setPublicKey(data.public_key);
           setError(null);
         } else {

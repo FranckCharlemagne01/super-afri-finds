@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Coins, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { usePaystackPayment } from 'react-paystack';
 import { usePaystackPublicKey } from '@/hooks/usePaystackPublicKey';
 
 interface TokenPurchaseDialogProps {
@@ -60,105 +59,16 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
     setStep('select_payment');
   };
 
-  const config = {
-    reference: paystackReference || new Date().getTime().toString(),
-    email: user?.email || '',
-    amount: (selectedPackage?.price || 0) * 100, // Paystack utilise les centimes (XOF * 100)
-    publicKey: paystackPublicKey || '',
-    currency: 'XOF',
-    channels: selectedPayment === 'card' 
-      ? ['card'] 
-      : ['mobile_money'],
-    metadata: {
-      custom_fields: [
-        {
-          display_name: "Payment Method",
-          variable_name: "payment_method",
-          value: selectedPayment
-        },
-        {
-          display_name: "Tokens Amount",
-          variable_name: "tokens_amount",
-          value: selectedPackage?.tokens.toString() || '0'
-        }
-      ]
-    }
-  };
-
-  const onSuccess = async (reference: any) => {
-    setLoading(true);
-    try {
-      console.log('🔄 Vérification du paiement...', reference);
-      
-      // Vérifier le paiement côté serveur
-      const { data, error: verifyError } = await supabase.functions.invoke('paystack-payment', {
-        body: {
-          action: 'verify_payment',
-          reference: reference.reference || paystackReference,
-        },
-      });
-
-      if (verifyError) {
-        console.error('❌ Erreur de vérification:', verifyError);
-        throw verifyError;
-      }
-
-      console.log('✅ Paiement vérifié avec succès:', data);
-
-      toast({
-        title: '✅ Paiement réussi !',
-        description: `🎉 ${selectedPackage?.tokens} jetons ont été ajoutés à votre compte`,
-        duration: 5000,
-      });
-      
-      // Attendre pour que la base de données soit mise à jour
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      console.log('🔄 Rafraîchissement du solde de jetons...');
-      
-      // Rafraîchir le solde
-      await onPurchaseComplete();
-      
-      console.log('✅ Solde rafraîchi');
-      
-      // Fermer le dialog
-      onOpenChange(false);
-      setStep('select_package');
-      setSelectedPackage(null);
-    } catch (error: any) {
-      console.error('❌ Error verifying payment:', error);
-      toast({
-        title: 'Erreur de vérification',
-        description: 'Le paiement sera vérifié automatiquement. Rechargez la page dans quelques instants.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const onClose = () => {
-    toast({
-      title: 'Paiement annulé',
-      description: 'Vous pouvez réessayer quand vous voulez',
-    });
-    setLoading(false);
-  };
-
-  const initializePayment = usePaystackPayment(config);
-
   const handlePurchase = async () => {
     if (!user || !selectedPackage) return;
 
     setLoading(true);
 
     try {
-      // Créer la référence de paiement
-      const reference = `tokens_${user.id}_${Date.now()}`;
-      setPaystackReference(reference);
+      console.log('🔄 Initialisation du paiement...');
 
       // Initialiser le paiement dans la base de données via edge function
-      const { error } = await supabase.functions.invoke('paystack-payment', {
+      const { data, error } = await supabase.functions.invoke('paystack-payment', {
         body: {
           action: 'initialize_payment',
           user_id: user.id,
@@ -172,13 +82,32 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
 
       if (error) throw error;
 
-      console.log('✅ Paiement initialisé avec référence:', reference);
+      // Check if edge function returned an error response
+      if (data && !data.success && data.status !== 'success') {
+        throw new Error(data.error || 'Impossible d\'initialiser le paiement');
+      }
 
-      // Attendre un peu pour que la référence soit mise à jour
+      // Get the reference and authorization URL from the server
+      const serverReference = data.data?.reference;
+      const authorizationUrl = data.data?.authorization_url;
+      
+      if (!serverReference || !authorizationUrl) {
+        throw new Error('Données de paiement manquantes');
+      }
+
+      console.log('✅ Paiement initialisé avec référence:', serverReference);
+      setPaystackReference(serverReference);
+
+      // Redirect to Paystack payment page
+      toast({
+        title: 'Redirection vers Paystack...',
+        description: 'Vous allez être redirigé vers la page de paiement sécurisée',
+      });
+
+      // Small delay for toast visibility
       setTimeout(() => {
-        // Ouvrir le popup Paystack inline
-        initializePayment({ onSuccess, onClose });
-      }, 100);
+        window.location.href = authorizationUrl;
+      }, 1000);
 
     } catch (error: any) {
       console.error('Error purchasing tokens:', error);

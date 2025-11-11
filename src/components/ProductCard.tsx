@@ -14,11 +14,11 @@ interface ProductCardProps {
   id?: string;
   image: string;
   title: string;
-  originalPrice: number;
+  originalPrice?: number;
   salePrice: number;
-  discount: number;
-  rating: number;
-  reviews: number;
+  discount?: number;
+  rating?: number;
+  reviews?: number;
   badge?: string;
   isFlashSale?: boolean;
   seller_id?: string;
@@ -36,11 +36,11 @@ export const ProductCard = ({
   id = 'sample-product',
   image,
   title,
-  originalPrice,
-  salePrice,
-  discount,
-  rating,
-  reviews,
+  originalPrice = 0,
+  salePrice = 0,
+  discount = 0,
+  rating = 0,
+  reviews = 0,
   badge,
   isFlashSale = false,
   seller_id = 'default-seller',
@@ -181,11 +181,13 @@ export const ProductCard = ({
         {/* Price */}
         <div className="flex flex-col gap-0.5">
           <span className="text-base sm:text-lg font-bold text-promo">
-            {salePrice.toLocaleString()} FCFA
+            {(salePrice || 0).toLocaleString()} FCFA
           </span>
-          <span className="text-xs sm:text-sm text-muted-foreground line-through">
-            {originalPrice.toLocaleString()} FCFA
-          </span>
+          {originalPrice && originalPrice > salePrice && (
+            <span className="text-xs sm:text-sm text-muted-foreground line-through">
+              {originalPrice.toLocaleString()} FCFA
+            </span>
+          )}
         </div>
 
         {/* Countdown Timer for boosted products */}

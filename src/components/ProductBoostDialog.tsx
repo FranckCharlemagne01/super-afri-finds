@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Zap, Coins, TrendingUp, Clock, Loader2 } from 'lucide-react';
@@ -27,8 +27,37 @@ export const ProductBoostDialog = ({
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [selectedDuration, setSelectedDuration] = useState<number>(168); // Default 7 days
+  const [actualTokenBalance, setActualTokenBalance] = useState<number>(currentTokens);
 
   const BOOST_COST = 2;
+
+  // Refresh token balance when dialog opens
+  useEffect(() => {
+    const checkActualBalance = async () => {
+      if (!open || !user) return;
+      
+      try {
+        // Initialize tokens if needed
+        await supabase.rpc('initialize_seller_tokens', { _seller_id: user.id });
+        
+        // Get fresh token balance
+        const { data: tokenData, error } = await supabase
+          .from('seller_tokens')
+          .select('token_balance')
+          .eq('seller_id', user.id)
+          .maybeSingle();
+          
+        if (!error && tokenData) {
+          console.log('🔄 Balance réel mis à jour:', tokenData.token_balance);
+          setActualTokenBalance(tokenData.token_balance);
+        }
+      } catch (error) {
+        console.error('Erreur lors de la vérification du solde:', error);
+      }
+    };
+    
+    checkActualBalance();
+  }, [open, user]);
 
   const durationOptions = [
     { label: '24 heures', hours: 24, description: 'Boost court pour un effet immédiat' },
@@ -39,10 +68,10 @@ export const ProductBoostDialog = ({
   const handleBoost = async () => {
     if (!user) return;
 
-    if (currentTokens < BOOST_COST) {
+    if (actualTokenBalance < BOOST_COST) {
       toast({
         title: 'Jetons insuffisants',
-        description: `Il vous faut ${BOOST_COST} jetons pour booster ce produit. Vous avez ${currentTokens} jeton(s).`,
+        description: `Il vous faut ${BOOST_COST} jetons pour booster ce produit. Vous avez ${actualTokenBalance} jeton(s).`,
         variant: 'destructive',
       });
       return;
@@ -51,34 +80,48 @@ export const ProductBoostDialog = ({
     setLoading(true);
 
     try {
+      console.log('🚀 Tentative de boost:', { 
+        productId, 
+        seller: user.id, 
+        duration: selectedDuration,
+        tokens: actualTokenBalance 
+      });
+
       const { data, error } = await supabase.rpc('boost_product', {
         _seller_id: user.id,
         _product_id: productId,
         _duration_hours: selectedDuration,
       });
 
-      if (error) throw error;
+      console.log('📊 Résultat boost_product:', { data, error });
 
-      if (data) {
+      if (error) {
+        console.error('❌ Erreur RPC:', error);
+        throw error;
+      }
+
+      if (data === true) {
         const durationLabel = durationOptions.find(d => d.hours === selectedDuration)?.label || '7 jours';
+        console.log('✅ Boost réussi!');
         toast({
-          title: 'Produit boosté !',
+          title: '✅ Produit boosté !',
           description: `"${productTitle}" sera mis en avant pendant ${durationLabel} dans les Offres Spéciales.`,
         });
         onBoostComplete();
         onOpenChange(false);
       } else {
+        console.warn('⚠️ Boost refusé - retour false');
         toast({
-          title: 'Erreur',
-          description: 'Impossible de booster ce produit. Vérifiez votre solde de jetons.',
+          title: '❌ Boost impossible',
+          description: 'Jetons insuffisants. Vos jetons gratuits ont peut-être expiré. Rechargez votre compte.',
           variant: 'destructive',
         });
       }
     } catch (error: any) {
-      console.error('Error boosting product:', error);
+      console.error('💥 Erreur lors du boost:', error);
       toast({
-        title: 'Erreur',
-        description: error.message || 'Une erreur est survenue',
+        title: '❌ Erreur',
+        description: error.message || 'Une erreur est survenue lors du boost',
         variant: 'destructive',
       });
     } finally {
@@ -162,14 +205,14 @@ export const ProductBoostDialog = ({
               <span className="text-sm font-semibold">Votre solde actuel</span>
               <div className="flex items-center gap-2 text-primary">
                 <Coins className="h-5 w-5" />
-                <span className="font-bold text-lg">{currentTokens} jeton{currentTokens > 1 ? 's' : ''}</span>
+                <span className="font-bold text-lg">{actualTokenBalance} jeton{actualTokenBalance > 1 ? 's' : ''}</span>
               </div>
             </div>
           </div>
 
           <Button
             onClick={handleBoost}
-            disabled={loading || currentTokens < BOOST_COST}
+            disabled={loading || actualTokenBalance < BOOST_COST}
             className="w-full"
             size="lg"
           >
@@ -186,10 +229,10 @@ export const ProductBoostDialog = ({
             )}
           </Button>
 
-          {currentTokens < BOOST_COST && (
+          {actualTokenBalance < BOOST_COST && (
             <div className="bg-destructive/10 border border-destructive/20 p-3 rounded-lg">
               <p className="text-xs text-center text-destructive font-medium">
-                ⚠️ Vous avez besoin de {BOOST_COST - currentTokens} jeton{(BOOST_COST - currentTokens) > 1 ? 's' : ''} supplémentaire{(BOOST_COST - currentTokens) > 1 ? 's' : ''}
+                ⚠️ Vous avez besoin de {BOOST_COST - actualTokenBalance} jeton{(BOOST_COST - actualTokenBalance) > 1 ? 's' : ''} supplémentaire{(BOOST_COST - actualTokenBalance) > 1 ? 's' : ''}
               </p>
             </div>
           )}

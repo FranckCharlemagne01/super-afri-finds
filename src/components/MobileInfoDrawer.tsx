@@ -54,6 +54,15 @@ export const MobileInfoDrawer = () => {
                   <button 
                     onClick={() => {
                       setIsOpen(false);
+                      navigate("/about");
+                    }}
+                    className="block text-sm text-muted-foreground hover:text-foreground transition-colors text-left w-full"
+                  >
+                    À propos de Djassa
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setIsOpen(false);
                       // FAQ sera visible une fois le drawer fermé sur mobile
                     }}
                     className="block text-sm text-muted-foreground hover:text-foreground transition-colors text-left w-full"

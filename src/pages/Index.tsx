@@ -509,6 +509,14 @@ const Index = () => {
               <ul className="space-y-2">
                 <li>
                   <button 
+                    onClick={() => navigate("/about")}
+                    className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    À propos de Djassa
+                  </button>
+                </li>
+                <li>
+                  <button 
                     onClick={() => navigate("/legal")}
                     className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors"
                   >

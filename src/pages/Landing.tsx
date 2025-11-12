@@ -271,6 +271,13 @@ const Landing = () => {
             <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
               <Button
                 variant="link"
+                onClick={() => navigate('/about')}
+                className="text-xs sm:text-sm text-muted-foreground hover:text-foreground touch-manipulation active:scale-95 transition-all whitespace-nowrap"
+              >
+                À propos
+              </Button>
+              <Button
+                variant="link"
                 onClick={() => navigate('/legal')}
                 className="text-xs sm:text-sm text-muted-foreground hover:text-foreground touch-manipulation active:scale-95 transition-all whitespace-nowrap"
               >

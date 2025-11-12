@@ -378,11 +378,6 @@ const Index = () => {
           <HeroCarousel />
         </div>
 
-        {/* Bannière statique promotionnelle - Remplace le bloc produits boostés */}
-        <section className="mb-6 sm:mb-8">
-          <DynamicPromoBanner />
-        </section>
-
         {/* Offres Spéciales / Tendances - Flash Sales */}
         {flashSaleProducts.length > 0 && (
           <section className="mb-6 sm:mb-8 animate-slide-up">
@@ -412,6 +407,11 @@ const Index = () => {
             </div>
           </section>
         )}
+
+        {/* Bannière statique promotionnelle - Remplace le bloc produits boostés */}
+        <section className="mb-6 sm:mb-8">
+          <DynamicPromoBanner />
+        </section>
 
         {/* Bannière d'annonce défilante */}
         <ShopPromoBanner />

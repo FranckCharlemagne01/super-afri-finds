@@ -138,8 +138,7 @@ export const ProductCard = ({
           alt={title}
           loading="lazy"
           decoding="async"
-          className="w-full h-full object-contain transition-all duration-300 ease-out hover:scale-105"
-          style={{ willChange: 'transform' }}
+          className="w-full h-full object-contain"
         />
         {videoUrl && (
           <div className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 z-10">

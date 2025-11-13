@@ -660,36 +660,24 @@ export type Database = {
         }
         Returns: boolean
       }
-      assign_current_user_superadmin: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      assign_superadmin_role: {
-        Args: { _email: string }
-        Returns: string
-      }
-      boost_product: {
-        Args:
-          | {
+      assign_current_user_superadmin: { Args: never; Returns: string }
+      assign_superadmin_role: { Args: { _email: string }; Returns: string }
+      boost_product:
+        | {
+            Args: {
               _duration_hours?: number
               _product_id: string
               _seller_id: string
             }
-          | { _product_id: string; _seller_id: string }
-        Returns: boolean
-      }
-      can_publish_products: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
-      cancel_order_by_customer: {
-        Args: { order_id: string }
-        Returns: Json
-      }
-      check_token_balance: {
-        Args: { _seller_id: string }
-        Returns: Json
-      }
+            Returns: boolean
+          }
+        | {
+            Args: { _product_id: string; _seller_id: string }
+            Returns: boolean
+          }
+      can_publish_products: { Args: { _user_id: string }; Returns: boolean }
+      cancel_order_by_customer: { Args: { order_id: string }; Returns: Json }
+      check_token_balance: { Args: { _seller_id: string }; Returns: Json }
       confirm_sale_by_seller: {
         Args: { _mark_product_as_sold?: boolean; _order_id: string }
         Returns: Json
@@ -698,24 +686,12 @@ export type Database = {
         Args: { _product_id?: string; _seller_id: string }
         Returns: boolean
       }
-      create_shops_for_existing_sellers: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      expire_free_tokens: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      generate_shop_slug: {
-        Args: { shop_name: string }
-        Returns: string
-      }
-      get_2fa_status: {
-        Args: { _user_id: string }
-        Returns: Json
-      }
+      create_shops_for_existing_sellers: { Args: never; Returns: undefined }
+      expire_free_tokens: { Args: never; Returns: undefined }
+      generate_shop_slug: { Args: { shop_name: string }; Returns: string }
+      get_2fa_status: { Args: { _user_id: string }; Returns: Json }
       get_admin_statistics: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           new_users_today: number
           orders_today: number
@@ -728,7 +704,7 @@ export type Database = {
         }[]
       }
       get_current_user_role: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: Database["public"]["Enums"]["user_role"]
       }
       get_order_details: {
@@ -751,7 +727,7 @@ export type Database = {
         }[]
       }
       get_seller_orders: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           created_at: string
           customer_id: string
@@ -770,7 +746,7 @@ export type Database = {
         }[]
       }
       get_suspicious_order_access: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           access_count: number
           access_types: string[]
@@ -785,7 +761,7 @@ export type Database = {
         Returns: Database["public"]["Enums"]["user_role"]
       }
       get_users_with_profiles: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           address: string
           avatar_url: string
@@ -801,14 +777,8 @@ export type Database = {
           user_id: string
         }[]
       }
-      grant_free_tokens_to_existing_sellers: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      grant_trial_bonus_tokens: {
-        Args: { _user_id: string }
-        Returns: Json
-      }
+      grant_free_tokens_to_existing_sellers: { Args: never; Returns: undefined }
+      grant_trial_bonus_tokens: { Args: { _user_id: string }; Returns: Json }
       handle_article_payment_success: {
         Args: {
           _amount: number
@@ -833,14 +803,8 @@ export type Database = {
         Args: { _seller_id: string }
         Returns: undefined
       }
-      is_in_trial_period: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
-      is_product_boosted: {
-        Args: { _product_id: string }
-        Returns: boolean
-      }
+      is_in_trial_period: { Args: { _user_id: string }; Returns: boolean }
+      is_product_boosted: { Args: { _product_id: string }; Returns: boolean }
       update_order_status: {
         Args: { new_status: string; order_id: string }
         Returns: boolean
@@ -849,10 +813,7 @@ export type Database = {
         Args: { _first_name: string; _last_name: string; _phone: string }
         Returns: Json
       }
-      verify_email_with_token: {
-        Args: { _token: string }
-        Returns: Json
-      }
+      verify_email_with_token: { Args: { _token: string }; Returns: Json }
     }
     Enums: {
       user_role: "buyer" | "seller" | "admin" | "superadmin"

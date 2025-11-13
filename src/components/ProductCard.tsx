@@ -132,13 +132,13 @@ export const ProductCard = ({
       </button>
 
       {/* Product Image - Optimized Fixed Aspect Ratio */}
-      <div className="relative w-full aspect-[4/5] overflow-hidden bg-muted/50 rounded-t-lg">
+      <div className="relative w-full aspect-square overflow-hidden bg-muted/50 rounded-t-lg">
         <img
           src={image}
           alt={title}
           loading="lazy"
           decoding="async"
-          className="w-full h-full object-cover transition-all duration-500 ease-out hover:scale-110 hover:rotate-1 hover:brightness-105"
+          className="w-full h-full object-contain transition-all duration-300 ease-out hover:scale-105"
           style={{ willChange: 'transform' }}
         />
         {videoUrl && (

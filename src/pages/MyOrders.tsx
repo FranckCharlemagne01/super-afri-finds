@@ -34,6 +34,11 @@ interface Order {
   updated_at: string;
 }
 
+interface CancelOrderResponse {
+  success: boolean;
+  error?: string;
+}
+
 const statusConfig = {
   pending: { label: "En attente", icon: Clock, variant: "secondary" as const, color: "text-orange-500" },
   confirmed: { label: "Confirmée", icon: CheckCircle, variant: "default" as const, color: "text-blue-500" },
@@ -82,25 +87,28 @@ const MyOrders = () => {
   const cancelOrder = async (orderId: string) => {
     try {
       setCancellingId(orderId);
-      const { error } = await supabase.rpc('update_order_status', {
-        order_id: orderId,
-        new_status: 'cancelled'
+      const { data, error } = await supabase.rpc('cancel_order_by_customer', {
+        order_id: orderId
       });
 
       if (error) throw error;
 
-      toast({
-        title: "Commande annulée",
-        description: "Votre commande a été annulée avec succès",
-      });
+      const result = data as unknown as CancelOrderResponse;
 
-      // Refresh orders
-      fetchOrders();
-    } catch (error) {
+      if (result?.success) {
+        toast({
+          title: "✅ Commande annulée",
+          description: "Votre commande a été annulée avec succès",
+        });
+        fetchOrders();
+      } else {
+        throw new Error(result?.error || "Impossible d'annuler la commande");
+      }
+    } catch (error: any) {
       console.error('Error cancelling order:', error);
       toast({
         title: "Erreur",
-        description: "Impossible d'annuler la commande",
+        description: error.message || "Impossible d'annuler la commande",
         variant: "destructive",
       });
     } finally {

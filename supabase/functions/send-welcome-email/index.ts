@@ -130,10 +130,17 @@ serve(async (req) => {
           full_name?: string;
         };
       };
+      email_data?: {
+        token_hash: string;
+        redirect_to: string;
+        email_action_type: string;
+        site_url: string;
+      };
     };
     
     const user = webhookData.user;
     const userId = user.id;
+    const emailData = webhookData.email_data;
 
     console.log('✓ Processing email for user_id:', userId || 'unknown');
 
@@ -141,33 +148,19 @@ serve(async (req) => {
     const fullName = user.user_metadata?.full_name || 'utilisateur';
     const firstName = fullName.split(' ')[0];
 
-    // Créer un client Supabase admin pour générer le lien de vérification
+    // Utiliser le token fourni par Supabase dans le webhook
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || 'https://zqskpspbyzptzjcoitwt.supabase.co';
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
-    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    });
+    const redirectTo = emailData?.redirect_to || 'https://djassa.djassa.tech/auth/callback';
+    const tokenHash = emailData?.token_hash;
+    const emailActionType = emailData?.email_action_type || 'signup';
 
-    // Générer un lien de vérification Supabase natif
-    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-      type: 'signup',
-      email: user.email,
-      options: {
-        redirectTo: 'https://djassa.djassa.tech/auth/callback'
-      }
-    });
-
-    if (linkError || !linkData?.properties?.action_link) {
-      console.error('❌ Failed to generate verification link:', linkError);
-      throw new Error('Failed to generate verification link');
+    if (!tokenHash) {
+      console.error('❌ No token_hash found in webhook payload');
+      throw new Error('Missing verification token');
     }
 
-    const verificationUrl = linkData.properties.action_link;
+    // Construire le lien de vérification avec le token fourni
+    const verificationUrl = `${supabaseUrl}/auth/v1/verify?token=${tokenHash}&type=${emailActionType}&redirect_to=${redirectTo}`;
 
     // Générer le HTML de l'email avec React Email
     const html = await renderAsync(

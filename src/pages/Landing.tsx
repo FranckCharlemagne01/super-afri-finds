@@ -35,10 +35,10 @@ const Landing = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 animate-fade-in scroll-smooth-mobile">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 animate-fade-in scroll-smooth-mobile overflow-x-hidden">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 md:backdrop-blur md:supports-[backdrop-filter]:bg-background/60 transition-all duration-300 will-change-transform">
-        <div className="container flex h-14 sm:h-16 md:h-20 items-center justify-between px-4 sm:px-6 md:px-8 max-w-full">
+        <div className="w-full flex h-14 sm:h-16 md:h-20 items-center justify-between px-4 sm:px-6 md:px-8 mx-auto" style={{ maxWidth: '100vw' }}>
           <div 
             className="flex items-center gap-1.5 sm:gap-2 cursor-pointer touch-manipulation active:scale-95 transition-transform flex-shrink-0" 
             onClick={() => navigate('/')}
@@ -70,8 +70,8 @@ const Landing = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="container px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-20 lg:py-28 max-w-full overflow-hidden">
-        <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
+      <section className="w-full px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-20 lg:py-28 mx-auto" style={{ maxWidth: 'min(100vw, 1280px)' }}>
+        <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center w-full">
           {/* Left Content */}
           <div className="flex flex-col gap-4 sm:gap-6 md:gap-8 animate-fade-in max-w-full stable-scroll">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs sm:text-sm font-medium w-fit touch-manipulation">
@@ -147,8 +147,8 @@ const Landing = () => {
       </section>
 
       {/* Early Adopters Section */}
-      <section className="container px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16 animate-fade-in max-w-full stable-scroll">
-        <div className="max-w-4xl mx-auto text-center">
+      <section className="w-full px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16 animate-fade-in mx-auto stable-scroll" style={{ maxWidth: 'min(100vw, 1280px)' }}>
+        <div className="max-w-4xl mx-auto text-center w-full">
           <div className="px-4 sm:px-6 py-6 sm:py-8 bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-xl sm:rounded-2xl border border-border/50 hover:border-primary/30 transition-all duration-300">
             <p className="text-sm sm:text-base md:text-lg text-foreground leading-relaxed break-words">
               🚀 Les premiers vendeurs inscrits bénéficient de <span className="font-bold text-primary">28 jours d'essai gratuit</span> pour lancer leur boutique, tester leurs produits et commencer à encaisser sans frais. C'est le bon moment pour profiter de la visibilité.
@@ -158,8 +158,8 @@ const Landing = () => {
       </section>
 
       {/* Features Section */}
-      <section className="container px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 animate-fade-in max-w-full stable-scroll">
-        <div className="text-center mb-8 sm:mb-12 md:mb-16 px-4">
+      <section className="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 animate-fade-in mx-auto stable-scroll" style={{ maxWidth: 'min(100vw, 1280px)' }}>
+        <div className="text-center mb-8 sm:mb-12 md:mb-16 w-full">
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 break-words">
             Pourquoi choisir <span className="gradient-text-primary">Djassa</span> ?
           </h2>
@@ -205,8 +205,8 @@ const Landing = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="container px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 animate-fade-in max-w-full stable-scroll">
-        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-primary via-primary-hover to-promo p-0.5 sm:p-1">
+      <section className="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 animate-fade-in mx-auto stable-scroll" style={{ maxWidth: 'min(100vw, 1280px)' }}>
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-primary via-primary-hover to-promo p-0.5 sm:p-1 w-full">
           <div className="relative bg-background rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 lg:p-16">
             <div className="flex flex-col lg:flex-row items-center justify-between gap-6 sm:gap-8">
               <div className="flex-1 text-center lg:text-left max-w-full">
@@ -238,8 +238,8 @@ const Landing = () => {
       </section>
 
       {/* Market Preview Section */}
-      <section id="market" className="container px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 animate-fade-in max-w-full stable-scroll">
-        <div className="text-center mb-8 sm:mb-12 px-4">
+      <section id="market" className="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 animate-fade-in mx-auto stable-scroll" style={{ maxWidth: 'min(100vw, 1280px)' }}>
+        <div className="text-center mb-8 sm:mb-12 w-full">
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 break-words">
             Explore le marché
           </h2>
@@ -258,8 +258,8 @@ const Landing = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/40 bg-muted/30 animate-fade-in stable-scroll">
-        <div className="container px-4 sm:px-6 md:px-8 py-6 sm:py-8 md:py-12 max-w-full">
+      <footer className="border-t border-border/40 bg-muted/30 animate-fade-in stable-scroll w-full">
+        <div className="w-full px-4 sm:px-6 md:px-8 py-6 sm:py-8 md:py-12 mx-auto" style={{ maxWidth: 'min(100vw, 1280px)' }}>
           <div className="flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
             <div className="flex items-center gap-1.5 sm:gap-2 touch-manipulation flex-shrink-0">
               <Store className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />

@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle, Loader2 } from 'lucide-react';
+import { AlertTriangle, Loader2, Shield } from 'lucide-react';
 import { Camera, Image as ImageIcon, X } from 'lucide-react';
 
 interface Product {
@@ -687,6 +687,18 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
             {previewImages.length}/5 images
           </span>
         </div>
+        
+        {/* Security: Warning about public storage */}
+        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 space-y-1">
+          <p className="text-xs font-medium text-amber-900 dark:text-amber-100 flex items-center gap-1.5">
+            <Shield className="h-3.5 w-3.5" />
+            ⚠️ Images publiques
+          </p>
+          <p className="text-xs text-amber-800 dark:text-amber-200 leading-relaxed">
+            Vos images seront visibles par tous les visiteurs. Ne partagez <strong>jamais</strong> de documents d'identité, cartes bancaires, ou informations personnelles sensibles.
+          </p>
+        </div>
+        
         <p className="text-sm text-muted-foreground">
           📸 <strong>1 image obligatoire</strong>, jusqu'à <strong>4 images supplémentaires</strong> optionnelles (5 max)
         </p>

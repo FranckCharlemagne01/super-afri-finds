@@ -58,11 +58,16 @@ const Auth = () => {
 
   useEffect(() => {
     const type = searchParams.get('type');
+    const mode = searchParams.get('mode');
     const access_token = searchParams.get('access_token');
     const refresh_token = searchParams.get('refresh_token');
     
     if (type === 'recovery' && access_token && refresh_token) {
       setUpdatePasswordMode(true);
+    }
+    
+    if (mode === 'signup') {
+      setAuthMode('signup');
     }
   }, [searchParams]);
 

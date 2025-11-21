@@ -59,7 +59,7 @@ const Landing = () => {
               <span className="xs:hidden">Connexion</span>
             </Button>
             <Button
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate('/auth?mode=signup')}
               className="h-8 sm:h-9 md:h-11 px-2 sm:px-3 md:px-6 text-xs sm:text-sm md:text-base font-semibold bg-primary hover:bg-primary-hover touch-manipulation active:scale-95 transition-all shadow-sm hover:shadow-md whitespace-nowrap"
             >
               <span className="hidden sm:inline">Créer ma boutique</span>
@@ -98,7 +98,7 @@ const Landing = () => {
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2 sm:pt-4 w-full">
               <Button
                 size="lg"
-                onClick={() => navigate('/auth')}
+                onClick={() => navigate('/auth?mode=signup')}
                 className="h-11 sm:h-12 md:h-14 px-4 sm:px-6 md:px-8 text-sm sm:text-base md:text-lg font-semibold bg-primary hover:bg-primary-hover shadow-lg hover:shadow-xl transition-all duration-300 touch-manipulation active:scale-95 w-full sm:w-auto"
               >
                 <Store className="mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
@@ -226,7 +226,7 @@ const Landing = () => {
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full lg:w-auto">
                 <Button
                   size="lg"
-                  onClick={() => navigate('/auth')}
+                  onClick={() => navigate('/auth?mode=signup')}
                   className="h-11 sm:h-12 md:h-14 px-6 sm:px-8 text-sm sm:text-base md:text-lg font-semibold bg-primary hover:bg-primary-hover shadow-lg hover:shadow-xl transition-all duration-300 touch-manipulation active:scale-95 w-full sm:w-auto whitespace-nowrap"
                 >
                   Créer ma boutique

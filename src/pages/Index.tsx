@@ -192,22 +192,14 @@ const Index = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      let query = supabase
+      const { data, error } = await supabase
         .from('products')
         .select(`
           *,
           shop:seller_shops!shop_id(shop_slug, shop_name)
         `)
-        .eq('is_active', true);
-      
-      // Filtrage géographique : même ville ET même pays
-      if (userLocation.city && userLocation.country) {
-        query = query
-          .eq('city', userLocation.city)
-          .eq('country', userLocation.country);
-      }
-      
-      const { data, error } = await query.order('created_at', { ascending: false });
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error('Error fetching products:', error);

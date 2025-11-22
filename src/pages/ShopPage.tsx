@@ -87,21 +87,12 @@ const ShopPage = () => {
 
         setShop(shopData);
 
-        // Fetch shop products avec filtrage géographique
-        let productsQuery = supabase
+        // Fetch shop products
+        const { data: productsData, error: productsError } = await supabase
           .from('products')
           .select('*')
           .eq('shop_id', shopData.id)
-          .eq('is_active', true);
-        
-        // Filtrage géographique : même ville ET même pays
-        if (userLocation.city && userLocation.country) {
-          productsQuery = productsQuery
-            .eq('city', userLocation.city)
-            .eq('country', userLocation.country);
-        }
-        
-        const { data: productsData, error: productsError } = await productsQuery
+          .eq('is_active', true)
           .order('created_at', { ascending: false });
 
         if (!productsError && productsData) {

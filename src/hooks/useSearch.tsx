@@ -81,19 +81,10 @@ export const useSearch = () => {
 
     setLoading(true);
     try {
-      let productsQuery = supabase
+      const { data: products, error } = await supabase
         .from('products')
         .select('*')
         .eq('is_active', true);
-      
-      // Filtrage géographique : même ville ET même pays
-      if (userLocation.city && userLocation.country) {
-        productsQuery = productsQuery
-          .eq('city', userLocation.city)
-          .eq('country', userLocation.country);
-      }
-      
-      const { data: products, error } = await productsQuery;
 
       if (error) throw error;
 
@@ -150,19 +141,11 @@ export const useSearch = () => {
     }
 
     try {
-      let productsQuery = supabase
+      const { data: products, error } = await supabase
         .from('products')
         .select('id, title, category')
-        .eq('is_active', true);
-      
-      // Filtrage géographique : même ville ET même pays
-      if (userLocation.city && userLocation.country) {
-        productsQuery = productsQuery
-          .eq('city', userLocation.city)
-          .eq('country', userLocation.country);
-      }
-      
-      const { data: products, error } = await productsQuery.limit(10);
+        .eq('is_active', true)
+        .limit(10);
 
       if (error) throw error;
 

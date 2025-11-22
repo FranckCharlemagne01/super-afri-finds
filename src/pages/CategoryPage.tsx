@@ -55,21 +55,12 @@ const CategoryPage = () => {
         // Get all subcategory slugs for this main category
         const subcategorySlugs = categoryInfo.subcategories.map(sub => sub.slug);
 
-        // Fetch products avec filtrage géographique
-        let productsQuery = supabase
+        // Fetch products
+        const { data: productsData, error: productsError } = await supabase
           .from('products')
           .select('*')
           .in('category', subcategorySlugs)
-          .eq('is_active', true);
-        
-        // Filtrage géographique : même ville ET même pays
-        if (userLocation.city && userLocation.country) {
-          productsQuery = productsQuery
-            .eq('city', userLocation.city)
-            .eq('country', userLocation.country);
-        }
-        
-        const { data: productsData, error: productsError } = await productsQuery
+          .eq('is_active', true)
           .order('created_at', { ascending: false });
 
         if (productsError) throw productsError;

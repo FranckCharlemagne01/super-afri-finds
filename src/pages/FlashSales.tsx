@@ -39,20 +39,12 @@ const FlashSales = () => {
   const fetchFlashSaleProducts = async () => {
     try {
       setLoading(true);
-      let query = supabase
+      const { data, error } = await supabase
         .from('products')
         .select('*')
         .eq('is_active', true)
-        .eq('is_flash_sale', true);
-      
-      // Filtrage géographique : même ville ET même pays
-      if (userLocation.city && userLocation.country) {
-        query = query
-          .eq('city', userLocation.city)
-          .eq('country', userLocation.country);
-      }
-      
-      const { data, error } = await query.order('created_at', { ascending: false });
+        .eq('is_flash_sale', true)
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error('Error fetching flash sale products:', error);

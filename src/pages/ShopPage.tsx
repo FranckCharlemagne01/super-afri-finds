@@ -42,6 +42,7 @@ interface Product {
   is_active?: boolean;
   is_boosted?: boolean;
   boosted_until?: string;
+  is_sold?: boolean;
   created_at: string;
 }
 
@@ -365,7 +366,7 @@ const ShopPage = () => {
 
                   {/* Products grid */}
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                    {displayedProducts.map((product) => (
+                  {displayedProducts.map((product) => (
                       <ProductCard
                         key={product.id}
                         id={product.id}
@@ -380,6 +381,8 @@ const ShopPage = () => {
                         discount={product.discount_percentage || 0}
                         seller_id={product.seller_id}
                         isBoosted={false}
+                        stockQuantity={product.stock_quantity}
+                        isSold={product.is_sold || false}
                       />
                     ))}
                   </div>

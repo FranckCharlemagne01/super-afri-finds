@@ -264,7 +264,9 @@ const Index = () => {
     seller_id: product.seller_id,
     videoUrl: product.video_url,
     isBoosted: product.is_boosted || false,
-    boostedUntil: product.boosted_until
+    boostedUntil: product.boosted_until,
+    stockQuantity: product.stock_quantity,
+    isSold: product.is_sold || false
   });
 
   // Afficher le formulaire de mise à niveau vendeur pour les utilisateurs connectés

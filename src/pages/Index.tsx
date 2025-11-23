@@ -266,7 +266,8 @@ const Index = () => {
     isBoosted: product.is_boosted || false,
     boostedUntil: product.boosted_until,
     stockQuantity: product.stock_quantity,
-    isSold: product.is_sold || false
+    isSold: product.is_sold || false,
+    isActive: product.is_active,
   });
 
   // Afficher le formulaire de mise à niveau vendeur pour les utilisateurs connectés

@@ -24,6 +24,9 @@ interface Product {
   badge: string | null;
   seller_id: string;
   shop_id: string | null;
+  stock_quantity?: number;
+  is_sold?: boolean;
+  is_active?: boolean;
 }
 
 interface Shop {
@@ -202,6 +205,9 @@ const CategoryPage = () => {
                 discount={product.discount_percentage || 0}
                 seller_id={product.seller_id}
                 isBoosted={false}
+                stockQuantity={product.stock_quantity}
+                isSold={product.is_sold || false}
+                isActive={product.is_active}
               />
             ))}
           </div>

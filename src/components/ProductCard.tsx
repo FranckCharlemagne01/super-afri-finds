@@ -30,6 +30,7 @@ interface ProductCardProps {
   shop_name?: string;
   isSold?: boolean;
   stockQuantity?: number;
+  isActive?: boolean;
 }
 
 export const ProductCard = ({
@@ -75,8 +76,10 @@ export const ProductCard = ({
   const isActiveBoosted = isBoosted && boostedUntil && new Date(boostedUntil) > new Date();
   // Le badge VENDU n'apparaît que si le vendeur a confirmé manuellement la vente
   const isProductSold = isSold === true;
-  // Désactiver les boutons si vendu OU stock épuisé (si stock est défini et = 0)
-  const isUnavailable = isSold || (stockQuantity !== undefined && stockQuantity <= 0);
+  // Désactiver les boutons si vendu OU stock épuisé (uniquement si stock est un nombre valide)
+  const hasStockInfo = typeof stockQuantity === "number";
+  const isOutOfStock = hasStockInfo && stockQuantity <= 0;
+  const isUnavailable = isSold || isOutOfStock;
 
   return (
     <Card className={`relative overflow-hidden cursor-pointer border-0 shadow-md transition-all duration-300 animate-fade-in ${

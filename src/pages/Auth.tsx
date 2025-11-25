@@ -183,6 +183,22 @@ const Auth = () => {
     setFormError('');
 
     try {
+      // Security: Enforce strong password requirements (min 12 characters, mixed case, numbers, special chars)
+      const PASSWORD_MIN_LENGTH = 12;
+      const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{12,}$/;
+      
+      if (password.length < PASSWORD_MIN_LENGTH) {
+        setFormError('Le mot de passe doit contenir au moins 12 caractères.');
+        setLoading(false);
+        return;
+      }
+      
+      if (!PASSWORD_REGEX.test(password)) {
+        setFormError('Le mot de passe doit contenir au moins 12 caractères, incluant majuscules, minuscules, chiffres et caractères spéciaux (@$!%*?&).');
+        setLoading(false);
+        return;
+      }
+      
       // Le numéro de téléphone peut contenir le code pays ou pas
       const fullPhoneNumber = phone.trim();
       const fullName = `${firstName} ${lastName}`.trim();

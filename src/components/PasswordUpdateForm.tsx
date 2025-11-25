@@ -30,10 +30,23 @@ export const PasswordUpdateForm = () => {
       return;
     }
 
-    if (passwords.newPassword.length < 6) {
+    // Security: Enforce strong password requirements (min 12 characters, mixed case, numbers, special chars)
+    const PASSWORD_MIN_LENGTH = 12;
+    const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{12,}$/;
+    
+    if (passwords.newPassword.length < PASSWORD_MIN_LENGTH) {
       toast({
         title: "Erreur",
-        description: "Le mot de passe doit contenir au moins 6 caractères",
+        description: "Le mot de passe doit contenir au moins 12 caractères",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!PASSWORD_REGEX.test(passwords.newPassword)) {
+      toast({
+        title: "Erreur",
+        description: "Le mot de passe doit contenir au moins 12 caractères, incluant majuscules, minuscules, chiffres et caractères spéciaux (@$!%*?&)",
         variant: "destructive",
       });
       return;
@@ -115,7 +128,7 @@ export const PasswordUpdateForm = () => {
             onChange={(e) => handleChange('newPassword', e.target.value)}
             placeholder="Votre nouveau mot de passe"
             required
-            minLength={6}
+            minLength={12}
           />
           <Button
             type="button"
@@ -132,7 +145,7 @@ export const PasswordUpdateForm = () => {
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">
-          Le mot de passe doit contenir au moins 6 caractères
+          Le mot de passe doit contenir au moins 12 caractères, incluant majuscules, minuscules, chiffres et caractères spéciaux (@$!%*?&)
         </p>
       </div>
 
@@ -146,7 +159,7 @@ export const PasswordUpdateForm = () => {
             onChange={(e) => handleChange('confirmPassword', e.target.value)}
             placeholder="Confirmez votre nouveau mot de passe"
             required
-            minLength={6}
+            minLength={12}
           />
           <Button
             type="button"

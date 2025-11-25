@@ -182,18 +182,25 @@ const Auth = () => {
     setLoading(true);
     setFormError('');
 
+    console.log('🟢 [SIGNUP FORM] Form submitted');
+    console.log('🟢 [SIGNUP FORM] Email:', email);
+    console.log('🟢 [SIGNUP FORM] Role:', userRole);
+    console.log('🟢 [SIGNUP FORM] Current URL:', window.location.href);
+
     try {
       // Security: Enforce strong password requirements (min 12 characters, mixed case, numbers, special chars)
       const PASSWORD_MIN_LENGTH = 12;
       const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{12,}$/;
       
       if (password.length < PASSWORD_MIN_LENGTH) {
+        console.log('⚠️ [SIGNUP FORM] Password too short:', password.length);
         setFormError('Le mot de passe doit contenir au moins 12 caractères.');
         setLoading(false);
         return;
       }
       
       if (!PASSWORD_REGEX.test(password)) {
+        console.log('⚠️ [SIGNUP FORM] Password does not meet complexity requirements');
         setFormError('Le mot de passe doit contenir au moins 12 caractères, incluant majuscules, minuscules, chiffres et caractères spéciaux (@$!%*?&).');
         setLoading(false);
         return;
@@ -204,8 +211,10 @@ const Auth = () => {
       const fullName = `${firstName} ${lastName}`.trim();
       const shopNameToSend = userRole === 'seller' && shopName.trim() ? shopName.trim() : '';
       
+      console.log('🟢 [SIGNUP FORM] Calling signUp function...');
+      
       // Utiliser la fonction signUp du hook useAuth
-      const { error: signUpError } = await signUp(
+      const { error: signUpError, data: signUpData } = await signUp(
         email,
         password,
         fullName,
@@ -215,7 +224,13 @@ const Auth = () => {
         shopNameToSend
       );
       
+      console.log('🟢 [SIGNUP FORM] signUp function returned');
+      console.log('🟢 [SIGNUP FORM] Error:', signUpError);
+      console.log('🟢 [SIGNUP FORM] Data:', signUpData);
+      
       if (signUpError) {
+        console.error('❌ [SIGNUP FORM] Error detected:', signUpError.message);
+        
         if (signUpError.message.includes('already registered') || signUpError.message.includes('already been registered')) {
           setFormError('Un compte avec cet email existe déjà. Essayez de vous connecter.');
           toast({
@@ -243,6 +258,8 @@ const Auth = () => {
         }
         return;
       }
+
+      console.log('✅ [SIGNUP FORM] Success! Showing confirmation message');
 
       // Succès - afficher le message de vérification
       setOtpEmail(email);
@@ -272,15 +289,19 @@ const Auth = () => {
       }, 1500);
       
     } catch (error) {
-      console.error('Signup error:', error);
-      setFormError("Une erreur est survenue. Veuillez réessayer ou vérifier votre adresse e-mail.");
+      console.error('❌ [SIGNUP FORM] Unexpected exception:', error);
+      const errorMessage = error instanceof Error ? error.message : "Une erreur est survenue";
+      console.error('❌ [SIGNUP FORM] Exception details:', errorMessage);
+      
+      setFormError(`Erreur: ${errorMessage}. Veuillez réessayer.`);
       toast({
         title: "❌ Erreur d'inscription",
-        description: "Une erreur est survenue. Veuillez réessayer ou vérifier votre adresse e-mail.",
+        description: `Une erreur est survenue: ${errorMessage}. Veuillez réessayer.`,
         variant: "destructive",
         duration: 5000,
       });
     } finally {
+      console.log('🟢 [SIGNUP FORM] Form submission completed');
       setLoading(false);
     }
   };

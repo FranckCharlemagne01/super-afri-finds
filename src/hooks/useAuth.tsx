@@ -7,7 +7,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signIn: (emailOrPhone: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, fullName: string, phone: string, country?: string, role?: 'buyer' | 'seller', shopName?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName: string, phone: string, country?: string, role?: 'buyer' | 'seller', shopName?: string) => Promise<{ error: any; data?: any }>;
   resetPassword: (email: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
@@ -115,23 +115,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Utiliser l'URL actuelle pour le redirect (fonctionne en dev et prod)
     const redirectUrl = `${window.location.origin}/auth/callback`;
     
-    const { error } = await supabase.auth.signUp({
-      email,
-      phone,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          full_name: fullName,
-          phone: phone,
-          country: country || 'CI', // Default to Côte d'Ivoire
-          user_role: role || 'buyer', // Default to buyer
-          shop_name: shopName || '', // Nom de boutique optionnel pour les vendeurs
-        }
-      }
-    });
+    console.log('🔵 [SIGNUP DEBUG] Starting signup process...');
+    console.log('🔵 [SIGNUP DEBUG] Email:', email);
+    console.log('🔵 [SIGNUP DEBUG] Redirect URL:', redirectUrl);
+    console.log('🔵 [SIGNUP DEBUG] Current domain:', window.location.origin);
+    console.log('🔵 [SIGNUP DEBUG] User role:', role);
     
-    return { error };
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        phone,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            full_name: fullName,
+            phone: phone,
+            country: country || 'CI', // Default to Côte d'Ivoire
+            user_role: role || 'buyer', // Default to buyer
+            shop_name: shopName || '', // Nom de boutique optionnel pour les vendeurs
+          }
+        }
+      });
+      
+      console.log('🔵 [SIGNUP DEBUG] Supabase response data:', data);
+      console.log('🔵 [SIGNUP DEBUG] Supabase response error:', error);
+      
+      if (error) {
+        console.error('❌ [SIGNUP ERROR] Supabase error details:', {
+          message: error.message,
+          status: error.status,
+          name: error.name,
+        });
+      } else {
+        console.log('✅ [SIGNUP SUCCESS] User created:', data.user?.id);
+        console.log('✅ [SIGNUP SUCCESS] Session:', data.session ? 'Present' : 'Null (email confirmation required)');
+      }
+      
+      return { error, data };
+    } catch (exception) {
+      console.error('❌ [SIGNUP EXCEPTION] Unexpected error during signup:', exception);
+      return { 
+        error: { 
+          message: exception instanceof Error ? exception.message : 'Une erreur inattendue est survenue',
+          name: 'UnexpectedError',
+          status: 500
+        } as any 
+      };
+    }
   };
 
   const resetPassword = async (email: string) => {

@@ -112,14 +112,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, fullName: string, phone: string, country?: string, role?: 'buyer' | 'seller', shopName?: string) => {
-    // Utiliser l'URL actuelle pour le redirect (fonctionne en dev et prod)
-    const redirectUrl = `${window.location.origin}/auth/callback`;
+    // Utiliser le nouveau domaine pour le redirect
+    const redirectUrl = `https://djassa.siteviral.site/auth/callback`;
     
-    console.log('🔵 [SIGNUP DEBUG] Starting signup process...');
-    console.log('🔵 [SIGNUP DEBUG] Email:', email);
-    console.log('🔵 [SIGNUP DEBUG] Redirect URL:', redirectUrl);
-    console.log('🔵 [SIGNUP DEBUG] Current domain:', window.location.origin);
-    console.log('🔵 [SIGNUP DEBUG] User role:', role);
+    console.log('🔵 [useAuth.signUp] Début du processus d\'inscription');
+    console.log('🔵 [useAuth.signUp] Email:', email);
+    console.log('🔵 [useAuth.signUp] Redirect URL:', redirectUrl);
+    console.log('🔵 [useAuth.signUp] Rôle utilisateur:', role);
     
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -131,36 +130,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           data: {
             full_name: fullName,
             phone: phone,
-            country: country || 'CI', // Default to Côte d'Ivoire
-            user_role: role || 'buyer', // Default to buyer
-            shop_name: shopName || '', // Nom de boutique optionnel pour les vendeurs
+            country: country || 'CI',
+            user_role: role || 'buyer',
+            shop_name: shopName || '',
           }
         }
       });
       
-      console.log('🔵 [SIGNUP DEBUG] Supabase response data:', data);
-      console.log('🔵 [SIGNUP DEBUG] Supabase response error:', error);
+      console.log('🟢 [useAuth.signUp] Réponse Supabase:');
+      console.log('🟢 [useAuth.signUp] - Data:', data);
+      console.log('🟢 [useAuth.signUp] - Error:', error);
       
       if (error) {
-        console.error('❌ [SIGNUP ERROR] Supabase error details:', {
+        console.error('❌ [useAuth.signUp] Erreur Supabase:', {
           message: error.message,
           status: error.status,
           name: error.name,
         });
       } else {
-        console.log('✅ [SIGNUP SUCCESS] User created:', data.user?.id);
-        console.log('✅ [SIGNUP SUCCESS] Session:', data.session ? 'Present' : 'Null (email confirmation required)');
+        console.log('✅ [useAuth.signUp] Utilisateur créé:', data.user?.id);
+        console.log('✅ [useAuth.signUp] Session:', data.session ? 'Présente' : 'Null (confirmation email requise)');
       }
       
       return { error, data };
     } catch (exception) {
-      console.error('❌ [SIGNUP EXCEPTION] Unexpected error during signup:', exception);
+      console.error('❌ [useAuth.signUp] Exception inattendue:', exception);
       return { 
         error: { 
           message: exception instanceof Error ? exception.message : 'Une erreur inattendue est survenue',
           name: 'UnexpectedError',
           status: 500
-        } as any 
+        } as any,
+        data: null
       };
     }
   };

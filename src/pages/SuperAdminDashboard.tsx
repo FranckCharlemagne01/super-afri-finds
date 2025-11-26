@@ -56,6 +56,8 @@ interface AdminStats {
   total_tokens_distributed: number;
   total_unique_visitors: number;
   new_visitors_24h: number;
+  new_visitors_7d: number;
+  total_visits_today: number;
 }
 
 const SuperAdminDashboard = () => {
@@ -155,6 +157,8 @@ const SuperAdminDashboard = () => {
           .reduce((sum, t) => sum + parseInt(String(t.tokens_amount || '0')), 0),
         total_unique_visitors: visitorStats?.total_unique_visitors || 0,
         new_visitors_24h: visitorStats?.new_visitors_24h || 0,
+        new_visitors_7d: visitorStats?.new_visitors_7d || 0,
+        total_visits_today: visitorStats?.total_visits_today || 0,
       };
 
       setStats(statsData);
@@ -217,14 +221,22 @@ const SuperAdminDashboard = () => {
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">SuperAdmin Dashboard</h1>
-              <p className="text-sm text-muted-foreground">Gestion complète de la plateforme Djassa</p>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">SuperAdmin Dashboard</h1>
+                <p className="text-sm text-muted-foreground">Gestion complète de la plateforme Djassa</p>
+              </div>
             </div>
+            <Button 
+              variant="default" 
+              onClick={() => window.open('https://djassa.siteviral.site', '_blank')}
+            >
+              Retour au site
+            </Button>
           </div>
         </div>
       </header>
@@ -287,8 +299,8 @@ const SuperAdminDashboard = () => {
               </Card>
             </div>
 
-            {/* Visitor Stats - Nouvelle section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {/* Visitor Stats - Section complète */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Visiteurs Uniques</CardTitle>
@@ -304,13 +316,39 @@ const SuperAdminDashboard = () => {
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Nouveaux Visiteurs</CardTitle>
+                  <CardTitle className="text-sm font-medium">Nouveaux (24h)</CardTitle>
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{stats.new_visitors_24h}</div>
                   <p className="text-xs text-muted-foreground">
                     Dernières 24 heures
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Nouveaux (7j)</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.new_visitors_7d}</div>
+                  <p className="text-xs text-muted-foreground">
+                    7 derniers jours
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Visites Aujourd'hui</CardTitle>
+                  <Eye className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.total_visits_today}</div>
+                  <p className="text-xs text-muted-foreground">
+                    Visites du jour
                   </p>
                 </CardContent>
               </Card>

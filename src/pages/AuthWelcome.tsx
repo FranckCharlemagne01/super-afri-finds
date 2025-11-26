@@ -59,11 +59,8 @@ const AuthWelcome = () => {
             setCountdown((prev) => {
               if (prev <= 1) {
                 clearInterval(timer);
-                if (role === 'seller' || role === 'admin' || role === 'superadmin') {
-                  navigate('/seller-dashboard', { replace: true });
-                } else {
-                  navigate('/', { replace: true });
-                }
+                // Rediriger vers la page publique
+                navigate('/', { replace: true });
                 return 0;
               }
               return prev - 1;
@@ -151,13 +148,7 @@ const AuthWelcome = () => {
                 </p>
               </div>
               <Button 
-                onClick={() => {
-                  if (userRole === 'seller' || userRole === 'admin' || userRole === 'superadmin') {
-                    navigate('/seller-dashboard', { replace: true });
-                  } else {
-                    navigate('/', { replace: true });
-                  }
-                }}
+                onClick={() => navigate('/', { replace: true })}
                 className="w-full h-12 text-base font-semibold gradient-bg-primary hover:opacity-90 transition-opacity"
                 size="lg"
               >

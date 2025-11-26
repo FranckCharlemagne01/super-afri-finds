@@ -8,7 +8,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Shield, ShieldCheck, Mail, Smartphone, Key, Copy, CheckCircle } from 'lucide-react';
+import { Alert } from '@/components/ui/alert';
+import { Loader2, Shield, ShieldCheck, Mail, Smartphone, Key, Copy, CheckCircle, AlertTriangle } from 'lucide-react';
 
 export const TwoFactorAuthForm = () => {
   const { user } = useAuth();
@@ -19,6 +20,9 @@ export const TwoFactorAuthForm = () => {
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
   const [showBackupCodes, setShowBackupCodes] = useState(false);
   const [verificationMethod, setVerificationMethod] = useState<'email' | 'app'>('email');
+
+  // Security Warning: This is a demo-only implementation
+  const DEMO_MODE = true;
 
   useEffect(() => {
     check2FAStatus();
@@ -167,6 +171,23 @@ export const TwoFactorAuthForm = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Security Warning: Demo-Only Implementation */}
+      {DEMO_MODE && (
+        <Alert variant="destructive" className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
+          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+          <div className="ml-2">
+            <h4 className="text-sm font-semibold text-amber-900 dark:text-amber-100 mb-1">
+              ⚠️ Fonctionnalité en démonstration uniquement
+            </h4>
+            <p className="text-xs text-amber-800 dark:text-amber-200 leading-relaxed">
+              Cette interface 2FA est actuellement <strong>non fonctionnelle</strong> et ne fournit <strong>aucune protection réelle</strong>. 
+              Votre compte reste protégé uniquement par votre mot de passe. 
+              L'authentification à deux facteurs complète sera implémentée dans une future mise à jour.
+            </p>
+          </div>
+        </Alert>
+      )}
 
       {!is2FAEnabled ? (
         /* Enable 2FA */

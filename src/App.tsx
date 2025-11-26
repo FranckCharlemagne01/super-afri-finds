@@ -10,6 +10,7 @@ import { SmoothSkeleton } from "@/components/ui/smooth-skeleton";
 import { lazy, Suspense, useState, useCallback } from "react";
 import { SplashScreen } from "@/components/SplashScreen";
 import { useInactivityDetector } from "@/hooks/useInactivityDetector";
+import { useVisitorTracking } from "@/hooks/useVisitorTracking";
 
 const Verify = lazy(() => import("./pages/Verify"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
@@ -56,6 +57,9 @@ const PageLoadingFallback = () => (
 const App = () => {
   const [showSplash, setShowSplash] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // Track visitor activity
+  useVisitorTracking();
 
   const handleSplashComplete = useCallback(() => {
     setShowSplash(false);

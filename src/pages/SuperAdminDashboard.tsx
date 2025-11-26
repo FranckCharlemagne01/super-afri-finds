@@ -54,6 +54,8 @@ interface AdminStats {
   new_users_today: number;
   total_tokens_revenue: number;
   total_tokens_distributed: number;
+  total_unique_visitors: number;
+  new_visitors_24h: number;
 }
 
 const SuperAdminDashboard = () => {
@@ -122,6 +124,15 @@ const SuperAdminDashboard = () => {
 
       if (tokenError) throw tokenError;
 
+      // Fetch visitor statistics
+      const { data: visitorStats, error: visitorError } = await supabase
+        .rpc('get_visitor_statistics')
+        .single();
+
+      if (visitorError) {
+        console.error('Error fetching visitor stats:', visitorError);
+      }
+
       // Calculate stats manually since we can't use the view with RLS issues
       const statsData: AdminStats = {
         total_users: transformedUsers.length,
@@ -142,6 +153,8 @@ const SuperAdminDashboard = () => {
           .reduce((sum, t) => sum + parseFloat(String(t.price_paid || '0')), 0),
         total_tokens_distributed: (tokenTransactions || [])
           .reduce((sum, t) => sum + parseInt(String(t.tokens_amount || '0')), 0),
+        total_unique_visitors: visitorStats?.total_unique_visitors || 0,
+        new_visitors_24h: visitorStats?.new_visitors_24h || 0,
       };
 
       setStats(statsData);
@@ -269,6 +282,35 @@ const SuperAdminDashboard = () => {
                   <div className="text-2xl font-bold">{stats.total_revenue.toLocaleString()} FCFA</div>
                   <p className="text-xs text-muted-foreground">
                     Commandes complétées
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Visitor Stats - Nouvelle section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Visiteurs Uniques</CardTitle>
+                  <Eye className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.total_unique_visitors.toLocaleString()}</div>
+                  <p className="text-xs text-muted-foreground">
+                    Total depuis le lancement
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Nouveaux Visiteurs</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.new_visitors_24h}</div>
+                  <p className="text-xs text-muted-foreground">
+                    Dernières 24 heures
                   </p>
                 </CardContent>
               </Card>

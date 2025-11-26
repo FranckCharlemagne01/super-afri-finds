@@ -541,6 +541,39 @@ export type Database = {
         }
         Relationships: []
       }
+      site_visits: {
+        Row: {
+          created_at: string
+          id: string
+          is_first_visit: boolean
+          referrer: string | null
+          user_agent: string | null
+          user_id: string | null
+          visit_date: string
+          visitor_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_first_visit?: boolean
+          referrer?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          visit_date?: string
+          visitor_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_first_visit?: boolean
+          referrer?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          visit_date?: string
+          visitor_id?: string
+        }
+        Relationships: []
+      }
       token_transactions: {
         Row: {
           created_at: string
@@ -775,6 +808,15 @@ export type Database = {
           role: Database["public"]["Enums"]["user_role"]
           updated_at: string
           user_id: string
+        }[]
+      }
+      get_visitor_statistics: {
+        Args: never
+        Returns: {
+          new_visitors_24h: number
+          new_visitors_7d: number
+          total_unique_visitors: number
+          total_visits_today: number
         }[]
       }
       handle_article_payment_success: {

@@ -169,12 +169,26 @@ const SellerDashboard = () => {
       }
 
       if (data?.status === 'success' || data?.success) {
-        toast({
-          title: "🎉 Paiement réussi !",
-          description: data.message || "Vos jetons ont été ajoutés à votre compte !",
-        });
-        refetchProducts();
-        refreshBalance();
+        // Vérifier si c'est un paiement test ou live
+        const isTestMode = data?.test_mode === true;
+        
+        if (isTestMode) {
+          // MODE TEST: Afficher un avertissement clair
+          toast({
+            title: "🧪 Mode Test - Paiement simulé",
+            description: data.message || "Vous êtes en mode test : aucun crédit réel n'a été ajouté.",
+            variant: "default",
+          });
+        } else {
+          // MODE LIVE: Paiement réel réussi
+          toast({
+            title: "🎉 Paiement réussi !",
+            description: data.message || "Vos jetons ont été ajoutés à votre compte !",
+          });
+          // Rafraîchir uniquement si c'est un vrai paiement
+          refetchProducts();
+          refreshBalance();
+        }
       }
     } catch (error) {
       console.error('Payment verification error:', error);

@@ -12,7 +12,7 @@ const Landing = () => {
   const { role, loading: roleLoading } = useStableRole();
 
   useEffect(() => {
-    // Redirect authenticated users to their dashboard
+    // Redirect authenticated users to their dashboard (silently in background)
     if (!authLoading && !roleLoading && user && role) {
       if (role === 'seller') {
         navigate('/seller-dashboard', { replace: true });
@@ -24,15 +24,7 @@ const Landing = () => {
     }
   }, [user, role, authLoading, roleLoading, navigate]);
 
-  // Show nothing while checking auth
-  if (authLoading || roleLoading) {
-    return null;
-  }
-
-  // Don't show landing page to authenticated users
-  if (user) {
-    return null;
-  }
+  // Always show the landing page immediately - redirection happens in background if authenticated
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 animate-fade-in scroll-smooth-mobile overflow-x-hidden">

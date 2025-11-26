@@ -21,7 +21,7 @@ export const TwoFactorAuthForm = () => {
   const [showBackupCodes, setShowBackupCodes] = useState(false);
   const [verificationMethod, setVerificationMethod] = useState<'email' | 'app'>('email');
 
-  // Security Warning: This is a demo-only implementation
+  // SECURITY WARNING: This is a demo-only implementation - NOT FUNCTIONAL
   const DEMO_MODE = true;
 
   useEffect(() => {
@@ -174,17 +174,23 @@ export const TwoFactorAuthForm = () => {
 
       {/* Security Warning: Demo-Only Implementation */}
       {DEMO_MODE && (
-        <Alert variant="destructive" className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
-          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+        <Alert variant="destructive" className="border-2 border-red-600 bg-red-50 dark:bg-red-950/30">
+          <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
           <div className="ml-2">
-            <h4 className="text-sm font-semibold text-amber-900 dark:text-amber-100 mb-1">
-              ⚠️ Fonctionnalité en démonstration uniquement
+            <h4 className="text-base font-bold text-red-900 dark:text-red-100 mb-2">
+              🚨 ATTENTION : Fonctionnalité NON FONCTIONNELLE
             </h4>
-            <p className="text-xs text-amber-800 dark:text-amber-200 leading-relaxed">
-              Cette interface 2FA est actuellement <strong>non fonctionnelle</strong> et ne fournit <strong>aucune protection réelle</strong>. 
-              Votre compte reste protégé uniquement par votre mot de passe. 
-              L'authentification à deux facteurs complète sera implémentée dans une future mise à jour.
-            </p>
+            <div className="text-sm text-red-800 dark:text-red-200 space-y-2">
+              <p className="font-semibold">Cette interface 2FA est uniquement décorative et ne fournit AUCUNE sécurité réelle :</p>
+              <ul className="list-disc list-inside ml-2 space-y-1">
+                <li>Aucune vérification lors de la connexion</li>
+                <li>Les codes affichés ne protègent pas votre compte</li>
+                <li>Votre compte reste sécurisé uniquement par mot de passe</li>
+              </ul>
+              <p className="font-semibold mt-2">
+                Pour une vraie 2FA, une implémentation TOTP complète avec speakeasy/qrcode est nécessaire.
+              </p>
+            </div>
           </div>
         </Alert>
       )}

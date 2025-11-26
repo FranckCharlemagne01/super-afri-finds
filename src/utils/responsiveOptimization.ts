@@ -19,16 +19,12 @@ export function preventHorizontalScroll() {
  */
 export function optimizeTouchEvents() {
   if (typeof window === 'undefined') return;
-  
-  // Disable double-tap zoom on iOS
-  let lastTouchEnd = 0;
-  document.addEventListener('touchend', (event) => {
-    const now = Date.now();
-    if (now - lastTouchEnd <= 300) {
-      event.preventDefault();
-    }
-    lastTouchEnd = now;
-  }, { passive: false });
+
+  // Use CSS-based optimizations instead of JS event listeners to avoid blocking the main thread
+  const bodyStyle = document.body.style as any;
+  bodyStyle.webkitOverflowScrolling = 'touch';
+  bodyStyle.WebkitOverflowScrolling = 'touch';
+  bodyStyle.touchAction = 'manipulation';
 }
 
 /**
@@ -71,15 +67,22 @@ export function optimizeViewport() {
  */
 export function initResponsiveOptimizations() {
   if (typeof window === 'undefined') return;
+
+  // Apply only on mobile / tablet to avoid impacting desktop scrolling
+  if (!isMobileOrTablet()) return;
   
   preventHorizontalScroll();
   optimizeTouchEvents();
   applySafeAreaInsets();
   optimizeViewport();
   
-  // Reapply on resize
-  window.addEventListener('resize', () => {
+  // Reapply on orientation / size changes
+  const handleResize = () => {
     preventHorizontalScroll();
     applySafeAreaInsets();
-  });
+  };
+
+  window.addEventListener('resize', handleResize);
+
+  // Note: main.tsx runs once, so we rely on this cleanup only on full reload
 }

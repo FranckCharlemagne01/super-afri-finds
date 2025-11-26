@@ -348,12 +348,12 @@ const Index = () => {
               </Button>
               {isSuperAdmin && (
                 <Button 
-                  variant="outline" 
+                  variant="default" 
                   size="sm" 
                   onClick={() => navigate('/superadmin')}
-                  className="text-xs min-h-[36px]"
+                  className="text-xs min-h-[36px] bg-primary hover:bg-primary/90"
                 >
-                  Dashboard
+                  Retour au Dashboard
                 </Button>
               )}
               {user && (

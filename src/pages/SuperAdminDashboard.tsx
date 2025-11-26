@@ -233,8 +233,10 @@ const SuperAdminDashboard = () => {
             </div>
             <Button 
               variant="default" 
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/marketplace')}
+              className="flex items-center gap-2"
             >
+              <ArrowLeft className="w-4 h-4" />
               Retour au site
             </Button>
           </div>

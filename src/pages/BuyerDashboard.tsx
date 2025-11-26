@@ -96,7 +96,7 @@ const BuyerDashboard = () => {
   };
 
   const handleViewPublicPage = () => {
-    navigate('/');
+    navigate('/marketplace');
   };
 
   const handleUpdateProfile = async () => {

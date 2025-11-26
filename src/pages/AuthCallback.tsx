@@ -115,7 +115,20 @@ const AuthCallback = () => {
           }
         }
         
-        // Si aucun code ou token n'est trouvé, proposer de coller le lien
+        // Vérifier si l'utilisateur a déjà une session active
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (!sessionError && session?.user) {
+          console.log('[AuthCallback] Active session found, redirecting to welcome');
+          setStatus('success');
+          setMessage('Votre compte est déjà vérifié !');
+          setTimeout(() => {
+            navigate('/auth/welcome', { replace: true });
+          }, 1500);
+          return;
+        }
+        
+        // Si vraiment aucun code ou token n'est trouvé et pas de session
         console.log('[AuthCallback] No verification code found, showing paste field');
         setStatus('incomplete');
         setMessage('Le lien de vérification est incomplet. Collez ici le lien complet reçu par email.');

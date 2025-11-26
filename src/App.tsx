@@ -15,6 +15,7 @@ import { useVisitorTracking } from "@/hooks/useVisitorTracking";
 const Verify = lazy(() => import("./pages/Verify"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const AuthWelcome = lazy(() => import("./pages/AuthWelcome"));
+const Welcome = lazy(() => import("./pages/Welcome"));
 const Landing = lazy(() => import("./pages/Landing"));
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
@@ -93,6 +94,7 @@ const App = () => {
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/auth/welcome" element={<AuthWelcome />} />
+                <Route path="/welcome" element={<Welcome />} />
                 <Route path="/auth/reset-password" element={<ResetPassword />} />
                 <Route path="/verify" element={<Verify />} />
                 <Route 

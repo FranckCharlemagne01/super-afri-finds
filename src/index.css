@@ -352,11 +352,38 @@ textarea {
 
 /* Scroll stability for mobile - prevents vibration */
 .scroll-smooth-mobile {
+  scroll-behavior: auto;
   -webkit-overflow-scrolling: touch;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .scroll-smooth-mobile {
+    scroll-behavior: smooth;
+  }
+}
+
 .stable-scroll {
-  /* Simplified to not interfere with scroll */
+  overscroll-behavior: none;
+}
+
+/* GPU-accelerated animations for smooth performance */
+.animate-fade-in {
+  will-change: opacity, transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* Optimize touch interactions */
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Smooth transitions for interactive elements */
+.transition-all,
+.transition-transform {
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 @media (max-width: 767px) {

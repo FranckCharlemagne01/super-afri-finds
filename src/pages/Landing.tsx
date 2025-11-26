@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStableAuth } from '@/hooks/useStableAuth';
 import { useStableRole } from '@/hooks/useStableRole';
@@ -10,6 +10,31 @@ const Landing = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useStableAuth();
   const { role, loading: roleLoading } = useStableRole();
+
+  // Memoized navigation handlers to prevent re-renders
+  const handleAuth = useCallback(() => {
+    navigate('/auth');
+  }, [navigate]);
+
+  const handleSignup = useCallback(() => {
+    navigate('/auth?mode=signup');
+  }, [navigate]);
+
+  const handleMarketplace = useCallback(() => {
+    navigate('/marketplace');
+  }, [navigate]);
+
+  const handleAbout = useCallback(() => {
+    navigate('/about');
+  }, [navigate]);
+
+  const handleLegal = useCallback(() => {
+    navigate('/legal');
+  }, [navigate]);
+
+  const handleHome = useCallback(() => {
+    navigate('/');
+  }, [navigate]);
 
   useEffect(() => {
     // Redirect authenticated users to their dashboard (silently in background)
@@ -29,11 +54,11 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 animate-fade-in">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 md:backdrop-blur md:supports-[backdrop-filter]:bg-background/60 transition-all duration-300">
+      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 md:backdrop-blur md:supports-[backdrop-filter]:bg-background/60">
         <div className="w-full flex h-14 sm:h-16 md:h-20 items-center justify-between px-4 sm:px-6 md:px-8 mx-auto" style={{ maxWidth: '100vw' }}>
           <div 
             className="flex items-center gap-1.5 sm:gap-2 cursor-pointer touch-manipulation active:scale-95 transition-transform flex-shrink-0" 
-            onClick={() => navigate('/')}
+            onClick={handleHome}
           >
             <Store className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-primary" />
             <span className="text-lg sm:text-xl md:text-3xl font-bold gradient-text-primary whitespace-nowrap">
@@ -44,14 +69,14 @@ const Landing = () => {
           <div className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-shrink-0">
             <Button
               variant="outline"
-              onClick={() => navigate('/auth')}
+              onClick={handleAuth}
               className="h-8 sm:h-9 md:h-11 px-2 sm:px-3 md:px-6 text-xs sm:text-sm md:text-base font-medium touch-manipulation active:scale-95 transition-all whitespace-nowrap"
             >
               <span className="hidden xs:inline">Se connecter</span>
               <span className="xs:hidden">Connexion</span>
             </Button>
             <Button
-              onClick={() => navigate('/auth?mode=signup')}
+              onClick={handleSignup}
               className="h-8 sm:h-9 md:h-11 px-2 sm:px-3 md:px-6 text-xs sm:text-sm md:text-base font-semibold bg-primary hover:bg-primary-hover touch-manipulation active:scale-95 transition-all shadow-sm hover:shadow-md whitespace-nowrap"
             >
               <span className="hidden sm:inline">Créer ma boutique</span>
@@ -90,7 +115,7 @@ const Landing = () => {
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2 sm:pt-4 w-full">
               <Button
                 size="lg"
-                onClick={() => navigate('/auth?mode=signup')}
+                onClick={handleSignup}
                 className="h-11 sm:h-12 md:h-14 px-4 sm:px-6 md:px-8 text-sm sm:text-base md:text-lg font-semibold bg-primary hover:bg-primary-hover shadow-lg hover:shadow-xl transition-all duration-300 touch-manipulation active:scale-95 w-full sm:w-auto"
               >
                 <Store className="mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
@@ -99,7 +124,7 @@ const Landing = () => {
               <Button
                 size="lg"
                 variant="outline"
-                onClick={() => navigate('/marketplace')}
+                onClick={handleMarketplace}
                 className="h-11 sm:h-12 md:h-14 px-4 sm:px-6 md:px-8 text-sm sm:text-base md:text-lg font-medium touch-manipulation active:scale-95 transition-all w-full sm:w-auto"
               >
                 <span className="whitespace-nowrap">Découvrir le marché</span>
@@ -125,12 +150,13 @@ const Landing = () => {
 
           {/* Right Image */}
           <div className="relative animate-fade-in mt-8 lg:mt-0" style={{ animationDelay: '0.2s' }}>
-            <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-accent/20 rounded-2xl sm:rounded-3xl blur-3xl opacity-50" />
+            <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-accent/20 rounded-2xl sm:rounded-3xl blur-3xl opacity-50 will-change-transform" />
             <img
               src={showcaseImage}
               alt="Djassa Marketplace - Plateforme de vente en ligne moderne"
-              className="relative rounded-2xl sm:rounded-3xl shadow-2xl border border-border/50 w-full md:hover:scale-105 transition-transform duration-500 touch-manipulation"
+              className="relative rounded-2xl sm:rounded-3xl shadow-2xl border border-border/50 w-full md:hover:scale-105 transition-transform duration-500 touch-manipulation will-change-transform"
               loading="lazy"
+              decoding="async"
               width="800"
               height="600"
             />
@@ -218,7 +244,7 @@ const Landing = () => {
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full lg:w-auto">
                 <Button
                   size="lg"
-                  onClick={() => navigate('/auth?mode=signup')}
+                  onClick={handleSignup}
                   className="h-11 sm:h-12 md:h-14 px-6 sm:px-8 text-sm sm:text-base md:text-lg font-semibold bg-primary hover:bg-primary-hover shadow-lg hover:shadow-xl transition-all duration-300 touch-manipulation active:scale-95 w-full sm:w-auto whitespace-nowrap"
                 >
                   Créer ma boutique
@@ -241,7 +267,7 @@ const Landing = () => {
           <Button
             size="lg"
             variant="outline"
-            onClick={() => navigate('/marketplace')}
+            onClick={handleMarketplace}
             className="h-10 sm:h-11 md:h-12 px-6 sm:px-8 text-sm sm:text-base font-medium touch-manipulation active:scale-95 transition-all whitespace-nowrap"
           >
             Voir tous les produits
@@ -263,14 +289,14 @@ const Landing = () => {
             <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
               <Button
                 variant="link"
-                onClick={() => navigate('/about')}
+                onClick={handleAbout}
                 className="text-xs sm:text-sm text-muted-foreground hover:text-foreground touch-manipulation active:scale-95 transition-all whitespace-nowrap"
               >
                 À propos
               </Button>
               <Button
                 variant="link"
-                onClick={() => navigate('/legal')}
+                onClick={handleLegal}
                 className="text-xs sm:text-sm text-muted-foreground hover:text-foreground touch-manipulation active:scale-95 transition-all whitespace-nowrap"
               >
                 Mentions légales

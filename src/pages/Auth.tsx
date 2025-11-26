@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { TextInput, NumericInput } from '@/components/ui/validated-input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/hooks/useAuth';
+import { useStableAuth } from '@/hooks/useStableAuth';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Globe, Eye, EyeOff, AlertCircle, ShoppingCart, Store, Mail } from 'lucide-react';
 import { CountrySelect } from '@/components/CountrySelect';
@@ -19,7 +19,7 @@ import GoogleAuthButton from '@/components/GoogleAuthButton';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
-  const { user } = useAuth();
+  const { user, signIn, signUp, resetPassword } = useStableAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -52,7 +52,6 @@ const Auth = () => {
   const [resendingOtp, setResendingOtp] = useState(false);
   const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [otpEmail, setOtpEmail] = useState('');
-  const { signIn, signUp, resetPassword } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 

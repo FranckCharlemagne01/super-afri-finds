@@ -664,15 +664,15 @@ export type Database = {
       assign_superadmin_role: { Args: { _email: string }; Returns: string }
       boost_product:
         | {
+            Args: { _product_id: string; _seller_id: string }
+            Returns: boolean
+          }
+        | {
             Args: {
               _duration_hours?: number
               _product_id: string
               _seller_id: string
             }
-            Returns: boolean
-          }
-        | {
-            Args: { _product_id: string; _seller_id: string }
             Returns: boolean
           }
       can_publish_products: { Args: { _user_id: string }; Returns: boolean }

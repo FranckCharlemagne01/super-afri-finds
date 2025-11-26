@@ -269,7 +269,7 @@ serve(async (req) => {
         ? `tokens_${user_id}_${Date.now()}`
         : `premium_${user_id}_${Date.now()}`;
 
-      // Store payment record in database with sanitized data
+      // Store payment record in database with sanitized data and mode
       const { error: dbError } = await supabase
         .from('premium_payments')
         .insert({
@@ -279,7 +279,10 @@ serve(async (req) => {
           currency: 'XOF',
           status: 'pending',
           payment_type,
-          product_data: sanitizedProductData
+          product_data: {
+            ...sanitizedProductData,
+            payment_mode: paystackKeys.mode // Store mode (test/live) in product_data
+          }
         });
 
       if (dbError) {
@@ -398,6 +401,12 @@ serve(async (req) => {
         });
       }
 
+      // DETECTION AUTOMATIQUE DU MODE via Paystack response
+      const isTestPayment = paystackData.data.domain === 'test';
+      const paymentMode = isTestPayment ? 'test' : 'live';
+      
+      console.log(`💳 Payment mode detected: ${paymentMode.toUpperCase()}`);
+
       // Get payment record
       const { data: paymentRecord, error: fetchError } = await supabase
         .from('premium_payments')
@@ -413,63 +422,94 @@ serve(async (req) => {
         });
       }
 
-        // Handle payment based on type
-        let updateError;
-        if (paymentRecord.payment_type === 'tokens') {
-          // Achat de jetons
-          const tokensAmount = paystackData.data.metadata?.tokens_amount || 0;
-          
-          console.log('✅ Processing token purchase:', {
-            seller_id: paymentRecord.user_id,
-            tokens_amount: tokensAmount,
-            price_paid: paystackData.data.amount / 100,
+      // MODE TEST: Ne pas ajouter de crédits réels
+      if (isTestPayment) {
+        console.log('🧪 TEST MODE: Payment successful but NO credits will be added');
+        
+        // Mettre à jour le statut du paiement comme test_success
+        await supabase
+          .from('premium_payments')
+          .update({
+            status: 'test_success',
+            payment_date: new Date().toISOString()
+          })
+          .eq('paystack_reference', reference);
+
+        return new Response(JSON.stringify({
+          status: 'success',
+          test_mode: true,
+          message: '🧪 MODE TEST: Paiement simulé réussi. Aucun crédit réel n\'a été ajouté à votre compte.',
+          warning: 'Vous êtes en mode test : aucun crédit réel n\'a été ajouté.',
+          data: {
             reference,
-            metadata: paystackData.data.metadata
-          });
-          
-          // Initialiser les jetons du vendeur si nécessaire
-          await supabase.rpc('initialize_seller_tokens', { _seller_id: paymentRecord.user_id });
-          
-          updateError = (await supabase
-            .rpc('add_tokens_after_purchase', {
-              _seller_id: paymentRecord.user_id,
-              _tokens_amount: tokensAmount,
-              _price_paid: paystackData.data.amount / 100,
-              _paystack_reference: reference
-            })).error;
-            
-          if (updateError) {
-            console.error('❌ Error adding tokens:', updateError);
-          } else {
-            console.log('✅ Tokens added successfully to seller:', paymentRecord.user_id);
-            
-            // Vérifier que les jetons ont bien été ajoutés
-            const { data: tokenData } = await supabase
-              .from('seller_tokens')
-              .select('token_balance')
-              .eq('seller_id', paymentRecord.user_id)
-              .single();
-            
-            console.log('📊 New token balance:', tokenData?.token_balance);
+            amount: paystackData.data.amount / 100,
+            payment_mode: 'test',
+            tokens_amount: paystackData.data.metadata?.tokens_amount || 0
           }
-        } else if (paymentRecord.payment_type === 'article_publication') {
-          // Publication d'article
-          updateError = (await supabase
-            .rpc('handle_article_payment_success', {
-              _user_id: paymentRecord.user_id,
-              _paystack_reference: reference,
-              _amount: paystackData.data.amount / 100,
-              _product_data: paymentRecord.product_data
-            })).error;
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // MODE LIVE: Traitement normal avec ajout de crédits
+      console.log('💰 LIVE MODE: Processing real payment and adding credits');
+      
+      let updateError;
+      if (paymentRecord.payment_type === 'tokens') {
+        // Achat de jetons
+        const tokensAmount = paystackData.data.metadata?.tokens_amount || 0;
+        
+        console.log('✅ Processing token purchase:', {
+          seller_id: paymentRecord.user_id,
+          tokens_amount: tokensAmount,
+          price_paid: paystackData.data.amount / 100,
+          reference,
+          metadata: paystackData.data.metadata
+        });
+        
+        // Initialiser les jetons du vendeur si nécessaire
+        await supabase.rpc('initialize_seller_tokens', { _seller_id: paymentRecord.user_id });
+        
+        updateError = (await supabase
+          .rpc('add_tokens_after_purchase', {
+            _seller_id: paymentRecord.user_id,
+            _tokens_amount: tokensAmount,
+            _price_paid: paystackData.data.amount / 100,
+            _paystack_reference: reference
+          })).error;
+          
+        if (updateError) {
+          console.error('❌ Error adding tokens:', updateError);
         } else {
-          // Abonnement premium (legacy)
-          updateError = (await supabase
-            .rpc('handle_premium_payment_success', {
-              _user_id: paymentRecord.user_id,
-              _paystack_reference: reference,
-              _amount: paystackData.data.amount / 100
-            })).error;
+          console.log('✅ Tokens added successfully to seller:', paymentRecord.user_id);
+          
+          // Vérifier que les jetons ont bien été ajoutés
+          const { data: tokenData } = await supabase
+            .from('seller_tokens')
+            .select('token_balance')
+            .eq('seller_id', paymentRecord.user_id)
+            .single();
+          
+          console.log('📊 New token balance:', tokenData?.token_balance);
         }
+      } else if (paymentRecord.payment_type === 'article_publication') {
+        // Publication d'article
+        updateError = (await supabase
+          .rpc('handle_article_payment_success', {
+            _user_id: paymentRecord.user_id,
+            _paystack_reference: reference,
+            _amount: paystackData.data.amount / 100,
+            _product_data: paymentRecord.product_data
+          })).error;
+      } else {
+        // Abonnement premium (legacy)
+        updateError = (await supabase
+          .rpc('handle_premium_payment_success', {
+            _user_id: paymentRecord.user_id,
+            _paystack_reference: reference,
+            _amount: paystackData.data.amount / 100
+          })).error;
+      }
 
       if (updateError) {
         console.error('Failed to update premium status:', updateError);
@@ -481,6 +521,8 @@ serve(async (req) => {
 
       return new Response(JSON.stringify({
         status: 'success',
+        test_mode: false,
+        message: '✅ Paiement réel réussi. Vos crédits ont été ajoutés.',
         message: paymentRecord.payment_type === 'tokens'
           ? 'Jetons ajoutés avec succès'
           : (paymentRecord.payment_type === 'article_publication' 

@@ -21,18 +21,49 @@ const ResetPassword = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Vérifier que nous avons les tokens nécessaires dans l'URL
-    const access_token = searchParams.get('access_token');
-    const type = searchParams.get('type');
-    
-    if (!access_token || type !== 'recovery') {
-      toast({
-        variant: "destructive",
-        title: "❌ Lien invalide",
-        description: "Ce lien de réinitialisation est invalide ou a expiré.",
-      });
-      navigate('/auth');
-    }
+    const handleTokenExchange = async () => {
+      // Vérifier le type de flow utilisé par Supabase
+      const code = searchParams.get('code');
+      const error_code = searchParams.get('error_code');
+      const error_description = searchParams.get('error_description');
+      
+      // Si erreur dans l'URL
+      if (error_code || error_description) {
+        toast({
+          variant: "destructive",
+          title: "❌ Erreur",
+          description: error_description || "Le lien de réinitialisation est invalide.",
+        });
+        navigate('/auth');
+        return;
+      }
+      
+      // Si code PKCE présent, l'échanger contre une session
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        
+        if (error) {
+          console.error('Token exchange error:', error);
+          toast({
+            variant: "destructive",
+            title: "❌ Lien invalide ou expiré",
+            description: "Ce lien de réinitialisation n'est plus valide. Veuillez demander un nouveau lien.",
+          });
+          navigate('/auth');
+        }
+        // Si succès, l'utilisateur reste sur la page pour changer son mot de passe
+      } else {
+        // Aucun code trouvé
+        toast({
+          variant: "destructive",
+          title: "❌ Lien invalide",
+          description: "Ce lien de réinitialisation est invalide. Veuillez utiliser le lien complet reçu par email.",
+        });
+        navigate('/auth');
+      }
+    };
+
+    handleTokenExchange();
   }, [searchParams, navigate, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {

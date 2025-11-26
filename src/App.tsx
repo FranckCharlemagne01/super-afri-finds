@@ -33,6 +33,7 @@ const About = lazy(() => import("./pages/About"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const MessagesPage = lazy(() => import("./pages/MessagesPage"));
 const CategoriesPage = lazy(() => import("./pages/CategoriesPage").then(m => ({ default: m.CategoriesPage })));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -88,6 +89,7 @@ const App = () => {
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/auth/welcome" element={<AuthWelcome />} />
+                <Route path="/auth/reset-password" element={<ResetPassword />} />
                 <Route path="/verify" element={<Verify />} />
                 <Route 
                   path="/seller-dashboard" 

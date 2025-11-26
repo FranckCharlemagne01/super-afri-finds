@@ -127,13 +127,13 @@ All colors MUST be HSL.
 /* Smooth scrolling with performance */
 html {
   scroll-behavior: smooth;
-  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   overflow-x: hidden;
+  overflow-y: auto;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -353,17 +353,10 @@ textarea {
 /* Scroll stability for mobile - prevents vibration */
 .scroll-smooth-mobile {
   -webkit-overflow-scrolling: touch;
-  scroll-behavior: auto; /* Disable smooth scroll on mobile for stability */
 }
 
 .stable-scroll {
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  perspective: 1000px;
-  -webkit-perspective: 1000px;
-  will-change: auto; /* Don't use will-change on mobile to prevent repaints */
+  /* Simplified to not interfere with scroll */
 }
 
 @media (max-width: 767px) {

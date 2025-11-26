@@ -233,7 +233,7 @@ const SuperAdminDashboard = () => {
             </div>
             <Button 
               variant="default" 
-              onClick={() => window.open('https://djassa.siteviral.site', '_blank')}
+              onClick={() => navigate('/')}
             >
               Retour au site
             </Button>

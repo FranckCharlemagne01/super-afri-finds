@@ -27,9 +27,9 @@ const Landing = () => {
   // Always show the landing page immediately - redirection happens in background if authenticated
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 animate-fade-in scroll-smooth-mobile overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 animate-fade-in">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 md:backdrop-blur md:supports-[backdrop-filter]:bg-background/60 transition-all duration-300 will-change-transform">
+      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 md:backdrop-blur md:supports-[backdrop-filter]:bg-background/60 transition-all duration-300">
         <div className="w-full flex h-14 sm:h-16 md:h-20 items-center justify-between px-4 sm:px-6 md:px-8 mx-auto" style={{ maxWidth: '100vw' }}>
           <div 
             className="flex items-center gap-1.5 sm:gap-2 cursor-pointer touch-manipulation active:scale-95 transition-transform flex-shrink-0" 
@@ -65,7 +65,7 @@ const Landing = () => {
       <section className="w-full px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-20 lg:py-28 mx-auto" style={{ maxWidth: 'min(100vw, 1280px)' }}>
         <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center w-full">
           {/* Left Content */}
-          <div className="flex flex-col gap-4 sm:gap-6 md:gap-8 animate-fade-in max-w-full stable-scroll">
+          <div className="flex flex-col gap-4 sm:gap-6 md:gap-8 animate-fade-in max-w-full">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs sm:text-sm font-medium w-fit touch-manipulation">
               <Zap className="h-3 w-3 sm:h-4 sm:w-4 animate-pulse flex-shrink-0" />
               <span className="whitespace-nowrap">Lancez votre business en ligne</span>
@@ -124,7 +124,7 @@ const Landing = () => {
           </div>
 
           {/* Right Image */}
-          <div className="relative animate-fade-in mt-8 lg:mt-0 stable-scroll" style={{ animationDelay: '0.2s' }}>
+          <div className="relative animate-fade-in mt-8 lg:mt-0" style={{ animationDelay: '0.2s' }}>
             <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-accent/20 rounded-2xl sm:rounded-3xl blur-3xl opacity-50" />
             <img
               src={showcaseImage}
@@ -139,7 +139,7 @@ const Landing = () => {
       </section>
 
       {/* Early Adopters Section */}
-      <section className="w-full px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16 animate-fade-in mx-auto stable-scroll" style={{ maxWidth: 'min(100vw, 1280px)' }}>
+      <section className="w-full px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16 animate-fade-in mx-auto" style={{ maxWidth: 'min(100vw, 1280px)' }}>
         <div className="max-w-4xl mx-auto text-center w-full">
           <div className="px-4 sm:px-6 py-6 sm:py-8 bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-xl sm:rounded-2xl border border-border/50 hover:border-primary/30 transition-all duration-300">
             <p className="text-sm sm:text-base md:text-lg text-foreground leading-relaxed break-words">
@@ -150,7 +150,7 @@ const Landing = () => {
       </section>
 
       {/* Features Section */}
-      <section className="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 animate-fade-in mx-auto stable-scroll" style={{ maxWidth: 'min(100vw, 1280px)' }}>
+      <section className="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 animate-fade-in mx-auto" style={{ maxWidth: 'min(100vw, 1280px)' }}>
         <div className="text-center mb-8 sm:mb-12 md:mb-16 w-full">
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 break-words">
             Pourquoi choisir <span className="gradient-text-primary">Djassa</span> ?
@@ -162,7 +162,7 @@ const Landing = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
           {/* Feature 1 */}
-          <div className="flex flex-col items-center text-center gap-3 sm:gap-4 p-4 sm:p-6 rounded-xl bg-card border border-border/50 md:hover:border-primary/50 md:hover:shadow-lg transition-all duration-300 md:hover:-translate-y-1 touch-manipulation stable-scroll">
+          <div className="flex flex-col items-center text-center gap-3 sm:gap-4 p-4 sm:p-6 rounded-xl bg-card border border-border/50 md:hover:border-primary/50 md:hover:shadow-lg transition-all duration-300 md:hover:-translate-y-1 touch-manipulation">
             <div className="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
               <Store className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
             </div>
@@ -173,7 +173,7 @@ const Landing = () => {
           </div>
 
           {/* Feature 2 */}
-          <div className="flex flex-col items-center text-center gap-3 sm:gap-4 p-4 sm:p-6 rounded-xl bg-card border border-border/50 md:hover:border-primary/50 md:hover:shadow-lg transition-all duration-300 md:hover:-translate-y-1 touch-manipulation stable-scroll">
+          <div className="flex flex-col items-center text-center gap-3 sm:gap-4 p-4 sm:p-6 rounded-xl bg-card border border-border/50 md:hover:border-primary/50 md:hover:shadow-lg transition-all duration-300 md:hover:-translate-y-1 touch-manipulation">
             <div className="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 rounded-xl bg-success/10 flex items-center justify-center flex-shrink-0">
               <ShoppingBag className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-success" />
             </div>
@@ -184,7 +184,7 @@ const Landing = () => {
           </div>
 
           {/* Feature 3 */}
-          <div className="flex flex-col items-center text-center gap-3 sm:gap-4 p-4 sm:p-6 rounded-xl bg-card border border-border/50 md:hover:border-primary/50 md:hover:shadow-lg transition-all duration-300 md:hover:-translate-y-1 touch-manipulation sm:col-span-2 md:col-span-1 stable-scroll">
+          <div className="flex flex-col items-center text-center gap-3 sm:gap-4 p-4 sm:p-6 rounded-xl bg-card border border-border/50 md:hover:border-primary/50 md:hover:shadow-lg transition-all duration-300 md:hover:-translate-y-1 touch-manipulation sm:col-span-2 md:col-span-1">
             <div className="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0">
               <CreditCard className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-accent-foreground" />
             </div>
@@ -197,7 +197,7 @@ const Landing = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 animate-fade-in mx-auto stable-scroll" style={{ maxWidth: 'min(100vw, 1280px)' }}>
+      <section className="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 animate-fade-in mx-auto" style={{ maxWidth: 'min(100vw, 1280px)' }}>
         <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-primary via-primary-hover to-promo p-0.5 sm:p-1 w-full">
           <div className="relative bg-background rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 lg:p-16">
             <div className="flex flex-col lg:flex-row items-center justify-between gap-6 sm:gap-8">
@@ -230,7 +230,7 @@ const Landing = () => {
       </section>
 
       {/* Market Preview Section */}
-      <section id="market" className="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 animate-fade-in mx-auto stable-scroll" style={{ maxWidth: 'min(100vw, 1280px)' }}>
+      <section id="market" className="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 animate-fade-in mx-auto" style={{ maxWidth: 'min(100vw, 1280px)' }}>
         <div className="text-center mb-8 sm:mb-12 w-full">
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 break-words">
             Explore le marché
@@ -250,7 +250,7 @@ const Landing = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/40 bg-muted/30 animate-fade-in stable-scroll w-full">
+      <footer className="border-t border-border/40 bg-muted/30 animate-fade-in w-full">
         <div className="w-full px-4 sm:px-6 md:px-8 py-6 sm:py-8 md:py-12 mx-auto" style={{ maxWidth: 'min(100vw, 1280px)' }}>
           <div className="flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
             <div className="flex items-center gap-1.5 sm:gap-2 touch-manipulation flex-shrink-0">

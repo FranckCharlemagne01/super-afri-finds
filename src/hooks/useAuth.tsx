@@ -167,7 +167,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const resetPassword = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://djassa.djassa.tech/auth',
+      redirectTo: `https://djassa.siteviral.site/auth?type=recovery`,
     });
     return { error };
   };

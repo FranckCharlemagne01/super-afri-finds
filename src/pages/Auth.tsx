@@ -15,7 +15,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { getCountryByCode } from '@/data/countries';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import GoogleAuthButton from '@/components/GoogleAuthButton';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -952,22 +951,6 @@ const Auth = () => {
                   {loading ? "Inscription..." : "S'inscrire"}
                 </Button>
 
-                <div className="relative my-6">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
-                      Ou continuer avec
-                    </span>
-                  </div>
-                </div>
-
-                <GoogleAuthButton 
-                  onClick={handleGoogleSignIn}
-                  disabled={loading}
-                  mode="signup"
-                />
 
               </form>
             ) : (
@@ -1026,23 +1009,6 @@ const Auth = () => {
                   {loading ? "Connexion..." : "Se connecter"}
                 </Button>
 
-                <div className="relative my-4">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
-                      Ou continuer avec
-                    </span>
-                  </div>
-                </div>
-
-                <GoogleAuthButton 
-                  onClick={handleGoogleSignIn}
-                  disabled={loading}
-                  mode="signin"
-                />
-                
                 <div className="flex flex-col gap-3 text-center pt-3">
                   <button
                     type="button"

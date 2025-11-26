@@ -69,43 +69,24 @@ const Auth = () => {
     }
   }, [searchParams]);
 
-  // Rediriger automatiquement les utilisateurs connectés vers leur dashboard
+  // Rediriger automatiquement les utilisateurs connectés vers la page publique
   useEffect(() => {
-    const redirectToDashboard = async () => {
+    const redirectToHome = async () => {
       if (!user || updatePasswordMode || !registrationSuccess) return;
 
-      try {
-        // Récupérer le rôle de l'utilisateur
-        const { data: roleData } = await supabase.rpc('get_user_role', { 
-          _user_id: user.id 
-        });
+      toast({
+        title: "✅ Inscription réussie !",
+        description: "Bienvenue sur Djassa.",
+        duration: 3000,
+      });
 
-        toast({
-          title: "✅ Inscription réussie !",
-          description: "Bienvenue sur Djassa.",
-          duration: 3000,
-        });
-
-        // Rediriger vers le tableau de bord approprié selon le rôle
-        setTimeout(() => {
-          if (roleData === 'seller') {
-            navigate('/seller-dashboard', { replace: true });
-          } else if (roleData === 'superadmin') {
-            navigate('/superadmin', { replace: true });
-          } else {
-            navigate('/', { replace: true });
-          }
-        }, 500);
-      } catch (error) {
-        console.error('Error fetching user role:', error);
-        // Fallback vers la page d'accueil
-        setTimeout(() => {
-          navigate('/', { replace: true });
-        }, 500);
-      }
+      // Rediriger vers la page publique
+      setTimeout(() => {
+        navigate('/', { replace: true });
+      }, 500);
     };
 
-    redirectToDashboard();
+    redirectToHome();
   }, [user, updatePasswordMode, registrationSuccess, navigate, toast]);
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -129,42 +110,21 @@ const Auth = () => {
           setFormError('Email ou mot de passe incorrect. Vérifiez vos informations et réessayez.');
         }
       } else {
-        // Récupérer le rôle de l'utilisateur pour rediriger vers le bon dashboard
-        try {
-          const { data: { user: currentUser } } = await supabase.auth.getUser();
-          
-          if (currentUser) {
-            const { data: roleData } = await supabase.rpc('get_user_role', { 
-              _user_id: currentUser.id 
-            });
+        toast({
+          title: "✅ Connexion réussie",
+          description: "Bienvenue sur Djassa !",
+          duration: 3000,
+        });
 
-            toast({
-              title: "✅ Connexion réussie",
-              description: "Bienvenue sur Djassa !",
-              duration: 3000,
-            });
-
-            const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
-            if (redirectUrl) {
-              sessionStorage.removeItem('redirectAfterLogin');
-              navigate(redirectUrl);
-            } else {
-              setTimeout(() => {
-                // Rediriger selon le rôle
-                if (roleData === 'seller') {
-                  navigate('/seller-dashboard', { replace: true });
-                } else if (roleData === 'superadmin') {
-                  navigate('/superadmin', { replace: true });
-                } else {
-                  navigate('/', { replace: true });
-                }
-              }, 500);
-            }
-          }
-        } catch (error) {
-          console.error('Error fetching user role:', error);
-          // Fallback vers la page d'accueil
-          navigate('/', { replace: true });
+        const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
+        if (redirectUrl) {
+          sessionStorage.removeItem('redirectAfterLogin');
+          navigate(redirectUrl);
+        } else {
+          // Rediriger vers la page publique
+          setTimeout(() => {
+            navigate('/', { replace: true });
+          }, 500);
         }
       }
     } catch (error) {

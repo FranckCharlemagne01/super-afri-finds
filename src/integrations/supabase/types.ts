@@ -777,8 +777,6 @@ export type Database = {
           user_id: string
         }[]
       }
-      grant_free_tokens_to_existing_sellers: { Args: never; Returns: undefined }
-      grant_trial_bonus_tokens: { Args: { _user_id: string }; Returns: Json }
       handle_article_payment_success: {
         Args: {
           _amount: number

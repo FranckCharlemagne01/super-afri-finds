@@ -60,7 +60,7 @@ const About = () => {
         </header>
 
         {/* Hero Section */}
-        <section className="bg-gradient-accent py-12 md:py-20">
+        <section className="bg-gradient-to-r from-primary to-primary/80 py-12 md:py-20">
           <div className="container mx-auto px-4 text-center">
             <div className="max-w-3xl mx-auto">
               <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-6 drop-shadow-lg">
@@ -330,11 +330,11 @@ const About = () => {
           </section>
 
           {/* CTA Section */}
-          <section className="text-center py-12 bg-gradient-accent rounded-xl shadow-2xl">
+          <section className="text-center py-12 bg-gradient-to-r from-primary to-primary/80 rounded-xl shadow-2xl">
             <h2 className="text-2xl md:text-3xl font-extrabold text-white mb-4">
               Prêt à rejoindre Djassa ? 🚀
             </h2>
-            <p className="text-white/90 mb-8 max-w-2xl mx-auto px-4">
+            <p className="text-white/95 mb-8 max-w-2xl mx-auto px-4">
               Que vous soyez acheteur ou vendeur, Djassa vous offre une expérience e-commerce moderne, sécurisée et accessible.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center px-4">

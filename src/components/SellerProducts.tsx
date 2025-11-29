@@ -79,12 +79,20 @@ export const SellerProducts = ({ products, loading, onEdit, onDelete, onBoost, t
                 src={product.images[0]}
                 alt={product.title}
                 className="w-full h-48 object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const fallback = target.nextElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = 'flex';
+                }}
               />
-            ) : (
-              <div className="w-full h-48 bg-muted flex items-center justify-center">
-                <span className="text-muted-foreground">Pas d'image</span>
-              </div>
-            )}
+            ) : null}
+            <div 
+              className="w-full h-48 bg-muted items-center justify-center"
+              style={{ display: product.images?.[0] ? 'none' : 'flex' }}
+            >
+              <span className="text-muted-foreground">Pas d'image</span>
+            </div>
             
             <div className="absolute top-2 left-2 flex gap-2 flex-wrap">
               {isProductBoosted(product) && (

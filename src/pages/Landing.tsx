@@ -5,6 +5,7 @@ import { useStableRole } from '@/hooks/useStableRole';
 import { Button } from '@/components/ui/button';
 import { Store, ShoppingBag, CreditCard, TrendingUp, CheckCircle, Zap } from 'lucide-react';
 import showcaseImage from '@/assets/marketplace-showcase-clean.jpg';
+import { EmbeddedDemo } from '@/components/EmbeddedDemo';
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -85,6 +86,17 @@ const Landing = () => {
           </div>
         </div>
       </header>
+
+      {/* Demo Section */}
+      <section className="w-full px-4 sm:px-6 md:px-8 py-6 sm:py-8 md:py-12 mx-auto" style={{ maxWidth: 'min(100vw, 1024px)' }}>
+        <div className="text-center mb-4 sm:mb-6">
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-accent/20 text-accent-foreground rounded-full text-xs sm:text-sm font-medium">
+            <Zap className="h-3 w-3 sm:h-4 sm:w-4" />
+            Découvre en 60 secondes
+          </span>
+        </div>
+        <EmbeddedDemo onSignup={handleSignup} />
+      </section>
 
       {/* Hero Section */}
       <section className="w-full px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-20 lg:py-28 mx-auto" style={{ maxWidth: 'min(100vw, 1280px)' }}>

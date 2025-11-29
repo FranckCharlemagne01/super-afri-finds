@@ -36,6 +36,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const MessagesPage = lazy(() => import("./pages/MessagesPage"));
 const CategoriesPage = lazy(() => import("./pages/CategoriesPage").then(m => ({ default: m.CategoriesPage })));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const DemoVideo = lazy(() => import("./pages/DemoVideo"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -133,6 +134,7 @@ const App = () => {
                 <Route path="/messages" element={<MessagesPage />} />
                 <Route path="/legal" element={<LegalNotice />} />
                 <Route path="/about" element={<About />} />
+                <Route path="/demo" element={<DemoVideo />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>

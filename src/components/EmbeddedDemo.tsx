@@ -58,15 +58,28 @@ const demoSteps: DemoStep[] = [
 
 interface EmbeddedDemoProps {
   onSignup?: () => void;
+  autoPlay?: boolean;
 }
 
-export const EmbeddedDemo = ({ onSignup }: EmbeddedDemoProps) => {
+export const EmbeddedDemo = ({ onSignup, autoPlay = true }: EmbeddedDemoProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
   const [hasStarted, setHasStarted] = useState(false);
 
   const totalDuration = demoSteps.reduce((acc, step) => acc + step.duration, 0);
+
+  // Auto-play on mount for mobile/tablet/desktop compatibility
+  useEffect(() => {
+    if (autoPlay && !hasStarted) {
+      // Small delay to ensure smooth page load
+      const timer = setTimeout(() => {
+        setHasStarted(true);
+        setIsPlaying(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [autoPlay, hasStarted]);
 
   useEffect(() => {
     if (!isPlaying) return;

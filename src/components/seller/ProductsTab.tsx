@@ -73,6 +73,26 @@ export const ProductsTab = ({
 
   const handleDelete = async (productId: string) => {
     try {
+      // First, delete related records that have foreign key constraints
+      // Delete from cart_items
+      await supabase
+        .from('cart_items')
+        .delete()
+        .eq('product_id', productId);
+
+      // Delete from favorites
+      await supabase
+        .from('favorites')
+        .delete()
+        .eq('product_id', productId);
+
+      // Update messages to set product_id to null (since it's nullable)
+      await supabase
+        .from('messages')
+        .update({ product_id: null })
+        .eq('product_id', productId);
+
+      // Now delete the product
       const { error } = await supabase
         .from('products')
         .delete()
@@ -90,7 +110,7 @@ export const ProductsTab = ({
       console.error('Error deleting product:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de supprimer le produit",
+        description: "Impossible de supprimer le produit. Veuillez réessayer.",
         variant: "destructive",
       });
     }

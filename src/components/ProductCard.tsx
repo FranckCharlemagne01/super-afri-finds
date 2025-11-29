@@ -142,6 +142,10 @@ export const ProductCard = ({
           loading="lazy"
           decoding="async"
           className="w-full h-full object-contain"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = '/placeholder.svg';
+          }}
         />
         {videoUrl && (
           <div className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 z-10">

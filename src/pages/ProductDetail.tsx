@@ -243,17 +243,17 @@ const ProductDetail = () => {
       <header className="sticky top-0 z-50 bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <Button 
                 variant="ghost" 
                 size="icon" 
                 onClick={handleBackNavigation}
-                className="hover:bg-secondary transition-all"
+                className="hover:bg-secondary transition-all flex-shrink-0"
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
               <h1 
-                className="text-lg md:text-xl font-bold gradient-text-primary cursor-pointer transition-transform hover:scale-105" 
+                className="text-base sm:text-lg md:text-xl font-bold gradient-text-primary cursor-pointer transition-transform hover:scale-105 truncate" 
                 onClick={() => navigate('/')}
               >
                 Djassa
@@ -264,10 +264,10 @@ const ProductDetail = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleBackNavigation}
-                className="hidden md:flex items-center gap-2 transition-all hover:bg-secondary"
+                className="hidden md:flex items-center gap-2 transition-all hover:bg-secondary flex-shrink-0"
               >
                 <Store className="w-4 h-4" />
-                Retour à la boutique
+                <span className="truncate max-w-[150px]">Retour à la boutique</span>
               </Button>
             )}
           </div>
@@ -281,10 +281,10 @@ const ProductDetail = () => {
           <Button
             variant="ghost"
             onClick={handleBackNavigation}
-            className="mb-4 flex items-center gap-2 text-primary hover:bg-primary/10 transition-all"
+            className="mb-4 flex items-center gap-2 text-primary hover:bg-primary/10 transition-all max-w-full"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Retour à {shop.shop_name}</span>
+            <ArrowLeft className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">Retour à {shop.shop_name}</span>
           </Button>
         )}
         
@@ -403,9 +403,9 @@ const ProductDetail = () => {
           </div>
 
           {/* Product Info */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <div>
-              <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-3">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground mb-3 break-words leading-tight">
                 {product.title}
               </h1>
               
@@ -429,12 +429,12 @@ const ProductDetail = () => {
               </div>
 
               {/* Price */}
-              <div className="flex items-center gap-3 mb-6">
-                <span className="text-2xl lg:text-3xl font-bold text-primary">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+                <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary break-words">
                   {salePrice.toLocaleString()} FCFA
                 </span>
                 {originalPrice > salePrice && (
-                  <span className="text-lg text-muted-foreground line-through">
+                  <span className="text-base sm:text-lg text-muted-foreground line-through break-words">
                     {originalPrice.toLocaleString()} FCFA
                   </span>
                 )}
@@ -442,7 +442,7 @@ const ProductDetail = () => {
 
               {/* Countdown Timer for Special Offers - Positioned after price */}
               {((product.is_boosted || product.is_flash_sale) && product.boosted_until) && (
-                <div className="mb-6 animate-fade-in">
+                <div className="mb-4 sm:mb-6 animate-fade-in">
                   <CountdownTimer 
                     expiryDate={product.boosted_until}
                     onExpire={() => {
@@ -458,29 +458,29 @@ const ProductDetail = () => {
               )}
 
               {/* Description */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-2">Description</h3>
-                <p className="text-muted-foreground leading-relaxed">
+              <div className="mb-4 sm:mb-6">
+                <h3 className="text-base sm:text-lg font-semibold mb-2">Description</h3>
+                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed break-words whitespace-pre-wrap">
                   {product.description}
                 </p>
               </div>
 
               {/* Category */}
-              <div className="mb-6">
-                <span className="text-sm text-muted-foreground">Catégorie: </span>
-                <Badge variant="secondary">{product.category}</Badge>
+              <div className="mb-4 sm:mb-6 flex flex-wrap items-center gap-2">
+                <span className="text-xs sm:text-sm text-muted-foreground">Catégorie:</span>
+                <Badge variant="secondary" className="text-xs sm:text-sm">{product.category}</Badge>
               </div>
 
               {/* Stock */}
-              <div className="mb-6">
-                <span className="text-sm text-muted-foreground">
+              <div className="mb-4 sm:mb-6">
+                <span className="text-xs sm:text-sm text-muted-foreground break-words">
                   Stock disponible: {product.stock_quantity || 0} unités
                 </span>
               </div>
 
               {/* Quantity Selector */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium mb-2">Quantité</label>
+              <div className="mb-4 sm:mb-6">
+                <label className="block text-xs sm:text-sm font-medium mb-2">Quantité</label>
                 <div className="flex items-center gap-3">
                   <Button
                     variant="outline"
@@ -503,8 +503,8 @@ const ProductDetail = () => {
               </div>
 
               {/* Personal Message */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium mb-2">
+              <div className="mb-4 sm:mb-6">
+                <label className="block text-xs sm:text-sm font-medium mb-2">
                   Message personnalisé (optionnel)
                 </label>
                 <Textarea
@@ -512,10 +512,11 @@ const ProductDetail = () => {
                   value={personalMessage}
                   onChange={(e) => setPersonalMessage(e.target.value)}
                   rows={3}
+                  className="text-sm sm:text-base resize-none"
                 />
               </div>
 
-              {/* Action Buttons - Desktop */}
+               {/* Action Buttons - Desktop */}
               <div className="hidden lg:block space-y-4">
                 {/* Primary Action - Add to Cart */}
                 <div className="flex gap-3">
@@ -524,13 +525,13 @@ const ProductDetail = () => {
                     className="flex-1 h-12 text-base font-semibold"
                     disabled={!product.stock_quantity || product.stock_quantity === 0}
                   >
-                    <ShoppingCart className="w-5 h-5 mr-2" />
-                    Ajouter au panier - {salePrice.toLocaleString()} FCFA
+                    <ShoppingCart className="w-5 h-5 mr-2 flex-shrink-0" />
+                    <span className="truncate">Ajouter au panier - {salePrice.toLocaleString()} FCFA</span>
                   </Button>
                   <Button
                     variant="outline"
                     onClick={handleToggleFavorite}
-                    className="h-12 px-4 hover:scale-105 transition-transform"
+                    className="h-12 px-4 hover:scale-105 transition-transform flex-shrink-0"
                   >
                     <Heart className={`w-5 h-5 ${isFavorite(product.id) ? 'fill-current text-red-500' : ''}`} />
                   </Button>
@@ -559,8 +560,8 @@ const ProductDetail = () => {
       </main>
 
       {/* Mobile Action Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-4 z-50">
-        <div className="space-y-3">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-3 sm:p-4 z-50 safe-bottom">
+        <div className="space-y-2 sm:space-y-3 max-w-screen-md mx-auto">
           {/* Quick Actions Row */}
           <div className="flex gap-2">
             <QuickOrderDialog
@@ -581,20 +582,20 @@ const ProductDetail = () => {
             <Button
               variant="outline"
               onClick={handleToggleFavorite}
-              className="px-4 hover:scale-105 transition-transform"
+              className="px-3 sm:px-4 hover:scale-105 transition-transform min-w-[44px] min-h-[44px]"
             >
-              <Heart className={`w-5 h-5 ${isFavorite(product.id) ? 'fill-current text-red-500' : ''}`} />
+              <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${isFavorite(product.id) ? 'fill-current text-red-500' : ''}`} />
             </Button>
           </div>
           
           {/* Primary Add to Cart Button */}
           <Button
             onClick={handleAddToCart}
-            className="w-full h-12 text-base font-semibold shadow-lg"
+            className="w-full h-11 sm:h-12 text-sm sm:text-base font-semibold shadow-lg"
             disabled={!product.stock_quantity || product.stock_quantity === 0}
           >
-            <ShoppingCart className="w-5 h-5 mr-2" />
-            Ajouter au panier - {salePrice.toLocaleString()} FCFA
+            <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+            <span className="truncate">Ajouter - {salePrice.toLocaleString()} FCFA</span>
           </Button>
         </div>
       </div>
@@ -604,30 +605,31 @@ const ProductDetail = () => {
 
       {/* Shop Info Section */}
       {shop && (
-        <section className="container mx-auto px-4 py-6 border-t">
-          <div className="flex items-center gap-4 mb-6">
+        <section className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 border-t">
+          <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-6">
             {shop.logo_url ? (
               <img
                 src={shop.logo_url}
                 alt={shop.shop_name}
-                className="w-16 h-16 rounded-full object-cover border-2 border-primary"
+                className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-primary flex-shrink-0"
               />
             ) : (
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <span className="text-2xl">🏪</span>
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <span className="text-xl sm:text-2xl">🏪</span>
               </div>
             )}
-            <div className="flex-1">
-              <h3 className="text-xl font-bold text-foreground">{shop.shop_name}</h3>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base sm:text-xl font-bold text-foreground truncate">{shop.shop_name}</h3>
               {shop.shop_description && (
-                <p className="text-sm text-muted-foreground">{shop.shop_description}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 break-words mt-1">{shop.shop_description}</p>
               )}
             </div>
             <Button
               onClick={() => navigate(`/boutique/${shop.shop_slug}`)}
-              className="bg-primary hover:bg-primary/90"
+              className="bg-primary hover:bg-primary/90 text-xs sm:text-sm px-3 sm:px-4 min-h-[44px] flex-shrink-0"
             >
-              Voir la boutique
+              <span className="hidden sm:inline">Voir la boutique</span>
+              <span className="sm:hidden">Voir</span>
             </Button>
           </div>
         </section>
@@ -635,19 +637,20 @@ const ProductDetail = () => {
 
       {/* Products from the Same Shop */}
       {shopProducts.length > 0 && (
-        <section className="container mx-auto px-4 py-6 border-t">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-foreground">Produits recommandés de cette boutique</h2>
+        <section className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 border-t">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 mb-4">
+            <h2 className="text-lg sm:text-2xl font-bold text-foreground break-words">Produits recommandés de cette boutique</h2>
             {shop && (
               <Button
                 variant="outline"
                 onClick={() => navigate(`/boutique/${shop.shop_slug}`)}
+                className="text-xs sm:text-sm w-full sm:w-auto min-h-[44px] flex-shrink-0"
               >
-                Voir tous
+                <span className="truncate">Voir tous</span>
               </Button>
             )}
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
             {shopProducts.map((prod) => (
               <div
                 key={prod.id}
@@ -661,15 +664,15 @@ const ProductDetail = () => {
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                   />
                   {prod.discount_percentage && prod.discount_percentage > 0 && (
-                    <Badge className="absolute top-2 left-2 bg-promo text-promo-foreground">
+                    <Badge className="absolute top-1 sm:top-2 left-1 sm:left-2 bg-promo text-promo-foreground text-xs">
                       -{prod.discount_percentage}%
                     </Badge>
                   )}
                 </div>
-                <h3 className="text-sm font-medium text-foreground line-clamp-2 mb-1">
+                <h3 className="text-xs sm:text-sm font-medium text-foreground line-clamp-2 mb-1 break-words">
                   {prod.title}
                 </h3>
-                <p className="text-lg font-bold text-primary">
+                <p className="text-sm sm:text-lg font-bold text-primary break-words">
                   {prod.price.toLocaleString()} FCFA
                 </p>
               </div>
@@ -680,11 +683,11 @@ const ProductDetail = () => {
 
       {/* Similar Products from Other Shops */}
       {similarProducts.length > 0 && (
-        <section className="container mx-auto px-4 py-6 border-t">
-          <h2 className="text-2xl font-bold text-foreground mb-4">
+        <section className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 border-t">
+          <h2 className="text-lg sm:text-2xl font-bold text-foreground mb-4 break-words">
             Produits similaires
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
             {similarProducts.map((prod) => (
               <div
                 key={prod.id}
@@ -698,15 +701,15 @@ const ProductDetail = () => {
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                   />
                   {prod.discount_percentage && prod.discount_percentage > 0 && (
-                    <Badge className="absolute top-2 left-2 bg-promo text-promo-foreground">
+                    <Badge className="absolute top-1 sm:top-2 left-1 sm:left-2 bg-promo text-promo-foreground text-xs">
                       -{prod.discount_percentage}%
                     </Badge>
                   )}
                 </div>
-                <h3 className="text-sm font-medium text-foreground line-clamp-2 mb-1">
+                <h3 className="text-xs sm:text-sm font-medium text-foreground line-clamp-2 mb-1 break-words">
                   {prod.title}
                 </h3>
-                <p className="text-lg font-bold text-primary">
+                <p className="text-sm sm:text-lg font-bold text-primary break-words">
                   {prod.price.toLocaleString()} FCFA
                 </p>
               </div>
@@ -717,35 +720,35 @@ const ProductDetail = () => {
 
       {/* Similar Shops */}
       {similarShops.length > 0 && (
-        <section className="container mx-auto px-4 py-6 border-t">
-          <h2 className="text-2xl font-bold text-foreground mb-4">
+        <section className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 border-t">
+          <h2 className="text-lg sm:text-2xl font-bold text-foreground mb-4 break-words">
             Autres boutiques similaires
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             {similarShops.map((similarShop) => (
               <div
                 key={similarShop.id}
                 onClick={() => navigate(`/boutique/${similarShop.shop_slug}`)}
-                className="cursor-pointer group p-4 border rounded-lg hover:shadow-lg transition-all duration-300 bg-card"
+                className="cursor-pointer group p-3 sm:p-4 border rounded-lg hover:shadow-lg transition-all duration-300 bg-card"
               >
-                <div className="flex flex-col items-center text-center gap-3">
+                <div className="flex flex-col items-center text-center gap-2 sm:gap-3">
                   {similarShop.logo_url ? (
                     <img
                       src={similarShop.logo_url}
                       alt={similarShop.shop_name}
-                      className="w-16 h-16 rounded-full object-cover border-2 border-primary/20 group-hover:border-primary transition-colors"
+                      className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-primary/20 group-hover:border-primary transition-colors flex-shrink-0"
                     />
                   ) : (
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                      <span className="text-2xl">🏪</span>
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors flex-shrink-0">
+                      <span className="text-xl sm:text-2xl">🏪</span>
                     </div>
                   )}
-                  <div>
-                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                  <div className="min-w-0 w-full">
+                    <h3 className="text-xs sm:text-sm font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 break-words">
                       {similarShop.shop_name}
                     </h3>
                     {similarShop.shop_description && (
-                      <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                      <p className="text-xs text-muted-foreground line-clamp-2 mt-1 break-words">
                         {similarShop.shop_description}
                       </p>
                     )}
@@ -753,13 +756,13 @@ const ProductDetail = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="w-full"
+                    className="w-full text-xs sm:text-sm min-h-[36px] sm:min-h-[40px]"
                     onClick={(e) => {
                       e.stopPropagation();
                       navigate(`/boutique/${similarShop.shop_slug}`);
                     }}
                   >
-                    Voir la boutique
+                    <span className="truncate">Voir la boutique</span>
                   </Button>
                 </div>
               </div>

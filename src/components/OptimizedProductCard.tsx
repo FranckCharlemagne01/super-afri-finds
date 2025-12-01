@@ -84,13 +84,17 @@ export const OptimizedProductCard = memo(({
       className="group cursor-pointer hover:shadow-lg transition-all duration-300 border-border/50 overflow-hidden h-full flex flex-col"
       onClick={handleCardClick}
     >
-      <div className="relative overflow-hidden bg-muted aspect-square">
+      <div className="relative overflow-hidden bg-muted/30 aspect-square">
         <img 
           src={image} 
           alt={title}
           loading="lazy"
           decoding="async"
-          className="w-full h-full object-contain"
+          className="w-full h-full object-cover rounded-lg shadow-sm"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = '/placeholder.svg';
+          }}
         />
         
         {discount > 0 && (

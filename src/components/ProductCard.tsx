@@ -135,13 +135,13 @@ export const ProductCard = ({
       </button>
 
       {/* Product Image - Optimized Fixed Aspect Ratio */}
-      <div className="relative w-full aspect-square overflow-hidden bg-muted/50 rounded-t-lg">
+      <div className="relative w-full aspect-square overflow-hidden bg-muted/30">
         <img
           src={image}
           alt={title}
           loading="lazy"
           decoding="async"
-          className="w-full h-full object-contain"
+          className="w-full h-full object-cover rounded-lg shadow-sm"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             target.src = '/placeholder.svg';

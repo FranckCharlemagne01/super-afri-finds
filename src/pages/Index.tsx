@@ -137,23 +137,23 @@ const Index = () => {
   };
 
   const handleLogoClick = () => {
-    const isOnHomePage = location.pathname === '/';
+    const isOnMarketplace = location.pathname === '/marketplace';
     
-    if (!isOnHomePage) {
-      // Si on n'est pas sur la page d'accueil, rediriger vers /
-      navigate('/');
+    if (!isOnMarketplace) {
+      // Si on n'est pas sur la marketplace, y rediriger
+      navigate('/marketplace');
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
-    // On est sur la page d'accueil
-    const isAtTop = window.scrollY < 100; // Considérer qu'on est en haut si scroll < 100px
+    // On est sur la marketplace
+    const isAtTop = window.scrollY < 100;
     
     if (isAtTop) {
-      // Actualiser la page de manière fluide (recharger les produits)
+      // Actualiser les produits
       fetchProducts();
     } else {
-      // Remonter en haut sans actualiser
+      // Remonter en haut
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };

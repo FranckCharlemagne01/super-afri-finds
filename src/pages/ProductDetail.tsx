@@ -70,10 +70,12 @@ const ProductDetail = () => {
   const { trackCategoryVisit, trackShopVisit, getSimilarProducts, getShopProducts } = useRecommendations();
 
   const handleBackNavigation = () => {
-    if (shop?.shop_slug) {
-      navigate(`/boutique/${shop.shop_slug}`);
+    // Utiliser l'historique du navigateur pour revenir en arrière
+    if (window.history.length > 1) {
+      navigate(-1);
     } else {
-      navigate('/');
+      // Fallback vers marketplace si pas d'historique
+      navigate('/marketplace');
     }
   };
 
@@ -254,7 +256,7 @@ const ProductDetail = () => {
               </Button>
               <h1 
                 className="text-base sm:text-lg md:text-xl font-bold gradient-text-primary cursor-pointer transition-transform hover:scale-105 truncate" 
-                onClick={() => navigate('/')}
+                onClick={() => navigate('/marketplace')}
               >
                 Djassa
               </h1>

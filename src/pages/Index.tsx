@@ -9,7 +9,7 @@ import { HelpButton } from "@/components/HelpButton";
 import { MobileInfoDrawer } from "@/components/MobileInfoDrawer";
 import { FloatingChatButton } from "@/components/FloatingChatButton";
 import FAQ from "@/components/FAQ";
-import { HeroCarousel } from "@/components/HeroCarousel";
+
 import { CategorySidebar } from "@/components/CategorySidebar";
 import { PopularCategories } from "@/components/PopularCategories";
 import { FeaturedProductsGrid } from "@/components/FeaturedProductsGrid";
@@ -243,9 +243,20 @@ const Index = () => {
   const displayProducts = products;
   const shuffledProducts = refreshKey > 0 ? shuffleArray(products) : products;
   
+  // Filtrer les produits boostés actifs
+  const boostedProducts = products.filter(product => 
+    product.is_boosted && 
+    product.boosted_until && 
+    new Date(product.boosted_until) > new Date()
+  );
+  
   // Filtrer les produits en vente flash
   const flashSaleProducts = products.filter(product => product.is_flash_sale);
-  const regularProducts = products.filter(product => !product.is_flash_sale);
+  
+  // Combiner produits boostés et flash sale pour la section "Offres Spéciales"
+  const specialOffersProducts = [...boostedProducts, ...flashSaleProducts.filter(p => !boostedProducts.find(b => b.id === p.id))];
+  
+  const regularProducts = products.filter(product => !product.is_flash_sale && !boostedProducts.find(b => b.id === product.id));
 
   // Convert Supabase product to ProductCard props
   const convertToProductCardProps = (product: any) => ({
@@ -368,13 +379,8 @@ const Index = () => {
 
       {/* Main Content - Optimized for mobile/tablet */}
       <main className="container mx-auto px-4 sm:px-6 py-4 sm:py-6 max-w-[100vw] overflow-x-hidden">
-        {/* Hero Carousel - Bannière principale avec images défilantes */}
-        <div className="mb-4 sm:mb-6 animate-fade-in">
-          <HeroCarousel />
-        </div>
-
-        {/* Offres Spéciales / Tendances - Flash Sales */}
-        {flashSaleProducts.length > 0 && (
+        {/* Offres Spéciales - Produits boostés et ventes flash */}
+        {specialOffersProducts.length > 0 && (
           <section className="mb-6 sm:mb-8 animate-slide-up">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3 sm:mb-4 px-1">
               <div className="flex items-center gap-2">
@@ -394,7 +400,7 @@ const Index = () => {
             </div>
             
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 md:gap-5">
-              {flashSaleProducts.slice(0, 6).map((product, index) => (
+              {specialOffersProducts.slice(0, 12).map((product, index) => (
                 <div key={product.id} style={{ animationDelay: `${index * 0.05}s` }} className="animate-fade-in">
                   <ProductCard {...convertToProductCardProps(product)} />
                 </div>

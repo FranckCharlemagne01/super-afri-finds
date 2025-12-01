@@ -255,36 +255,50 @@ const SellerDashboard = () => {
         />
 
         {/* Main Dashboard Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full bg-card/50 backdrop-blur-sm border shadow-sm h-auto p-1">
-            <TabsTrigger value="overview" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-3">
-              <Store className="h-4 w-4" />
-              <span className="hidden sm:inline">Ma Boutique</span>
-              <span className="sm:hidden">Boutique</span>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 md:space-y-6">
+          <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full bg-card/50 backdrop-blur-sm border border-border/50 shadow-lg rounded-xl h-auto p-1.5 gap-1 overflow-x-auto">
+            <TabsTrigger 
+              value="overview" 
+              className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-2.5 md:py-3 rounded-lg transition-all hover:bg-muted/50 touch-manipulation whitespace-nowrap"
+            >
+              <Store className="h-4 w-4 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">Ma Boutique</span>
+              <span className="sm:hidden truncate">Boutique</span>
             </TabsTrigger>
-            <TabsTrigger value="products" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-3">
-              <Package className="h-4 w-4" />
-              <span className="hidden sm:inline">Produits</span>
-              <span className="sm:hidden">Produits</span>
+            <TabsTrigger 
+              value="products" 
+              className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-2.5 md:py-3 rounded-lg transition-all hover:bg-muted/50 touch-manipulation whitespace-nowrap"
+            >
+              <Package className="h-4 w-4 flex-shrink-0" />
+              <span className="truncate">Produits</span>
             </TabsTrigger>
-            <TabsTrigger value="messages-orders" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-3">
-              <MessageSquare className="h-4 w-4" />
-              <span className="hidden sm:inline">Messages & Commandes</span>
-              <span className="sm:hidden">Messages</span>
+            <TabsTrigger 
+              value="messages-orders" 
+              className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-2.5 md:py-3 rounded-lg transition-all hover:bg-muted/50 touch-manipulation whitespace-nowrap"
+            >
+              <MessageSquare className="h-4 w-4 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">Messages & Commandes</span>
+              <span className="sm:hidden truncate">Messages</span>
             </TabsTrigger>
-            <TabsTrigger value="tokens" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-3">
-              <Coins className="h-4 w-4" />
-              <span className="hidden sm:inline">Jetons & Abonnement</span>
-              <span className="sm:hidden">Jetons</span>
+            <TabsTrigger 
+              value="tokens" 
+              className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-2.5 md:py-3 rounded-lg transition-all hover:bg-muted/50 touch-manipulation whitespace-nowrap"
+            >
+              <Coins className="h-4 w-4 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">Jetons & Abonnement</span>
+              <span className="sm:hidden truncate">Jetons</span>
             </TabsTrigger>
-            <TabsTrigger value="settings" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-3">
-              <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">Paramètres Boutique</span>
-              <span className="sm:hidden">Paramètres</span>
+            <TabsTrigger 
+              value="settings" 
+              className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-2.5 md:py-3 rounded-lg transition-all hover:bg-muted/50 touch-manipulation whitespace-nowrap"
+            >
+              <Settings className="h-4 w-4 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">Paramètres Boutique</span>
+              <span className="sm:hidden truncate">Paramètres</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-6 mt-6">
+          <TabsContent value="overview" className="space-y-4 md:space-y-6 mt-4 md:mt-6">
             <ShopOverviewTab
               shop={shop}
               products={products || []}
@@ -295,7 +309,7 @@ const SellerDashboard = () => {
             />
           </TabsContent>
 
-          <TabsContent value="products" className="space-y-6 mt-6">
+          <TabsContent value="products" className="space-y-4 md:space-y-6 mt-4 md:mt-6">
             <ProductsTab
               products={products || []}
               loading={productsLoading}
@@ -306,11 +320,11 @@ const SellerDashboard = () => {
             />
           </TabsContent>
 
-          <TabsContent value="messages-orders" className="space-y-6 mt-6">
+          <TabsContent value="messages-orders" className="space-y-4 md:space-y-6 mt-4 md:mt-6">
             <MessagesOrdersTab userId={userId} />
           </TabsContent>
 
-          <TabsContent value="tokens" className="space-y-6 mt-6">
+          <TabsContent value="tokens" className="space-y-4 md:space-y-6 mt-4 md:mt-6">
             <TokensSubscriptionTab
               tokenBalance={tokenBalance}
               freeTokens={freeTokens}
@@ -322,7 +336,7 @@ const SellerDashboard = () => {
             />
           </TabsContent>
 
-          <TabsContent value="settings" className="space-y-6 mt-6">
+          <TabsContent value="settings" className="space-y-4 md:space-y-6 mt-4 md:mt-6">
             <ShopSettingsTab
               shop={shop}
               onRefresh={handleRefresh}

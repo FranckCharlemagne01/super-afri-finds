@@ -103,29 +103,34 @@ export const ShopOverviewTab = ({
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6 animate-in fade-in-0 duration-500">
       {/* Welcome Section */}
-      <Card className="border-0 shadow-lg bg-gradient-to-r from-primary/10 via-primary/5 to-background">
-        <CardContent className="p-4 md:p-6">
-          <h2 className="text-xl md:text-2xl font-bold mb-2">
-            Bienvenue dans votre boutique, {shop?.shop_name} ! 👋
-          </h2>
-          <p className="text-sm md:text-base text-muted-foreground mb-4">
-            Gérez vos produits, suivez vos performances et développez votre activité.
-          </p>
+      <Card className="border-0 shadow-lg bg-gradient-to-r from-primary/10 via-primary/5 to-background overflow-hidden relative group">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <CardContent className="p-4 md:p-6 relative">
+          <div className="flex items-start justify-between mb-3">
+            <div>
+              <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mb-2 break-words">
+                Bienvenue, {shop?.shop_name} ! 👋
+              </h2>
+              <p className="text-sm md:text-base text-muted-foreground break-words">
+                Gérez vos produits, suivez vos performances et développez votre activité.
+              </p>
+            </div>
+          </div>
           
           {/* Quick Actions */}
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2 md:gap-3 mt-4">
             {quickActions.map((action) => (
               <Button
                 key={action.label}
                 onClick={action.onClick}
                 variant={action.variant}
-                size="lg"
-                className="gap-2"
+                size={action.variant === 'default' ? 'default' : 'default'}
+                className="gap-2 transition-all hover:scale-105 active:scale-95 touch-manipulation flex-1 sm:flex-none min-w-[140px]"
               >
-                <action.icon className="h-5 w-5" />
-                {action.label}
+                <action.icon className="h-4 w-4 md:h-5 md:w-5" />
+                <span className="text-sm md:text-base truncate">{action.label}</span>
               </Button>
             ))}
           </div>
@@ -133,20 +138,33 @@ export const ShopOverviewTab = ({
       </Card>
 
       {/* Statistics Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-        {stats.map((stat) => (
-          <Card key={stat.title} className="border-0 shadow-md hover:shadow-lg transition-shadow">
-            <CardContent className="p-4 md:p-6">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs md:text-sm text-muted-foreground mb-1">{stat.title}</p>
-                  <p className="text-2xl md:text-3xl font-bold">{stat.value}</p>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        {stats.map((stat, index) => (
+          <Card 
+            key={stat.title} 
+            className="border-0 shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 overflow-hidden group cursor-pointer animate-in fade-in-0 slide-in-from-bottom-4"
+            style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'backwards' }}
+          >
+            <CardContent className="p-4 md:p-6 relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="flex flex-col gap-3 relative z-10">
+                <div className="flex items-center justify-between">
+                  <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl ${stat.bgColor} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+                    <stat.icon className={`h-5 w-5 md:h-6 md:w-6 text-primary`} />
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl md:text-3xl lg:text-4xl font-bold tabular-nums">{stat.value}</p>
+                  </div>
                 </div>
-                <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl ${stat.bgColor} flex items-center justify-center`}>
-                  <stat.icon className={`h-5 w-5 md:h-6 md:w-6 bg-gradient-to-br ${stat.color} bg-clip-text text-transparent`} style={{
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text'
-                  }} />
+                <div>
+                  <p className="text-xs md:text-sm text-muted-foreground font-medium truncate">{stat.title}</p>
+                  {/* Mini progress bar for visual appeal */}
+                  <div className="mt-2 h-1 bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full bg-gradient-to-r ${stat.color} transition-all duration-1000`}
+                      style={{ width: `${Math.min(stat.value * 10, 100)}%` }}
+                    />
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -154,23 +172,44 @@ export const ShopOverviewTab = ({
         ))}
       </div>
 
-      {/* Performance Chart Placeholder */}
-      <Card className="border-0 shadow-lg">
-        <CardHeader>
+      {/* Performance Chart - Enhanced Visual */}
+      <Card className="border-0 shadow-lg overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <CardHeader className="relative">
           <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Performance de votre boutique
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <BarChart3 className="h-5 w-5 text-primary" />
+            </div>
+            <span className="break-words">Performance de votre boutique</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-4 md:p-6">
-          <div className="h-48 md:h-64 flex items-center justify-center bg-muted/50 rounded-lg">
-            <div className="text-center px-4">
-              <Activity className="h-10 w-10 md:h-12 md:w-12 text-muted-foreground/30 mx-auto mb-3" />
-              <p className="text-sm md:text-base text-muted-foreground">
-                Graphiques de performance bientôt disponibles
+        <CardContent className="p-4 md:p-6 relative">
+          <div className="h-56 md:h-72 flex items-center justify-center bg-gradient-to-br from-muted/30 to-muted/10 rounded-xl border border-border/50 relative overflow-hidden">
+            {/* Decorative animated bars */}
+            <div className="absolute inset-0 flex items-end justify-around px-8 py-8 gap-2">
+              {[40, 70, 45, 85, 60, 75, 50].map((height, i) => (
+                <div 
+                  key={i}
+                  className="flex-1 bg-primary/20 rounded-t-lg animate-pulse"
+                  style={{ 
+                    height: `${height}%`,
+                    animationDelay: `${i * 200}ms`,
+                    animationDuration: '2s'
+                  }}
+                />
+              ))}
+            </div>
+            
+            <div className="text-center px-4 relative z-10 bg-background/80 backdrop-blur-sm rounded-xl p-6">
+              <Activity className="h-12 w-12 md:h-16 md:w-16 text-primary mx-auto mb-3 animate-pulse" />
+              <p className="text-base md:text-lg font-semibold text-foreground mb-1">
+                Graphiques de performance
               </p>
-              <p className="text-xs md:text-sm text-muted-foreground mt-1">
-                Suivez vos ventes et statistiques détaillées
+              <p className="text-sm md:text-base text-muted-foreground">
+                Bientôt disponibles
+              </p>
+              <p className="text-xs md:text-sm text-muted-foreground mt-2 max-w-sm mx-auto break-words">
+                Suivez vos ventes, vos vues et vos statistiques détaillées en temps réel
               </p>
             </div>
           </div>

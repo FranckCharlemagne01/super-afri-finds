@@ -2,7 +2,7 @@ import { useState } from 'react';
 import * as React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Package } from 'lucide-react';
 import { ProductForm } from '@/components/ProductForm';
 import { SellerProducts } from '@/components/SellerProducts';
 import { ProductBoostDialog } from '@/components/ProductBoostDialog';
@@ -133,22 +133,28 @@ export const ProductsTab = ({
   };
 
   return (
-    <div className="space-y-6">
-      <Card className="border-0 shadow-lg">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Mes Produits ({products.length})</CardTitle>
+    <div className="space-y-4 md:space-y-6 animate-in fade-in-0 duration-500">
+      <Card className="border-0 shadow-lg overflow-hidden relative group">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <CardHeader className="relative">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <CardTitle className="flex items-center gap-2 break-words">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Package className="h-5 w-5 text-primary" />
+              </div>
+              <span>Mes Produits ({products.length})</span>
+            </CardTitle>
             <Button 
               onClick={() => setShowProductForm(true)} 
               size={isMobile ? "default" : "lg"} 
-              className="gap-2"
+              className="gap-2 w-full sm:w-auto transition-all hover:scale-105 active:scale-95 touch-manipulation"
             >
-              <Plus className="h-5 w-5" />
-              {!isMobile && "Ajouter un produit"}
+              <Plus className="h-4 w-4 md:h-5 md:w-5" />
+              <span className="truncate">{isMobile ? "Ajouter" : "Ajouter un produit"}</span>
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="relative">
           <SellerProducts
             products={products}
             loading={loading}

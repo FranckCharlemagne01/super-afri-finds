@@ -9,6 +9,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { useToast } from "@/hooks/use-toast";
 import { ContactSellerButton } from "@/components/ContactSellerButton";
 import { QuickOrderDialog } from "@/components/QuickOrderDialog";
+import { CountdownTimer } from "@/components/CountdownTimer";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { useRecommendations } from "@/hooks/useRecommendations";
@@ -44,6 +45,8 @@ interface Product {
   reviews_count?: number;
   badge?: string;
   is_flash_sale?: boolean;
+  is_boosted?: boolean;
+  boosted_until?: string;
   stock_quantity?: number;
   video_url?: string;
 }
@@ -405,6 +408,23 @@ const ProductDetail = () => {
               <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-3">
                 {product.title}
               </h1>
+              
+              {/* Countdown Timer for Special Offers */}
+              {(product.is_boosted && product.boosted_until) && (
+                <div className="mb-4 animate-fade-in">
+                  <CountdownTimer 
+                    expiryDate={product.boosted_until}
+                    onExpire={() => {
+                      toast({
+                        title: "Offre expirée",
+                        description: "Cette offre spéciale n'est plus disponible.",
+                        variant: "destructive",
+                      });
+                      setTimeout(() => window.location.reload(), 2000);
+                    }}
+                  />
+                </div>
+              )}
               
               {/* Rating */}
               <div className="flex items-center gap-2 mb-4">

@@ -73,19 +73,29 @@ export const EmbeddedDemo = ({ onSignup, autoPlay = true }: EmbeddedDemoProps) =
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
   const [hasStarted, setHasStarted] = useState(false);
+  const [showIntro, setShowIntro] = useState(true);
 
   const totalDuration = useMemo(() => 
     demoSteps.reduce((acc, step) => acc + step.duration, 0), 
   []);
 
-  // Auto-play on mount
+  // Auto-play with intro animation
   useEffect(() => {
     if (autoPlay && !hasStarted) {
-      const timer = setTimeout(() => {
+      // Show intro for 2.5 seconds, then start demo
+      const introTimer = setTimeout(() => {
+        setShowIntro(false);
+      }, 2500);
+      
+      const startTimer = setTimeout(() => {
         setHasStarted(true);
         setIsPlaying(true);
-      }, 800);
-      return () => clearTimeout(timer);
+      }, 3000);
+      
+      return () => {
+        clearTimeout(introTimer);
+        clearTimeout(startTimer);
+      };
     }
   }, [autoPlay, hasStarted]);
 
@@ -170,8 +180,61 @@ export const EmbeddedDemo = ({ onSignup, autoPlay = true }: EmbeddedDemoProps) =
           {/* Main Content Area */}
           <div className="relative z-10 flex-1 flex flex-col items-center justify-center p-4 sm:p-5 md:p-6 lg:p-8">
             
-            {/* Start Screen */}
-            {!hasStarted && (
+            {/* Intro Animation */}
+            {showIntro && !hasStarted && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 1.1, y: -20 }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="text-center max-w-2xl px-4"
+              >
+                <motion.div
+                  animate={{ 
+                    scale: [1, 1.05, 1],
+                    rotate: [0, 2, -2, 0]
+                  }}
+                  transition={{ 
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  className="inline-block mb-4 sm:mb-6"
+                >
+                  <Sparkles className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 text-primary mx-auto" />
+                </motion.div>
+                
+                <motion.h2
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
+                  className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4"
+                >
+                  <span className="bg-gradient-to-r from-primary via-promo to-accent bg-clip-text text-transparent">
+                    Découvre Djassa
+                  </span>
+                </motion.h2>
+                
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5, duration: 0.6 }}
+                  className="text-lg sm:text-xl md:text-2xl text-muted-foreground font-medium"
+                >
+                  en 60 secondes
+                </motion.p>
+                
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: "100%" }}
+                  transition={{ delay: 0.8, duration: 1.5, ease: "easeInOut" }}
+                  className="h-1 bg-gradient-to-r from-primary via-promo to-accent rounded-full mx-auto mt-6 max-w-xs"
+                />
+              </motion.div>
+            )}
+            
+            {/* Start Screen (manual start option) */}
+            {!showIntro && !hasStarted && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -317,7 +380,7 @@ export const EmbeddedDemo = ({ onSignup, autoPlay = true }: EmbeddedDemoProps) =
               animate={{ opacity: 1, y: 0 }}
               className="relative z-10 border-t border-border/30 bg-background/60 backdrop-blur-xl p-3 sm:p-4 md:p-5"
             >
-              {/* Progress Bar */}
+              {/* Progress Bar (no timer display) */}
               <div className="mb-3 sm:mb-4">
                 <div className="h-1.5 sm:h-2 md:h-2.5 bg-muted rounded-full overflow-hidden">
                   <motion.div
@@ -325,10 +388,6 @@ export const EmbeddedDemo = ({ onSignup, autoPlay = true }: EmbeddedDemoProps) =
                     style={{ width: `${progressPercentage}%` }}
                     transition={{ duration: 0.1 }}
                   />
-                </div>
-                <div className="flex justify-between mt-1.5 sm:mt-2 text-[10px] sm:text-xs text-muted-foreground font-medium">
-                  <span>{Math.floor(progress)}s</span>
-                  <span>{totalDuration}s</span>
                 </div>
               </div>
 

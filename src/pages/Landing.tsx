@@ -59,32 +59,33 @@ const Landing = memo(() => {
         transition={{ duration: 0.5 }}
         className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl"
       >
-        <div className="w-full flex h-16 md:h-20 items-center justify-between px-4 sm:px-6 lg:px-8 mx-auto max-w-7xl">
+        <div className="w-full flex h-14 sm:h-16 md:h-20 items-center justify-between px-3 sm:px-4 md:px-6 lg:px-8 mx-auto max-w-7xl">
           <motion.div 
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="flex items-center gap-2 cursor-pointer" 
+            className="flex items-center gap-1.5 sm:gap-2 cursor-pointer" 
             onClick={handleHome}
           >
-            <div className="h-9 w-9 md:h-10 md:w-10 rounded-xl bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center shadow-lg shadow-primary/25">
-              <Store className="h-5 w-5 md:h-6 md:w-6 text-primary-foreground" />
+            <div className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center shadow-lg shadow-primary/25">
+              <Store className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-primary-foreground" />
             </div>
-            <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary via-primary-hover to-promo bg-clip-text text-transparent">
+            <span className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-primary via-primary-hover to-promo bg-clip-text text-transparent">
               DJASSA
             </span>
           </motion.div>
           
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
             <Button
               variant="ghost"
               onClick={handleAuth}
-              className="h-9 md:h-10 px-3 md:px-5 text-sm font-medium hover:bg-primary/10"
+              className="h-9 sm:h-10 md:h-11 px-2.5 sm:px-3 md:px-5 text-xs sm:text-sm font-medium hover:bg-primary/10"
             >
-              Connexion
+              <span className="hidden xs:inline">Connexion</span>
+              <span className="xs:hidden">Se connecter</span>
             </Button>
             <Button
               onClick={handleSignup}
-              className="h-9 md:h-10 px-4 md:px-6 text-sm font-semibold bg-gradient-to-r from-primary to-primary-hover hover:opacity-90 shadow-lg shadow-primary/25 transition-all duration-300"
+              className="h-9 sm:h-10 md:h-11 px-3 sm:px-4 md:px-6 text-xs sm:text-sm font-semibold bg-gradient-to-r from-primary to-primary-hover hover:opacity-90 shadow-lg shadow-primary/25 transition-all duration-300"
             >
               <span className="hidden sm:inline">Créer ma boutique</span>
               <span className="sm:hidden">Créer</span>
@@ -94,28 +95,28 @@ const Landing = memo(() => {
       </motion.header>
 
       {/* Hero Section with Demo */}
-      <section className="relative w-full px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 md:pt-16 pb-12 md:pb-20 mx-auto max-w-7xl">
+      <section className="relative w-full px-3 sm:px-4 md:px-6 lg:px-8 pt-6 sm:pt-8 md:pt-12 lg:pt-16 pb-8 sm:pb-12 md:pb-16 lg:pb-20 mx-auto max-w-7xl">
         <motion.div 
           variants={staggerContainer}
           initial="initial"
           animate="animate"
-          className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center"
+          className="grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center"
         >
           {/* Left Content */}
-          <motion.div variants={fadeInUp} className="flex flex-col gap-5 md:gap-6 order-2 lg:order-1">
+          <motion.div variants={fadeInUp} className="flex flex-col gap-4 sm:gap-5 md:gap-6 order-2 lg:order-1">
             {/* Badge */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2, duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 rounded-full w-fit"
+              className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 rounded-full w-fit"
             >
-              <Sparkles className="h-4 w-4 text-primary animate-pulse" />
-              <span className="text-sm font-medium text-foreground">La marketplace #1 en Côte d'Ivoire</span>
+              <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary animate-pulse" />
+              <span className="text-xs sm:text-sm font-medium text-foreground">La marketplace #1 en Côte d'Ivoire</span>
             </motion.div>
 
             {/* Headline */}
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-[1.15] sm:leading-[1.1] tracking-tight">
               Lance ta{' '}
               <span className="relative inline-block">
                 <span className="bg-gradient-to-r from-primary via-primary-hover to-promo bg-clip-text text-transparent">
@@ -125,14 +126,14 @@ const Landing = memo(() => {
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
                   transition={{ delay: 0.8, duration: 0.6 }}
-                  className="absolute -bottom-1 left-0 w-full h-1 bg-gradient-to-r from-primary to-promo rounded-full origin-left"
+                  className="absolute -bottom-0.5 sm:-bottom-1 left-0 w-full h-0.5 sm:h-1 bg-gradient-to-r from-primary to-promo rounded-full origin-left"
                 />
               </span>{' '}
               en 5 minutes
             </h1>
 
             {/* Subheadline */}
-            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-xl">
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl">
               Crée, personnalise et gère ta boutique facilement. Accepte les paiements Mobile Money et commence à vendre aujourd'hui.
             </p>
 
@@ -141,32 +142,32 @@ const Landing = memo(() => {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4, duration: 0.5 }}
-              className="flex items-center gap-3 p-4 bg-gradient-to-r from-success/10 to-success/5 border border-success/20 rounded-2xl"
+              className="flex items-center gap-2.5 sm:gap-3 p-3 sm:p-4 bg-gradient-to-r from-success/10 to-success/5 border border-success/20 rounded-xl sm:rounded-2xl"
             >
-              <div className="h-10 w-10 rounded-xl bg-success/20 flex items-center justify-center flex-shrink-0">
-                <Zap className="h-5 w-5 text-success" />
+              <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-success/20 flex items-center justify-center flex-shrink-0">
+                <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-success" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-foreground">28 jours d'essai gratuit</p>
-                <p className="text-xs text-muted-foreground">Sans engagement • Annule à tout moment</p>
+                <p className="text-xs sm:text-sm font-semibold text-foreground">28 jours d'essai gratuit</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Sans engagement • Annule à tout moment</p>
               </div>
             </motion.div>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 pt-1 sm:pt-2">
               <Button
                 size="lg"
                 onClick={handleSignup}
-                className="h-12 md:h-14 px-6 md:px-8 text-base font-semibold bg-gradient-to-r from-primary to-primary-hover hover:opacity-90 shadow-xl shadow-primary/25 transition-all duration-300 group"
+                className="h-12 sm:h-13 md:h-14 px-5 sm:px-6 md:px-8 text-sm sm:text-base font-semibold bg-gradient-to-r from-primary to-primary-hover hover:opacity-90 shadow-xl shadow-primary/25 transition-all duration-300 group w-full sm:w-auto"
               >
                 Commencer gratuitement
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
               <Button
                 size="lg"
                 variant="outline"
                 onClick={handleMarketplace}
-                className="h-12 md:h-14 px-6 md:px-8 text-base font-medium border-2 hover:bg-muted/50"
+                className="h-12 sm:h-13 md:h-14 px-5 sm:px-6 md:px-8 text-sm sm:text-base font-medium border-2 hover:bg-muted/50 w-full sm:w-auto"
               >
                 Explorer le marché
               </Button>
@@ -177,16 +178,16 @@ const Landing = memo(() => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
-              className="flex flex-wrap items-center gap-4 pt-4"
+              className="flex flex-wrap items-center gap-3 sm:gap-4 pt-3 sm:pt-4"
             >
               {[
                 { icon: CheckCircle, text: '100% Gratuit' },
                 { icon: Shield, text: 'Paiements sécurisés' },
                 { icon: Users, text: '+500 vendeurs' }
               ].map((item, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <item.icon className="h-4 w-4 text-success" />
-                  <span className="text-sm font-medium text-muted-foreground">{item.text}</span>
+                <div key={i} className="flex items-center gap-1.5 sm:gap-2">
+                  <item.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-success" />
+                  <span className="text-xs sm:text-sm font-medium text-muted-foreground">{item.text}</span>
                 </div>
               ))}
             </motion.div>
@@ -198,12 +199,12 @@ const Landing = memo(() => {
             className="relative order-1 lg:order-2"
           >
             {/* Decorative Elements */}
-            <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full blur-2xl" />
-            <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-gradient-to-br from-success/20 to-primary/20 rounded-full blur-2xl" />
+            <div className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full blur-2xl" />
+            <div className="absolute -bottom-3 -left-3 sm:-bottom-4 sm:-left-4 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-success/20 to-primary/20 rounded-full blur-2xl" />
             
             {/* Demo Container */}
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/20 to-success/20 rounded-3xl blur-xl opacity-50 scale-105" />
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/20 to-success/20 rounded-2xl sm:rounded-3xl blur-xl opacity-50 scale-105" />
               <EmbeddedDemo onSignup={handleSignup} autoPlay={true} />
             </div>
           </motion.div>
@@ -211,13 +212,13 @@ const Landing = memo(() => {
       </section>
 
       {/* Stats Section */}
-      <section className="relative w-full px-4 sm:px-6 lg:px-8 py-12 md:py-16 mx-auto max-w-7xl">
+      <section className="relative w-full px-3 sm:px-4 md:px-6 lg:px-8 py-8 sm:py-12 md:py-16 mx-auto max-w-7xl">
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"
+          className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6"
         >
           {[
             { value: '500+', label: 'Boutiques actives', icon: Store },
@@ -233,13 +234,13 @@ const Landing = memo(() => {
               transition={{ delay: i * 0.1, duration: 0.5 }}
               className="relative group"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="relative p-4 md:p-6 text-center rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/30 transition-all duration-300">
-                <stat.icon className="h-6 w-6 mx-auto mb-2 text-primary" />
-                <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 rounded-xl sm:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative p-3 sm:p-4 md:p-6 text-center rounded-xl sm:rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/30 transition-all duration-300">
+                <stat.icon className="h-5 w-5 sm:h-6 sm:w-6 mx-auto mb-1.5 sm:mb-2 text-primary" />
+                <div className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
                   {stat.value}
                 </div>
-                <div className="text-xs md:text-sm text-muted-foreground mt-1">{stat.label}</div>
+                <div className="text-[10px] sm:text-xs md:text-sm text-muted-foreground mt-0.5 sm:mt-1">{stat.label}</div>
               </div>
             </motion.div>
           ))}
@@ -247,20 +248,20 @@ const Landing = memo(() => {
       </section>
 
       {/* Features Section */}
-      <section className="relative w-full px-4 sm:px-6 lg:px-8 py-16 md:py-24 mx-auto max-w-7xl">
+      <section className="relative w-full px-3 sm:px-4 md:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-24 mx-auto max-w-7xl">
         <motion.div 
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
-          className="text-center mb-12 md:mb-16"
+          className="text-center mb-8 sm:mb-10 md:mb-12 lg:mb-16"
         >
           <motion.span 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium mb-4"
+            className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1 sm:py-1.5 bg-primary/10 text-primary rounded-full text-xs sm:text-sm font-medium mb-3 sm:mb-4"
           >
-            <Zap className="h-4 w-4" />
+            <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             Pourquoi Djassa ?
           </motion.span>
           <motion.h2 
@@ -268,7 +269,7 @@ const Landing = memo(() => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4"
+            className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold mb-3 sm:mb-4 px-3"
           >
             Tout ce qu'il te faut pour{' '}
             <span className="bg-gradient-to-r from-primary to-promo bg-clip-text text-transparent">réussir</span>
@@ -278,13 +279,13 @@ const Landing = memo(() => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto"
+            className="text-muted-foreground text-sm sm:text-base md:text-lg max-w-2xl mx-auto px-3"
           >
             Une plateforme complète pour lancer et développer ton business en ligne
           </motion.p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 md:gap-6 lg:gap-8">
           {[
             {
               icon: Store,
@@ -316,13 +317,13 @@ const Landing = memo(() => {
               transition={{ delay: feature.delay, duration: 0.5 }}
               className="group relative"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="relative p-6 md:p-8 rounded-3xl border border-border/50 bg-card/80 backdrop-blur-sm hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 h-full">
-                <div className={`h-14 w-14 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center shadow-lg mb-5 group-hover:scale-110 transition-transform duration-300`}>
-                  <feature.icon className="h-7 w-7 text-primary-foreground" />
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent rounded-2xl sm:rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative p-5 sm:p-6 md:p-7 lg:p-8 rounded-2xl sm:rounded-3xl border border-border/50 bg-card/80 backdrop-blur-sm hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 h-full">
+                <div className={`h-12 w-12 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center shadow-lg mb-4 sm:mb-5 group-hover:scale-110 transition-transform duration-300`}>
+                  <feature.icon className="h-6 w-6 sm:h-7 sm:w-7 text-primary-foreground" />
                 </div>
-                <h3 className="text-lg md:text-xl font-bold mb-3">{feature.title}</h3>
-                <p className="text-muted-foreground text-sm md:text-base leading-relaxed">{feature.description}</p>
+                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 sm:mb-3">{feature.title}</h3>
+                <p className="text-muted-foreground text-xs sm:text-sm md:text-base leading-relaxed">{feature.description}</p>
               </div>
             </motion.div>
           ))}
@@ -330,8 +331,8 @@ const Landing = memo(() => {
       </section>
 
       {/* Showcase Section */}
-      <section className="relative w-full px-4 sm:px-6 lg:px-8 py-16 md:py-24 mx-auto max-w-7xl">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+      <section className="relative w-full px-3 sm:px-4 md:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-24 mx-auto max-w-7xl">
+        <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 xl:gap-16 items-center">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -339,11 +340,11 @@ const Landing = memo(() => {
             transition={{ duration: 0.6 }}
             className="relative"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-3xl blur-2xl opacity-50" />
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl sm:rounded-3xl blur-2xl opacity-50" />
             <img
               src={showcaseImage}
               alt="Djassa Marketplace"
-              className="relative rounded-3xl shadow-2xl border border-border/50 w-full"
+              className="relative rounded-2xl sm:rounded-3xl shadow-2xl border border-border/50 w-full aspect-[4/3] object-cover"
               loading="lazy"
             />
           </motion.div>
@@ -353,19 +354,19 @@ const Landing = memo(() => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="space-y-6"
+            className="space-y-4 sm:space-y-5 md:space-y-6"
           >
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-success/10 text-success rounded-full text-sm font-medium">
-              <TrendingUp className="h-4 w-4" />
+            <span className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1 sm:py-1.5 bg-success/10 text-success rounded-full text-xs sm:text-sm font-medium">
+              <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               Croissance garantie
             </span>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight">
+            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight">
               Rejoins les vendeurs qui{' '}
               <span className="bg-gradient-to-r from-success to-success/70 bg-clip-text text-transparent">
                 multiplient leurs ventes
               </span>
             </h2>
-            <p className="text-muted-foreground text-base md:text-lg">
+            <p className="text-muted-foreground text-sm sm:text-base md:text-lg">
               Nos vendeurs constatent une augmentation moyenne de 300% de leurs ventes après 3 mois sur Djassa.
             </p>
             

@@ -137,7 +137,7 @@ export const EmbeddedDemo = ({ onSignup, autoPlay = true }: EmbeddedDemoProps) =
 
   return (
     <div className="w-full">
-      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-border/50 bg-gradient-to-br from-card via-card to-muted/30 shadow-2xl shadow-primary/10">
+      <div className="relative overflow-hidden rounded-xl sm:rounded-2xl md:rounded-3xl border border-border/50 bg-gradient-to-br from-card via-card to-muted/30 shadow-2xl shadow-primary/10">
         {/* Animated Background Patterns */}
         <div className="absolute inset-0 overflow-hidden">
           <motion.div 
@@ -165,10 +165,10 @@ export const EmbeddedDemo = ({ onSignup, autoPlay = true }: EmbeddedDemoProps) =
         </div>
 
         {/* Content Container */}
-        <div className="relative min-h-[360px] sm:min-h-[400px] md:min-h-[440px] flex flex-col">
+        <div className="relative min-h-[320px] sm:min-h-[360px] md:min-h-[400px] lg:min-h-[440px] flex flex-col">
           
           {/* Main Content Area */}
-          <div className="relative z-10 flex-1 flex flex-col items-center justify-center p-5 sm:p-6 md:p-8">
+          <div className="relative z-10 flex-1 flex flex-col items-center justify-center p-4 sm:p-5 md:p-6 lg:p-8">
             
             {/* Start Screen */}
             {!hasStarted && (
@@ -176,39 +176,39 @@ export const EmbeddedDemo = ({ onSignup, autoPlay = true }: EmbeddedDemoProps) =
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                className="text-center max-w-lg px-4"
+                className="text-center max-w-lg px-3 sm:px-4"
               >
                 {/* Animated Play Button */}
                 <motion.button
                   onClick={handlePlay}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="relative inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-primary to-primary-hover shadow-2xl shadow-primary/40 mb-6 group cursor-pointer"
+                  className="relative inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-primary to-primary-hover shadow-2xl shadow-primary/40 mb-4 sm:mb-5 md:mb-6 group cursor-pointer"
                 >
                   <motion.div
                     animate={{ scale: [1, 1.2, 1] }}
                     transition={{ duration: 2, repeat: Infinity }}
                     className="absolute inset-0 rounded-full bg-primary/30 blur-xl"
                   />
-                  <Play className="w-8 h-8 sm:w-10 sm:h-10 text-primary-foreground ml-1 relative z-10 group-hover:scale-110 transition-transform" />
+                  <Play className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-primary-foreground ml-0.5 sm:ml-1 relative z-10 group-hover:scale-110 transition-transform" />
                 </motion.button>
                 
-                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-3">
+                <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-foreground mb-2 sm:mb-3">
                   Découvre Djassa en{' '}
                   <span className="bg-gradient-to-r from-primary to-promo bg-clip-text text-transparent">60 secondes</span>
                 </h3>
-                <p className="text-sm sm:text-base text-muted-foreground mb-6">
+                <p className="text-xs sm:text-sm md:text-base text-muted-foreground mb-4 sm:mb-5 md:mb-6">
                   Vois comment créer ta boutique en ligne facilement
                 </p>
                 
                 <Button 
                   onClick={handlePlay} 
                   size="lg" 
-                  className="px-8 py-6 text-base rounded-full shadow-lg bg-gradient-to-r from-primary to-primary-hover hover:opacity-90 group"
+                  className="h-11 sm:h-12 md:h-14 px-5 sm:px-6 md:px-8 text-sm sm:text-base rounded-full shadow-lg bg-gradient-to-r from-primary to-primary-hover hover:opacity-90 group w-full sm:w-auto"
                 >
-                  <Play className="w-5 h-5 mr-2" />
+                  <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
                   Lancer la démo
-                  <ChevronRight className="w-5 h-5 ml-1 group-hover:translate-x-1 transition-transform" />
+                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 ml-0.5 sm:ml-1 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </motion.div>
             )}
@@ -222,16 +222,16 @@ export const EmbeddedDemo = ({ onSignup, autoPlay = true }: EmbeddedDemoProps) =
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   exit={{ opacity: 0, x: -60, scale: 0.95 }}
                   transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                  className="text-center max-w-xl w-full px-4"
+                  className="text-center max-w-xl w-full px-3 sm:px-4"
                 >
                   {/* Step Icon with Gradient */}
                   <motion.div
                     initial={{ scale: 0, rotate: -180 }}
                     animate={{ scale: 1, rotate: 0 }}
                     transition={{ delay: 0.1, type: "spring", stiffness: 200, damping: 15 }}
-                    className="mb-4 sm:mb-5"
+                    className="mb-3 sm:mb-4 md:mb-5"
                   >
-                    <div className={`inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br ${currentStepData?.gradient} shadow-xl shadow-primary/25`}>
+                    <div className={`inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-xl sm:rounded-2xl bg-gradient-to-br ${currentStepData?.gradient} shadow-xl shadow-primary/25`}>
                       <div className="text-primary-foreground">
                         {currentStepData?.icon}
                       </div>
@@ -239,7 +239,7 @@ export const EmbeddedDemo = ({ onSignup, autoPlay = true }: EmbeddedDemoProps) =
                   </motion.div>
 
                   {/* Step Indicator Pills */}
-                  <div className="flex justify-center gap-1.5 sm:gap-2 mb-4">
+                  <div className="flex justify-center gap-1 sm:gap-1.5 md:gap-2 mb-3 sm:mb-4">
                     {demoSteps.map((_, i) => (
                       <motion.div
                         key={i}
@@ -248,8 +248,8 @@ export const EmbeddedDemo = ({ onSignup, autoPlay = true }: EmbeddedDemoProps) =
                           scale: i === currentStep ? 1.2 : 1,
                           backgroundColor: i === currentStep ? 'hsl(var(--primary))' : i < currentStep ? 'hsl(var(--primary) / 0.5)' : 'hsl(var(--muted))'
                         }}
-                        className={`h-2 rounded-full transition-all duration-300 ${
-                          i === currentStep ? 'w-6 sm:w-8' : 'w-2'
+                        className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 ${
+                          i === currentStep ? 'w-5 sm:w-6 md:w-8' : 'w-1.5 sm:w-2'
                         }`}
                       />
                     ))}
@@ -260,9 +260,9 @@ export const EmbeddedDemo = ({ onSignup, autoPlay = true }: EmbeddedDemoProps) =
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.15 }}
-                    className="mb-3"
+                    className="mb-2 sm:mb-3"
                   >
-                    <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-semibold">
+                    <span className="inline-block px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-primary/10 text-primary text-[10px] sm:text-xs md:text-sm font-semibold">
                       Étape {currentStep + 1} sur {demoSteps.length}
                     </span>
                   </motion.div>
@@ -272,7 +272,7 @@ export const EmbeddedDemo = ({ onSignup, autoPlay = true }: EmbeddedDemoProps) =
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-3"
+                    className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold text-foreground mb-2 sm:mb-3"
                   >
                     {currentStepData?.title}
                   </motion.h3>
@@ -282,7 +282,7 @@ export const EmbeddedDemo = ({ onSignup, autoPlay = true }: EmbeddedDemoProps) =
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.25 }}
-                    className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed"
+                    className="text-xs sm:text-sm md:text-base lg:text-lg text-muted-foreground leading-relaxed"
                   >
                     {currentStepData?.description}
                   </motion.p>
@@ -293,15 +293,15 @@ export const EmbeddedDemo = ({ onSignup, autoPlay = true }: EmbeddedDemoProps) =
                       initial={{ opacity: 0, y: 20, scale: 0.9 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       transition={{ delay: 0.3, type: "spring" }}
-                      className="mt-6"
+                      className="mt-4 sm:mt-5 md:mt-6"
                     >
                       <Button 
                         onClick={onSignup}
                         size="lg"
-                        className="px-8 py-6 text-base rounded-full shadow-xl bg-gradient-to-r from-primary to-primary-hover hover:opacity-90 group"
+                        className="h-11 sm:h-12 md:h-14 px-5 sm:px-6 md:px-8 text-sm sm:text-base rounded-full shadow-xl bg-gradient-to-r from-primary to-primary-hover hover:opacity-90 group w-full sm:w-auto"
                       >
                         Créer ma boutique maintenant
-                        <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                        <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 ml-1.5 sm:ml-2 group-hover:translate-x-1 transition-transform" />
                       </Button>
                     </motion.div>
                   )}
@@ -315,42 +315,42 @@ export const EmbeddedDemo = ({ onSignup, autoPlay = true }: EmbeddedDemoProps) =
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="relative z-10 border-t border-border/30 bg-background/60 backdrop-blur-xl p-4 sm:p-5"
+              className="relative z-10 border-t border-border/30 bg-background/60 backdrop-blur-xl p-3 sm:p-4 md:p-5"
             >
               {/* Progress Bar */}
-              <div className="mb-4">
-                <div className="h-2 sm:h-2.5 bg-muted rounded-full overflow-hidden">
+              <div className="mb-3 sm:mb-4">
+                <div className="h-1.5 sm:h-2 md:h-2.5 bg-muted rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-gradient-to-r from-primary via-primary-hover to-promo rounded-full"
                     style={{ width: `${progressPercentage}%` }}
                     transition={{ duration: 0.1 }}
                   />
                 </div>
-                <div className="flex justify-between mt-2 text-xs text-muted-foreground font-medium">
+                <div className="flex justify-between mt-1.5 sm:mt-2 text-[10px] sm:text-xs text-muted-foreground font-medium">
                   <span>{Math.floor(progress)}s</span>
                   <span>{totalDuration}s</span>
                 </div>
               </div>
 
               {/* Controls */}
-              <div className="flex justify-center gap-3">
+              <div className="flex justify-center gap-2 sm:gap-3">
                 {isPlaying ? (
                   <Button 
                     onClick={handlePause} 
                     variant="outline" 
                     size="sm"
-                    className="h-10 px-5 rounded-full text-sm font-medium border-2"
+                    className="h-9 sm:h-10 px-3 sm:px-4 md:px-5 rounded-full text-xs sm:text-sm font-medium border-2"
                   >
-                    <Pause className="w-4 h-4 mr-2" />
-                    Pause
+                    <Pause className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+                    <span className="hidden xs:inline">Pause</span>
                   </Button>
                 ) : (
                   <Button 
                     onClick={isFinished ? handleRestart : handlePlay} 
                     size="sm"
-                    className="h-10 px-5 rounded-full text-sm font-medium bg-gradient-to-r from-primary to-primary-hover"
+                    className="h-9 sm:h-10 px-3 sm:px-4 md:px-5 rounded-full text-xs sm:text-sm font-medium bg-gradient-to-r from-primary to-primary-hover"
                   >
-                    <Play className="w-4 h-4 mr-2" />
+                    <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                     {isFinished ? "Revoir" : "Reprendre"}
                   </Button>
                 )}
@@ -358,10 +358,10 @@ export const EmbeddedDemo = ({ onSignup, autoPlay = true }: EmbeddedDemoProps) =
                   onClick={handleRestart} 
                   variant="outline" 
                   size="sm"
-                  className="h-10 px-5 rounded-full text-sm font-medium border-2"
+                  className="h-9 sm:h-10 px-3 sm:px-4 md:px-5 rounded-full text-xs sm:text-sm font-medium border-2"
                 >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Recommencer
+                  <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+                  <span className="hidden xs:inline">Recommencer</span>
                 </Button>
               </div>
             </motion.div>

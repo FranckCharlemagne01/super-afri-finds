@@ -102,21 +102,34 @@ export const CountdownTimer = ({
     return null;
   }
 
-  // Couleurs selon l'urgence
-  const urgencyColors = {
-    high: 'text-red-600 dark:text-red-400',
-    medium: 'text-orange-600 dark:text-orange-400',
-    low: 'text-green-600 dark:text-green-400'
+  // Couleurs et styles selon l'urgence
+  const urgencyStyles = {
+    high: {
+      bg: 'bg-red-500/10 dark:bg-red-500/20 border-red-500/30',
+      text: 'text-red-600 dark:text-red-400',
+      glow: 'shadow-lg shadow-red-500/20'
+    },
+    medium: {
+      bg: 'bg-orange-500/10 dark:bg-orange-500/20 border-orange-500/30',
+      text: 'text-orange-600 dark:text-orange-400',
+      glow: 'shadow-lg shadow-orange-500/20'
+    },
+    low: {
+      bg: 'bg-green-500/10 dark:bg-green-500/20 border-green-500/30',
+      text: 'text-green-600 dark:text-green-400',
+      glow: 'shadow-lg shadow-green-500/20'
+    }
   };
 
   // Icône selon l'urgence
   const IconComponent = urgencyLevel === 'low' ? Clock : Flame;
   const iconAnimation = urgencyLevel === 'high' ? 'animate-pulse' : '';
+  const style = urgencyStyles[urgencyLevel];
 
   return (
-    <div className={`flex items-center gap-1.5 py-2 ${className}`}>
-      <IconComponent className={`w-4 h-4 ${urgencyColors[urgencyLevel]} ${iconAnimation}`} />
-      <span className={`font-semibold text-xs ${urgencyColors[urgencyLevel]}`}>
+    <div className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 ${style.bg} ${style.glow} backdrop-blur-sm transition-all duration-300 ${className}`}>
+      <IconComponent className={`w-5 h-5 ${style.text} ${iconAnimation}`} />
+      <span className={`font-bold text-sm ${style.text}`}>
         {endTime 
           ? timeLeft 
           : timeLeft === 'date' 

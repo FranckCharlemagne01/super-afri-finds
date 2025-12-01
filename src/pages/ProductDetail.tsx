@@ -409,23 +409,6 @@ const ProductDetail = () => {
                 {product.title}
               </h1>
               
-              {/* Countdown Timer for Special Offers */}
-              {(product.is_boosted && product.boosted_until) && (
-                <div className="mb-4 animate-fade-in">
-                  <CountdownTimer 
-                    expiryDate={product.boosted_until}
-                    onExpire={() => {
-                      toast({
-                        title: "Offre expirée",
-                        description: "Cette offre spéciale n'est plus disponible.",
-                        variant: "destructive",
-                      });
-                      setTimeout(() => window.location.reload(), 2000);
-                    }}
-                  />
-                </div>
-              )}
-              
               {/* Rating */}
               <div className="flex items-center gap-2 mb-4">
                 <div className="flex items-center">
@@ -456,6 +439,23 @@ const ProductDetail = () => {
                   </span>
                 )}
               </div>
+
+              {/* Countdown Timer for Special Offers - Positioned after price */}
+              {((product.is_boosted || product.is_flash_sale) && product.boosted_until) && (
+                <div className="mb-6 animate-fade-in">
+                  <CountdownTimer 
+                    expiryDate={product.boosted_until}
+                    onExpire={() => {
+                      toast({
+                        title: "Offre expirée",
+                        description: "Cette offre spéciale n'est plus disponible.",
+                        variant: "destructive",
+                      });
+                      setTimeout(() => window.location.reload(), 2000);
+                    }}
+                  />
+                </div>
+              )}
 
               {/* Description */}
               <div className="mb-6">

@@ -17,48 +17,48 @@ const demoSteps: DemoStep[] = [
     id: 1,
     title: "Bienvenue sur Djassa",
     description: "La marketplace #1 en Côte d'Ivoire pour créer ta boutique en ligne facilement.",
-    icon: <Store className="w-7 h-7 sm:w-8 sm:h-8" />,
+    icon: <Store className="w-8 h-8 sm:w-10 sm:h-10" />,
     duration: 8,
     gradient: "from-primary to-primary-hover"
   },
   {
     id: 2,
-    title: "Inscription 100% Gratuite",
-    description: "Crée ton compte en quelques secondes. Aucun frais caché, aucune carte bancaire requise.",
-    icon: <User className="w-7 h-7 sm:w-8 sm:h-8" />,
-    duration: 10,
+    title: "Inscription Gratuite",
+    description: "Crée ton compte en 30 secondes. Zéro frais, zéro engagement.",
+    icon: <User className="w-8 h-8 sm:w-10 sm:h-10" />,
+    duration: 8,
     gradient: "from-success to-success/80"
   },
   {
     id: 3,
-    title: "Ta Boutique, Prête Instantanément",
-    description: "Dès ton inscription, ta boutique professionnelle est créée automatiquement.",
-    icon: <Zap className="w-7 h-7 sm:w-8 sm:h-8" />,
-    duration: 12,
+    title: "Boutique Instantanée",
+    description: "Ta boutique professionnelle est créée automatiquement dès ton inscription.",
+    icon: <Zap className="w-8 h-8 sm:w-10 sm:h-10" />,
+    duration: 8,
     gradient: "from-accent to-accent/80"
   },
   {
     id: 4,
-    title: "Gère Tout en Ligne",
-    description: "Depuis ton téléphone ou ordinateur, gère tes produits, commandes et clients facilement.",
-    icon: <CheckCircle2 className="w-7 h-7 sm:w-8 sm:h-8" />,
-    duration: 10,
+    title: "Gestion 100% en Ligne",
+    description: "Gère produits, commandes et clients depuis ton mobile ou ton ordinateur.",
+    icon: <CheckCircle2 className="w-8 h-8 sm:w-10 sm:h-10" />,
+    duration: 8,
     gradient: "from-promo to-promo/80"
   },
   {
     id: 5,
-    title: "Publie et Vends",
-    description: "Ajoute tes produits, fixe tes prix et commence à vendre immédiatement.",
-    icon: <Package className="w-7 h-7 sm:w-8 sm:h-8" />,
-    duration: 10,
+    title: "Publie & Vends",
+    description: "Ajoute tes produits en quelques clics et commence à vendre immédiatement.",
+    icon: <Package className="w-8 h-8 sm:w-10 sm:h-10" />,
+    duration: 8,
     gradient: "from-primary to-success"
   },
   {
     id: 6,
     title: "Lance-toi Maintenant !",
-    description: "Crée ton compte → Ta boutique est prête → Publie tes produits → Vends !",
-    icon: <Sparkles className="w-7 h-7 sm:w-8 sm:h-8" />,
-    duration: 10,
+    description: "Inscris-toi → Boutique prête → Publie → Vends → Réussis !",
+    icon: <Sparkles className="w-8 h-8 sm:w-10 sm:h-10" />,
+    duration: 8,
     gradient: "from-primary via-promo to-accent"
   }
 ];
@@ -153,29 +153,42 @@ export const EmbeddedDemo = ({ onSignup, autoPlay = true }: EmbeddedDemoProps) =
           <motion.div 
             animate={{ 
               rotate: [0, 360],
-              scale: [1, 1.1, 1]
+              scale: [1, 1.2, 1]
             }}
             transition={{ 
-              rotate: { duration: 30, repeat: Infinity, ease: "linear" },
-              scale: { duration: 10, repeat: Infinity, ease: "easeInOut" }
+              rotate: { duration: 40, repeat: Infinity, ease: "linear" },
+              scale: { duration: 8, repeat: Infinity, ease: "easeInOut" }
             }}
-            className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-br from-primary/10 via-transparent to-transparent rounded-full blur-3xl"
+            className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-br from-primary/20 via-transparent to-transparent rounded-full blur-3xl"
           />
           <motion.div 
             animate={{ 
               rotate: [360, 0],
-              scale: [1, 1.2, 1]
+              scale: [1, 1.3, 1]
             }}
             transition={{ 
-              rotate: { duration: 25, repeat: Infinity, ease: "linear" },
-              scale: { duration: 8, repeat: Infinity, ease: "easeInOut" }
+              rotate: { duration: 35, repeat: Infinity, ease: "linear" },
+              scale: { duration: 10, repeat: Infinity, ease: "easeInOut" }
             }}
-            className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-accent/10 via-transparent to-transparent rounded-full blur-3xl"
+            className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-accent/20 via-transparent to-transparent rounded-full blur-3xl"
+          />
+          <motion.div 
+            animate={{ 
+              x: [-100, 100, -100],
+              y: [-50, 50, -50],
+              scale: [1, 1.1, 1]
+            }}
+            transition={{ 
+              duration: 20,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="absolute top-1/4 left-1/4 w-64 h-64 bg-promo/10 rounded-full blur-2xl"
           />
         </div>
 
         {/* Content Container */}
-        <div className="relative min-h-[320px] sm:min-h-[360px] md:min-h-[400px] lg:min-h-[440px] flex flex-col">
+        <div className="relative min-h-[360px] sm:min-h-[400px] md:min-h-[440px] lg:min-h-[500px] flex flex-col">
           
           {/* Main Content Area */}
           <div className="relative z-10 flex-1 flex flex-col items-center justify-center p-4 sm:p-5 md:p-6 lg:p-8">
@@ -239,40 +252,69 @@ export const EmbeddedDemo = ({ onSignup, autoPlay = true }: EmbeddedDemoProps) =
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                className="text-center max-w-lg px-3 sm:px-4"
+                className="text-center max-w-xl px-3 sm:px-4"
               >
                 {/* Animated Play Button */}
                 <motion.button
                   onClick={handlePlay}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="relative inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-primary to-primary-hover shadow-2xl shadow-primary/40 mb-4 sm:mb-5 md:mb-6 group cursor-pointer"
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="relative inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full bg-gradient-to-br from-primary via-promo to-accent shadow-2xl shadow-primary/50 mb-5 sm:mb-6 md:mb-8 group cursor-pointer"
                 >
                   <motion.div
-                    animate={{ scale: [1, 1.2, 1] }}
+                    animate={{ 
+                      scale: [1, 1.3, 1],
+                      opacity: [0.3, 0.6, 0.3]
+                    }}
                     transition={{ duration: 2, repeat: Infinity }}
-                    className="absolute inset-0 rounded-full bg-primary/30 blur-xl"
+                    className="absolute inset-0 rounded-full bg-primary/40 blur-2xl"
                   />
-                  <Play className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-primary-foreground ml-0.5 sm:ml-1 relative z-10 group-hover:scale-110 transition-transform" />
+                  <motion.div
+                    animate={{ rotate: [0, 360] }}
+                    transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                    className="absolute inset-2 rounded-full border-2 border-primary-foreground/20"
+                  />
+                  <Play className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-primary-foreground ml-1 relative z-10 group-hover:scale-125 transition-transform" />
                 </motion.button>
                 
-                <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-foreground mb-2 sm:mb-3">
-                  Découvre Djassa en{' '}
-                  <span className="bg-gradient-to-r from-primary to-promo bg-clip-text text-transparent">60 secondes</span>
-                </h3>
-                <p className="text-xs sm:text-sm md:text-base text-muted-foreground mb-4 sm:mb-5 md:mb-6">
-                  Vois comment créer ta boutique en ligne facilement
-                </p>
-                
-                <Button 
-                  onClick={handlePlay} 
-                  size="lg" 
-                  className="h-11 sm:h-12 md:h-14 px-5 sm:px-6 md:px-8 text-sm sm:text-base rounded-full shadow-lg bg-gradient-to-r from-primary to-primary-hover hover:opacity-90 group w-full sm:w-auto"
+                <motion.h3 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold mb-3 sm:mb-4"
                 >
-                  <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
-                  Lancer la démo
-                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 ml-0.5 sm:ml-1 group-hover:translate-x-1 transition-transform" />
-                </Button>
+                  Découvre Djassa en{' '}
+                  <span className="bg-gradient-to-r from-primary via-promo to-accent bg-clip-text text-transparent">
+                    60 secondes
+                  </span>
+                </motion.h3>
+                
+                <motion.p 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="text-sm sm:text-base md:text-lg text-muted-foreground mb-6 sm:mb-7 md:mb-8 font-medium"
+                >
+                  ✨ Vois comment créer ta boutique en ligne facilement
+                </motion.p>
+                
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.4 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button 
+                    onClick={handlePlay} 
+                    size="lg" 
+                    className="h-12 sm:h-14 md:h-16 px-6 sm:px-8 md:px-10 text-base sm:text-lg md:text-xl rounded-full shadow-2xl bg-gradient-to-r from-primary via-promo to-accent hover:shadow-primary/50 group w-full sm:w-auto font-bold"
+                  >
+                    <Play className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
+                    🚀 Lancer la démo
+                    <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 ml-1 group-hover:translate-x-2 transition-transform" />
+                  </Button>
+                </motion.div>
               </motion.div>
             )}
 
@@ -281,38 +323,71 @@ export const EmbeddedDemo = ({ onSignup, autoPlay = true }: EmbeddedDemoProps) =
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentStep}
-                  initial={{ opacity: 0, x: 60, scale: 0.95 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: -60, scale: 0.95 }}
-                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                  className="text-center max-w-xl w-full px-3 sm:px-4"
+                  initial={{ opacity: 0, scale: 0.8, rotateY: -15 }}
+                  animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+                  exit={{ opacity: 0, scale: 0.8, rotateY: 15 }}
+                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                  className="text-center max-w-2xl w-full px-3 sm:px-4"
                 >
                   {/* Step Icon with Gradient */}
                   <motion.div
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ delay: 0.1, type: "spring", stiffness: 200, damping: 15 }}
-                    className="mb-3 sm:mb-4 md:mb-5"
+                    initial={{ scale: 0, rotate: -180, y: -30 }}
+                    animate={{ 
+                      scale: 1, 
+                      rotate: 0, 
+                      y: 0,
+                    }}
+                    transition={{ 
+                      delay: 0.1, 
+                      type: "spring", 
+                      stiffness: 250, 
+                      damping: 20 
+                    }}
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    className="mb-4 sm:mb-5 md:mb-6"
                   >
-                    <div className={`inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-xl sm:rounded-2xl bg-gradient-to-br ${currentStepData?.gradient} shadow-xl shadow-primary/25`}>
-                      <div className="text-primary-foreground">
+                    <motion.div 
+                      animate={{ 
+                        boxShadow: [
+                          "0 10px 40px -10px rgba(var(--primary), 0.3)",
+                          "0 10px 50px -10px rgba(var(--primary), 0.5)",
+                          "0 10px 40px -10px rgba(var(--primary), 0.3)"
+                        ]
+                      }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className={`inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl sm:rounded-3xl bg-gradient-to-br ${currentStepData?.gradient}`}
+                    >
+                      <motion.div 
+                        animate={{ scale: [1, 1.1, 1] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        className="text-primary-foreground"
+                      >
                         {currentStepData?.icon}
-                      </div>
-                    </div>
+                      </motion.div>
+                    </motion.div>
                   </motion.div>
 
                   {/* Step Indicator Pills */}
-                  <div className="flex justify-center gap-1 sm:gap-1.5 md:gap-2 mb-3 sm:mb-4">
+                  <div className="flex justify-center gap-1.5 sm:gap-2 md:gap-2.5 mb-4 sm:mb-5">
                     {demoSteps.map((_, i) => (
                       <motion.div
                         key={i}
-                        initial={{ scale: 0.8 }}
+                        initial={{ scale: 0.5, opacity: 0 }}
                         animate={{ 
-                          scale: i === currentStep ? 1.2 : 1,
-                          backgroundColor: i === currentStep ? 'hsl(var(--primary))' : i < currentStep ? 'hsl(var(--primary) / 0.5)' : 'hsl(var(--muted))'
+                          scale: i === currentStep ? 1.3 : 1,
+                          opacity: 1,
+                          backgroundColor: i === currentStep 
+                            ? 'hsl(var(--primary))' 
+                            : i < currentStep 
+                            ? 'hsl(var(--success))' 
+                            : 'hsl(var(--muted))',
+                          boxShadow: i === currentStep 
+                            ? '0 4px 15px -2px hsl(var(--primary) / 0.5)'
+                            : 'none'
                         }}
-                        className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 ${
-                          i === currentStep ? 'w-5 sm:w-6 md:w-8' : 'w-1.5 sm:w-2'
+                        transition={{ duration: 0.4, ease: "easeOut" }}
+                        className={`h-2 sm:h-2.5 rounded-full ${
+                          i === currentStep ? 'w-8 sm:w-10 md:w-12' : 'w-2 sm:w-2.5'
                         }`}
                       />
                     ))}
@@ -320,32 +395,44 @@ export const EmbeddedDemo = ({ onSignup, autoPlay = true }: EmbeddedDemoProps) =
 
                   {/* Step Counter */}
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.15 }}
-                    className="mb-2 sm:mb-3"
+                    initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ delay: 0.2, type: "spring" }}
+                    className="mb-3 sm:mb-4"
                   >
-                    <span className="inline-block px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-primary/10 text-primary text-[10px] sm:text-xs md:text-sm font-semibold">
-                      Étape {currentStep + 1} sur {demoSteps.length}
-                    </span>
+                    <motion.span 
+                      animate={{ 
+                        boxShadow: [
+                          "0 0 0 0 rgba(var(--primary), 0)",
+                          "0 0 0 8px rgba(var(--primary), 0.1)",
+                          "0 0 0 0 rgba(var(--primary), 0)"
+                        ]
+                      }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="inline-block px-4 sm:px-5 py-1.5 sm:py-2 rounded-full bg-gradient-to-r from-primary/10 to-accent/10 text-primary text-xs sm:text-sm md:text-base font-bold border border-primary/20"
+                    >
+                      ✨ Étape {currentStep + 1}/{demoSteps.length}
+                    </motion.span>
                   </motion.div>
 
                   {/* Title */}
                   <motion.h3
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold text-foreground mb-2 sm:mb-3"
+                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+                    className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 sm:mb-4"
                   >
-                    {currentStepData?.title}
+                    <span className="bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+                      {currentStepData?.title}
+                    </span>
                   </motion.h3>
 
                   {/* Description */}
                   <motion.p
-                    initial={{ opacity: 0, y: 15 }}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.25 }}
-                    className="text-xs sm:text-sm md:text-base lg:text-lg text-muted-foreground leading-relaxed"
+                    transition={{ delay: 0.4 }}
+                    className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-xl mx-auto font-medium"
                   >
                     {currentStepData?.description}
                   </motion.p>
@@ -353,19 +440,30 @@ export const EmbeddedDemo = ({ onSignup, autoPlay = true }: EmbeddedDemoProps) =
                   {/* Final CTA */}
                   {isFinished && onSignup && (
                     <motion.div
-                      initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                      initial={{ opacity: 0, y: 30, scale: 0.8 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
-                      transition={{ delay: 0.3, type: "spring" }}
-                      className="mt-4 sm:mt-5 md:mt-6"
+                      transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+                      className="mt-6 sm:mt-8 md:mt-10"
                     >
-                      <Button 
-                        onClick={onSignup}
-                        size="lg"
-                        className="h-11 sm:h-12 md:h-14 px-5 sm:px-6 md:px-8 text-sm sm:text-base rounded-full shadow-xl bg-gradient-to-r from-primary to-primary-hover hover:opacity-90 group w-full sm:w-auto"
+                      <motion.div
+                        animate={{ 
+                          boxShadow: [
+                            "0 10px 40px -10px rgba(var(--primary), 0.3)",
+                            "0 15px 50px -10px rgba(var(--primary), 0.5)",
+                            "0 10px 40px -10px rgba(var(--primary), 0.3)"
+                          ]
+                        }}
+                        transition={{ duration: 2, repeat: Infinity }}
                       >
-                        Créer ma boutique maintenant
-                        <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 ml-1.5 sm:ml-2 group-hover:translate-x-1 transition-transform" />
-                      </Button>
+                        <Button 
+                          onClick={onSignup}
+                          size="lg"
+                          className="h-12 sm:h-14 md:h-16 px-6 sm:px-8 md:px-10 text-base sm:text-lg md:text-xl rounded-full bg-gradient-to-r from-primary via-promo to-accent hover:scale-105 transition-transform group w-full sm:w-auto font-bold"
+                        >
+                          🚀 Créer ma boutique maintenant
+                          <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 ml-2 group-hover:translate-x-2 transition-transform" />
+                        </Button>
+                      </motion.div>
                     </motion.div>
                   )}
                 </motion.div>
@@ -382,46 +480,64 @@ export const EmbeddedDemo = ({ onSignup, autoPlay = true }: EmbeddedDemoProps) =
             >
               {/* Progress Bar (no timer display) */}
               <div className="mb-3 sm:mb-4">
-                <div className="h-1.5 sm:h-2 md:h-2.5 bg-muted rounded-full overflow-hidden">
+                <div className="h-2 sm:h-2.5 md:h-3 bg-muted/50 rounded-full overflow-hidden backdrop-blur-sm">
                   <motion.div
-                    className="h-full bg-gradient-to-r from-primary via-primary-hover to-promo rounded-full"
+                    className="h-full bg-gradient-to-r from-primary via-promo to-accent rounded-full relative"
                     style={{ width: `${progressPercentage}%` }}
                     transition={{ duration: 0.1 }}
-                  />
+                  >
+                    <motion.div
+                      animate={{
+                        x: ['-100%', '100%']
+                      }}
+                      transition={{
+                        duration: 1.5,
+                        repeat: Infinity,
+                        ease: "linear"
+                      }}
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                    />
+                  </motion.div>
                 </div>
               </div>
 
               {/* Controls */}
-              <div className="flex justify-center gap-2 sm:gap-3">
+              <div className="flex justify-center gap-2 sm:gap-3 md:gap-4">
                 {isPlaying ? (
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button 
+                      onClick={handlePause} 
+                      variant="outline" 
+                      size="sm"
+                      className="h-10 sm:h-11 md:h-12 px-4 sm:px-5 md:px-6 rounded-full text-sm sm:text-base font-semibold border-2 hover:bg-primary/10"
+                    >
+                      <Pause className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                      <span className="hidden xs:inline">Pause</span>
+                    </Button>
+                  </motion.div>
+                ) : (
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button 
+                      onClick={isFinished ? handleRestart : handlePlay} 
+                      size="sm"
+                      className="h-10 sm:h-11 md:h-12 px-4 sm:px-5 md:px-6 rounded-full text-sm sm:text-base font-semibold bg-gradient-to-r from-primary to-promo shadow-lg"
+                    >
+                      <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                      {isFinished ? "🔄 Revoir" : "▶️ Reprendre"}
+                    </Button>
+                  </motion.div>
+                )}
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Button 
-                    onClick={handlePause} 
+                    onClick={handleRestart} 
                     variant="outline" 
                     size="sm"
-                    className="h-9 sm:h-10 px-3 sm:px-4 md:px-5 rounded-full text-xs sm:text-sm font-medium border-2"
+                    className="h-10 sm:h-11 md:h-12 px-4 sm:px-5 md:px-6 rounded-full text-sm sm:text-base font-semibold border-2 hover:bg-accent/10"
                   >
-                    <Pause className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-                    <span className="hidden xs:inline">Pause</span>
+                    <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                    <span className="hidden xs:inline">Recommencer</span>
                   </Button>
-                ) : (
-                  <Button 
-                    onClick={isFinished ? handleRestart : handlePlay} 
-                    size="sm"
-                    className="h-9 sm:h-10 px-3 sm:px-4 md:px-5 rounded-full text-xs sm:text-sm font-medium bg-gradient-to-r from-primary to-primary-hover"
-                  >
-                    <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-                    {isFinished ? "Revoir" : "Reprendre"}
-                  </Button>
-                )}
-                <Button 
-                  onClick={handleRestart} 
-                  variant="outline" 
-                  size="sm"
-                  className="h-9 sm:h-10 px-3 sm:px-4 md:px-5 rounded-full text-xs sm:text-sm font-medium border-2"
-                >
-                  <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-                  <span className="hidden xs:inline">Recommencer</span>
-                </Button>
+                </motion.div>
               </div>
             </motion.div>
           )}

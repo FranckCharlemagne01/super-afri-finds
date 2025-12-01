@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { SellerShopDashboard } from '@/components/SellerShopDashboard';
 import { useUserLocation } from '@/hooks/useUserLocation';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useRecommendations } from '@/hooks/useRecommendations';
 
 interface Shop {
   id: string;
@@ -52,6 +53,7 @@ const ShopPage = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const { location: userLocation } = useUserLocation();
+  const { trackShopVisit, trackCategoryVisit, getSimilarShops } = useRecommendations();
 
   const [shop, setShop] = useState<Shop | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -99,44 +101,15 @@ const ShopPage = () => {
         if (!productsError && productsData) {
           setProducts(productsData);
           
-          // Fetch similar shops based on the main category of this shop's products
+          // Track shop visit and categories
+          trackShopVisit(shopData.id);
+          productsData.forEach(product => trackCategoryVisit(product.category));
+          
+          // Fetch intelligent similar shops based on main category and history
           if (productsData.length > 0) {
             const mainCategory = productsData[0].category;
-            
-            const { data: similarShopsData } = await supabase
-              .from('seller_shops')
-              .select(`
-                id,
-                shop_name,
-                shop_slug,
-                shop_description,
-                logo_url,
-                banner_url,
-                seller_id,
-                created_at,
-                subscription_active
-              `)
-              .eq('is_active', true)
-              .neq('id', shopData.id)
-              .limit(6);
-            
-            if (similarShopsData) {
-              // Filter shops that have products in the same category
-              const shopsWithCategory = await Promise.all(
-                similarShopsData.map(async (s) => {
-                  const { data: shopProducts } = await supabase
-                    .from('products')
-                    .select('category')
-                    .eq('shop_id', s.id)
-                    .eq('category', mainCategory)
-                    .limit(1);
-                  
-                  return shopProducts && shopProducts.length > 0 ? s : null;
-                })
-              );
-              
-              setSimilarShops(shopsWithCategory.filter((s): s is Shop => s !== null).slice(0, 4));
-            }
+            const intelligentSimilarShops = await getSimilarShops(shopData.id, mainCategory, 6);
+            setSimilarShops(intelligentSimilarShops);
           }
         }
       } catch (error) {
@@ -393,16 +366,24 @@ const ShopPage = () => {
           )}
         </div>
 
-        {/* Similar Shops Section */}
+        {/* Similar Shops Section - Intelligent Recommendations */}
         {similarShops.length > 0 && (
-          <div className="mb-8">
-            <h3 className="text-xl font-semibold mb-4">Boutiques similaires</h3>
+          <div className="mb-8 animate-fade-in">
+            <div className="flex items-center gap-2 mb-4">
+              <Store className="h-5 w-5 text-primary" />
+              <h3 className="text-xl font-semibold">Boutiques similaires</h3>
+              <Badge variant="outline" className="ml-2">Recommandé pour vous</Badge>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Découvrez d'autres boutiques dans la même catégorie
+            </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {similarShops.map((similarShop) => (
+              {similarShops.map((similarShop, index) => (
                 <Card
                   key={similarShop.id}
-                  className="p-4 cursor-pointer hover:shadow-lg transition-shadow"
+                  className="p-4 cursor-pointer hover:shadow-lg transition-all hover:scale-105"
                   onClick={() => navigate(`/boutique/${similarShop.shop_slug}`)}
+                  style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <div className="flex items-center gap-3 mb-2">
                     {similarShop.logo_url ? (

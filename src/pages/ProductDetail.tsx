@@ -11,6 +11,7 @@ import { ContactSellerButton } from "@/components/ContactSellerButton";
 import { QuickOrderDialog } from "@/components/QuickOrderDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserLocation } from "@/hooks/useUserLocation";
+import { useRecommendations } from "@/hooks/useRecommendations";
 import { 
   ArrowLeft, 
   Heart, 
@@ -63,6 +64,7 @@ const ProductDetail = () => {
   const { toggleFavorite, isFavorite } = useFavorites();
   const { toast } = useToast();
   const { location: userLocation } = useUserLocation();
+  const { trackCategoryVisit, trackShopVisit, getSimilarProducts, getShopProducts } = useRecommendations();
 
   const handleBackNavigation = () => {
     if (shop?.shop_slug) {
@@ -113,6 +115,9 @@ const ProductDetail = () => {
       
       setProduct(data);
       
+      // Track category visit
+      trackCategoryVisit(data.category);
+      
       // Fetch shop info if shop_id exists
       if (data.shop_id) {
         const { data: shopData } = await supabase
@@ -124,52 +129,29 @@ const ProductDetail = () => {
         if (shopData) {
           setShop(shopData);
           
-          // Fetch other products from the same shop avec filtrage géographique
-          let shopProductsQuery = supabase
-            .from('products')
-            .select('*')
-            .eq('shop_id', data.shop_id)
-            .eq('is_active', true)
-            .neq('id', productId);
+          // Track shop visit
+          trackShopVisit(shopData.id);
           
-          // Filtrage géographique : même ville ET même pays
-          if (userLocation.city && userLocation.country) {
-            shopProductsQuery = shopProductsQuery
-              .eq('city', userLocation.city)
-              .eq('country', userLocation.country);
-          }
-          
-          const { data: shopProductsData } = await shopProductsQuery.limit(6);
-          
-          if (shopProductsData) {
-            setShopProducts(shopProductsData);
-          }
+          // Fetch intelligent shop products
+          const intelligentShopProducts = await getShopProducts(data.shop_id, productId, 6);
+          setShopProducts(intelligentShopProducts as Product[]);
         }
       }
       
-      // Fetch similar products from other shops avec filtrage géographique
-      let similarQuery = supabase
-        .from('products')
-        .select('*')
-        .eq('category', data.category)
-        .eq('is_active', true)
-        .neq('id', productId)
-        .neq('shop_id', data.shop_id || '');
+      // Fetch intelligent similar products from other shops
+      const intelligentSimilarProducts = await getSimilarProducts(
+        productId, 
+        data.shop_id, 
+        data.category, 
+        8
+      );
+      setSimilarProducts(intelligentSimilarProducts as Product[]);
       
-      // Filtrage géographique : même ville ET même pays
-      if (userLocation.city && userLocation.country) {
-        similarQuery = similarQuery
-          .eq('city', userLocation.city)
-          .eq('country', userLocation.country);
-      }
-      
-      const { data: similarData } = await similarQuery.limit(6);
-      
-      if (similarData) {
-        setSimilarProducts(similarData);
-        
-        // Fetch similar shops (shops that have similar products)
-        const similarShopIds = Array.from(new Set(similarData.map(p => p.shop_id).filter(Boolean)));
+      // Fetch similar shops (shops that have similar products)
+      if (intelligentSimilarProducts.length > 0) {
+        const similarShopIds = Array.from(
+          new Set(intelligentSimilarProducts.map(p => p.shop_id).filter(Boolean))
+        );
         
         if (similarShopIds.length > 0) {
           const { data: similarShopsData } = await supabase

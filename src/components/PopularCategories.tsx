@@ -71,11 +71,13 @@ export const PopularCategories = () => {
 
         <div
           ref={scrollRef}
-          className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide scroll-smooth px-8 md:px-10 touch-pan-x relative pb-2"
+          className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-hide scroll-smooth px-8 md:px-10 touch-pan-x relative pb-2"
           style={{
             scrollbarWidth: "none",
             msOverflowStyle: "none",
             WebkitOverflowScrolling: "touch",
+            scrollSnapType: "x proximity",
+            scrollBehavior: "smooth",
           }}
         >
           {categories.map((category, index) => {
@@ -84,13 +86,16 @@ export const PopularCategories = () => {
               <button
                 key={category.id}
                 onClick={() => navigate(`/category/${category.slug}`)}
-                style={{ animationDelay: `${index * 0.05}s` }}
-                className="flex-shrink-0 flex flex-col items-center gap-2 p-4 min-w-[100px] sm:min-w-[110px] rounded-2xl bg-card border border-border/40 hover:border-primary/30 hover:bg-accent/30 transition-all duration-300 active:scale-95 hover:shadow-lg hover:-translate-y-1 animate-fade-in"
+                style={{ 
+                  animationDelay: `${index * 0.05}s`,
+                  scrollSnapAlign: "start"
+                }}
+                className="flex-shrink-0 flex flex-col items-center gap-2 p-4 min-w-[100px] sm:min-w-[110px] rounded-2xl bg-card border border-border/40 hover:border-primary/30 hover:bg-accent/20 transition-all duration-300 active:scale-95 hover:shadow-lg hover:-translate-y-1 hover:opacity-90 animate-fade-in"
               >
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center shadow-sm border border-primary/10">
                   <Icon className="w-7 h-7 sm:w-8 sm:h-8 text-primary" />
                 </div>
-                <span className="text-xs sm:text-sm font-semibold text-foreground text-center line-clamp-2">
+                <span className="text-xs sm:text-sm font-semibold text-center line-clamp-2" style={{ color: "#1A1A1A" }}>
                   {category.name}
                 </span>
               </button>

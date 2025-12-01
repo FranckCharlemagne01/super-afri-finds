@@ -314,6 +314,7 @@ export type Database = {
           price: number
           rating: number | null
           reviews_count: number | null
+          search_vector: unknown
           seller_id: string
           shop_id: string | null
           stock_quantity: number | null
@@ -341,6 +342,7 @@ export type Database = {
           price: number
           rating?: number | null
           reviews_count?: number | null
+          search_vector?: unknown
           seller_id: string
           shop_id?: string | null
           stock_quantity?: number | null
@@ -368,6 +370,7 @@ export type Database = {
           price?: number
           rating?: number | null
           reviews_count?: number | null
+          search_vector?: unknown
           seller_id?: string
           shop_id?: string | null
           stock_quantity?: number | null
@@ -845,6 +848,41 @@ export type Database = {
       }
       is_in_trial_period: { Args: { _user_id: string }; Returns: boolean }
       is_product_boosted: { Args: { _product_id: string }; Returns: boolean }
+      search_products: {
+        Args: {
+          search_query: string
+          user_city?: string
+          user_country?: string
+        }
+        Returns: {
+          badge: string
+          category: string
+          city: string
+          country: string
+          description: string
+          discount_percentage: number
+          id: string
+          images: string[]
+          is_flash_sale: boolean
+          original_price: number
+          price: number
+          rating: number
+          relevance_score: number
+          reviews_count: number
+          seller_id: string
+          shop_id: string
+          title: string
+        }[]
+      }
+      search_suggestions: {
+        Args: { max_results?: number; search_query: string }
+        Returns: {
+          category: string
+          id: string
+          title: string
+          type: string
+        }[]
+      }
       update_order_status: {
         Args: { new_status: string; order_id: string }
         Returns: boolean

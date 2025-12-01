@@ -161,7 +161,13 @@ const ShopPage = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate('/seller-dashboard')}
+            onClick={() => {
+              if (window.history.length > 1) {
+                navigate(-1);
+              } else {
+                navigate('/seller-dashboard');
+              }
+            }}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -191,14 +197,20 @@ const ShopPage = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate('/')}
+            onClick={() => {
+              if (window.history.length > 1) {
+                navigate(-1);
+              } else {
+                navigate('/marketplace');
+              }
+            }}
             className="transition-all hover:bg-secondary"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 
             className="text-lg font-bold gradient-text-primary cursor-pointer transition-transform hover:scale-105" 
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/marketplace')}
           >
             Djassa
           </h1>

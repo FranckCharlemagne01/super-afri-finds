@@ -90,6 +90,15 @@ const ProductDetail = () => {
   const [similarShops, setSimilarShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [offerExpired, setOfferExpired] = useState(false);
+
+  // Helper function to check if a special offer is still active
+  const isOfferActive = (product: Product | null): boolean => {
+    if (!product) return false;
+    if (!product.is_boosted && !product.is_flash_sale) return false;
+    if (!product.boosted_until) return false;
+    return new Date(product.boosted_until) > new Date();
+  };
 
   useEffect(() => {
     if (id) {
@@ -234,9 +243,13 @@ const ProductDetail = () => {
 
   const productImages = product.images && product.images.length > 0 ? product.images : ["/placeholder.svg"];
   const productImage = productImages[selectedImageIndex];
+  
+  // Check if offer is still active for price display
+  const hasActiveOffer = isOfferActive(product) && !offerExpired;
   const originalPrice = product.original_price || product.price;
-  const salePrice = product.price;
-  const discount = product.discount_percentage || 0;
+  // If offer expired, show original price as sale price
+  const salePrice = hasActiveOffer ? product.price : originalPrice;
+  const discount = hasActiveOffer ? (product.discount_percentage || 0) : 0;
   const rating = product.rating || 0;
   const reviewsCount = product.reviews_count || 0;
 
@@ -347,7 +360,7 @@ const ProductDetail = () => {
                         {product.badge}
                       </Badge>
                     )}
-                    {product.is_flash_sale && (
+                    {product.is_flash_sale && isOfferActive(product) && !offerExpired && (
                       <Badge className="absolute top-3 left-3 bg-primary text-primary-foreground animate-pulse-promo z-20">
                         ⚡ Flash Sale
                       </Badge>
@@ -452,18 +465,18 @@ const ProductDetail = () => {
                 )}
               </div>
 
-              {/* Countdown Timer for Special Offers - Positioned after price */}
-              {((product.is_boosted || product.is_flash_sale) && product.boosted_until) && (
+              {/* Countdown Timer for Special Offers - Only show if offer is still active */}
+              {isOfferActive(product) && !offerExpired && (
                 <div className="mb-4 sm:mb-6 animate-fade-in">
                   <CountdownTimer 
                     expiryDate={product.boosted_until}
                     onExpire={() => {
+                      // Set state to hide promo elements - no page reload
+                      setOfferExpired(true);
                       toast({
                         title: "Offre expirée",
-                        description: "Cette offre spéciale n'est plus disponible.",
-                        variant: "destructive",
+                        description: "Cette offre spéciale n'est plus disponible. Le produit reste consultable au prix normal.",
                       });
-                      setTimeout(() => window.location.reload(), 2000);
                     }}
                   />
                 </div>

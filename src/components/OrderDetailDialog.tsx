@@ -63,10 +63,21 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
   if (!order) return null;
 
   const updateOrderStatus = async (newStatus: string) => {
+    if (!order?.id) {
+      toast({
+        title: "Erreur",
+        description: "Commande invalide",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Si le statut passe à "delivered", afficher la modale de confirmation
     if (newStatus === 'delivered') {
       setUpdatingStatus(true);
       try {
+        console.log('📦 Mise à jour statut vers delivered pour commande:', order.id);
+        
         // Récupérer le stock du produit
         const { data: productData, error: productError } = await supabase
           .from('products')
@@ -74,27 +85,39 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
           .eq('id', order.product_id)
           .single();
 
-        if (productError) throw productError;
+        if (productError) {
+          console.error('❌ Erreur récupération stock:', productError);
+          throw productError;
+        }
 
         setProductStock(productData?.stock_quantity || 0);
+        console.log('✅ Stock récupéré:', productData?.stock_quantity);
         
-        // D'abord mettre à jour le statut de la commande
+        // Mettre à jour le statut de la commande
         const { error } = await supabase
           .rpc('update_order_status', {
             order_id: order.id,
             new_status: newStatus
           });
 
-        if (error) throw error;
+        if (error) {
+          console.error('❌ Erreur RPC update_order_status:', error);
+          throw error;
+        }
 
-        // Puis afficher la modale de confirmation
+        console.log('✅ Statut mis à jour vers delivered');
+
+        // Afficher la modale de confirmation (ne pas fermer OrderDetailDialog)
         setShowDeliveryConfirm(true);
         setUpdatingStatus(false);
-      } catch (error) {
-        console.error('Error updating order status:', error);
+        
+        // Rafraîchir les données
+        onOrderUpdated();
+      } catch (error: any) {
+        console.error('❌ Erreur lors de la mise à jour:', error);
         toast({
           title: "Erreur",
-          description: "Impossible de mettre à jour le statut",
+          description: error.message || "Impossible de mettre à jour le statut",
           variant: "destructive",
         });
         setUpdatingStatus(false);
@@ -105,13 +128,20 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
     // Pour les autres statuts, mise à jour normale
     setUpdatingStatus(true);
     try {
+      console.log('📦 Mise à jour statut vers', newStatus, 'pour commande:', order.id);
+      
       const { error } = await supabase
         .rpc('update_order_status', {
           order_id: order.id,
           new_status: newStatus
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Erreur RPC update_order_status:', error);
+        throw error;
+      }
+
+      console.log('✅ Statut mis à jour avec succès');
 
       toast({
         title: "✅ Statut mis à jour",
@@ -120,11 +150,11 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
 
       onOrderUpdated();
       onOpenChange(false);
-    } catch (error) {
-      console.error('Error updating order status:', error);
+    } catch (error: any) {
+      console.error('❌ Erreur lors de la mise à jour:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de mettre à jour le statut",
+        description: error.message || "Impossible de mettre à jour le statut",
         variant: "destructive",
       });
     } finally {
@@ -133,32 +163,56 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
   };
 
   const handleConfirmSale = async (markAsSold: boolean = true) => {
+    if (!order?.id) {
+      toast({
+        title: "Erreur",
+        description: "Commande invalide",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setConfirmingSale(true);
     
     try {
+      console.log('💰 Confirmation de vente pour commande:', order.id, 'marquer comme vendu:', markAsSold);
+      
       const { data, error } = await supabase.rpc('confirm_sale_by_seller', {
         _order_id: order.id,
         _mark_product_as_sold: markAsSold
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Erreur RPC confirm_sale_by_seller:', error);
+        throw error;
+      }
+
+      console.log('✅ Réponse RPC:', data);
 
       const result = data as { success: boolean; error?: string; message?: string };
 
       if (result.success) {
+        console.log('✅ Vente confirmée avec succès');
         toast({
-          title: "Vente confirmée",
+          title: "✅ Vente confirmée",
           description: markAsSold 
             ? "Le produit est maintenant marqué comme vendu" 
             : "Vente confirmée, le produit reste actif",
         });
+        
+        // Rafraîchir les données
         onOrderUpdated();
-        onOpenChange(false);
+        
+        // Fermer la dialog après un court délai
+        setTimeout(() => {
+          onOpenChange(false);
+        }, 500);
       } else {
+        console.error('❌ Échec confirmation:', result.error);
         throw new Error(result.error || 'Erreur lors de la confirmation');
       }
     } catch (error: any) {
-      console.error('Error confirming sale:', error);
+      console.error('❌ Erreur lors de la confirmation de vente:', error);
       toast({
         title: "Erreur",
         description: error.message || "Impossible de confirmer la vente",
@@ -413,8 +467,14 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
         productTitle={order.product_title}
         currentStock={productStock}
         onConfirm={() => {
+          console.log('✅ Livraison confirmée depuis DeliveryConfirmationDialog');
+          setShowDeliveryConfirm(false);
           onOrderUpdated();
-          onOpenChange(false);
+          
+          // Fermer OrderDetailDialog après un court délai
+          setTimeout(() => {
+            onOpenChange(false);
+          }, 500);
         }}
       />
     </>

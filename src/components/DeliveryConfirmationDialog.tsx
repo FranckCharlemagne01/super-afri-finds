@@ -35,20 +35,20 @@ export const DeliveryConfirmationDialog = ({
   const handleConfirmDelivery = async () => {
     setLoading(true);
     try {
-      // Ne plus marquer automatiquement comme vendu
-      // Le vendeur doit confirmer manuellement via la commande
+      console.log('✅ Confirmation de livraison pour produit:', productId);
+      
       toast({
-        title: "Livraison confirmée",
+        title: "✅ Livraison confirmée",
         description: "Vous pourrez confirmer la vente depuis la commande",
       });
 
       onConfirm();
       onOpenChange(false);
-    } catch (error) {
-      console.error("Erreur lors de la confirmation:", error);
+    } catch (error: any) {
+      console.error("❌ Erreur lors de la confirmation:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de confirmer la livraison",
+        description: error.message || "Impossible de confirmer la livraison",
         variant: "destructive",
       });
     } finally {
@@ -57,8 +57,19 @@ export const DeliveryConfirmationDialog = ({
   };
 
   const handleKeepActive = async () => {
+    if (!productId) {
+      toast({
+        title: "Erreur",
+        description: "Produit invalide",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
+      console.log('📦 Réduction du stock pour produit:', productId, 'Stock actuel:', currentStock);
+      
       const newStock = Math.max(0, currentStock - 1);
       
       const { error } = await supabase
@@ -66,27 +77,32 @@ export const DeliveryConfirmationDialog = ({
         .update({ stock_quantity: newStock })
         .eq("id", productId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Erreur mise à jour stock:', error);
+        throw error;
+      }
+
+      console.log('✅ Stock mis à jour:', newStock);
 
       if (newStock === 0) {
         toast({
-          title: "Stock épuisé",
+          title: "✅ Stock épuisé",
           description: `"${productTitle}" a été marqué comme vendu (stock à 0).`,
         });
       } else {
         toast({
-          title: "Stock mis à jour",
+          title: "✅ Stock mis à jour",
           description: `Stock restant : ${newStock}`,
         });
       }
 
       onConfirm();
       onOpenChange(false);
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour du stock:", error);
+    } catch (error: any) {
+      console.error("❌ Erreur lors de la mise à jour du stock:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de mettre à jour le stock",
+        description: error.message || "Impossible de mettre à jour le stock",
         variant: "destructive",
       });
     } finally {

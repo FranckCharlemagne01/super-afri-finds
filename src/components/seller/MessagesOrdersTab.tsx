@@ -10,25 +10,24 @@ interface MessagesOrdersTabProps {
 
 export const MessagesOrdersTab = ({ userId }: MessagesOrdersTabProps) => {
   return (
-    <Card className="border-0 shadow-lg overflow-hidden relative group animate-in fade-in-0 duration-500">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      <Tabs defaultValue="orders" className="p-4 md:p-6 relative">
-        <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto bg-muted/50 backdrop-blur-sm">
-          <TabsTrigger value="orders" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all">
-            <ShoppingBag className="h-4 w-4" />
-            <span className="hidden sm:inline">Commandes</span>
+    <Card className="border-0 shadow-lg overflow-hidden animate-in fade-in-0 duration-500 rounded-2xl">
+      <Tabs defaultValue="orders" className="p-3 md:p-5">
+        <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto bg-muted/50 backdrop-blur-sm rounded-xl h-auto p-1">
+          <TabsTrigger value="orders" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all rounded-lg py-2 text-xs md:text-sm">
+            <ShoppingBag className="h-3.5 w-3.5 md:h-4 md:w-4" />
+            <span>Commandes</span>
           </TabsTrigger>
-          <TabsTrigger value="messages" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all">
-            <MessageSquare className="h-4 w-4" />
-            <span className="hidden sm:inline">Messages</span>
+          <TabsTrigger value="messages" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all rounded-lg py-2 text-xs md:text-sm">
+            <MessageSquare className="h-3.5 w-3.5 md:h-4 md:w-4" />
+            <span>Messages</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="orders" className="mt-4 md:mt-6">
+        <TabsContent value="orders" className="mt-3 md:mt-4">
           <SellerOrders />
         </TabsContent>
 
-        <TabsContent value="messages" className="mt-4 md:mt-6">
+        <TabsContent value="messages" className="mt-3 md:mt-4">
           <SellerMessages />
         </TabsContent>
       </Tabs>

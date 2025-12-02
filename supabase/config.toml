@@ -1,1 +1,4 @@
 project_id = "zqskpspbyzptzjcoitwt"
+
+[functions.cleanup-broken-images]
+verify_jwt = false

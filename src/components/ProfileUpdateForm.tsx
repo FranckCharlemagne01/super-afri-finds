@@ -134,8 +134,8 @@ export const ProfileUpdateForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div className="space-y-2">
           <Label htmlFor="full_name" className="flex items-center gap-2">
             <User className="w-4 h-4" />
@@ -146,7 +146,7 @@ export const ProfileUpdateForm = () => {
             value={profileData.full_name}
             onChange={(value) => handleChange('full_name', value)}
             placeholder="Votre nom complet"
-            className="min-h-[48px] text-base px-4"
+            className="w-full"
           />
         </div>
 
@@ -161,7 +161,7 @@ export const ProfileUpdateForm = () => {
             value={profileData.email}
             onChange={(e) => handleChange('email', e.target.value)}
             placeholder="votre@email.com"
-            className="min-h-[48px] text-base px-4"
+            className="w-full"
           />
         </div>
 
@@ -176,16 +176,15 @@ export const ProfileUpdateForm = () => {
             value={profileData.phone}
             onChange={(e) => {
               const value = e.target.value;
-              // Accepter +, 00, chiffres et espaces
               if (value === '' || /^(\+|0{0,2})[0-9\s]*$/.test(value)) {
                 handleChange('phone', value);
               }
             }}
             placeholder="+225 0707070707"
-            className="min-h-[48px] text-base px-4"
+            className="w-full"
             maxLength={20}
           />
-          <p className="text-xs text-muted-foreground">Format: +225 0707070707, 00225 0707070707 ou 0707070707</p>
+          <p className="text-xs text-muted-foreground mt-1.5">Format: +225 0707070707, 00225 0707070707 ou 0707070707</p>
         </div>
 
         <div className="space-y-2">
@@ -193,10 +192,10 @@ export const ProfileUpdateForm = () => {
             <MapPin className="w-4 h-4" />
             Pays (fixe)
           </Label>
-          <div className="min-h-[48px] px-4 py-2 bg-muted rounded-md border border-border flex items-center text-muted-foreground">
+          <div className="min-h-[44px] px-4 py-3 bg-muted/50 rounded-xl border-2 border-input flex items-center text-muted-foreground font-medium">
             {profileData.country ? getCountryByCode(profileData.country)?.name || profileData.country : 'Non défini'}
           </div>
-          <p className="text-xs text-muted-foreground">Le pays ne peut pas être modifié après l'inscription</p>
+          <p className="text-xs text-muted-foreground mt-1.5">Le pays ne peut pas être modifié après l'inscription</p>
         </div>
 
         <div className="space-y-2">
@@ -209,7 +208,7 @@ export const ProfileUpdateForm = () => {
             value={profileData.city}
             onValueChange={(value) => handleChange('city', value)}
           />
-          <p className="text-xs text-muted-foreground">Vous pouvez changer de ville pour voir les produits d'autres villes</p>
+          <p className="text-xs text-muted-foreground mt-1.5">Vous pouvez changer de ville pour voir les produits d'autres villes</p>
         </div>
 
         <div className="space-y-2 md:col-span-2">
@@ -219,12 +218,16 @@ export const ProfileUpdateForm = () => {
             value={profileData.address}
             onChange={(e) => handleChange('address', e.target.value)}
             placeholder="Votre adresse complète"
-            className="min-h-[48px] text-base px-4"
+            className="w-full"
           />
         </div>
       </div>
 
-      <Button type="submit" disabled={loading} className="w-full md:w-auto">
+      <Button 
+        type="submit" 
+        disabled={loading} 
+        className="w-full min-h-[48px] rounded-xl font-semibold shadow-md transition-all hover:scale-[1.02]"
+      >
         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         Sauvegarder les modifications
       </Button>

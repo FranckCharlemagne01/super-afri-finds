@@ -301,9 +301,9 @@ export const ShopManagement = () => {
         {shop ? 'Modifier ma boutique' : 'Créer ma boutique'}
       </h3>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
         {/* Shop Name */}
-        <div>
+        <div className="space-y-2">
           <Label htmlFor="shop_name">Nom de la boutique *</Label>
           <Input
             id="shop_name"
@@ -312,85 +312,101 @@ export const ShopManagement = () => {
             placeholder="Ex: Ma Super Boutique"
             required
             maxLength={100}
+            className="w-full"
           />
         </div>
 
         {/* Description */}
-        <div>
+        <div className="space-y-2">
           <Label htmlFor="shop_description">Description</Label>
           <Textarea
             id="shop_description"
             value={formData.shop_description}
             onChange={(e) => setFormData({ ...formData, shop_description: e.target.value })}
             placeholder="Décrivez votre boutique..."
-            rows={3}
+            rows={4}
             maxLength={500}
+            className="w-full"
           />
+          <p className="text-xs text-muted-foreground">{formData.shop_description.length}/500 caractères</p>
         </div>
 
         {/* Logo */}
-        <div>
+        <div className="space-y-2">
           <Label>Logo de la boutique</Label>
-          <div className="flex items-center gap-4 mt-2">
-            <div className="w-20 h-20 rounded-lg overflow-hidden bg-muted border flex-shrink-0">
+          <div className="flex flex-col sm:flex-row items-start gap-4 mt-2">
+            <div className="w-24 h-24 rounded-xl overflow-hidden bg-muted border-2 flex-shrink-0 shadow-sm">
               {logoPreview ? (
                 <img src={logoPreview} alt="Logo" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                  <ImageIcon className="h-10 w-10 text-muted-foreground/40" />
                 </div>
               )}
             </div>
-            <div className="flex-1">
+            <div className="flex-1 w-full space-y-2">
               <Input
                 type="file"
                 accept="image/*"
                 onChange={(e) => handleFileChange('logo', e.target.files?.[0] || null)}
+                className="w-full"
               />
-              <p className="text-xs text-muted-foreground mt-1">Recommandé: 200x200px</p>
+              <p className="text-xs text-muted-foreground">Recommandé: 200x200px (PNG ou JPEG)</p>
             </div>
           </div>
         </div>
 
         {/* Banner */}
-        <div>
+        <div className="space-y-2">
           <Label>Bannière de la boutique</Label>
-          <div className="mt-2">
-            <div className="w-full h-32 rounded-lg overflow-hidden bg-muted border mb-2">
+          <div className="mt-2 space-y-3">
+            <div className="w-full h-40 rounded-xl overflow-hidden bg-muted border-2 shadow-sm">
               {bannerPreview ? (
                 <img src={bannerPreview} alt="Bannière" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <ImageIcon className="h-12 w-12 text-muted-foreground" />
+                  <ImageIcon className="h-16 w-16 text-muted-foreground/40" />
                 </div>
               )}
             </div>
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleFileChange('banner', e.target.files?.[0] || null)}
-            />
-            <p className="text-xs text-muted-foreground mt-1">Recommandé: 1200x400px</p>
+            <div className="space-y-2">
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleFileChange('banner', e.target.files?.[0] || null)}
+                className="w-full"
+              />
+              <p className="text-xs text-muted-foreground">Recommandé: 1200x400px (PNG ou JPEG)</p>
+            </div>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2">
-          <Button type="submit" disabled={saving || !formData.shop_name}>
+        <div className="flex flex-col sm:flex-row gap-3 pt-4">
+          <Button 
+            type="submit" 
+            disabled={saving || !formData.shop_name}
+            className="flex-1 min-h-[48px] rounded-xl font-semibold shadow-md transition-all hover:scale-[1.02]"
+          >
             {saving ? 'Enregistrement...' : shop ? 'Enregistrer' : 'Créer la boutique'}
           </Button>
           {shop && (
-            <Button type="button" variant="outline" onClick={() => {
-              setEditing(false);
-              setFormData({
-                shop_name: shop.shop_name,
-                shop_description: shop.shop_description || '',
-              });
-              setLogoPreview(shop.logo_url || '');
-              setBannerPreview(shop.banner_url || '');
-              setLogoFile(null);
-              setBannerFile(null);
-            }}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => {
+                setEditing(false);
+                setFormData({
+                  shop_name: shop.shop_name,
+                  shop_description: shop.shop_description || '',
+                });
+                setLogoPreview(shop.logo_url || '');
+                setBannerPreview(shop.banner_url || '');
+                setLogoFile(null);
+                setBannerFile(null);
+              }}
+              className="flex-1 min-h-[48px] rounded-xl font-semibold transition-all hover:scale-[1.02]"
+            >
               Annuler
             </Button>
           )}

@@ -87,7 +87,7 @@ export const PasswordUpdateForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
+    <form onSubmit={handleSubmit} className="space-y-5 p-5 bg-card/50 rounded-xl border-2 shadow-sm max-w-md">
       <div className="space-y-2">
         <Label htmlFor="currentPassword" className="flex items-center gap-2">
           <Lock className="w-4 h-4" />
@@ -101,18 +101,19 @@ export const PasswordUpdateForm = () => {
             onChange={(e) => handleChange('currentPassword', e.target.value)}
             placeholder="Votre mot de passe actuel"
             required
+            className="pr-12"
           />
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+            className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9 hover:bg-transparent"
             onClick={() => setShowCurrentPassword(!showCurrentPassword)}
           >
             {showCurrentPassword ? (
-              <EyeOff className="h-4 w-4" />
+              <EyeOff className="h-5 w-5" />
             ) : (
-              <Eye className="h-4 w-4" />
+              <Eye className="h-5 w-5" />
             )}
           </Button>
         </div>
@@ -129,24 +130,30 @@ export const PasswordUpdateForm = () => {
             placeholder="Votre nouveau mot de passe"
             required
             minLength={12}
+            className="pr-12"
           />
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+            className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9 hover:bg-transparent"
             onClick={() => setShowNewPassword(!showNewPassword)}
           >
             {showNewPassword ? (
-              <EyeOff className="h-4 w-4" />
+              <EyeOff className="h-5 w-5" />
             ) : (
-              <Eye className="h-4 w-4" />
+              <Eye className="h-5 w-5" />
             )}
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Le mot de passe doit contenir au moins 12 caractères, incluant majuscules, minuscules, chiffres et caractères spéciaux (@$!%*?&)
-        </p>
+        <div className="text-xs text-muted-foreground space-y-1.5 mt-2 bg-muted/50 p-3 rounded-lg">
+          <p className="font-semibold">Le mot de passe doit contenir :</p>
+          <ul className="list-disc list-inside space-y-0.5 ml-1">
+            <li>Au moins 12 caractères</li>
+            <li>Majuscules, minuscules, chiffres</li>
+            <li>Caractères spéciaux (@$!%*?&)</li>
+          </ul>
+        </div>
       </div>
 
       <div className="space-y-2">
@@ -160,24 +167,29 @@ export const PasswordUpdateForm = () => {
             placeholder="Confirmez votre nouveau mot de passe"
             required
             minLength={12}
+            className="pr-12"
           />
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+            className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9 hover:bg-transparent"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
           >
             {showConfirmPassword ? (
-              <EyeOff className="h-4 w-4" />
+              <EyeOff className="h-5 w-5" />
             ) : (
-              <Eye className="h-4 w-4" />
+              <Eye className="h-5 w-5" />
             )}
           </Button>
         </div>
       </div>
 
-      <Button type="submit" disabled={loading} className="w-full">
+      <Button 
+        type="submit" 
+        disabled={loading} 
+        className="w-full min-h-[48px] rounded-xl font-semibold shadow-md transition-all hover:scale-[1.02]"
+      >
         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         Modifier le mot de passe
       </Button>

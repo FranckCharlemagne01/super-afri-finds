@@ -120,14 +120,15 @@ export const SellerOrders = () => {
   }
 
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div className="space-y-4 md:space-y-6 pb-6">
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between gap-4"
+        transition={{ duration: 0.3 }}
+        className="flex items-center justify-between gap-4 sticky top-0 z-10 bg-background/95 backdrop-blur-sm py-3 -mx-4 px-4 md:mx-0 md:px-0 md:static"
       >
-        <h2 className="text-lg md:text-xl font-bold">📦 Mes Commandes</h2>
-        <Badge variant="secondary" className="text-sm md:text-base px-3 py-1.5 rounded-full">
+        <h2 className="text-xl md:text-2xl font-bold text-foreground">📦 Mes Commandes</h2>
+        <Badge variant="secondary" className="text-sm md:text-base px-4 py-1.5 rounded-full font-bold tabular-nums shadow-sm">
           {(orders || []).length}
         </Badge>
       </motion.div>
@@ -136,69 +137,83 @@ export const SellerOrders = () => {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <Card className="border-0 shadow-lg">
-            <CardContent className="p-8 md:p-12 text-center">
-              <div className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 md:mb-6 bg-muted rounded-full flex items-center justify-center">
-                <Package className="h-10 w-10 md:h-12 md:w-12 text-muted-foreground" />
-              </div>
-              <p className="text-base md:text-lg font-semibold text-foreground mb-2">Aucune commande</p>
-              <p className="text-sm text-muted-foreground">
-                Les commandes apparaîtront ici dès qu'un client passera commande
+          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+            <CardContent className="p-8 md:p-16 text-center">
+              <motion.div 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                className="w-24 h-24 md:w-32 md:h-32 mx-auto mb-6 bg-gradient-to-br from-primary/10 to-primary/5 rounded-full flex items-center justify-center shadow-inner"
+              >
+                <Package className="h-12 w-12 md:h-16 md:w-16 text-primary" />
+              </motion.div>
+              <p className="text-lg md:text-xl font-bold text-foreground mb-3">Aucune commande</p>
+              <p className="text-sm md:text-base text-muted-foreground max-w-md mx-auto leading-relaxed">
+                Les commandes apparaîtront ici dès qu'un client passera commande. Vous recevrez une notification en temps réel.
               </p>
             </CardContent>
           </Card>
         </motion.div>
       ) : (
-        <div className="space-y-3 md:space-y-4">
+        <div className="space-y-4">
           {(orders || []).map((order, index) => (
             <motion.div
               key={order.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              transition={{ delay: index * 0.05, duration: 0.3 }}
             >
-              <Card className="border-0 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden bg-card">
+              <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden bg-card/80 backdrop-blur-sm">
                 {/* Header with status */}
-                <div className="px-4 py-3 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-b border-border/50">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                        <Package className="h-4 w-4 text-primary" />
-                      </div>
-                      <span className="text-sm font-bold text-foreground truncate">
-                        #{order.id.slice(-8)}
+                <div className="px-5 py-4 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-b border-border/50">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <motion.div 
+                        whileHover={{ rotate: 360 }}
+                        transition={{ duration: 0.6 }}
+                        className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 shadow-sm"
+                      >
+                        <Package className="h-5 w-5 text-primary" />
+                      </motion.div>
+                      <span className="text-sm md:text-base font-bold text-foreground truncate tabular-nums">
+                        #{order.id.slice(-8).toUpperCase()}
                       </span>
                     </div>
                     <Badge 
                       variant={getStatusBadgeVariant(order.status)} 
-                      className="text-xs px-2.5 py-1 rounded-full flex-shrink-0"
+                      className="text-xs md:text-sm px-3 py-1.5 rounded-full flex-shrink-0 font-semibold shadow-sm"
                     >
                       {statusLabels[order.status as keyof typeof statusLabels]}
                     </Badge>
                   </div>
-                  <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
-                    <Calendar className="h-3 w-3 flex-shrink-0" />
-                    <span className="truncate">
+                  <div className="flex items-center gap-2 mt-3 text-xs md:text-sm text-muted-foreground">
+                    <Calendar className="h-3.5 w-3.5 flex-shrink-0" />
+                    <span className="truncate font-medium">
                       {format(new Date(order.created_at), 'dd MMM yyyy · HH:mm', { locale: fr })}
                     </span>
                   </div>
                 </div>
 
-                <CardContent className="p-4 space-y-3">
+                <CardContent className="p-5 space-y-4">
                   {/* Product */}
-                  <div className="p-3 bg-muted/50 rounded-xl border border-border/30">
+                  <div className="p-4 bg-gradient-to-br from-muted/50 to-muted/30 rounded-2xl border border-border/30 shadow-sm">
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Package className="h-5 w-5 text-primary" />
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <Package className="h-6 w-6 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm text-foreground line-clamp-2 mb-1">
+                        <p className="font-bold text-sm md:text-base text-foreground line-clamp-2 mb-2 leading-snug">
                           {order.product_title}
                         </p>
-                        <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                          <span>Qté: {order.quantity}</span>
-                          <span className="font-bold text-primary">
+                        <div className="flex items-center justify-between gap-3 text-xs md:text-sm">
+                          <span className="text-muted-foreground font-medium">
+                            Qté: <span className="font-bold text-foreground">{order.quantity}</span>
+                          </span>
+                          <span className="font-bold text-base md:text-lg text-primary tabular-nums">
                             {order.total_amount.toLocaleString()} FCFA
                           </span>
                         </div>
@@ -207,30 +222,30 @@ export const SellerOrders = () => {
                   </div>
 
                   {/* Customer info */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 p-2.5 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                      <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center flex-shrink-0">
-                        <User className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                  <div className="space-y-2.5">
+                    <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-xl border border-blue-200 dark:border-blue-800 shadow-sm">
+                      <div className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                       </div>
-                      <span className="text-sm font-semibold text-blue-900 dark:text-blue-100 truncate">
+                      <span className="text-sm md:text-base font-bold text-blue-900 dark:text-blue-100 truncate">
                         {order.customer_name}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2 p-2.5 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
-                      <div className="w-7 h-7 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center flex-shrink-0">
-                        <Phone className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-950/20 rounded-xl border border-green-200 dark:border-green-800 shadow-sm">
+                      <div className="w-9 h-9 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <Phone className="h-4 w-4 text-green-600 dark:text-green-400" />
                       </div>
-                      <span className="text-sm font-medium text-green-900 dark:text-green-100 truncate">
+                      <span className="text-sm md:text-base font-bold text-green-900 dark:text-green-100 truncate tabular-nums">
                         {order.customer_phone}
                       </span>
                     </div>
 
-                    <div className="flex items-start gap-2 p-2.5 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-800">
-                      <div className="w-7 h-7 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <MapPin className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400" />
+                    <div className="flex items-start gap-3 p-3 bg-orange-50 dark:bg-orange-950/20 rounded-xl border border-orange-200 dark:border-orange-800 shadow-sm">
+                      <div className="w-9 h-9 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+                        <MapPin className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                       </div>
-                      <p className="text-xs font-medium text-orange-900 dark:text-orange-100 line-clamp-2 flex-1">
+                      <p className="text-xs md:text-sm font-semibold text-orange-900 dark:text-orange-100 line-clamp-2 flex-1 leading-relaxed">
                         {order.delivery_location}
                       </p>
                     </div>
@@ -238,31 +253,44 @@ export const SellerOrders = () => {
 
                   {/* Status badges */}
                   {(order.status === 'delivered' && !order.is_confirmed_by_seller) && (
-                    <div className="p-2.5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-                      <p className="text-xs font-semibold text-amber-800 dark:text-amber-200 text-center">
-                        ⚠️ En attente de confirmation
+                    <motion.div 
+                      initial={{ scale: 0.95, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="p-3 bg-amber-50 dark:bg-amber-950/20 border-2 border-amber-200 dark:border-amber-800 rounded-xl shadow-sm"
+                    >
+                      <p className="text-xs md:text-sm font-bold text-amber-800 dark:text-amber-200 text-center">
+                        ⚠️ En attente de confirmation de vente
                       </p>
-                    </div>
+                    </motion.div>
                   )}
 
                   {order.is_confirmed_by_seller && (
-                    <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-lg">
-                      <p className="text-xs font-semibold text-emerald-800 dark:text-emerald-200 text-center">
-                        ✅ Vente confirmée
+                    <motion.div 
+                      initial={{ scale: 0.95, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border-2 border-emerald-200 dark:border-emerald-800 rounded-xl shadow-sm"
+                    >
+                      <p className="text-xs md:text-sm font-bold text-emerald-800 dark:text-emerald-200 text-center">
+                        ✅ Vente confirmée avec succès
                       </p>
-                    </div>
+                    </motion.div>
                   )}
 
                   {/* Action button */}
-                  <Button 
-                    onClick={() => handleOrderClick(order)}
-                    className="w-full h-12 text-base font-semibold rounded-xl shadow-sm hover:shadow-md transition-all"
-                    size="lg"
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    <Eye className="h-4 w-4 mr-2" />
-                    Gérer la commande
-                    <ChevronRight className="h-4 w-4 ml-auto" />
-                  </Button>
+                    <Button 
+                      onClick={() => handleOrderClick(order)}
+                      className="w-full h-14 text-base md:text-lg font-bold rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-primary to-primary/90"
+                      size="lg"
+                    >
+                      <Eye className="h-5 w-5 mr-2" />
+                      Gérer la commande
+                      <ChevronRight className="h-5 w-5 ml-auto" />
+                    </Button>
+                  </motion.div>
                 </CardContent>
               </Card>
             </motion.div>

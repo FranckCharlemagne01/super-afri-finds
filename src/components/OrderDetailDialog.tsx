@@ -230,61 +230,62 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-lg max-h-[95vh] overflow-y-auto p-0">
+        <DialogContent className="max-w-lg max-h-[95vh] overflow-y-auto p-0 gap-0">
           {/* Header */}
-          <div className="sticky top-0 z-10 bg-gradient-to-r from-primary/10 via-primary/5 to-background px-4 md:px-6 pt-6 pb-4 border-b">
+          <div className="sticky top-0 z-10 bg-gradient-to-r from-primary/10 via-primary/5 to-background px-5 md:px-6 pt-6 pb-5 border-b shadow-sm">
             <DialogHeader>
-              <DialogTitle className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                    <Package className="h-5 w-5 text-primary" />
+              <DialogTitle className="flex items-center justify-between gap-3 flex-wrap">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center shadow-sm">
+                    <Package className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <span className="text-base font-bold block">Commande</span>
-                    <span className="text-xs text-muted-foreground">#{order.id.slice(-8)}</span>
+                    <span className="text-base md:text-lg font-bold block text-foreground">Détails Commande</span>
+                    <span className="text-xs md:text-sm text-muted-foreground font-mono">#{order.id.slice(-8).toUpperCase()}</span>
                   </div>
                 </div>
                 <Badge 
                   variant={getStatusBadgeVariant(order.status)}
-                  className="px-3 py-1.5 text-xs rounded-full"
+                  className="px-4 py-2 text-xs md:text-sm rounded-full font-bold shadow-sm"
                 >
                   {statusLabels[order.status as keyof typeof statusLabels]}
                 </Badge>
               </DialogTitle>
             </DialogHeader>
-            <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
-              <Calendar className="h-3.5 w-3.5" />
-              <span>
+            <div className="flex items-center gap-2 mt-4 text-xs md:text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span className="font-medium">
                 {format(new Date(order.created_at), 'dd MMMM yyyy · HH:mm', { locale: fr })}
               </span>
             </div>
           </div>
 
-          <div className="px-4 md:px-6 pb-6 space-y-4">
+          <div className="px-5 md:px-6 pb-6 space-y-5">
             {/* Product section */}
-            <div className="pt-2">
-              <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3">
-                📦 Produit
+            <div className="pt-3">
+              <h3 className="text-xs md:text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
+                <Package className="h-4 w-4" />
+                Produit Commandé
               </h3>
-              <div className="p-4 bg-muted/50 rounded-xl border border-border/50">
-                <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Package className="h-6 w-6 text-primary" />
+              <div className="p-5 bg-gradient-to-br from-muted/50 to-muted/30 rounded-2xl border border-border/50 shadow-sm">
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <Package className="h-7 w-7 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-foreground mb-2">{order.product_title}</p>
-                    <div className="flex items-center justify-between gap-3 text-sm">
-                      <span className="text-muted-foreground">
-                        Quantité: <span className="font-semibold text-foreground">{order.quantity}</span>
+                    <p className="font-bold text-base md:text-lg text-foreground mb-3 leading-snug">{order.product_title}</p>
+                    <div className="flex items-center justify-between gap-3 text-sm md:text-base mb-3">
+                      <span className="text-muted-foreground font-medium">
+                        Quantité: <span className="font-bold text-foreground">{order.quantity}</span>
                       </span>
-                      <span className="text-muted-foreground">
-                        Prix: <span className="font-semibold text-foreground">{order.product_price.toLocaleString()} FCFA</span>
+                      <span className="text-muted-foreground font-medium">
+                        Prix: <span className="font-bold text-foreground tabular-nums">{order.product_price.toLocaleString()} FCFA</span>
                       </span>
                     </div>
-                    <Separator className="my-2" />
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-muted-foreground">Total</span>
-                      <span className="text-lg font-bold text-primary">
+                    <Separator className="my-3" />
+                    <div className="flex items-center justify-between pt-2">
+                      <span className="text-sm md:text-base font-bold text-muted-foreground">Montant Total</span>
+                      <span className="text-xl md:text-2xl font-bold text-primary tabular-nums">
                         {order.total_amount.toLocaleString()} FCFA
                       </span>
                     </div>
@@ -295,41 +296,42 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
 
             {/* Customer section */}
             <div>
-              <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3">
-                👤 Informations Client
+              <h3 className="text-xs md:text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
+                <User className="h-4 w-4" />
+                Informations Client
               </h3>
-              <div className="space-y-2.5">
-                <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-xl border border-blue-200 dark:border-blue-800">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center flex-shrink-0">
-                    <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <div className="space-y-3">
+                <div className="flex items-center gap-4 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-2xl border border-blue-200 dark:border-blue-800 shadow-sm">
+                  <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <User className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-blue-600 dark:text-blue-400 mb-0.5">Nom complet</p>
-                    <p className="text-sm font-bold text-blue-900 dark:text-blue-100 truncate">
+                    <p className="text-xs md:text-sm font-semibold text-blue-600 dark:text-blue-400 mb-1">Nom complet</p>
+                    <p className="text-sm md:text-base font-bold text-blue-900 dark:text-blue-100 truncate">
                       {order.customer_name}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-950/20 rounded-xl border border-green-200 dark:border-green-800">
-                  <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center flex-shrink-0">
-                    <Phone className="h-5 w-5 text-green-600 dark:text-green-400" />
+                <div className="flex items-center gap-4 p-4 bg-green-50 dark:bg-green-950/20 rounded-2xl border border-green-200 dark:border-green-800 shadow-sm">
+                  <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <Phone className="h-6 w-6 text-green-600 dark:text-green-400" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-green-600 dark:text-green-400 mb-0.5">Téléphone</p>
-                    <p className="text-sm font-bold text-green-900 dark:text-green-100 truncate">
+                    <p className="text-xs md:text-sm font-semibold text-green-600 dark:text-green-400 mb-1">Téléphone</p>
+                    <p className="text-sm md:text-base font-bold text-green-900 dark:text-green-100 truncate tabular-nums">
                       {order.customer_phone}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-3 bg-orange-50 dark:bg-orange-950/20 rounded-xl border border-orange-200 dark:border-orange-800">
-                  <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center flex-shrink-0">
-                    <MapPin className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                <div className="flex items-start gap-4 p-4 bg-orange-50 dark:bg-orange-950/20 rounded-2xl border border-orange-200 dark:border-orange-800 shadow-sm">
+                  <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <MapPin className="h-6 w-6 text-orange-600 dark:text-orange-400" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-orange-600 dark:text-orange-400 mb-1">Adresse de livraison</p>
-                    <p className="text-sm font-medium text-orange-900 dark:text-orange-100 whitespace-pre-wrap break-words">
+                    <p className="text-xs md:text-sm font-semibold text-orange-600 dark:text-orange-400 mb-1.5">Adresse de livraison</p>
+                    <p className="text-sm md:text-base font-semibold text-orange-900 dark:text-orange-100 whitespace-pre-wrap break-words leading-relaxed">
                       {order.delivery_location}
                     </p>
                   </div>
@@ -339,21 +341,21 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
 
             {/* Order management */}
             <div>
-              <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3">
-                ⚙️ Gestion de la commande
+              <h3 className="text-xs md:text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
+                ⚙️ Actions Disponibles
               </h3>
               
-              <div className="space-y-3">
-                <div className="p-4 bg-muted/30 rounded-xl border border-border/50">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
-                    Statut actuel
+              <div className="space-y-4">
+                <div className="p-5 bg-muted/30 rounded-2xl border border-border/50 shadow-sm">
+                  <label className="text-xs md:text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3 block">
+                    Modifier le statut
                   </label>
                   <Select
                     value={order.status}
                     onValueChange={updateOrderStatus}
                     disabled={updatingStatus}
                   >
-                    <SelectTrigger className="w-full h-11 rounded-lg border-2 font-semibold">
+                    <SelectTrigger className="w-full h-12 md:h-14 rounded-xl border-2 font-bold text-sm md:text-base shadow-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -367,18 +369,18 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
                   </Select>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-3">
                   <Button 
                     onClick={() => updateOrderStatus('confirmed')} 
                     disabled={updatingStatus || order.status === 'confirmed'}
-                    className="h-12 rounded-xl font-semibold"
+                    className="h-14 rounded-2xl font-bold text-sm md:text-base shadow-md hover:shadow-lg transition-all"
                     variant={order.status === 'confirmed' ? 'secondary' : 'default'}
                   >
                     {updatingStatus ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
                       <>
-                        <CheckCircle className="h-4 w-4 mr-2" />
+                        <CheckCircle className="h-5 w-5 mr-2" />
                         {order.status === 'confirmed' ? 'Confirmée' : 'Confirmer'}
                       </>
                     )}
@@ -387,14 +389,14 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
                   <Button 
                     onClick={() => updateOrderStatus('shipped')} 
                     disabled={updatingStatus || order.status === 'shipped'}
-                    className="h-12 rounded-xl font-semibold"
+                    className="h-14 rounded-2xl font-bold text-sm md:text-base shadow-md hover:shadow-lg transition-all"
                     variant={order.status === 'shipped' ? 'secondary' : 'outline'}
                   >
                     {updatingStatus ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
                       <>
-                        <Truck className="h-4 w-4 mr-2" />
+                        <Truck className="h-5 w-5 mr-2" />
                         {order.status === 'shipped' ? 'Expédiée' : 'Expédier'}
                       </>
                     )}
@@ -405,32 +407,32 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
 
             {/* Sale confirmation section */}
             {order.status === 'delivered' && !order.is_confirmed_by_seller && (
-              <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border-2 border-emerald-200 dark:border-emerald-800 rounded-xl">
-                <div className="flex items-start gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center flex-shrink-0">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              <div className="p-5 md:p-6 bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/20 dark:to-emerald-900/10 border-2 border-emerald-200 dark:border-emerald-800 rounded-2xl shadow-lg">
+                <div className="flex items-start gap-4 mb-5">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <CheckCircle2 className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-emerald-900 dark:text-emerald-100 mb-1">
-                      Livraison effectuée
+                    <h4 className="font-bold text-base md:text-lg text-emerald-900 dark:text-emerald-100 mb-2">
+                      🎉 Livraison effectuée
                     </h4>
-                    <p className="text-xs text-emerald-700 dark:text-emerald-300">
-                      Confirmez la vente pour finaliser la transaction
+                    <p className="text-xs md:text-sm text-emerald-700 dark:text-emerald-300 leading-relaxed">
+                      Confirmez la vente pour finaliser la transaction et marquer le produit comme vendu
                     </p>
                   </div>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <Button
                     onClick={() => handleConfirmSale(true)}
                     disabled={confirmingSale}
-                    className="w-full h-12 rounded-xl font-bold text-base"
+                    className="w-full h-14 md:h-16 rounded-2xl font-bold text-base md:text-lg shadow-md hover:shadow-xl transition-all duration-300"
                     size="lg"
                   >
                     {confirmingSale ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <Loader2 className="h-6 w-6 animate-spin" />
                     ) : (
                       <>
-                        <CheckCircle2 className="h-5 w-5 mr-2" />
+                        <CheckCircle2 className="h-6 w-6 mr-2" />
                         Confirmer la vente
                       </>
                     )}

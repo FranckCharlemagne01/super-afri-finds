@@ -112,42 +112,44 @@ export const DeliveryConfirmationDialog = ({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-md">
+      <AlertDialogContent className="max-w-md rounded-3xl border-2">
         <AlertDialogHeader>
-          <div className="flex items-center gap-2 text-green-600 mb-2">
-            <CheckCircle className="h-6 w-6" />
-            <AlertDialogTitle className="text-xl">
+          <div className="flex items-center gap-3 text-green-600 mb-3">
+            <div className="w-12 h-12 rounded-2xl bg-green-100 dark:bg-green-900 flex items-center justify-center shadow-sm">
+              <CheckCircle className="h-7 w-7" />
+            </div>
+            <AlertDialogTitle className="text-xl md:text-2xl font-bold">
               🎉 Livraison confirmée !
             </AlertDialogTitle>
           </div>
-          <AlertDialogDescription className="text-base space-y-3">
-            <p className="text-sm text-muted-foreground">
+          <AlertDialogDescription className="text-base space-y-4">
+            <p className="text-sm md:text-base text-muted-foreground font-semibold bg-muted/50 p-3 rounded-xl">
               "{productTitle}"
             </p>
-            <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
-              <p className="text-sm font-medium text-foreground">
-                ℹ️ La confirmation de vente se fait maintenant depuis la commande
+            <div className="p-4 bg-primary/10 border-2 border-primary/20 rounded-2xl shadow-sm">
+              <p className="text-sm md:text-base font-bold text-foreground mb-2">
+                ℹ️ Prochaine étape : Confirmation de vente
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Vous pourrez choisir de marquer le produit comme vendu ou de le garder actif
+              <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
+                Vous pourrez maintenant choisir de marquer le produit comme vendu ou de le garder actif depuis la page de la commande
               </p>
             </div>
             {currentStock > 1 && (
-              <p className="text-sm text-muted-foreground">
-                Stock actuel : {currentStock} unités
+              <p className="text-sm md:text-base text-muted-foreground font-semibold">
+                📦 Stock actuel : <span className="text-foreground">{currentStock} unités</span>
               </p>
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>
         
-        <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+        <AlertDialogFooter className="flex-col gap-3 sm:flex-row">
           <Button
             onClick={handleConfirmDelivery}
             disabled={loading}
             variant="default"
-            className="w-full"
+            className="w-full h-12 md:h-14 rounded-2xl font-bold text-sm md:text-base shadow-md hover:shadow-lg transition-all"
           >
-            <CheckCircle className="mr-2 h-4 w-4" />
+            <CheckCircle className="mr-2 h-5 w-5" />
             Confirmer la livraison
           </Button>
           
@@ -156,9 +158,9 @@ export const DeliveryConfirmationDialog = ({
               onClick={handleKeepActive}
               disabled={loading}
               variant="outline"
-              className="w-full"
+              className="w-full h-12 md:h-14 rounded-2xl font-bold text-sm md:text-base shadow-md hover:shadow-lg transition-all"
             >
-              <Package className="mr-2 h-4 w-4" />
+              <Package className="mr-2 h-5 w-5" />
               Réduire le stock (-1)
             </Button>
           )}

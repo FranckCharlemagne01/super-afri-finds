@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ContactSellerButton } from "@/components/ContactSellerButton";
 import { QuickOrderDialog } from "@/components/QuickOrderDialog";
 import { CountdownTimer } from "@/components/CountdownTimer";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { useRecommendations } from "@/hooks/useRecommendations";
@@ -315,18 +316,21 @@ const ProductDetail = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {/* Image principale */}
+                  {/* Image principale avec loader et fallback */}
                   <div className="relative">
-                    <img
+                    <OptimizedImage
                       src={productImage}
                       alt={`${product.title} - Image ${selectedImageIndex + 1}`}
-                      className="w-full h-96 lg:h-[500px] object-cover rounded-lg"
+                      aspectRatio="auto"
+                      objectFit="cover"
+                      className="w-full h-96 lg:h-[500px] rounded-lg"
+                      containerClassName="w-full h-96 lg:h-[500px] rounded-lg"
                     />
                     {product.video_url && (
                       <Button
                         variant="outline"
                         size="sm"
-                        className="absolute top-3 right-3 bg-white/90 flex items-center gap-2"
+                        className="absolute top-3 right-3 bg-white/90 flex items-center gap-2 z-20"
                         onClick={() => setShowVideo(true)}
                       >
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -337,23 +341,23 @@ const ProductDetail = () => {
                     )}
                     
                     {product.badge && (
-                      <Badge className="absolute top-3 left-3 bg-promo text-promo-foreground">
+                      <Badge className="absolute top-3 left-3 bg-promo text-promo-foreground z-20">
                         {product.badge}
                       </Badge>
                     )}
                     {product.is_flash_sale && (
-                      <Badge className="absolute top-3 left-3 bg-primary text-primary-foreground animate-pulse-promo">
+                      <Badge className="absolute top-3 left-3 bg-primary text-primary-foreground animate-pulse-promo z-20">
                         ⚡ Flash Sale
                       </Badge>
                     )}
                     {discount > 0 && (
-                      <Badge className="absolute bottom-3 left-3 bg-success text-success-foreground">
+                      <Badge className="absolute bottom-3 left-3 bg-success text-success-foreground z-20">
                         -{discount}%
                       </Badge>
                     )}
                     
                     {productImages.length > 1 && (
-                      <Badge className="absolute bottom-3 right-3 bg-black/60 text-white border-0">
+                      <Badge className="absolute bottom-3 right-3 bg-black/60 text-white border-0 z-20">
                         {selectedImageIndex + 1}/{productImages.length}
                       </Badge>
                     )}
@@ -377,13 +381,15 @@ const ProductDetail = () => {
                                 className={`relative w-full aspect-square rounded-lg overflow-hidden border-2 transition-all ${
                                   selectedImageIndex === index
                                     ? 'border-primary ring-2 ring-primary ring-offset-2'
-                                    : 'border-gray-200 hover:border-primary/50'
+                                    : 'border-border hover:border-primary/50'
                                 }`}
                               >
-                                <img
+                                <OptimizedImage
                                   src={image}
                                   alt={`${product.title} - Miniature ${index + 1}`}
-                                  className="w-full h-full object-cover"
+                                  aspectRatio="square"
+                                  objectFit="cover"
+                                  showLoader={false}
                                 />
                                 {selectedImageIndex === index && (
                                   <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">

@@ -109,8 +109,8 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
     setUploadingImages(true);
     try {
       const uploadPromises = imageFiles.map(async (file) => {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${user.id}/${Date.now()}-${Math.random()}.${fileExt}`;
+        const fileExt = file.name.split('.').pop()?.toLowerCase();
+        const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
         
         const { data, error } = await supabase.storage
           .from('product-images')
@@ -119,22 +119,36 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
             upsert: false
           });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Upload error:', error);
+          throw error;
+        }
 
         const { data: { publicUrl } } = supabase.storage
           .from('product-images')
           .getPublicUrl(data.path);
 
+        // Vérifier que l'URL est valide et accessible
+        if (!publicUrl || publicUrl.trim() === '') {
+          throw new Error('URL publique invalide');
+        }
+
         return publicUrl;
       });
 
       const uploadedUrls = await Promise.all(uploadPromises);
-      return uploadedUrls;
+      
+      // Filtrer les URLs invalides
+      const validUrls = uploadedUrls.filter(url => 
+        url && typeof url === 'string' && url.startsWith('http')
+      );
+      
+      return validUrls;
     } catch (error) {
       console.error('Error uploading images:', error);
       toast({
         title: "Erreur d'upload",
-        description: "Impossible d'uploader les images",
+        description: "Impossible d'uploader les images. Vérifiez votre connexion.",
         variant: "destructive",
       });
       return [];

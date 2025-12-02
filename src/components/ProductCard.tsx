@@ -135,8 +135,8 @@ export const ProductCard = ({
         }`} />
       </button>
 
-      {/* Product Image - Optimized with loader and fallback */}
-      <ProductImage src={image} alt={title} />
+      {/* Product Image - Optimized with loader, fallback, and auto-cleanup */}
+      <ProductImage src={image} alt={title} productId={id} enableAutoCleanup={true} />
       
       {/* Video indicator */}
       {videoUrl && (

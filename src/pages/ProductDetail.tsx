@@ -325,6 +325,8 @@ const ProductDetail = () => {
                       objectFit="cover"
                       className="w-full h-96 lg:h-[500px] rounded-lg"
                       containerClassName="w-full h-96 lg:h-[500px] rounded-lg"
+                      productId={product.id}
+                      enableAutoCleanup={true}
                     />
                     {product.video_url && (
                       <Button
@@ -390,6 +392,8 @@ const ProductDetail = () => {
                                   aspectRatio="square"
                                   objectFit="cover"
                                   showLoader={false}
+                                  productId={product.id}
+                                  enableAutoCleanup={true}
                                 />
                                 {selectedImageIndex === index && (
                                   <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">

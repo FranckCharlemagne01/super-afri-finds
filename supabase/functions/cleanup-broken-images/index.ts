@@ -35,11 +35,10 @@ serve(async (req: Request) => {
       errors: [],
     };
 
-    // 1. Fetch all products with images
+    // 1. Fetch all products (including those with empty arrays)
     const { data: products, error: fetchError } = await supabase
       .from("products")
-      .select("id, title, images")
-      .not("images", "is", null);
+      .select("id, title, images, is_active");
 
     if (fetchError) {
       throw new Error(`Failed to fetch products: ${fetchError.message}`);
@@ -49,7 +48,19 @@ serve(async (req: Request) => {
 
     // 2. Check each product's images
     for (const product of products || []) {
+      // Handle empty arrays or null images - deactivate if active
       if (!product.images || !Array.isArray(product.images) || product.images.length === 0) {
+        if (product.is_active) {
+          const { error: deactivateError } = await supabase
+            .from("products")
+            .update({ is_active: false, updated_at: new Date().toISOString() })
+            .eq("id", product.id);
+          
+          if (!deactivateError) {
+            result.productsUpdated.push(`${product.title} (${product.id}) - désactivé (aucune image)`);
+            result.brokenImagesFound++;
+          }
+        }
         continue;
       }
 

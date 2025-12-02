@@ -24,6 +24,7 @@ interface Order {
   quantity: number;
   total_amount: number;
   status: string;
+  seller_id: string;
   created_at: string;
   updated_at: string;
   is_confirmed_by_seller?: boolean;
@@ -62,7 +63,10 @@ export const SellerOrders = () => {
     try {
       const { data, error } = await supabase.rpc('get_seller_orders');
       if (error) throw error;
-      setOrders(data || []);
+      
+      // Filtrer pour ne garder QUE les commandes où l'utilisateur est le vendeur
+      const sellerOrders = (data || []).filter((order: Order) => order.seller_id === user.id);
+      setOrders(sellerOrders);
     } catch (error) {
       console.error('Error loading orders:', error);
     } finally {

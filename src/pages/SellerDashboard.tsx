@@ -242,7 +242,7 @@ const SellerDashboard = () => {
       <RealtimeOrdersNotification />
       <RealtimeMessagesNotification />
       
-      <div className="container mx-auto px-3 py-4 max-w-md md:max-w-3xl lg:max-w-7xl md:px-6 lg:px-8 lg:py-6">
+      <div className="container mx-auto px-2.5 py-3 max-w-md md:max-w-3xl lg:max-w-7xl md:px-4 lg:px-6 md:py-4 lg:py-5">
         {/* Modern Header */}
         <ModernSellerHeader
           shop={shop}
@@ -254,51 +254,51 @@ const SellerDashboard = () => {
           onPublishProduct={handlePublishProduct}
         />
 
-        {/* Main Dashboard Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 md:space-y-6">
-          <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full bg-card/50 backdrop-blur-sm border border-border/50 shadow-lg rounded-xl h-auto p-1.5 gap-1 overflow-x-auto">
+        {/* Main Dashboard Tabs - Mobile First */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 md:space-y-4">
+          <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full bg-card/50 backdrop-blur-sm border border-border/50 shadow-md rounded-2xl h-auto p-1 md:p-1.5 gap-1 overflow-x-auto">
             <TabsTrigger 
               value="overview" 
-              className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-2.5 md:py-3 rounded-lg transition-all hover:bg-muted/50 touch-manipulation whitespace-nowrap"
+              className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md py-2 md:py-2.5 rounded-xl transition-all hover:bg-muted/50 touch-manipulation whitespace-nowrap text-xs md:text-sm"
             >
-              <Store className="h-4 w-4 flex-shrink-0" />
+              <Store className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0" />
               <span className="hidden sm:inline truncate">Ma Boutique</span>
               <span className="sm:hidden truncate">Boutique</span>
             </TabsTrigger>
             <TabsTrigger 
               value="products" 
-              className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-2.5 md:py-3 rounded-lg transition-all hover:bg-muted/50 touch-manipulation whitespace-nowrap"
+              className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md py-2 md:py-2.5 rounded-xl transition-all hover:bg-muted/50 touch-manipulation whitespace-nowrap text-xs md:text-sm"
             >
-              <Package className="h-4 w-4 flex-shrink-0" />
+              <Package className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0" />
               <span className="truncate">Produits</span>
             </TabsTrigger>
             <TabsTrigger 
               value="messages-orders" 
-              className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-2.5 md:py-3 rounded-lg transition-all hover:bg-muted/50 touch-manipulation whitespace-nowrap"
+              className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md py-2 md:py-2.5 rounded-xl transition-all hover:bg-muted/50 touch-manipulation whitespace-nowrap text-xs md:text-sm"
             >
-              <MessageSquare className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline truncate">Messages & Commandes</span>
+              <MessageSquare className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">Messages</span>
               <span className="sm:hidden truncate">Messages</span>
             </TabsTrigger>
             <TabsTrigger 
               value="tokens" 
-              className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-2.5 md:py-3 rounded-lg transition-all hover:bg-muted/50 touch-manipulation whitespace-nowrap"
+              className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md py-2 md:py-2.5 rounded-xl transition-all hover:bg-muted/50 touch-manipulation whitespace-nowrap text-xs md:text-sm"
             >
-              <Coins className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline truncate">Jetons & Abonnement</span>
+              <Coins className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">Jetons</span>
               <span className="sm:hidden truncate">Jetons</span>
             </TabsTrigger>
             <TabsTrigger 
               value="settings" 
-              className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-2.5 md:py-3 rounded-lg transition-all hover:bg-muted/50 touch-manipulation whitespace-nowrap"
+              className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md py-2 md:py-2.5 rounded-xl transition-all hover:bg-muted/50 touch-manipulation whitespace-nowrap text-xs md:text-sm"
             >
-              <Settings className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline truncate">Paramètres Boutique</span>
-              <span className="sm:hidden truncate">Paramètres</span>
+              <Settings className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">Paramètres</span>
+              <span className="sm:hidden truncate">Réglages</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-4 md:space-y-6 mt-4 md:mt-6">
+          <TabsContent value="overview" className="space-y-3 md:space-y-4 mt-3 md:mt-4">
             <ShopOverviewTab
               shop={shop}
               products={products || []}
@@ -309,7 +309,7 @@ const SellerDashboard = () => {
             />
           </TabsContent>
 
-          <TabsContent value="products" className="space-y-4 md:space-y-6 mt-4 md:mt-6">
+          <TabsContent value="products" className="space-y-3 md:space-y-4 mt-3 md:mt-4">
             <ProductsTab
               products={products || []}
               loading={productsLoading}
@@ -320,11 +320,11 @@ const SellerDashboard = () => {
             />
           </TabsContent>
 
-          <TabsContent value="messages-orders" className="space-y-4 md:space-y-6 mt-4 md:mt-6">
+          <TabsContent value="messages-orders" className="space-y-3 md:space-y-4 mt-3 md:mt-4">
             <MessagesOrdersTab userId={userId} />
           </TabsContent>
 
-          <TabsContent value="tokens" className="space-y-4 md:space-y-6 mt-4 md:mt-6">
+          <TabsContent value="tokens" className="space-y-3 md:space-y-4 mt-3 md:mt-4">
             <TokensSubscriptionTab
               tokenBalance={tokenBalance}
               freeTokens={freeTokens}
@@ -336,7 +336,7 @@ const SellerDashboard = () => {
             />
           </TabsContent>
 
-          <TabsContent value="settings" className="space-y-4 md:space-y-6 mt-4 md:mt-6">
+          <TabsContent value="settings" className="space-y-3 md:space-y-4 mt-3 md:mt-4">
             <ShopSettingsTab
               shop={shop}
               onRefresh={handleRefresh}

@@ -111,7 +111,7 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="firstName">Prénom *</Label>
               <TextInput
@@ -119,7 +119,7 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
                 placeholder="Votre prénom"
                 value={firstName}
                 onChange={setFirstName}
-                className="min-h-[48px] text-base px-4"
+                className="w-full"
                 required
               />
             </div>
@@ -131,7 +131,7 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
                 placeholder="Votre nom de famille"
                 value={lastName}
                 onChange={setLastName}
-                className="min-h-[48px] text-base px-4"
+                className="w-full"
                 required
               />
             </div>
@@ -150,14 +150,14 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
                     setPhone(value);
                   }
                 }}
-                className="min-h-[48px] text-base px-4"
+                className="w-full"
                 required
                 maxLength={20}
               />
-              <p className="text-xs text-muted-foreground">Format: +225 0707070707, 00225 0707070707 ou 0707070707</p>
+              <p className="text-xs text-muted-foreground mt-1.5">Format: +225 0707070707, 00225 0707070707 ou 0707070707</p>
             </div>
 
-            <div className="space-y-2 bg-primary/5 p-4 rounded-lg border border-primary/20">
+            <div className="space-y-2 bg-primary/5 p-4 rounded-xl border-2 border-primary/20 shadow-sm">
               <Label htmlFor="shopName" className="flex items-center gap-2">
                 <Store className="w-4 h-4" />
                 Nom de votre boutique (optionnel)
@@ -168,28 +168,28 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
                 placeholder="Ex: Ma Boutique Mode, Électronique Pro..."
                 value={shopName}
                 onChange={(e) => setShopName(e.target.value)}
-                className="min-h-[48px] text-base px-4"
+                className="w-full"
                 maxLength={100}
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground mt-1.5">
                 Si vide, votre boutique s'appellera "Boutique {firstName} {lastName}" ou "Djassa Boutique" par défaut.
               </p>
             </div>
 
-            <div className="bg-muted p-3 rounded-lg">
-              <p className="text-sm text-muted-foreground">
+            <div className="bg-muted/50 p-4 rounded-xl border">
+              <p className="text-sm font-medium text-foreground">
                 <strong>Email :</strong> {user?.email}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-1.5">
                 Votre email actuel sera conservé
               </p>
             </div>
 
-            <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950 dark:to-blue-950 p-3 rounded-lg border border-green-200 dark:border-green-800">
-              <h4 className="text-sm font-semibold text-green-800 dark:text-green-200 mb-1">
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950 dark:to-blue-950 p-4 rounded-xl border-2 border-green-200 dark:border-green-800 shadow-sm">
+              <h4 className="text-sm font-semibold text-green-800 dark:text-green-200 mb-2">
                 🎁 Avantages inclus :
               </h4>
-              <ul className="text-xs text-green-700 dark:text-green-300 space-y-1">
+              <ul className="text-xs text-green-700 dark:text-green-300 space-y-1.5">
                 <li>• 28 jours d'essai gratuit</li>
                 <li>• Publication illimitée de produits</li>
                 <li>• Gestion des commandes</li>
@@ -200,7 +200,7 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
 
             <Button 
               type="submit" 
-              className="w-full" 
+              className="w-full min-h-[48px] rounded-xl font-semibold shadow-md transition-all hover:scale-[1.02]" 
               disabled={loading}
             >
               {loading ? "Activation en cours..." : "Activer mon profil vendeur"}

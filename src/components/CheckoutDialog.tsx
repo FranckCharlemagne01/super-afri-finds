@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Loader2 } from 'lucide-react';
 import { useOrders, OrderData } from '@/hooks/useOrders';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
@@ -142,94 +144,97 @@ export const CheckoutDialog = ({
           <DialogTitle>Finaliser votre commande</DialogTitle>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Order Summary */}
-          <Card className="p-4 bg-muted/50">
-            <h3 className="font-medium text-foreground mb-3">Résumé de votre commande</h3>
-            <div className="space-y-2 text-sm">
-              {cartItems.map((item) => (
-                <div key={item.id} className="flex justify-between">
-                  <span className="text-muted-foreground">
-                    {item.product.title} (x{item.quantity})
-                  </span>
-                  <span className="font-medium">
-                    {(item.product.price * item.quantity).toLocaleString()} FCFA
-                  </span>
-                </div>
-              ))}
-              <div className="border-t pt-2 mt-2">
-                <div className="flex justify-between font-bold">
-                  <span>Total</span>
-                  <span className="text-promo">{totalPrice.toLocaleString()} FCFA</span>
+          <div className="space-y-4">
+            <h3 className="text-base font-semibold text-foreground">Résumé de la commande</h3>
+            <Card className="p-4 shadow-sm border-2 bg-muted/30">
+              <div className="space-y-3">
+                {cartItems.map((item) => (
+                  <div key={item.id} className="flex justify-between items-start text-sm">
+                    <div className="flex-1">
+                      <p className="font-semibold text-foreground">{item.product.title}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Quantité: x{item.quantity}</p>
+                    </div>
+                    <p className="font-bold text-foreground whitespace-nowrap ml-2">
+                      {(item.product.price * item.quantity).toLocaleString('fr-FR')} FCFA
+                    </p>
+                  </div>
+                ))}
+                <Separator className="my-3" />
+                <div className="flex justify-between items-center text-base font-bold">
+                  <span className="text-foreground">Total</span>
+                  <span className="gradient-text-primary text-lg">{totalPrice.toLocaleString('fr-FR')} FCFA</span>
                 </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+          </div>
 
           {/* Customer Information */}
-          <div className="space-y-4">
+          <div className="space-y-5">
+            <h3 className="text-base font-semibold text-foreground">Vos informations</h3>
+            
             <div className="space-y-2">
               <Label htmlFor="customerName">Nom complet *</Label>
               <Input
                 id="customerName"
+                placeholder="Votre nom et prénom"
                 value={formData.customerName}
                 onChange={(e) => handleInputChange('customerName', e.target.value)}
-                placeholder="Votre nom complet"
-                className="min-h-[48px] text-base px-4"
                 required
+                className="w-full"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="customerPhone">Numéro de téléphone *</Label>
+              <Label htmlFor="customerPhone">Téléphone *</Label>
               <Input
                 id="customerPhone"
                 type="text"
+                placeholder="+225 07 XX XX XX XX"
                 value={formData.customerPhone}
                 onChange={(e) => {
                   const value = e.target.value;
-                  // Accepter +, 00, chiffres et espaces
                   if (value === '' || /^(\+|0{0,2})[0-9\s]*$/.test(value)) {
                     handleInputChange('customerPhone', value);
                   }
                 }}
-                placeholder="+225 0707070707"
-                className="min-h-[48px] text-base px-4"
                 required
+                className="w-full"
                 maxLength={20}
               />
-              <p className="text-xs text-muted-foreground">Format: +225 0707070707, 00225 0707070707 ou 0707070707</p>
+              <p className="text-xs text-muted-foreground mt-1.5">Format: +225 0707070707, 00225 0707070707 ou 0707070707</p>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="deliveryLocation">Lieu de livraison *</Label>
               <Input
                 id="deliveryLocation"
+                placeholder="Adresse de livraison (ex: Cocody Angré, Yopougon 2, Zone 4C)"
                 value={formData.deliveryLocation}
                 onChange={(e) => handleInputChange('deliveryLocation', e.target.value)}
-                placeholder="Adresse de livraison (ex: Cocody Angré, Yopougon 2, Zone 4C)"
-                className="min-h-[48px] text-base px-4"
                 required
+                className="w-full"
               />
-              <p className="text-xs text-muted-foreground">Lettres, chiffres, espaces et caractères spéciaux autorisés</p>
+              <p className="text-xs text-muted-foreground mt-1.5">Précisez le quartier ou la commune</p>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex space-x-2 pt-4">
-            <Button 
-              type="button" 
-              variant="outline" 
+          <div className="flex flex-col sm:flex-row gap-3 pt-4">
+            <Button
+              type="button"
+              variant="outline"
               onClick={() => onOpenChange(false)}
-              className="flex-1"
               disabled={isProcessing}
+              className="flex-1 min-h-[48px] rounded-xl font-semibold transition-all hover:scale-[1.02]"
             >
               Annuler
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={isProcessing}
-              className="flex-1"
+              className="flex-1 min-h-[48px] rounded-xl font-semibold gradient-primary transition-all hover:scale-[1.02] shadow-md"
             >
               {isProcessing ? "Traitement en cours..." : "Confirmer la commande"}
             </Button>

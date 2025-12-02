@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { ContactSellerButton } from "@/components/ContactSellerButton";
 import { QuickOrderDialog } from "@/components/QuickOrderDialog";
 import { CountdownTimer } from "@/components/CountdownTimer";
+import { ProductImage } from "@/components/ui/optimized-image";
 
 interface ProductCardProps {
   id?: string;
@@ -134,30 +135,20 @@ export const ProductCard = ({
         }`} />
       </button>
 
-      {/* Product Image - Optimized Fixed Aspect Ratio */}
-      <div className="relative w-full aspect-square overflow-hidden bg-muted/30 rounded-t-lg">
-        <img
-          src={image}
-          alt={title}
-          loading="lazy"
-          decoding="async"
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.src = '/placeholder.svg';
-          }}
-        />
-        {videoUrl && (
-          <div className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 z-10">
-            <div className="bg-black/70 text-white text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full flex items-center gap-1">
-              <svg className="w-2 h-2 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M8 5v10l7-5-7-5z"/>
-              </svg>
-              <span className="hidden sm:inline">Video</span>
-            </div>
+      {/* Product Image - Optimized with loader and fallback */}
+      <ProductImage src={image} alt={title} />
+      
+      {/* Video indicator */}
+      {videoUrl && (
+        <div className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 z-10">
+          <div className="bg-black/70 text-white text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full flex items-center gap-1">
+            <svg className="w-2 h-2 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M8 5v10l7-5-7-5z"/>
+            </svg>
+            <span className="hidden sm:inline">Video</span>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Product Info */}
       <div className="p-2 sm:p-3 space-y-1.5 sm:space-y-2 relative z-10">

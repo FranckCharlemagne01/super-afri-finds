@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2, Eye, EyeOff, Zap } from 'lucide-react';
 import { SmoothListSkeleton } from '@/components/ui/smooth-skeleton';
 import { CountdownTimer } from './CountdownTimer';
+import { OptimizedImage } from '@/components/ui/optimized-image';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -74,27 +75,15 @@ export const SellerProducts = ({ products, loading, onEdit, onDelete, onBoost, t
       {products.map((product) => (
         <Card key={product.id} className="overflow-hidden card-hover">
           <div className="relative">
-            {product.images?.[0] ? (
-              <img
-                src={product.images[0]}
-                alt={product.title}
-                className="w-full h-48 object-cover"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  const fallback = target.nextElementSibling as HTMLElement;
-                  if (fallback) fallback.style.display = 'flex';
-                }}
-              />
-            ) : null}
-            <div 
-              className="w-full h-48 bg-muted items-center justify-center"
-              style={{ display: product.images?.[0] ? 'none' : 'flex' }}
-            >
-              <span className="text-muted-foreground">Pas d'image</span>
-            </div>
+            <OptimizedImage
+              src={product.images?.[0]}
+              alt={product.title}
+              aspectRatio="video"
+              objectFit="cover"
+              containerClassName="w-full h-48"
+            />
             
-            <div className="absolute top-2 left-2 flex gap-2 flex-wrap">
+            <div className="absolute top-2 left-2 flex gap-2 flex-wrap z-10">
               {isProductBoosted(product) && (
                 <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0">
                   <Zap className="w-3 h-3 mr-1" /> Boosté

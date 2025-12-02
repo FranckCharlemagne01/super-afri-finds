@@ -435,12 +435,12 @@ const ProductDetail = () => {
               </h1>
               
               {/* Rating */}
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-3">
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`w-5 h-5 ${
+                      className={`w-4 h-4 sm:w-5 sm:h-5 ${
                         i < Math.floor(rating)
                           ? 'text-yellow-400 fill-current'
                           : 'text-gray-300'
@@ -448,30 +448,34 @@ const ProductDetail = () => {
                     />
                   ))}
                 </div>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-xs sm:text-sm text-muted-foreground">
                   {rating.toFixed(1)} ({reviewsCount} avis)
                 </span>
               </div>
 
               {/* Price */}
-              <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
                 <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary break-words">
                   {salePrice.toLocaleString()} FCFA
                 </span>
                 {originalPrice > salePrice && (
-                  <span className="text-base sm:text-lg text-muted-foreground line-through break-words">
+                  <span className="text-sm sm:text-lg text-muted-foreground line-through break-words">
                     {originalPrice.toLocaleString()} FCFA
                   </span>
+                )}
+                {discount > 0 && (
+                  <Badge className="bg-promo text-promo-foreground text-xs">
+                    -{discount}%
+                  </Badge>
                 )}
               </div>
 
               {/* Countdown Timer for Special Offers - Only show if offer is still active */}
               {isOfferActive(product) && !offerExpired && (
-                <div className="mb-4 sm:mb-6 animate-fade-in">
+                <div className="mb-3 sm:mb-4 animate-fade-in">
                   <CountdownTimer 
                     expiryDate={product.boosted_until}
                     onExpire={() => {
-                      // Set state to hide promo elements - no page reload
                       setOfferExpired(true);
                       toast({
                         title: "Offre expirée",
@@ -482,67 +486,104 @@ const ProductDetail = () => {
                 </div>
               )}
 
-              {/* Description */}
-              <div className="mb-4 sm:mb-6">
-                <h3 className="text-base sm:text-lg font-semibold mb-2">Description</h3>
-                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed break-words whitespace-pre-wrap">
-                  {product.description}
-                </p>
-              </div>
-
-              {/* Category */}
-              <div className="mb-4 sm:mb-6 flex flex-wrap items-center gap-2">
-                <span className="text-xs sm:text-sm text-muted-foreground">Catégorie:</span>
-                <Badge variant="secondary" className="text-xs sm:text-sm">{product.category}</Badge>
-              </div>
-
-              {/* Stock */}
-              <div className="mb-4 sm:mb-6">
-                <span className="text-xs sm:text-sm text-muted-foreground break-words">
-                  Stock disponible: {product.stock_quantity || 0} unités
+              {/* Stock Status - Compact */}
+              <div className="mb-3 sm:mb-4 flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${product.stock_quantity && product.stock_quantity > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
+                <span className="text-xs sm:text-sm text-muted-foreground">
+                  {product.stock_quantity && product.stock_quantity > 0 
+                    ? `${product.stock_quantity} en stock` 
+                    : 'Rupture de stock'}
                 </span>
               </div>
 
-              {/* Quantity Selector */}
-              <div className="mb-4 sm:mb-6">
-                <label className="block text-xs sm:text-sm font-medium mb-2">Quantité</label>
-                <div className="flex items-center gap-3">
+              {/* ============ MOBILE ACTION SECTION - Immediately visible ============ */}
+              <div className="lg:hidden space-y-3 mb-4 pb-4 border-b">
+                {/* Quantity Selector - Compact Mobile */}
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium">Quantité</label>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-9 w-9"
+                      onClick={() => handleQuantityChange(quantity - 1)}
+                      disabled={quantity <= 1}
+                    >
+                      <Minus className="w-4 h-4" />
+                    </Button>
+                    <span className="w-10 text-center font-semibold">{quantity}</span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-9 w-9"
+                      onClick={() => handleQuantityChange(quantity + 1)}
+                      disabled={quantity >= (product.stock_quantity || 0)}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Mobile Action Buttons - Full Width, Stacked */}
+                <Button
+                  onClick={handleAddToCart}
+                  className="w-full h-12 text-base font-semibold shadow-md"
+                  disabled={!product.stock_quantity || product.stock_quantity === 0}
+                >
+                  <ShoppingCart className="w-5 h-5 mr-2" />
+                  Ajouter au panier
+                </Button>
+
+                <div className="flex gap-2">
+                  <QuickOrderDialog
+                    productId={product.id}
+                    productTitle={product.title}
+                    productPrice={salePrice}
+                    sellerId={product.seller_id}
+                  />
+                  <ContactSellerButton
+                    productId={product.id}
+                    sellerId={product.seller_id}
+                    productTitle={product.title}
+                    productPrice={salePrice}
+                    productImage={productImage}
+                  />
                   <Button
                     variant="outline"
-                    size="icon"
-                    onClick={() => handleQuantityChange(quantity - 1)}
-                    disabled={quantity <= 1}
+                    onClick={handleToggleFavorite}
+                    className="h-11 px-4"
                   >
-                    <Minus className="w-4 h-4" />
-                  </Button>
-                  <span className="w-12 text-center font-medium">{quantity}</span>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => handleQuantityChange(quantity + 1)}
-                    disabled={quantity >= (product.stock_quantity || 0)}
-                  >
-                    <Plus className="w-4 h-4" />
+                    <Heart className={`w-5 h-5 ${isFavorite(product.id) ? 'fill-current text-red-500' : ''}`} />
                   </Button>
                 </div>
               </div>
 
-              {/* Personal Message */}
-              <div className="mb-4 sm:mb-6">
-                <label className="block text-xs sm:text-sm font-medium mb-2">
-                  Message personnalisé (optionnel)
-                </label>
-                <Textarea
-                  placeholder="Ajoutez un message pour le vendeur..."
-                  value={personalMessage}
-                  onChange={(e) => setPersonalMessage(e.target.value)}
-                  rows={3}
-                  className="text-sm sm:text-base resize-none"
-                />
-              </div>
+              {/* ============ DESKTOP ACTION SECTION ============ */}
+              <div className="hidden lg:block space-y-4 mb-6 pb-6 border-b">
+                {/* Quantity Selector */}
+                <div className="flex items-center gap-4">
+                  <label className="text-sm font-medium">Quantité</label>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleQuantityChange(quantity - 1)}
+                      disabled={quantity <= 1}
+                    >
+                      <Minus className="w-4 h-4" />
+                    </Button>
+                    <span className="w-12 text-center font-medium">{quantity}</span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleQuantityChange(quantity + 1)}
+                      disabled={quantity >= (product.stock_quantity || 0)}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
 
-               {/* Action Buttons - Desktop */}
-              <div className="hidden lg:block space-y-4">
                 {/* Primary Action - Add to Cart */}
                 <div className="flex gap-3">
                   <Button
@@ -579,54 +620,41 @@ const ProductDetail = () => {
                   />
                 </div>
               </div>
+
+              {/* ============ DESCRIPTION & DETAILS - After action buttons ============ */}
+              
+              {/* Description */}
+              <div className="mb-4 sm:mb-6">
+                <h3 className="text-base sm:text-lg font-semibold mb-2">Description</h3>
+                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed break-words whitespace-pre-wrap">
+                  {product.description}
+                </p>
+              </div>
+
+              {/* Category */}
+              <div className="mb-4 sm:mb-6 flex flex-wrap items-center gap-2">
+                <span className="text-xs sm:text-sm text-muted-foreground">Catégorie:</span>
+                <Badge variant="secondary" className="text-xs sm:text-sm">{product.category}</Badge>
+              </div>
+
+              {/* Personal Message */}
+              <div className="mb-4 sm:mb-6">
+                <label className="block text-xs sm:text-sm font-medium mb-2">
+                  Message personnalisé (optionnel)
+                </label>
+                <Textarea
+                  placeholder="Ajoutez un message pour le vendeur..."
+                  value={personalMessage}
+                  onChange={(e) => setPersonalMessage(e.target.value)}
+                  rows={3}
+                  className="text-sm sm:text-base resize-none"
+                />
+              </div>
             </div>
           </div>
         </div>
       </main>
 
-      {/* Mobile Action Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-3 sm:p-4 z-50 safe-bottom">
-        <div className="space-y-2 sm:space-y-3 max-w-screen-md mx-auto">
-          {/* Quick Actions Row */}
-          <div className="flex gap-2">
-            <QuickOrderDialog
-              productId={product.id}
-              productTitle={product.title}
-              productPrice={salePrice}
-              sellerId={product.seller_id}
-              iconOnly={true}
-            />
-            <ContactSellerButton
-              productId={product.id}
-              sellerId={product.seller_id}
-              productTitle={product.title}
-              productPrice={salePrice}
-              productImage={productImage}
-              iconOnly={true}
-            />
-            <Button
-              variant="outline"
-              onClick={handleToggleFavorite}
-              className="px-3 sm:px-4 hover:scale-105 transition-transform min-w-[44px] min-h-[44px]"
-            >
-              <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${isFavorite(product.id) ? 'fill-current text-red-500' : ''}`} />
-            </Button>
-          </div>
-          
-          {/* Primary Add to Cart Button */}
-          <Button
-            onClick={handleAddToCart}
-            className="w-full h-11 sm:h-12 text-sm sm:text-base font-semibold shadow-lg"
-            disabled={!product.stock_quantity || product.stock_quantity === 0}
-          >
-            <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
-            <span className="truncate">Ajouter - {salePrice.toLocaleString()} FCFA</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* Mobile padding to prevent content being hidden behind action bar */}
-      <div className="lg:hidden h-32"></div>
 
       {/* Shop Info Section */}
       {shop && (

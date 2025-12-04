@@ -384,12 +384,14 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
           </div>
         </DialogHeader>
 
-        {/* Messages Area - Scrollable */}
-        <ScrollArea className="flex-1 px-4 sm:px-6">
-          <div className="space-y-4 py-4">
+        {/* Messages Area - Scrollable - Style messagerie moderne */}
+        <ScrollArea className="flex-1 px-3 sm:px-4 bg-gradient-to-b from-muted/5 to-muted/20">
+          <div className="space-y-3 py-4">
             {messages.map((message, index) => {
               const isMe = message.sender_id === user?.id;
               const showAvatar = index === 0 || messages[index - 1]?.sender_id !== message.sender_id;
+              const showTime = index === messages.length - 1 || 
+                messages[index + 1]?.sender_id !== message.sender_id;
               
               return (
                 <div
@@ -397,18 +399,18 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
                   className={`flex gap-2 ${isMe ? 'justify-end' : 'justify-start'} animate-fade-in`}
                 >
                   {!isMe && showAvatar && (
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                      <Store className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center shadow-sm border border-border/50">
+                      <Store className="h-4 w-4 text-primary" />
                     </div>
                   )}
-                  {!isMe && !showAvatar && <div className="w-8 flex-shrink-0" />}
+                  {!isMe && !showAvatar && <div className="w-9 flex-shrink-0" />}
                   
-                  <div className={`flex flex-col max-w-[75%] sm:max-w-[70%] ${isMe ? 'items-end' : 'items-start'}`}>
+                  <div className={`flex flex-col max-w-[80%] sm:max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
                     <div
-                      className={`px-4 py-3 rounded-2xl shadow-sm transition-all duration-200 ${
+                      className={`px-4 py-2.5 shadow-sm transition-all duration-200 ${
                         isMe
-                          ? 'bg-primary text-primary-foreground rounded-br-sm'
-                          : 'bg-muted border rounded-bl-sm'
+                          ? 'bg-gradient-to-br from-primary to-primary-hover text-primary-foreground rounded-2xl rounded-br-md'
+                          : 'bg-card border border-border/50 rounded-2xl rounded-bl-md'
                       }`}
                     >
                       {/* Message content */}

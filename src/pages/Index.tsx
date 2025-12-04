@@ -14,9 +14,7 @@ import { CategorySidebar } from "@/components/CategorySidebar";
 import { PopularCategories } from "@/components/PopularCategories";
 import { FeaturedProductsGrid } from "@/components/FeaturedProductsGrid";
 import { DynamicPromoBanner } from "@/components/DynamicPromoBanner";
-import { ScrollingAnnouncementBanner } from "@/components/ScrollingAnnouncementBanner";
-import { ShopPromoBanner } from "@/components/ShopPromoBanner";
-import { SellerPromoBanner } from "@/components/SellerPromoBanner";
+import { NativeAnnouncementSlider } from "@/components/NativeAnnouncementSlider";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -377,9 +375,11 @@ const Index = () => {
         </div>
       </header>
 
+      {/* Native Announcement Slider - Mobile App Style */}
+      <NativeAnnouncementSlider />
+
       {/* Main Content - Mobile optimized with smooth scroll */}
       <main className="container mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 max-w-[100vw] overflow-x-hidden">
-        {/* Offres Spéciales */}
         {specialOffersProducts.length > 0 && (
           <section className="mb-5 sm:mb-6 md:mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-3 sm:mb-4">
@@ -423,8 +423,6 @@ const Index = () => {
           <DynamicPromoBanner />
         </section>
 
-        {/* Bannière d'annonce défilante */}
-        <ShopPromoBanner />
 
         {/* Catégories populaires */}
         <section className="mb-5 sm:mb-6 md:mb-8">
@@ -488,14 +486,9 @@ const Index = () => {
           )}
         </section>
 
-        {/* Bannière Vendeur - Dynamique */}
-        <section className="mb-6 sm:mb-8" data-seller-upgrade>
-          <SellerPromoBanner />
-        </section>
+        {/* Section vendeur - data attribute conservé pour le scroll programmatique */}
+        <section className="mb-6 sm:mb-8" data-seller-upgrade />
       </main>
-
-      {/* Bandeau d'annonces défilantes */}
-      <ScrollingAnnouncementBanner />
 
       {/* FAQ Section - Hidden on mobile/tablet */}
       <div className="hidden md:block">

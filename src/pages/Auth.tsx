@@ -796,6 +796,17 @@ const Auth = () => {
               </form>
             ) : authMode === 'signup' ? (
               <form onSubmit={handleSignUp} className="space-y-4">
+                {/* Message d'erreur global (pour erreurs non-email) */}
+                {formError && !formError.toLowerCase().includes('email') && (
+                  <div className="flex items-start gap-3 p-4 bg-destructive/10 border border-destructive/30 rounded-xl animate-in fade-in-0 slide-in-from-top-2 duration-300">
+                    <div className="flex-shrink-0 w-8 h-8 bg-destructive/20 rounded-full flex items-center justify-center">
+                      <AlertCircle className="h-4 w-4 text-destructive" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-destructive">{formError}</p>
+                    </div>
+                  </div>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="lastName" className="text-sm md:text-base font-medium">Nom</Label>
                   <Input
@@ -831,11 +842,42 @@ const Auth = () => {
                     type="email"
                     placeholder="email@exemple.com"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (formError) setFormError('');
+                    }}
                     required
                     maxLength={255}
-                    className="h-12 md:h-12 text-base rounded-lg"
+                    className={`h-12 md:h-12 text-base rounded-lg ${formError && formError.toLowerCase().includes('email') ? 'border-destructive ring-2 ring-destructive/20' : ''}`}
                   />
+                  {/* Message d'erreur professionnel pour email existant */}
+                  {formError && formError.toLowerCase().includes('email') && (
+                    <div className="flex items-start gap-3 p-4 bg-destructive/10 border border-destructive/30 rounded-xl animate-in fade-in-0 slide-in-from-top-2 duration-300">
+                      <div className="flex-shrink-0 w-8 h-8 bg-destructive/20 rounded-full flex items-center justify-center">
+                        <AlertCircle className="h-4 w-4 text-destructive" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-destructive">
+                          Cet email est déjà associé à un compte
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Veuillez vous connecter ou utiliser un autre email.
+                        </p>
+                        <Button
+                          type="button"
+                          variant="link"
+                          className="h-auto p-0 text-xs text-primary font-medium mt-2 hover:underline"
+                          onClick={() => {
+                            setAuthMode('signin');
+                            setLoginIdentifier(email);
+                            setFormError('');
+                          }}
+                        >
+                          Se connecter →
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">

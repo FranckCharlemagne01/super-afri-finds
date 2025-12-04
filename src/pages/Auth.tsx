@@ -212,12 +212,32 @@ const Auth = () => {
         let errorMsg = signUpError.message || "Une erreur est survenue lors de l'inscription.";
         let errorTitle = "❌ Erreur d'inscription";
         
-        if (signUpError.message.includes('already registered') || signUpError.message.includes('already been registered')) {
-          errorMsg = 'Un compte avec cet email existe déjà. Essayez de vous connecter.';
+        // Détection complète des erreurs d'email existant (toutes les variantes Supabase)
+        const emailExistsPatterns = [
+          'already registered',
+          'already been registered',
+          'user already registered',
+          'email address has already been registered',
+          'user with this email',
+          'email already exists',
+          'duplicate key',
+          'unique constraint',
+          'already exists'
+        ];
+        
+        const isEmailExistsError = emailExistsPatterns.some(pattern => 
+          signUpError.message.toLowerCase().includes(pattern.toLowerCase())
+        );
+        
+        if (isEmailExistsError) {
+          errorMsg = 'Cet email possède déjà un compte. Veuillez vous connecter.';
           errorTitle = "⚠️ Compte existant";
         } else if (signUpError.message.includes('Invalid email')) {
           errorMsg = 'Veuillez saisir une adresse email valide.';
           errorTitle = "⚠️ Email invalide";
+        } else if (signUpError.message.includes('Password')) {
+          errorMsg = 'Le mot de passe ne respecte pas les exigences de sécurité.';
+          errorTitle = "⚠️ Mot de passe invalide";
         }
         
         setFormError(errorMsg);

@@ -3,6 +3,7 @@ import { useRef, useEffect } from "react";
 import { categories } from "@/data/categories";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 export const PopularCategories = () => {
   const navigate = useNavigate();
@@ -40,65 +41,68 @@ export const PopularCategories = () => {
   };
 
   return (
-    <div className="w-full py-6 bg-muted/30 rounded-xl">
-      <h2 className="text-xl md:text-2xl font-black mb-6 px-4 md:px-6 uppercase bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent drop-shadow-sm animate-fade-in">
+    <div className="w-full py-4 sm:py-5 bg-muted/20 rounded-2xl">
+      <h2 className="text-base sm:text-lg md:text-xl font-bold mb-4 px-3 sm:px-4 md:px-6 bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
         ✨ Explorez vos centres d'intérêt
       </h2>
-      <div className="relative group px-2">
+      <div className="relative group px-1">
         {/* Flèche gauche */}
-        <button
+        <motion.button
+          whileTap={{ scale: 0.9 }}
           onClick={scrollLeft}
           className={cn(
-            "absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white shadow-lg text-primary p-2 md:p-3 rounded-full transition-all",
-            "md:opacity-100 opacity-60 hover:scale-110 active:scale-95"
+            "absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/95 shadow-lg text-primary p-2 rounded-full transition-all",
+            "opacity-70 hover:opacity-100 active:scale-95"
           )}
           aria-label="Défiler vers la gauche"
         >
-          <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
-        </button>
+          <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+        </motion.button>
 
         {/* Flèche droite */}
-        <button
+        <motion.button
+          whileTap={{ scale: 0.9 }}
           onClick={scrollRight}
           className={cn(
-            "absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white shadow-lg text-primary p-2 md:p-3 rounded-full transition-all",
-            "md:opacity-100 opacity-60 hover:scale-110 active:scale-95"
+            "absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/95 shadow-lg text-primary p-2 rounded-full transition-all",
+            "opacity-70 hover:opacity-100 active:scale-95"
           )}
           aria-label="Défiler vers la droite"
         >
-          <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
-        </button>
+          <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+        </motion.button>
 
         <div
           ref={scrollRef}
-          className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-hide scroll-smooth px-8 md:px-10 touch-pan-x relative pb-2"
+          className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide scroll-smooth px-6 sm:px-8 md:px-10 touch-pan-x pb-2"
           style={{
             scrollbarWidth: "none",
             msOverflowStyle: "none",
             WebkitOverflowScrolling: "touch",
             scrollSnapType: "x proximity",
-            scrollBehavior: "smooth",
           }}
         >
           {categories.map((category, index) => {
             const Icon = category.icon;
             return (
-              <button
+              <motion.button
                 key={category.id}
+                whileTap={{ scale: 0.95 }}
+                whileHover={{ y: -2 }}
                 onClick={() => navigate(`/category/${category.slug}`)}
                 style={{ 
-                  animationDelay: `${index * 0.05}s`,
+                  animationDelay: `${index * 50}ms`,
                   scrollSnapAlign: "start"
                 }}
-                className="flex-shrink-0 flex flex-col items-center gap-2 p-4 min-w-[100px] sm:min-w-[110px] rounded-2xl bg-card border border-border/40 hover:border-primary/30 hover:bg-accent/20 transition-all duration-300 active:scale-95 hover:shadow-lg hover:-translate-y-1 hover:opacity-90 animate-fade-in"
+                className="flex-shrink-0 flex flex-col items-center gap-2 p-3 sm:p-4 min-w-[90px] sm:min-w-[100px] rounded-2xl bg-card border border-border/30 hover:border-primary/20 hover:bg-accent/10 transition-all duration-200 shadow-sm hover:shadow-md animate-fade-in"
               >
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center shadow-sm border border-primary/10">
-                  <Icon className="w-7 h-7 sm:w-8 sm:h-8 text-primary" />
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center shadow-sm border border-primary/10">
+                  <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
                 </div>
-                <span className="text-xs sm:text-sm font-semibold text-center line-clamp-2" style={{ color: "#1A1A1A" }}>
+                <span className="text-[10px] sm:text-xs font-medium text-center line-clamp-2 text-foreground">
                   {category.name}
                 </span>
-              </button>
+              </motion.button>
             );
           })}
         </div>

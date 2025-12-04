@@ -206,6 +206,7 @@ const Auth = () => {
       console.log('🟢 [SIGNUP] Erreur:', signUpError);
       console.log('🟢 [SIGNUP] Données:', signUpData);
       
+      // Gestion des erreurs explicites de Supabase
       if (signUpError) {
         console.error('❌ [SIGNUP] Erreur Supabase détectée:', signUpError.message);
         
@@ -222,7 +223,10 @@ const Auth = () => {
           'email already exists',
           'duplicate key',
           'unique constraint',
-          'already exists'
+          'already exists',
+          'email_exists',
+          'user_already_exists',
+          'rate limit exceeded'
         ];
         
         const isEmailExistsError = emailExistsPatterns.some(pattern => 
@@ -250,7 +254,42 @@ const Auth = () => {
         return;
       }
 
-      console.log('✅ [SIGNUP] Inscription réussie! Affichage message de confirmation');
+      // IMPORTANT: Supabase retourne un "succès" même si l'email existe déjà
+      // Pour des raisons de sécurité (anti-énumération), il faut vérifier les identities
+      // Si identities est vide ou null, cela signifie que l'email existe déjà
+      const userIdentities = signUpData?.user?.identities;
+      const hasNoIdentities = !userIdentities || userIdentities.length === 0;
+      
+      if (hasNoIdentities && signUpData?.user) {
+        console.warn('⚠️ [SIGNUP] Email déjà existant détecté (identities vides)');
+        
+        const errorMsg = 'Cet email possède déjà un compte. Veuillez vous connecter.';
+        setFormError(errorMsg);
+        toast({
+          title: "⚠️ Compte existant",
+          description: errorMsg,
+          variant: "destructive",
+          duration: 6000,
+        });
+        return;
+      }
+
+      // Vérification supplémentaire: si pas de user du tout, c'est une erreur
+      if (!signUpData?.user) {
+        console.error('❌ [SIGNUP] Aucun utilisateur créé');
+        
+        const errorMsg = "Une erreur est survenue lors de l'inscription. Veuillez réessayer.";
+        setFormError(errorMsg);
+        toast({
+          title: "❌ Erreur d'inscription",
+          description: errorMsg,
+          variant: "destructive",
+          duration: 6000,
+        });
+        return;
+      }
+
+      console.log('✅ [SIGNUP] Inscription réussie! Nouvel utilisateur créé avec identities:', userIdentities);
 
       // Succès - afficher le message de vérification
       setOtpEmail(email);

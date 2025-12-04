@@ -317,31 +317,31 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-8">
+    <div className="min-h-screen bg-background pb-20 md:pb-8 overflow-x-hidden">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center gap-3">
-            {/* Logo Djassa - Always visible, no lines behind */}
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-border/50">
+        <div className="container mx-auto px-3 sm:px-4 py-2.5 sm:py-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Logo Djassa */}
             <h1 
-              className="text-lg md:text-xl lg:text-2xl font-bold gradient-text-primary cursor-pointer transition-transform hover:scale-105 whitespace-nowrap" 
+              className="text-lg sm:text-xl lg:text-2xl font-bold gradient-text-primary cursor-pointer transition-transform active:scale-95 whitespace-nowrap" 
               onClick={handleLogoClick}
             >
               Djassa
             </h1>
             
-            {/* Search Bar - Full width on mobile/tablet, limited on desktop */}
+            {/* Search Bar */}
             <div className="flex-1 md:max-w-md">
               <SearchBar placeholder="Rechercher des produits..." />
             </div>
             
             {/* Mobile/Tablet Help Button & Info Menu */}
-            <div className="md:hidden flex items-center gap-1">
+            <div className="md:hidden flex items-center gap-0.5">
               <HelpButton />
               <MobileInfoDrawer />
             </div>
 
-            {/* Desktop Icons Only - Hidden on mobile/tablet */}
+            {/* Desktop Icons Only */}
             <div className="hidden md:flex items-center gap-2">
               <Badge className="gradient-accent text-xs px-2 py-1">
                 {userCountry}
@@ -377,31 +377,40 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Main Content - Optimized for mobile/tablet */}
-      <main className="container mx-auto px-4 sm:px-6 py-4 sm:py-6 max-w-[100vw] overflow-x-hidden">
-        {/* Offres Spéciales - Produits boostés et ventes flash */}
+      {/* Main Content - Mobile optimized with smooth scroll */}
+      <main className="container mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 max-w-[100vw] overflow-x-hidden">
+        {/* Offres Spéciales */}
         {specialOffersProducts.length > 0 && (
-          <section className="mb-6 sm:mb-8 animate-slide-up">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3 sm:mb-4 px-1">
+          <section className="mb-5 sm:mb-6 md:mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-3 sm:mb-4">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 gradient-primary rounded-full flex items-center justify-center animate-pulse">
-                  <span className="text-white text-sm sm:text-lg">⚡</span>
+                <div className="w-7 h-7 sm:w-8 sm:h-8 gradient-primary rounded-xl flex items-center justify-center animate-pulse shadow-md">
+                  <span className="text-white text-sm sm:text-base">⚡</span>
                 </div>
-                <h2 className="text-lg sm:text-xl font-bold text-foreground">Offres Spéciales</h2>
+                <h2 className="text-base sm:text-lg md:text-xl font-bold text-foreground">Offres Spéciales</h2>
               </div>
-              <Badge className="bg-promo text-promo-foreground animate-pulse-promo w-fit">
+              <Badge className="bg-promo text-promo-foreground animate-pulse-promo w-fit text-[10px] sm:text-xs rounded-lg">
                 Limitées dans le temps
               </Badge>
               <div className="sm:ml-auto">
-                <Button variant="ghost" size="sm" onClick={() => navigate('/flash-sales')} className="text-xs sm:text-sm hover:text-primary transition-all hover:scale-105">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => navigate('/flash-sales')} 
+                  className="text-xs hover:text-primary transition-colors px-2 h-8 active:scale-95"
+                >
                   Voir tout →
                 </Button>
               </div>
             </div>
             
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 md:gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5 sm:gap-3 md:gap-4">
               {specialOffersProducts.slice(0, 12).map((product, index) => (
-                <div key={product.id} style={{ animationDelay: `${index * 0.05}s` }} className="animate-fade-in">
+                <div 
+                  key={product.id} 
+                  className="animate-fade-in"
+                  style={{ animationDelay: `${index * 40}ms` }}
+                >
                   <ProductCard {...convertToProductCardProps(product)} />
                 </div>
               ))}
@@ -418,44 +427,56 @@ const Index = () => {
         <ShopPromoBanner />
 
         {/* Catégories populaires */}
-        <section className="mb-6 sm:mb-8 animate-slide-up">
+        <section className="mb-5 sm:mb-6 md:mb-8">
           <PopularCategories />
         </section>
 
-        {/* Produits Recommandés - Grille */}
-        <section className="mb-6 sm:mb-8 animate-slide-up">
-          <div className="flex items-center justify-between mb-3 sm:mb-4 px-1">
-            <h2 className="text-lg sm:text-xl font-bold text-foreground">Recommandés pour vous</h2>
-            <Button variant="ghost" size="sm" onClick={handleRefreshRecommendations} className="text-xs sm:text-sm hover:text-primary transition-all hover:scale-105">
+        {/* Produits Recommandés */}
+        <section className="mb-5 sm:mb-6 md:mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base sm:text-lg md:text-xl font-bold text-foreground">Recommandés pour vous</h2>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleRefreshRecommendations} 
+              className="text-xs hover:text-primary transition-colors px-2 h-8 active:scale-95"
+            >
               Actualiser
             </Button>
           </div>
           
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 md:gap-5" key={refreshKey}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5 sm:gap-3 md:gap-4" key={refreshKey}>
             {shuffledProducts.slice(0, 12).map((product, index) => (
-              <div key={`${product.id}-${refreshKey}`} style={{ animationDelay: `${index * 0.05}s` }} className="animate-fade-in">
+              <div 
+                key={`${product.id}-${refreshKey}`} 
+                className="animate-fade-in"
+                style={{ animationDelay: `${index * 40}ms` }}
+              >
                 <ProductCard {...convertToProductCardProps(product)} />
               </div>
             ))}
           </div>
         </section>
 
-
         {/* Tendances du moment */}
-        <section className="mb-6 sm:mb-8 animate-slide-up">
-          <div className="flex items-center justify-between mb-3 sm:mb-4 px-1">
-            <h2 className="text-lg sm:text-xl font-bold text-foreground">
+        <section className="mb-5 sm:mb-6 md:mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base sm:text-lg md:text-xl font-bold text-foreground">
               Tendances du moment
             </h2>
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="outline" className="text-[10px] sm:text-xs rounded-lg">
               {regularProducts.length} produits
             </Badge>
           </div>
           
           {regularProducts.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 md:gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5 sm:gap-3 md:gap-4">
               {regularProducts.map((product, index) => (
-                <div key={product.id} style={{ animationDelay: `${index * 0.05}s` }} className="animate-fade-in">
+                <div 
+                  key={product.id} 
+                  className="animate-fade-in"
+                  style={{ animationDelay: `${index * 40}ms` }}
+                >
                   <ProductCard {...convertToProductCardProps(product)} />
                 </div>
               ))}

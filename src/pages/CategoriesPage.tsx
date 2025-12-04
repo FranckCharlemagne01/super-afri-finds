@@ -143,31 +143,40 @@ export const CategoriesPage = () => {
 
         {/* Layout à deux colonnes */}
         <div className="flex flex-1 overflow-hidden">
-          {/* Sidebar gauche - Catégories (22% pour laisser plus d'espace aux produits) */}
-          <ScrollArea className="w-[22%] border-r bg-muted/20">
-            <div className="py-1">
-              {/* Option "Tous les produits" */}
+          {/* Sidebar gauche - Catégories mobile native */}
+          <ScrollArea className="w-[25%] border-r bg-card shadow-sm">
+            <div className="py-2 px-1">
+              {/* Option "Tous les produits" - Style carte mobile */}
               <button
                 onClick={() => {
                   setSelectedCategory(null);
                   setSearchQuery("");
                 }}
                 className={cn(
-                  "w-full px-1.5 py-3 text-left transition-all duration-200 border-l-4 active:scale-95 touch-manipulation",
+                  "w-full mb-1.5 p-2.5 rounded-xl transition-all duration-200 active:scale-95 touch-manipulation",
                   selectedCategory === null
-                    ? "bg-primary/15 border-primary text-primary font-semibold"
-                    : "border-transparent hover:bg-muted/50 text-muted-foreground active:bg-muted"
+                    ? "bg-primary text-primary-foreground shadow-md"
+                    : "bg-muted/40 hover:bg-muted/60 text-muted-foreground"
                 )}
               >
-                <div className="flex flex-col items-center gap-1">
-                  <span className="text-[11px] leading-tight font-semibold">Tous</span>
-                  <span className="text-[9px] text-muted-foreground font-medium">
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className={cn(
+                    "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
+                    selectedCategory === null ? "bg-white/20" : "bg-primary/10"
+                  )}>
+                    <span className="text-lg">🛍️</span>
+                  </div>
+                  <span className="text-[10px] leading-tight font-bold">Tous</span>
+                  <span className={cn(
+                    "text-[9px] font-medium px-1.5 py-0.5 rounded-full",
+                    selectedCategory === null ? "bg-white/20" : "bg-primary/10"
+                  )}>
                     {products.length}
                   </span>
                 </div>
               </button>
 
-              {/* Liste des catégories - Affiche toutes les catégories */}
+              {/* Liste des catégories - Style carte mobile native */}
               {categories.map((category) => {
                 const Icon = category.icon;
                 const categoryProductCount = products.filter((product) => {
@@ -182,18 +191,26 @@ export const CategoriesPage = () => {
                       setSearchQuery("");
                     }}
                     className={cn(
-                      "w-full px-1.5 py-3 text-left transition-all duration-200 border-l-4 active:scale-95 touch-manipulation",
+                      "w-full mb-1.5 p-2.5 rounded-xl transition-all duration-200 active:scale-95 touch-manipulation",
                       selectedCategory === category.id
-                        ? "bg-primary/15 border-primary text-primary font-semibold"
-                        : "border-transparent hover:bg-muted/50 text-muted-foreground active:bg-muted"
+                        ? "bg-primary text-primary-foreground shadow-md"
+                        : "bg-muted/40 hover:bg-muted/60 text-muted-foreground"
                     )}
                   >
-                    <div className="flex flex-col items-center gap-1">
-                      <Icon className="w-6 h-6 transition-transform" />
-                      <span className="text-[9px] leading-tight text-center line-clamp-2 font-semibold px-0.5">
+                    <div className="flex flex-col items-center gap-1.5">
+                      <div className={cn(
+                        "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
+                        selectedCategory === category.id ? "bg-white/20" : "bg-primary/10"
+                      )}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <span className="text-[10px] leading-tight text-center line-clamp-2 font-bold px-0.5">
                         {category.name}
                       </span>
-                      <span className="text-[9px] text-muted-foreground font-medium">
+                      <span className={cn(
+                        "text-[9px] font-medium px-1.5 py-0.5 rounded-full",
+                        selectedCategory === category.id ? "bg-white/20" : "bg-primary/10"
+                      )}>
                         {categoryProductCount}
                       </span>
                     </div>

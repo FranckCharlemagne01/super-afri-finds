@@ -178,70 +178,79 @@ export const BuyerMessages = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <h2 className="text-xl font-semibold">Mes Conversations</h2>
-        <Badge variant="secondary">
-          {threads.length} conversation{threads.length > 1 ? 's' : ''}
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <h2 className="text-lg font-bold">Mes Conversations</h2>
+        <Badge variant="secondary" className="rounded-full px-2.5 py-0.5">
+          {threads.length}
         </Badge>
       </div>
 
       {threads.length === 0 ? (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">Aucune conversation.</p>
-            <p className="text-sm text-muted-foreground mt-2">
-              Contactez les vendeurs depuis les fiches produits pour commencer une conversation.
+        <Card className="native-card">
+          <CardContent className="p-10 text-center">
+            <div className="w-16 h-16 mx-auto bg-muted/50 rounded-full flex items-center justify-center mb-4">
+              <MessageSquare className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <p className="font-medium text-foreground mb-1">Aucune conversation</p>
+            <p className="text-sm text-muted-foreground">
+              Contactez les vendeurs depuis les fiches produits
             </p>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-2">
           {threads.map((thread) => {
             const unreadCount = getUnreadCount(thread);
             return (
               <Card
                 key={`${thread.product_id}-${thread.seller_id}`}
-                className={`cursor-pointer transition-colors hover:bg-muted/50 hover:shadow-md ${
-                  unreadCount > 0 ? 'border-primary' : ''
+                className={`native-card cursor-pointer active:scale-[0.99] transition-all ${
+                  unreadCount > 0 ? 'border-primary/50 bg-primary/5' : ''
                 }`}
                 onClick={() => handleThreadClick(thread)}
               >
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Store className="h-4 w-4" />
-                      <span className="font-medium">
-                        {thread.seller_profile?.full_name || 
-                         thread.seller_profile?.email || 
-                         'Vendeur'}
-                      </span>
-                      {unreadCount > 0 && (
-                        <Badge variant="destructive" className="text-xs">
-                          {unreadCount} nouveau{unreadCount > 1 ? 'x' : ''}
-                        </Badge>
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    {/* Avatar */}
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center flex-shrink-0">
+                      <Store className="h-5 w-5 text-primary" />
+                    </div>
+                    
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-semibold text-foreground truncate">
+                          {thread.seller_profile?.full_name || 
+                           thread.seller_profile?.email || 
+                           'Vendeur'}
+                        </span>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {unreadCount > 0 && (
+                            <Badge className="bg-primary text-primary-foreground text-xs rounded-full px-2 h-5">
+                              {unreadCount}
+                            </Badge>
+                          )}
+                          <span className="text-xs text-muted-foreground">
+                            {format(new Date(thread.latest_message.created_at), 'dd MMM', { locale: fr })}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {thread.product && (
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5">
+                          <Package className="h-3 w-3 flex-shrink-0" />
+                          <span className="truncate">{thread.product.title}</span>
+                        </div>
                       )}
+                      
+                      <p className={`text-sm line-clamp-1 ${
+                        unreadCount > 0 ? 'text-foreground font-medium' : 'text-muted-foreground'
+                      }`}>
+                        {thread.latest_message.content}
+                      </p>
                     </div>
-                    <span className="text-xs text-muted-foreground">
-                      {format(new Date(thread.latest_message.created_at), 'dd MMM', { locale: fr })}
-                    </span>
                   </div>
-                  {thread.product && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Package className="h-3 w-3" />
-                      <span className="truncate">{thread.product.title}</span>
-                    </div>
-                  )}
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                    {thread.latest_message.content}
-                  </p>
-                  <Button variant="outline" size="sm" className="w-full">
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    Ouvrir le chat
-                  </Button>
                 </CardContent>
               </Card>
             );

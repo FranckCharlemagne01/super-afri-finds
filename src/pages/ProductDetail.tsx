@@ -496,26 +496,26 @@ const ProductDetail = () => {
                 </span>
               </div>
 
-              {/* ============ MOBILE ACTION SECTION - Immediately visible ============ */}
+              {/* ============ MOBILE ACTION SECTION - Style app native ============ */}
               <div className="lg:hidden space-y-3 mb-4 pb-4 border-b">
-                {/* Quantity Selector - Compact Mobile */}
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">Quantité</label>
-                  <div className="flex items-center gap-2">
+                {/* Quantity Selector - Compact Mobile Native */}
+                <div className="flex items-center justify-between bg-muted/30 p-3 rounded-xl">
+                  <label className="text-sm font-semibold text-foreground">Quantité</label>
+                  <div className="flex items-center gap-1 bg-card rounded-xl shadow-sm border border-border/50 overflow-hidden">
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="icon"
-                      className="h-9 w-9"
+                      className="h-10 w-10 rounded-none hover:bg-muted/50 active:scale-95 transition-transform"
                       onClick={() => handleQuantityChange(quantity - 1)}
                       disabled={quantity <= 1}
                     >
                       <Minus className="w-4 h-4" />
                     </Button>
-                    <span className="w-10 text-center font-semibold">{quantity}</span>
+                    <span className="w-12 text-center font-bold text-lg tabular-nums">{quantity}</span>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="icon"
-                      className="h-9 w-9"
+                      className="h-10 w-10 rounded-none hover:bg-muted/50 active:scale-95 transition-transform"
                       onClick={() => handleQuantityChange(quantity + 1)}
                       disabled={quantity >= (product.stock_quantity || 0)}
                     >
@@ -524,10 +524,10 @@ const ProductDetail = () => {
                   </div>
                 </div>
 
-                {/* Mobile Action Buttons - Full Width, Stacked */}
+                {/* Mobile Action Buttons - Style app native */}
                 <Button
                   onClick={handleAddToCart}
-                  className="w-full h-12 text-base font-semibold shadow-md"
+                  className="w-full h-14 text-base font-bold shadow-lg rounded-xl active:scale-[0.98] transition-transform"
                   disabled={!product.stock_quantity || product.stock_quantity === 0}
                 >
                   <ShoppingCart className="w-5 h-5 mr-2" />
@@ -535,23 +535,27 @@ const ProductDetail = () => {
                 </Button>
 
                 <div className="flex gap-2">
-                  <QuickOrderDialog
-                    productId={product.id}
-                    productTitle={product.title}
-                    productPrice={salePrice}
-                    sellerId={product.seller_id}
-                  />
-                  <ContactSellerButton
-                    productId={product.id}
-                    sellerId={product.seller_id}
-                    productTitle={product.title}
-                    productPrice={salePrice}
-                    productImage={productImage}
-                  />
+                  <div className="flex-1">
+                    <QuickOrderDialog
+                      productId={product.id}
+                      productTitle={product.title}
+                      productPrice={salePrice}
+                      sellerId={product.seller_id}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <ContactSellerButton
+                      productId={product.id}
+                      sellerId={product.seller_id}
+                      productTitle={product.title}
+                      productPrice={salePrice}
+                      productImage={productImage}
+                    />
+                  </div>
                   <Button
                     variant="outline"
                     onClick={handleToggleFavorite}
-                    className="h-11 px-4"
+                    className="h-12 w-12 rounded-xl shadow-sm active:scale-95 transition-transform flex-shrink-0"
                   >
                     <Heart className={`w-5 h-5 ${isFavorite(product.id) ? 'fill-current text-red-500' : ''}`} />
                   </Button>

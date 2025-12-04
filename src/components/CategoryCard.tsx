@@ -1,4 +1,5 @@
 import { LucideIcon } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface CategoryCardProps {
   icon?: LucideIcon;
@@ -18,12 +19,16 @@ export const CategoryCard = ({
   onClick 
 }: CategoryCardProps) => {
   if (image) {
-    // New image-based design for realistic product presentation
+    // Mobile-native image-based design
     return (
-      <div 
-        className="relative overflow-hidden rounded-lg sm:rounded-xl hover-lift cursor-pointer transition-all duration-300 group animate-fade-in"
+      <motion.div 
+        className="relative overflow-hidden rounded-2xl cursor-pointer group shadow-md border border-border/20 bg-card"
         onClick={onClick}
-        style={{ transform: 'scale(0.85)' }}
+        whileTap={{ scale: 0.96 }}
+        whileHover={{ scale: 1.02 }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
       >
         <div className="aspect-square relative">
           <img
@@ -31,32 +36,36 @@ export const CategoryCard = ({
             alt={title}
             loading="lazy"
             decoding="async"
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 group-hover:rotate-1"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent transition-opacity duration-300 group-hover:from-black/80" />
-          <div className="absolute bottom-0 left-0 right-0 p-1 sm:p-1.5 text-center transition-transform duration-300 group-hover:translate-y-[-2px]">
-            <h3 className="text-[11px] sm:text-xs font-semibold text-white mb-0.5 line-clamp-2 leading-tight">{title}</h3>
-            <p className="text-[9px] sm:text-[10px] text-white/80">{itemCount} articles</p>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-3 text-center">
+            <h3 className="text-sm font-bold text-white mb-1 line-clamp-2 leading-tight drop-shadow-md">{title}</h3>
+            <p className="text-xs text-white/90 font-medium">{itemCount} articles</p>
           </div>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
-  // Fallback to icon-based design
+  // Mobile-native icon-based design
   return (
-    <div 
-      className={`${bgColor || 'bg-primary'} p-2 sm:p-2.5 rounded-lg hover-lift cursor-pointer transition-all duration-300 animate-fade-in`}
+    <motion.div 
+      className={`${bgColor || 'bg-gradient-to-br from-primary to-primary-hover'} p-4 rounded-2xl cursor-pointer shadow-md border border-white/10`}
       onClick={onClick}
-      style={{ transform: 'scale(0.85)' }}
+      whileTap={{ scale: 0.96 }}
+      whileHover={{ scale: 1.02 }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
     >
-      <div className="flex flex-col items-center text-center space-y-1">
-        <div className="p-1.5 bg-white/20 rounded-full">
-          {Icon && <Icon className="w-3.5 h-3.5 text-white" />}
+      <div className="flex flex-col items-center text-center space-y-2">
+        <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+          {Icon && <Icon className="w-6 h-6 text-white" />}
         </div>
-        <h3 className="text-[11px] font-semibold text-white">{title}</h3>
-        <p className="text-[9px] text-white/80">{itemCount} articles</p>
+        <h3 className="text-sm font-bold text-white">{title}</h3>
+        <p className="text-xs text-white/80 font-medium">{itemCount} articles</p>
       </div>
-    </div>
+    </motion.div>
   );
 };

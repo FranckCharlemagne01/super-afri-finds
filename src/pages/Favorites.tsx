@@ -68,64 +68,74 @@ export default function Favorites() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white shadow-lg border-b">
+    <div className="min-h-screen bg-background page-transition">
+      {/* Header - Style mobile native */}
+      <header className="native-header">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => navigate('/')}
+              className="rounded-xl h-11 w-11 active:scale-95 transition-transform"
+            >
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <h1 className="text-xl font-bold text-foreground">Mes Favoris</h1>
-            <Badge className="bg-promo text-promo-foreground">
-              {favoriteIds.length} favori{favoriteIds.length > 1 ? 's' : ''}
+            <Badge className="bg-primary text-primary-foreground rounded-full px-3 py-1">
+              {favoriteIds.length}
             </Badge>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-4 py-4 pb-24">
         {loading ? (
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-2 text-muted-foreground">Chargement...</p>
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-3 text-muted-foreground">Chargement...</p>
           </div>
         ) : favoriteProducts.length === 0 ? (
-          <div className="text-center py-12">
-            <Heart className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-            <h2 className="text-xl font-semibold text-foreground mb-2">Aucun favori pour le moment</h2>
-            <p className="text-muted-foreground mb-6">
+          <div className="text-center py-16">
+            <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">
+              <Heart className="w-10 h-10 text-primary" />
+            </div>
+            <h2 className="text-xl font-bold text-foreground mb-2">Aucun favori</h2>
+            <p className="text-muted-foreground mb-6 max-w-xs mx-auto">
               Découvrez nos produits et ajoutez-les à vos favoris
             </p>
-            <Button onClick={() => navigate('/')}>
+            <Button 
+              onClick={() => navigate('/')}
+              className="rounded-xl h-12 px-6 font-semibold active:scale-95 transition-transform"
+            >
               Découvrir les produits
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {favoriteProducts.map((product) => (
-              <Card key={product.id} className="relative overflow-hidden hover-lift cursor-pointer border-0 shadow-lg">
-                {/* Heart Icon */}
+              <Card key={product.id} className="native-card relative overflow-hidden">
+                {/* Heart Icon - Style app native */}
                 <button 
                   onClick={(e) => {
                     e.stopPropagation();
                     toggleFavorite(product.id);
                   }}
-                  className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
+                  className="absolute top-2 right-2 z-10 p-2 rounded-full bg-white/90 shadow-sm active:scale-90 transition-transform"
                 >
-                  <Heart className="w-4 h-4 text-promo fill-current" />
+                  <Heart className="w-5 h-5 text-primary fill-current" />
                 </button>
 
                 {/* Badges */}
                 <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
                   {product.badge && (
-                    <Badge className="bg-success text-success-foreground text-xs px-2 py-1">
+                    <Badge className="bg-success text-success-foreground text-xs px-2 py-1 rounded-lg">
                       {product.badge}
                     </Badge>
                   )}
                   {product.discount_percentage && product.discount_percentage > 0 && (
-                    <Badge className="bg-promo text-promo-foreground text-xs px-2 py-1 font-bold">
+                    <Badge className="bg-primary text-primary-foreground text-xs px-2 py-1 font-bold rounded-lg">
                       -{product.discount_percentage}%
                     </Badge>
                   )}
@@ -133,20 +143,20 @@ export default function Favorites() {
 
                 {/* Product Image */}
                 <div 
-                  className="relative aspect-square overflow-hidden bg-muted cursor-pointer"
+                  className="relative aspect-square overflow-hidden bg-muted cursor-pointer active:opacity-80 transition-opacity"
                   onClick={() => handleProductClick(product.id)}
                 >
                   <img
                     src={product.images?.[0] || "/placeholder.svg"}
                     alt={product.title}
-                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                    className="w-full h-full object-cover"
                   />
                 </div>
 
                 {/* Product Info */}
                 <div className="p-3 space-y-2">
                   <h3 
-                    className="text-sm font-medium text-foreground line-clamp-2 leading-tight cursor-pointer"
+                    className="text-sm font-semibold text-foreground line-clamp-2 leading-tight cursor-pointer active:opacity-70"
                     onClick={() => handleProductClick(product.id)}
                   >
                     {product.title}
@@ -158,10 +168,10 @@ export default function Favorites() {
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
-                          className={`w-3 h-3 ${
+                          className={`w-3.5 h-3.5 ${
                             i < Math.floor(product.rating || 0)
                               ? "text-accent fill-current"
-                              : "text-muted-foreground"
+                              : "text-muted-foreground/40"
                           }`}
                         />
                       ))}
@@ -170,22 +180,21 @@ export default function Favorites() {
                   </div>
                   
                   {/* Price */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg font-bold text-promo">
+                  <div className="flex flex-wrap items-baseline gap-1.5">
+                    <span className="text-base font-bold text-primary tabular-nums">
                       {product.price.toLocaleString()} FCFA
                     </span>
                     {product.original_price && product.original_price > product.price && (
-                      <span className="text-sm text-muted-foreground line-through">
-                        {product.original_price.toLocaleString()} FCFA
+                      <span className="text-xs text-muted-foreground line-through tabular-nums">
+                        {product.original_price.toLocaleString()}
                       </span>
                     )}
                   </div>
 
-                  {/* Action Button */}
+                  {/* Action Button - Style app native */}
                   <Button 
-                    variant="promo" 
                     size="sm" 
-                    className="w-full"
+                    className="w-full h-11 rounded-xl font-semibold active:scale-95 transition-transform"
                     onClick={(e) => {
                       e.stopPropagation();
                       addToCart(product.id);
@@ -195,8 +204,8 @@ export default function Favorites() {
                       });
                     }}
                   >
-                    <ShoppingCart className="w-4 h-4" />
-                    Ajouter au panier
+                    <ShoppingCart className="w-4 h-4 mr-1.5" />
+                    Ajouter
                   </Button>
                 </div>
               </Card>

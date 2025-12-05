@@ -2,3 +2,15 @@ project_id = "zqskpspbyzptzjcoitwt"
 
 [functions.cleanup-broken-images]
 verify_jwt = false
+
+[functions.subscription-payment]
+verify_jwt = false
+
+[functions.paystack-config]
+verify_jwt = false
+
+[functions.paystack-payment]
+verify_jwt = false
+
+[functions.send-push-notification]
+verify_jwt = false

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useStableAuth } from '@/hooks/useStableAuth';
 import { useStableRole } from '@/hooks/useStableRole';
-import { useTrialStatus } from '@/hooks/useTrialStatus';
+import { useSellerAccess } from '@/hooks/useSellerAccess';
 import { useStableData } from '@/hooks/useStableData';
 import { useTokens } from '@/hooks/useTokens';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,6 +16,8 @@ import { ShopSettingsTab } from '@/components/seller/ShopSettingsTab';
 import { SellerDashboardSkeleton } from '@/components/seller/SellerDashboardSkeleton';
 import { RealtimeOrdersNotification } from '@/components/RealtimeOrdersNotification';
 import { RealtimeMessagesNotification } from '@/components/RealtimeMessagesNotification';
+import { TrialBanner } from '@/components/TrialBanner';
+import { SubscriptionRequired } from '@/components/SubscriptionRequired';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Store, Package, MessageSquare, Coins, Settings } from 'lucide-react';
@@ -56,7 +58,7 @@ interface Shop {
 const SellerDashboard = () => {
   const { user, signOut, userId } = useStableAuth();
   const { isSeller, isSuperAdmin, loading: roleLoading, refreshRole } = useStableRole();
-  const trialStatus = useTrialStatus();
+  const sellerAccess = useSellerAccess();
   const { tokenBalance, freeTokens, paidTokens, freeTokensExpiresAt, refreshBalance } = useTokens();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -127,7 +129,7 @@ const SellerDashboard = () => {
       return;
     }
     
-    // Check for payment success
+    // Check for payment success (token purchase)
     const urlParams = new URLSearchParams(window.location.search);
     const paymentStatus = urlParams.get('payment');
     const reference = urlParams.get('reference');
@@ -136,7 +138,58 @@ const SellerDashboard = () => {
       verifyPayment(reference);
       window.history.replaceState({}, document.title, '/seller-dashboard');
     }
+
+    // Check for subscription payment
+    const subscriptionPayment = urlParams.get('subscription_payment');
+    const subscriptionRef = urlParams.get('reference');
+    
+    if (subscriptionPayment === 'verify' && subscriptionRef) {
+      verifySubscription(subscriptionRef);
+      window.history.replaceState({}, document.title, '/seller-dashboard');
+    }
   }, [userId, isSeller, isSuperAdmin, roleLoading, navigate]);
+
+  const verifySubscription = async (reference: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('subscription-payment', {
+        body: {
+          action: 'verify',
+          user_id: userId,
+          reference
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        if (data.is_test) {
+          toast({
+            title: "🧪 Mode Test",
+            description: data.message || "Paiement simulé - abonnement non activé",
+          });
+        } else {
+          toast({
+            title: "🎉 Abonnement activé !",
+            description: "Votre abonnement vendeur est maintenant actif",
+          });
+          sellerAccess.refresh();
+        }
+      } else {
+        toast({
+          title: "Erreur",
+          description: data?.error || "Paiement non vérifié",
+          variant: "destructive",
+        });
+      }
+    } catch (err: any) {
+      console.error('Subscription verification error:', err);
+      toast({
+        title: "Erreur",
+        description: "Impossible de vérifier le paiement",
+        variant: "destructive",
+      });
+    }
+  };
 
   const verifyPayment = async (reference: string) => {
     try {
@@ -157,7 +210,6 @@ const SellerDashboard = () => {
         return;
       }
 
-      // Check if edge function returned an error response
       if (data && !data.success && data.status !== 'success') {
         console.error('Payment verification failed:', data.error);
         toast({
@@ -169,23 +221,19 @@ const SellerDashboard = () => {
       }
 
       if (data?.status === 'success' || data?.success) {
-        // Vérifier si c'est un paiement test ou live
         const isTestMode = data?.test_mode === true;
         
         if (isTestMode) {
-          // MODE TEST: Afficher un avertissement clair
           toast({
             title: "🧪 Mode Test - Paiement simulé",
             description: data.message || "Vous êtes en mode test : aucun crédit réel n'a été ajouté.",
             variant: "default",
           });
         } else {
-          // MODE LIVE: Paiement réel réussi
           toast({
             title: "🎉 Paiement réussi !",
             description: data.message || "Vos jetons ont été ajoutés à votre compte !",
           });
-          // Rafraîchir uniquement si c'est un vrai paiement
           refetchProducts();
           refreshBalance();
         }
@@ -205,21 +253,25 @@ const SellerDashboard = () => {
     refetchShop();
     refreshBalance();
     refreshRole();
-  }, [refetchProducts, refetchShop, refreshBalance, refreshRole]);
+    sellerAccess.refresh();
+  }, [refetchProducts, refetchShop, refreshBalance, refreshRole, sellerAccess]);
 
   const handlePublishProduct = useCallback(() => {
     setActiveTab('products');
     setOpenProductForm(true);
   }, []);
 
-  if (roleLoading || !userId || shopLoading) {
+  // Show loading state
+  if (roleLoading || !userId || shopLoading || sellerAccess.loading) {
     return <SellerDashboardSkeleton />;
   }
 
+  // Redirect superadmin
   if (isSuperAdmin) {
     return null;
   }
 
+  // Non-seller access
   if (!isSeller && !roleLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background flex items-center justify-center">
@@ -236,6 +288,26 @@ const SellerDashboard = () => {
     );
   }
 
+  // 🔒 SUBSCRIPTION WALL: Block access if trial expired and no subscription
+  if (!sellerAccess.canAccess) {
+    return (
+      <SubscriptionRequired 
+        userEmail={user?.email || ''} 
+        userId={userId}
+        onSubscriptionSuccess={() => sellerAccess.refresh()}
+      />
+    );
+  }
+
+  // Create trial status object for components that need it
+  const trialStatus = {
+    isInTrial: sellerAccess.isInTrial,
+    trialEndDate: sellerAccess.trialEndDate,
+    canPublish: sellerAccess.canAccess,
+    isPremium: sellerAccess.hasActiveSubscription,
+    loading: sellerAccess.loading,
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background">
       {/* 🔥 Notifications en temps réel */}
@@ -243,6 +315,14 @@ const SellerDashboard = () => {
       <RealtimeMessagesNotification />
       
       <div className="container mx-auto px-2.5 py-3 max-w-md md:max-w-3xl lg:max-w-7xl md:px-4 lg:px-6 md:py-4 lg:py-5">
+        {/* 🎁 Trial Banner - Only show if in trial */}
+        {sellerAccess.isInTrial && (
+          <TrialBanner 
+            daysLeft={sellerAccess.trialDaysLeft} 
+            trialEndDate={sellerAccess.trialEndDate}
+          />
+        )}
+
         {/* Modern Header */}
         <ModernSellerHeader
           shop={shop}

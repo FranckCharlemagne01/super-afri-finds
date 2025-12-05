@@ -15,15 +15,60 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Create client with service role for admin operations
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+
+    // ============ AUTHENTICATION CHECK ============
+    // Verify the JWT token from the Authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error('Missing Authorization header');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Authentification requise' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      );
+    }
+
+    // Create a client with the user's token to verify identity
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: { Authorization: authHeader }
+      }
+    });
+
+    // Get the authenticated user
+    const { data: { user: authenticatedUser }, error: authError } = await supabaseAuth.auth.getUser();
+    
+    if (authError || !authenticatedUser) {
+      console.error('Authentication failed:', authError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Token invalide ou expiré' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      );
+    }
+
+    console.log('Authenticated user:', authenticatedUser.id);
+    // ============ END AUTHENTICATION CHECK ============
 
     const { action, user_id, email, reference, amount } = await req.json();
 
-    console.log('Subscription payment request:', { action, user_id, email, reference });
+    // ============ AUTHORIZATION CHECK ============
+    // Verify that the authenticated user matches the user_id in the request
+    if (user_id && user_id !== authenticatedUser.id) {
+      console.error('User ID mismatch:', { requested: user_id, authenticated: authenticatedUser.id });
+      return new Response(
+        JSON.stringify({ success: false, error: 'Non autorisé - ID utilisateur non concordant' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
+      );
+    }
+    // ============ END AUTHORIZATION CHECK ============
+
+    console.log('Subscription payment request:', { action, user_id: authenticatedUser.id, email, reference });
 
     // Get Paystack config
-    const { data: paystackConfig, error: configError } = await supabase
+    const { data: paystackConfig, error: configError } = await supabaseAdmin
       .from('paystack_config')
       .select('*')
       .single();
@@ -85,6 +130,10 @@ serve(async (req) => {
       );
     }
 
+    // Use authenticated user's ID for all operations
+    const effectiveUserId = authenticatedUser.id;
+    const effectiveEmail = email || authenticatedUser.email;
+
     // Handle different actions
     if (action === 'initialize') {
       // Initialize Paystack payment
@@ -98,12 +147,12 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: email,
+          email: effectiveEmail,
           amount: subscriptionAmount * 100, // Paystack uses kobo/pesewas
           currency: 'XOF',
           callback_url: callbackUrl,
           metadata: {
-            user_id: user_id,
+            user_id: effectiveUserId,
             payment_type: 'subscription',
             custom_fields: [
               {
@@ -156,6 +205,16 @@ serve(async (req) => {
         );
       }
 
+      // Verify that the payment was made for the authenticated user
+      const paymentUserId = verifyData.data.metadata?.user_id;
+      if (paymentUserId && paymentUserId !== effectiveUserId) {
+        console.error('Payment user ID mismatch:', { payment: paymentUserId, authenticated: effectiveUserId });
+        return new Response(
+          JSON.stringify({ success: false, error: 'Ce paiement appartient à un autre utilisateur' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
+        );
+      }
+
       // Check if this is a live or test payment
       const isLivePayment = verifyData.data.domain === 'live';
       const paidAmount = verifyData.data.amount / 100; // Convert from kobo
@@ -172,10 +231,10 @@ serve(async (req) => {
         );
       }
 
-      // Activate subscription
-      const { data: activationResult, error: activationError } = await supabase
+      // Activate subscription using the authenticated user's ID
+      const { data: activationResult, error: activationError } = await supabaseAdmin
         .rpc('activate_subscription', {
-          _user_id: user_id,
+          _user_id: effectiveUserId,
           _paystack_reference: reference,
           _amount: paidAmount
         });
@@ -188,7 +247,7 @@ serve(async (req) => {
         );
       }
 
-      console.log('Subscription activated successfully for user:', user_id);
+      console.log('Subscription activated successfully for user:', effectiveUserId);
 
       return new Response(
         JSON.stringify({ 

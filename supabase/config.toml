@@ -4,7 +4,7 @@ project_id = "zqskpspbyzptzjcoitwt"
 verify_jwt = false
 
 [functions.subscription-payment]
-verify_jwt = false
+verify_jwt = true
 
 [functions.paystack-config]
 verify_jwt = false

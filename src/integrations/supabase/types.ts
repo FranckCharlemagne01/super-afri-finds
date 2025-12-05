@@ -616,6 +616,45 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          amount: number | null
+          created_at: string
+          currency: string | null
+          id: string
+          paystack_reference: string | null
+          status: string
+          subscription_end: string | null
+          subscription_start: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          paystack_reference?: string | null
+          status?: string
+          subscription_end?: string | null
+          subscription_start?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          paystack_reference?: string | null
+          status?: string
+          subscription_end?: string | null
+          subscription_start?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       token_transactions: {
         Row: {
           created_at: string
@@ -726,6 +765,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      activate_subscription: {
+        Args: { _amount: number; _paystack_reference: string; _user_id: string }
+        Returns: boolean
+      }
       add_tokens_after_purchase: {
         Args: {
           _paystack_reference: string
@@ -750,6 +793,7 @@ export type Database = {
             }
             Returns: boolean
           }
+      can_access_seller_features: { Args: { _user_id: string }; Returns: Json }
       can_publish_products: { Args: { _user_id: string }; Returns: boolean }
       cancel_order_by_customer: { Args: { order_id: string }; Returns: Json }
       check_token_balance: { Args: { _seller_id: string }; Returns: Json }

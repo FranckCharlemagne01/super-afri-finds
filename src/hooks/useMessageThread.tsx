@@ -44,34 +44,56 @@ export const useMessageThread = ({ sellerId, buyerId, productId, enabled = true 
 
   // Fetch messages for this thread
   const fetchMessages = useCallback(async () => {
-    if (!enabled || !user) return;
+    if (!enabled || !user || !sellerId || !buyerId) {
+      console.log('📨 Skipping fetch - missing params:', { enabled, user: !!user, sellerId, buyerId });
+      return;
+    }
 
+    setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Determine the other user in the conversation
+      const otherUserId = user.id === sellerId ? buyerId : sellerId;
+      
+      console.log('📨 Fetching messages for conversation:', {
+        currentUser: user.id,
+        otherUser: otherUserId,
+        productId,
+        threadId
+      });
+      
+      // Build the query to get all messages between these two users
+      let query = supabase
         .from('messages')
-        .select('*')
-        .or(`and(sender_id.eq.${user.id},recipient_id.eq.${sellerId === user.id ? buyerId : sellerId}),and(sender_id.eq.${sellerId === user.id ? buyerId : sellerId},recipient_id.eq.${user.id})`)
-        .order('created_at', { ascending: true });
-
-      if (error) throw error;
-
+        .select('id, sender_id, recipient_id, product_id, subject, content, media_url, media_type, media_name, is_read, created_at')
+        .or(`and(sender_id.eq.${user.id},recipient_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},recipient_id.eq.${user.id})`);
+      
       // Filter by product_id if specified
-      const filteredData = productId 
-        ? (data || []).filter(msg => msg.product_id === productId)
-        : data || [];
+      if (productId) {
+        query = query.eq('product_id', productId);
+      }
+      
+      const { data, error } = await query.order('created_at', { ascending: true });
 
-      setMessages(filteredData.map(msg => ({
+      if (error) {
+        console.error('📨 Error fetching messages:', error);
+        throw error;
+      }
+
+      console.log('📨 Messages loaded:', data?.length || 0, data);
+      
+      setMessages((data || []).map(msg => ({
         ...msg,
         thread_id: threadId,
         media_type: msg.media_type as 'image' | 'video' | null
       })));
 
       // Mark unread messages as read
-      const unreadMessages = filteredData.filter(msg => 
+      const unreadMessages = (data || []).filter(msg => 
         msg.recipient_id === user.id && !msg.is_read
       );
       
       if (unreadMessages.length > 0) {
+        console.log('📨 Marking', unreadMessages.length, 'messages as read');
         await supabase
           .from('messages')
           .update({ is_read: true })
@@ -85,23 +107,30 @@ export const useMessageThread = ({ sellerId, buyerId, productId, enabled = true 
     }
   }, [threadId, user, enabled, sellerId, buyerId, productId]);
 
-  // Setup realtime subscription
+  // Setup realtime subscription with thread_id filter
   useEffect(() => {
     if (!enabled || !user || !threadId) return;
 
     fetchMessages();
 
-    const otherUserId = sellerId === user.id ? buyerId : sellerId;
+    // Cleanup previous channel
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
 
-    // Subscribe to new messages between these users
+    const otherUserId = user.id === sellerId ? buyerId : sellerId;
+    console.log('🔔 Subscribing to realtime for conversation between:', user.id, 'and', otherUserId);
+
+    // Subscribe to messages between these two users
     const channel = supabase
-      .channel(`thread-${threadId}`)
+      .channel(`chat-${threadId}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'messages',
+          table: 'messages'
         },
         (payload) => {
           const newMsg = payload.new as any;
@@ -115,7 +144,7 @@ export const useMessageThread = ({ sellerId, buyerId, productId, enabled = true 
           const matchesProduct = !productId || newMsg.product_id === productId;
           
           if (isOurConversation && matchesProduct) {
-            console.log('🔔 New message in thread:', newMsg);
+            console.log('🔔 New message in conversation:', newMsg.id);
             
             const formattedMsg: Message = {
               ...newMsg,
@@ -130,7 +159,7 @@ export const useMessageThread = ({ sellerId, buyerId, productId, enabled = true 
             });
 
             // Mark as read if I'm the recipient
-            if (newMsg.recipient_id === user.id) {
+            if (newMsg.recipient_id === user.id && !newMsg.is_read) {
               supabase
                 .from('messages')
                 .update({ is_read: true })
@@ -140,11 +169,14 @@ export const useMessageThread = ({ sellerId, buyerId, productId, enabled = true 
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('🔔 Subscription status:', status);
+      });
 
     channelRef.current = channel;
 
     return () => {
+      console.log('🔔 Cleaning up subscription for thread:', threadId);
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
@@ -152,7 +184,7 @@ export const useMessageThread = ({ sellerId, buyerId, productId, enabled = true 
     };
   }, [threadId, user, enabled, fetchMessages, sellerId, buyerId, productId]);
 
-  // Send a message
+  // Send a message with thread_id
   const sendMessage = useCallback(async (
     content: string,
     mediaUrl?: string,
@@ -164,13 +196,15 @@ export const useMessageThread = ({ sellerId, buyerId, productId, enabled = true 
 
     setSending(true);
     try {
-      const otherUserId = user.id === sellerId ? buyerId : sellerId;
+      const recipientId = user.id === sellerId ? buyerId : sellerId;
+
+      console.log('📤 Sending message to:', recipientId);
 
       const { error } = await supabase
         .from('messages')
         .insert([{
           sender_id: user.id,
-          recipient_id: otherUserId,
+          recipient_id: recipientId,
           product_id: productId || null,
           subject: subject || null,
           content: content.trim() || (mediaName ? `📎 ${mediaName}` : ''),
@@ -180,6 +214,8 @@ export const useMessageThread = ({ sellerId, buyerId, productId, enabled = true 
         }]);
 
       if (error) throw error;
+      
+      console.log('📤 Message sent successfully');
       return true;
     } catch (error) {
       console.error('Error sending message:', error);

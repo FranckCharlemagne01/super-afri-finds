@@ -86,33 +86,29 @@ export const ChatInput = ({
   }, [handleSend]);
 
   return (
-    <div className={`flex flex-col gap-1.5 ${className}`}>
-      <div className="flex gap-2.5 items-end">
+    <div className={`flex items-end gap-2 ${className}`}>
+      <div className="flex-1 relative">
         <Textarea
           ref={textareaRef}
           value={localValue}
           onChange={handleChange}
           onKeyDown={handleKeyPress}
           placeholder={placeholder}
-          className="flex-1 text-sm rounded-2xl border border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/20 transition-all duration-200 resize-none py-3 px-4 bg-background shadow-sm hover:shadow-md"
-          style={{ minHeight, maxHeight }}
+          className="w-full text-[15px] rounded-3xl border-0 bg-card focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-200 resize-none py-3 px-4 shadow-sm"
+          style={{ minHeight: '44px', maxHeight }}
           autoComplete="off"
           rows={1}
           disabled={disabled}
         />
-        <Button 
-          onClick={handleSend} 
-          size="icon" 
-          disabled={!localValue.trim() || disabled} 
-          className="min-h-[50px] min-w-[50px] rounded-full shadow-md hover:shadow-xl transition-all duration-200 disabled:opacity-40 flex-shrink-0 hover:scale-110 active:scale-95 bg-gradient-to-br from-primary to-primary-hover"
-        >
-          <Send className="h-5 w-5" />
-        </Button>
       </div>
-      {/* Security: Character counter to enforce length limits */}
-      <div className="text-xs text-muted-foreground text-right px-1">
-        {localValue.length}/{MAX_MESSAGE_LENGTH}
-      </div>
+      <Button 
+        onClick={handleSend} 
+        size="icon" 
+        disabled={!localValue.trim() || disabled} 
+        className="h-11 w-11 rounded-full shadow-md transition-all duration-200 disabled:opacity-40 flex-shrink-0 active:scale-95 bg-primary hover:bg-primary-hover"
+      >
+        <Send className="h-5 w-5" />
+      </Button>
     </div>
   );
 };

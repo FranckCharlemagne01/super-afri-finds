@@ -161,23 +161,35 @@ const BuyerDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5">
-      <div className="container mx-auto px-3 py-4 max-w-md md:max-w-3xl lg:max-w-6xl md:px-6 lg:px-8 lg:py-8">
-        {/* Header Mobile & Tablet */}
-        <div className="lg:hidden mb-6">
-          <div className="flex items-center justify-between p-4 md:p-6 bg-white rounded-2xl shadow-sm border border-border/50">
-            <div>
-              <h1 className="text-xl md:text-2xl font-bold text-foreground">Mon Profil</h1>
-              <p className="text-sm md:text-base text-muted-foreground">Bonjour {profile.full_name?.split(' ')[0] || 'Client'} !</p>
+    <div className="min-h-screen bg-background pb-20 lg:pb-0">
+      <div className="max-w-lg mx-auto lg:max-w-6xl px-4 py-3 lg:px-8 lg:py-8 safe-area-inset-top">
+        {/* Header Mobile & Tablet - Style App Native */}
+        <div className="lg:hidden mb-4">
+          <div className="flex items-center justify-between py-3">
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">Mon Djassa</h1>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Bonjour{profile.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''} 👋
+              </p>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSignOut}
-              className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-red-50 hover:bg-red-100 text-red-600"
-            >
-              <LogOut className="h-4 w-4 md:h-5 md:w-5" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleViewPublicPage}
+                className="h-10 w-10 rounded-xl bg-muted/50 hover:bg-muted"
+              >
+                <Store className="h-5 w-5 text-muted-foreground" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleSignOut}
+                className="h-10 w-10 rounded-xl bg-red-50 hover:bg-red-100"
+              >
+                <LogOut className="h-5 w-5 text-red-500" />
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -209,166 +221,145 @@ const BuyerDashboard = () => {
 
         {activeSection === 'dashboard' && (
           <>
-            {/* Profile Summary Card */}
-            <Card className="mb-6 border-0 shadow-sm bg-gradient-to-r from-primary/10 to-secondary/10">
-              <CardContent className="p-4 md:p-6">
-                <div className="flex items-center gap-3 md:gap-4">
-                  <div className="w-14 h-14 md:w-16 md:h-16 bg-primary/20 rounded-full flex items-center justify-center shrink-0">
-                    <User className="w-7 h-7 md:w-8 md:h-8 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-base md:text-lg font-semibold truncate">{profile.full_name || 'Nom non renseigné'}</h3>
-                    <p className="text-xs md:text-sm text-muted-foreground flex items-center gap-1 truncate">
-                      <Mail className="w-3 h-3 shrink-0" />
-                      <span className="truncate">{profile.email}</span>
-                    </p>
-                    {profile.phone && (
-                      <p className="text-xs md:text-sm text-muted-foreground flex items-center gap-1">
-                        <Phone className="w-3 h-3 shrink-0" />
-                        {profile.phone}
-                      </p>
-                    )}
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setActiveSection('profile')}
-                    className="text-primary hover:bg-primary/10 shrink-0"
-                  >
-                    <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
-                  </Button>
+            {/* Profile Summary Card - Style App Native */}
+            <div className="bg-gradient-to-br from-primary via-primary/95 to-primary-hover rounded-2xl p-4 mb-5 shadow-lg">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shrink-0 border border-white/10">
+                  <User className="w-8 h-8 text-primary-foreground" />
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
-              <Card className="border-0 shadow-sm bg-white hover:shadow-md transition-shadow">
-                <CardContent className="p-4 md:p-5 text-center">
-                  <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <Package className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
-                  </div>
-                  <div className="text-2xl md:text-3xl font-bold text-blue-600">{orders.length}</div>
-                  <p className="text-xs md:text-sm text-muted-foreground">Commandes</p>
-                </CardContent>
-              </Card>
-              <Card className="border-0 shadow-sm bg-white hover:shadow-md transition-shadow">
-                <CardContent className="p-4 md:p-5 text-center">
-                  <div className="w-10 h-10 md:w-12 md:h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <Package className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
-                  </div>
-                  <div className="text-2xl md:text-3xl font-bold text-green-600">
-                    {orders.filter(order => ['pending', 'confirmed', 'shipped'].includes(order.status)).length}
-                  </div>
-                  <p className="text-xs md:text-sm text-muted-foreground">En cours</p>
-                </CardContent>
-              </Card>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-bold text-primary-foreground truncate">
+                    {profile.full_name || 'Compléter le profil'}
+                  </h3>
+                  <p className="text-sm text-primary-foreground/80 flex items-center gap-1.5 truncate mt-0.5">
+                    <Mail className="w-3.5 h-3.5 shrink-0" />
+                    <span className="truncate">{profile.email}</span>
+                  </p>
+                  {profile.phone && (
+                    <p className="text-sm text-primary-foreground/80 flex items-center gap-1.5 mt-0.5">
+                      <Phone className="w-3.5 h-3.5 shrink-0" />
+                      {profile.phone}
+                    </p>
+                  )}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setActiveSection('profile')}
+                  className="h-10 w-10 rounded-xl bg-white/10 hover:bg-white/20 text-primary-foreground shrink-0"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </Button>
+              </div>
             </div>
 
-            {/* Menu Dashboard */}
-            <div className="space-y-3 md:space-y-4">
-              <h3 className="text-lg md:text-xl font-semibold text-foreground">Tableau de bord</h3>
+            {/* Quick Stats - Style App Native */}
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              <div className="bg-card rounded-2xl p-4 border border-border/50 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
+                    <Package className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-foreground tabular-nums">{orders.length}</div>
+                    <p className="text-xs text-muted-foreground">Commandes</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-card rounded-2xl p-4 border border-border/50 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 bg-green-100 rounded-xl flex items-center justify-center shrink-0">
+                    <Package className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-foreground tabular-nums">
+                      {orders.filter(order => ['pending', 'confirmed', 'shipped'].includes(order.status)).length}
+                    </div>
+                    <p className="text-xs text-muted-foreground">En cours</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Menu Dashboard - Style App Native */}
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1 mb-3">
+                Navigation rapide
+              </p>
               
-              <Card 
-                className="border-0 shadow-sm bg-white hover:shadow-md transition-all cursor-pointer" 
-                onClick={() => setActiveSection('orders')}
-              >
-                <CardContent className="p-4 md:p-5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
-                      <div className="w-12 h-12 md:w-14 md:h-14 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
-                        <Package className="w-6 h-6 md:w-7 md:h-7 text-blue-600" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h4 className="font-medium text-sm md:text-base">Mes Commandes</h4>
-                        <p className="text-xs md:text-sm text-muted-foreground truncate">Suivi des commandes en cours et historique</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground shrink-0" />
+              {/* Menu Items - Unified Style */}
+              <div className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden divide-y divide-border/50">
+                <button 
+                  className="w-full flex items-center gap-4 p-4 hover:bg-muted/50 active:bg-muted transition-colors text-left"
+                  onClick={() => setActiveSection('orders')}
+                >
+                  <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
+                    <Package className="w-5 h-5 text-blue-600" />
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-sm text-foreground">Mes Commandes</h4>
+                    <p className="text-xs text-muted-foreground">Suivi et historique</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
+                </button>
 
-              <Card 
-                className="border-0 shadow-sm bg-white hover:shadow-md transition-all cursor-pointer" 
-                onClick={() => navigate('/favorites')}
-              >
-                <CardContent className="p-4 md:p-5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
-                      <div className="w-12 h-12 md:w-14 md:h-14 bg-red-100 rounded-xl flex items-center justify-center shrink-0">
-                        <Heart className="w-6 h-6 md:w-7 md:h-7 text-red-600" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h4 className="font-medium text-sm md:text-base">Mes Favoris</h4>
-                        <p className="text-xs md:text-sm text-muted-foreground truncate">Produits sauvegardés pour plus tard</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground shrink-0" />
+                <button 
+                  className="w-full flex items-center gap-4 p-4 hover:bg-muted/50 active:bg-muted transition-colors text-left"
+                  onClick={() => navigate('/favorites')}
+                >
+                  <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center shrink-0">
+                    <Heart className="w-5 h-5 text-red-500" />
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-sm text-foreground">Mes Favoris</h4>
+                    <p className="text-xs text-muted-foreground">Produits sauvegardés</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
+                </button>
 
-              <Card 
-                className="border-0 shadow-sm bg-white hover:shadow-md transition-all cursor-pointer" 
-                onClick={() => navigate('/cart')}
-              >
-                <CardContent className="p-4 md:p-5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
-                      <div className="w-12 h-12 md:w-14 md:h-14 bg-orange-100 rounded-xl flex items-center justify-center shrink-0">
-                        <ShoppingCart className="w-6 h-6 md:w-7 md:h-7 text-orange-600" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h4 className="font-medium text-sm md:text-base">Mon Panier</h4>
-                        <p className="text-xs md:text-sm text-muted-foreground truncate">Articles en attente d'achat</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground shrink-0" />
+                <button 
+                  className="w-full flex items-center gap-4 p-4 hover:bg-muted/50 active:bg-muted transition-colors text-left"
+                  onClick={() => navigate('/cart')}
+                >
+                  <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center shrink-0">
+                    <ShoppingCart className="w-5 h-5 text-orange-500" />
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-sm text-foreground">Mon Panier</h4>
+                    <p className="text-xs text-muted-foreground">Articles en attente</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
+                </button>
 
-              <Card 
-                className="border-0 shadow-sm bg-white hover:shadow-md transition-all cursor-pointer" 
-                onClick={() => setActiveSection('messages')}
-              >
-                <CardContent className="p-4 md:p-5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
-                      <div className="w-12 h-12 md:w-14 md:h-14 bg-purple-100 rounded-xl flex items-center justify-center relative shrink-0">
-                        <MessageSquare className="w-6 h-6 md:w-7 md:h-7 text-purple-600" />
-                        <MessageNotificationBadge />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h4 className="font-medium text-sm md:text-base">Mes Messages</h4>
-                        <p className="text-xs md:text-sm text-muted-foreground truncate">Conversations avec les vendeurs</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground shrink-0" />
+                <button 
+                  className="w-full flex items-center gap-4 p-4 hover:bg-muted/50 active:bg-muted transition-colors text-left"
+                  onClick={() => setActiveSection('messages')}
+                >
+                  <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center relative shrink-0">
+                    <MessageSquare className="w-5 h-5 text-purple-600" />
+                    <MessageNotificationBadge />
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-sm text-foreground">Mes Messages</h4>
+                    <p className="text-xs text-muted-foreground">Conversations vendeurs</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
+                </button>
 
-              <Card 
-                className="border-0 shadow-sm bg-white hover:shadow-md transition-all cursor-pointer" 
-                onClick={() => setActiveSection('settings')}
-              >
-                <CardContent className="p-4 md:p-5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
-                      <div className="w-12 h-12 md:w-14 md:h-14 bg-gray-100 rounded-xl flex items-center justify-center shrink-0">
-                        <Settings className="w-6 h-6 md:w-7 md:h-7 text-gray-600" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h4 className="font-medium text-sm md:text-base">Paramètres</h4>
-                        <p className="text-xs md:text-sm text-muted-foreground truncate">Email, téléphone, ville</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground shrink-0" />
+                <button 
+                  className="w-full flex items-center gap-4 p-4 hover:bg-muted/50 active:bg-muted transition-colors text-left"
+                  onClick={() => setActiveSection('settings')}
+                >
+                  <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center shrink-0">
+                    <Settings className="w-5 h-5 text-gray-600" />
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-sm text-foreground">Paramètres</h4>
+                    <p className="text-xs text-muted-foreground">Email, téléphone, ville</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
+                </button>
+              </div>
             </div>
           </>
         )}

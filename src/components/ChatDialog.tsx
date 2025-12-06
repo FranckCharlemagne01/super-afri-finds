@@ -210,52 +210,56 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-full sm:max-w-3xl lg:max-w-4xl h-[100dvh] sm:h-[90vh] flex flex-col p-0 gap-0 rounded-none sm:rounded-2xl">
-        {/* Header - Fixed - Style WhatsApp/Messenger */}
-        <DialogHeader className="flex-shrink-0 bg-card border-b border-border/50 safe-area-inset-top">
-          <div className="px-3 py-2.5 flex items-center gap-3">
+      <DialogContent className="max-w-full sm:max-w-3xl lg:max-w-4xl h-[100dvh] sm:h-[90vh] flex flex-col p-0 gap-0 rounded-none sm:rounded-2xl overflow-hidden">
+        {/* Header - Fixed - Style Native Messenger */}
+        <DialogHeader className="flex-shrink-0 bg-gradient-to-r from-primary via-primary to-primary-hover safe-area-inset-top">
+          <div className="px-3 py-3 flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => onOpenChange(false)}
-              className="flex-shrink-0 h-9 w-9 rounded-full hover:bg-muted -ml-1"
+              className="flex-shrink-0 h-10 w-10 rounded-full hover:bg-white/20 text-primary-foreground"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="relative">
-              <div className="flex items-center justify-center w-11 h-11 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 border border-border/50">
+              <div className="flex items-center justify-center w-11 h-11 rounded-full bg-white/20 backdrop-blur-sm border border-white/30">
                 {userType === 'seller' ? (
-                  <User className="h-5 w-5 text-primary" />
+                  <User className="h-5 w-5 text-primary-foreground" />
                 ) : (
-                  <Store className="h-5 w-5 text-primary" />
+                  <Store className="h-5 w-5 text-primary-foreground" />
                 )}
               </div>
-              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-card rounded-full" />
+              <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-400 border-2 border-primary rounded-full" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-bold text-base truncate text-foreground">{otherUserName}</p>
-              <p className="text-xs text-green-600 font-medium flex items-center gap-1">
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+              <p className="font-bold text-base truncate text-primary-foreground">{otherUserName}</p>
+              <p className="text-xs text-primary-foreground/80 font-medium flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
                 En ligne
               </p>
             </div>
           </div>
         </DialogHeader>
 
-        {/* Messages Area - Style WhatsApp */}
-        <ScrollArea className="flex-1 bg-[#f0f2f5] dark:bg-muted/20">
-          <div className="px-3 py-4 space-y-1 min-h-full">
+        {/* Messages Area - Style Native Messenger */}
+        <ScrollArea className="flex-1 bg-gradient-to-b from-muted/30 to-muted/10">
+          <div className="px-3 py-4 space-y-0.5 min-h-full">
             {loading ? (
-              <div className="flex justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
+              <div className="flex flex-col items-center justify-center py-16">
+                <div className="animate-spin rounded-full h-10 w-10 border-3 border-primary border-t-transparent mb-4"></div>
+                <p className="text-sm text-muted-foreground">Chargement...</p>
               </div>
             ) : messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 px-4">
-                <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
-                  <MessageSquare className="w-8 h-8 text-muted-foreground" />
+              <div className="flex flex-col items-center justify-center py-20 px-4">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-4 border border-border/50">
+                  <MessageSquare className="w-10 h-10 text-primary" />
                 </div>
+                <p className="text-center text-foreground font-semibold mb-1">
+                  Nouvelle conversation
+                </p>
                 <p className="text-center text-muted-foreground text-sm">
-                  Démarrez la conversation !
+                  Envoyez un message pour démarrer !
                 </p>
               </div>
             ) : (
@@ -265,21 +269,20 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
                   messages[index + 1]?.sender_id !== message.sender_id ||
                   new Date(messages[index + 1]?.created_at).getTime() - new Date(message.created_at).getTime() > 300000;
                 
-                // Group spacing
                 const isNewGroup = index === 0 || messages[index - 1]?.sender_id !== message.sender_id;
                 
                 return (
                   <div
                     key={message.id}
-                    className={`flex ${isMe ? 'justify-end' : 'justify-start'} ${isNewGroup ? 'mt-3' : 'mt-0.5'} animate-fade-in`}
+                    className={`flex ${isMe ? 'justify-end' : 'justify-start'} ${isNewGroup ? 'mt-3' : 'mt-0.5'}`}
                   >
-                    <div className={`flex flex-col max-w-[85%] sm:max-w-[70%] ${isMe ? 'items-end' : 'items-start'}`}>
-                      {/* Message Bubble - WhatsApp Style */}
+                    <div className={`flex flex-col max-w-[82%] sm:max-w-[70%] ${isMe ? 'items-end' : 'items-start'}`}>
+                      {/* Message Bubble - Native Style */}
                       <div
-                        className={`relative px-3 py-2 shadow-sm ${
+                        className={`relative px-3.5 py-2.5 ${
                           isMe
-                            ? 'bg-[#dcf8c6] dark:bg-primary/90 text-foreground dark:text-primary-foreground rounded-2xl rounded-tr-sm'
-                            : 'bg-card text-foreground rounded-2xl rounded-tl-sm border border-border/30'
+                            ? 'bg-primary text-primary-foreground rounded-2xl rounded-br-md shadow-sm'
+                            : 'bg-card text-foreground rounded-2xl rounded-bl-md border border-border/50 shadow-sm'
                         }`}
                       >
                         {/* Product Share Card */}
@@ -344,7 +347,7 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
                         )}
 
                         {/* Time inside bubble */}
-                        <div className={`flex items-center justify-end gap-1 mt-1 -mb-0.5 ${isMe ? 'text-foreground/50 dark:text-primary-foreground/60' : 'text-muted-foreground'}`}>
+                        <div className={`flex items-center justify-end gap-1.5 mt-1.5 -mb-0.5 ${isMe ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
                           <span className="text-[10px]">
                             {format(new Date(message.created_at), 'HH:mm', { locale: fr })}
                           </span>
@@ -401,8 +404,8 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
           </div>
         )}
 
-        {/* Input Area - Style WhatsApp */}
-        <div className="flex-shrink-0 bg-[#f0f2f5] dark:bg-muted/20 border-t border-border/30 safe-area-inset-bottom">
+        {/* Input Area - Style Native Messenger */}
+        <div className="flex-shrink-0 bg-card border-t border-border/50 safe-area-inset-bottom">
           {/* Selected file preview */}
           {selectedFile && (
             <div className="px-3 py-2 bg-card border-b border-border/30">
@@ -438,7 +441,7 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
             </div>
           )}
 
-          <div className="p-2 flex items-end gap-2">
+          <div className="p-2.5 flex items-end gap-2">
             <input
               type="file"
               ref={fileInputRef}
@@ -451,7 +454,7 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
               size="icon"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="flex-shrink-0 h-11 w-11 rounded-full hover:bg-muted text-muted-foreground"
+              className="flex-shrink-0 h-11 w-11 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground"
             >
               <Paperclip className="h-5 w-5" />
             </Button>
@@ -460,7 +463,7 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
               <ChatInput 
                 onSendMessage={handleSendClick}
                 disabled={sending || uploading}
-                placeholder="Message..."
+                placeholder="Votre message..."
               />
             </div>
           </div>

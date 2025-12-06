@@ -931,3 +931,263 @@ textarea {
     opacity: 1;
   }
 }
+
+/* ===========================================
+   DESKTOP OPTIMIZATIONS
+   =========================================== */
+
+/* Desktop layout enhancements */
+@media (min-width: 1024px) {
+  /* Main container centered with max width */
+  .desktop-container {
+    @apply max-w-7xl mx-auto px-8;
+  }
+  
+  /* Enhanced card hover effects for desktop */
+  .desktop-card {
+    @apply bg-card rounded-2xl border border-border/30 shadow-sm;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .desktop-card:hover {
+    @apply shadow-lg border-border/50;
+    transform: translateY(-4px);
+  }
+  
+  /* Desktop section spacing */
+  .desktop-section {
+    @apply py-8 lg:py-12;
+  }
+  
+  /* Desktop header improvements */
+  .desktop-header {
+    @apply py-4 px-8;
+  }
+  
+  /* Desktop grid layouts */
+  .desktop-grid-products {
+    @apply grid gap-6;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+  
+  .desktop-grid-categories {
+    @apply grid gap-5;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+  
+  /* Desktop buttons - slightly smaller touch targets */
+  button, .button, [role="button"] {
+    min-height: 40px;
+    min-width: 40px;
+  }
+  
+  /* Desktop input fields */
+  input, select, textarea {
+    min-height: 42px;
+  }
+  
+  /* Enhanced search bar for desktop */
+  .desktop-search {
+    @apply max-w-xl mx-auto;
+  }
+  
+  /* Desktop sidebar improvements */
+  .desktop-sidebar {
+    @apply sticky top-24 h-fit max-h-[calc(100vh-8rem)] overflow-y-auto;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  
+  .desktop-sidebar::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .desktop-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .desktop-sidebar::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 3px;
+  }
+}
+
+/* Extra large desktop (1440px+) */
+@media (min-width: 1440px) {
+  .xl-container {
+    @apply max-w-[1400px] mx-auto px-12;
+  }
+  
+  /* Larger gaps for bigger screens */
+  .xl-grid-products {
+    @apply gap-8;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+  
+  /* Enhanced typography for larger screens */
+  .xl-heading {
+    @apply text-4xl font-bold;
+  }
+  
+  .xl-subheading {
+    @apply text-xl text-muted-foreground;
+  }
+}
+
+/* Ultra-wide screens (1920px+) */
+@media (min-width: 1920px) {
+  .ultra-container {
+    @apply max-w-[1600px] mx-auto px-16;
+  }
+  
+  .ultra-grid-products {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+/* Desktop-specific animations */
+@media (min-width: 1024px) {
+  /* Smoother hover transitions */
+  .desktop-hover-lift {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                box-shadow 0.3s ease;
+  }
+  
+  .desktop-hover-lift:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 20px 40px -15px hsl(var(--foreground) / 0.1);
+  }
+  
+  /* Elegant button hover */
+  .desktop-button-elegant {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  
+  .desktop-button-elegant::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 40%, hsl(var(--primary-foreground) / 0.1) 50%, transparent 60%);
+    transform: translateX(-100%);
+    transition: transform 0.5s ease;
+  }
+  
+  .desktop-button-elegant:hover::before {
+    transform: translateX(100%);
+  }
+  
+  /* Desktop card image zoom */
+  .desktop-image-zoom {
+    overflow: hidden;
+    border-radius: inherit;
+  }
+  
+  .desktop-image-zoom img {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .desktop-image-zoom:hover img {
+    transform: scale(1.08);
+  }
+}
+
+/* Desktop layout helpers */
+@layer utilities {
+  /* Centered max-width containers */
+  .desktop-center {
+    @apply lg:max-w-7xl lg:mx-auto lg:px-8;
+  }
+  
+  .desktop-center-xl {
+    @apply xl:max-w-[1400px] xl:mx-auto xl:px-12;
+  }
+  
+  /* Desktop flex layouts */
+  .desktop-flex-between {
+    @apply lg:flex lg:items-center lg:justify-between lg:gap-8;
+  }
+  
+  .desktop-flex-center {
+    @apply lg:flex lg:items-center lg:justify-center lg:gap-6;
+  }
+  
+  /* Desktop grid utilities */
+  .desktop-grid-2 {
+    @apply lg:grid lg:grid-cols-2 lg:gap-8;
+  }
+  
+  .desktop-grid-3 {
+    @apply lg:grid lg:grid-cols-3 lg:gap-6;
+  }
+  
+  .desktop-grid-4 {
+    @apply lg:grid lg:grid-cols-4 lg:gap-6;
+  }
+  
+  .desktop-grid-5 {
+    @apply xl:grid xl:grid-cols-5 xl:gap-6;
+  }
+  
+  .desktop-grid-6 {
+    @apply 2xl:grid 2xl:grid-cols-6 2xl:gap-6;
+  }
+  
+  /* Desktop spacing */
+  .desktop-py-lg {
+    @apply lg:py-12;
+  }
+  
+  .desktop-gap-lg {
+    @apply lg:gap-8;
+  }
+  
+  /* Desktop typography */
+  .desktop-text-lg {
+    @apply lg:text-lg;
+  }
+  
+  .desktop-text-xl {
+    @apply lg:text-xl;
+  }
+  
+  .desktop-text-2xl {
+    @apply lg:text-2xl;
+  }
+  
+  .desktop-text-3xl {
+    @apply lg:text-3xl;
+  }
+  
+  /* Desktop visibility */
+  .desktop-only {
+    @apply hidden lg:block;
+  }
+  
+  .mobile-only {
+    @apply lg:hidden;
+  }
+  
+  /* Desktop shadows */
+  .desktop-shadow-subtle {
+    @apply lg:shadow-sm lg:hover:shadow-md lg:transition-shadow;
+  }
+  
+  .desktop-shadow-elegant {
+    @apply lg:shadow-md lg:hover:shadow-xl lg:transition-shadow;
+  }
+  
+  /* Desktop rounded corners */
+  .desktop-rounded-xl {
+    @apply lg:rounded-xl;
+  }
+  
+  .desktop-rounded-2xl {
+    @apply lg:rounded-2xl;
+  }
+  
+  .desktop-rounded-3xl {
+    @apply lg:rounded-3xl;
+  }
+}

@@ -1,49 +1,55 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { MessageSquare, User, MessageCircle } from 'lucide-react';
+import { MessageSquare, User, MessageCircle, Package } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { ChatDialog } from './ChatDialog';
 
-interface Message {
-  id: string;
-  sender_id: string;
-  recipient_id: string;
-  product_id?: string;
-  subject?: string;
-  content: string;
-  is_read: boolean;
-  created_at: string;
+interface MessageThread {
+  thread_id: string;
+  product_id: string | null;
+  buyer_id: string;
   product?: {
     title: string;
     images?: string[];
-  };
-  sender_profile?: {
+    price?: number;
+  } | null;
+  buyer_profile?: {
     full_name?: string;
     email?: string;
+  } | null;
+  latest_message: {
+    id: string;
+    content: string;
+    created_at: string;
+    sender_id: string;
+    recipient_id: string;
+    is_read: boolean;
+    subject?: string;
   };
+  unread_count: number;
 }
 
 export const SellerMessages = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [threads, setThreads] = useState<MessageThread[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+  const [selectedThread, setSelectedThread] = useState<MessageThread | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
-      fetchMessages();
+      fetchThreads();
     }
   }, [user]);
 
-  // 🔥 Temps réel: Écouter les nouveaux messages
+  // Realtime subscription for new messages
   useEffect(() => {
     if (!user?.id) return;
 
@@ -52,15 +58,17 @@ export const SellerMessages = () => {
       .on(
         'postgres_changes',
         {
-          event: '*', // INSERT, UPDATE
+          event: 'INSERT',
           schema: 'public',
           table: 'messages',
-          filter: `recipient_id=eq.${user.id}`
         },
         (payload) => {
-          console.log('🔄 Realtime message change:', payload);
-          // Rafraîchir la liste des messages
-          fetchMessages();
+          const newMessage = payload.new as any;
+          // Only refresh if this message involves the current user
+          if (newMessage.sender_id === user.id || newMessage.recipient_id === user.id) {
+            console.log('🔔 Seller: New message detected, refreshing threads...');
+            fetchThreads();
+          }
         }
       )
       .subscribe();
@@ -70,38 +78,80 @@ export const SellerMessages = () => {
     };
   }, [user?.id]);
 
-  const fetchMessages = async () => {
+  const fetchThreads = async () => {
+    if (!user) return;
+
     try {
-      const { data, error } = await supabase
+      // Get all messages involving the current user as seller (recipient or sender)
+      const { data: allMessages, error } = await supabase
         .from('messages')
-        .select(`
-          *,
-          product:products(title, images)
-        `)
-        .eq('recipient_id', user?.id)
+        .select('*, product:products(title, images, price)')
+        .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
-      // Fetch sender profiles separately
-      const messagesWithProfiles = await Promise.all(
-        (data || []).map(async (message) => {
-          const { data: profile } = await supabase
+
+      // Group by product_id + other_user_id (create virtual thread_id)
+      const threadMap = new Map<string, any[]>();
+      (allMessages || []).forEach(message => {
+        const otherUserId = message.sender_id === user.id 
+          ? message.recipient_id 
+          : message.sender_id;
+        const threadId = `${message.product_id || 'general'}-${otherUserId}`;
+        
+        if (!threadMap.has(threadId)) {
+          threadMap.set(threadId, []);
+        }
+        threadMap.get(threadId)!.push(message);
+      });
+
+      // Create thread objects
+      const threadsData = await Promise.all(
+        Array.from(threadMap.entries()).map(async ([threadId, messages]) => {
+          const latestMessage = messages[0];
+          const buyerId = latestMessage.sender_id === user.id
+            ? latestMessage.recipient_id 
+            : latestMessage.sender_id;
+
+          // Fetch buyer profile
+          const { data: profileData } = await supabase
             .from('profiles')
             .select('full_name, email')
-            .eq('user_id', message.sender_id)
+            .eq('user_id', buyerId)
             .single();
-          
+
+          // Count unread messages (messages received by seller that are unread)
+          const unreadCount = messages.filter(m => 
+            m.recipient_id === user.id && !m.is_read
+          ).length;
+
           return {
-            ...message,
-            sender_profile: profile
-          };
+            thread_id: threadId,
+            product_id: latestMessage.product_id,
+            buyer_id: buyerId,
+            product: latestMessage.product,
+            buyer_profile: profileData,
+            latest_message: {
+              id: latestMessage.id,
+              content: latestMessage.content,
+              created_at: latestMessage.created_at,
+              sender_id: latestMessage.sender_id,
+              recipient_id: latestMessage.recipient_id,
+              is_read: latestMessage.is_read,
+              subject: latestMessage.subject,
+            },
+            unread_count: unreadCount,
+          } as MessageThread;
         })
       );
-      
-      setMessages(messagesWithProfiles);
+
+      // Sort by latest message date
+      setThreads(threadsData.sort((a, b) => 
+        new Date(b.latest_message.created_at).getTime() - 
+        new Date(a.latest_message.created_at).getTime()
+      ));
     } catch (error) {
-      console.error('Error fetching messages:', error);
+      console.error('Error fetching threads:', error);
       toast({
         title: "Erreur",
         description: "Impossible de charger les messages",
@@ -112,35 +162,20 @@ export const SellerMessages = () => {
     }
   };
 
-  const markAsRead = async (messageId: string) => {
-    try {
-      const { error } = await supabase
-        .from('messages')
-        .update({ is_read: true })
-        .eq('id', messageId);
-
-      if (error) throw error;
-      
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === messageId ? { ...msg, is_read: true } : msg
-        )
-      );
-    } catch (error) {
-      console.error('Error marking message as read:', error);
-    }
-  };
-
-  const handleMessageClick = (message: Message) => {
-    setSelectedMessage(message);
+  const handleThreadClick = (thread: MessageThread) => {
+    setSelectedThread(thread);
     setChatOpen(true);
-    if (!message.is_read) {
-      markAsRead(message.id);
+  };
+
+  const handleChatClose = (open: boolean) => {
+    setChatOpen(open);
+    if (!open) {
+      // Refresh threads when closing to update read status
+      fetchThreads();
     }
   };
 
-
-  const unreadCount = messages.filter(m => !m.is_read).length;
+  const totalUnread = threads.reduce((sum, t) => sum + t.unread_count, 0);
 
   if (loading) {
     return (
@@ -156,14 +191,14 @@ export const SellerMessages = () => {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <h2 className="text-xl font-semibold">Messages Clients</h2>
-        {unreadCount > 0 && (
+        {totalUnread > 0 && (
           <Badge variant="destructive">
-            🔔 {unreadCount} nouveau{unreadCount > 1 ? 'x' : ''}
+            🔔 {totalUnread} nouveau{totalUnread > 1 ? 'x' : ''}
           </Badge>
         )}
       </div>
 
-      {messages.length === 0 ? (
+      {threads.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
             <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -175,63 +210,63 @@ export const SellerMessages = () => {
         </Card>
       ) : (
         <div className="space-y-3">
-          {messages.map((message) => (
+          {threads.map((thread) => (
             <Card
-              key={message.id}
+              key={thread.thread_id}
               className={`cursor-pointer transition-all duration-200 border hover:shadow-md hover:border-primary/30 ${
-                !message.is_read 
+                thread.unread_count > 0
                   ? 'border-primary bg-primary/5 shadow-sm' 
                   : 'border-border/50 hover:bg-muted/30'
               }`}
-              onClick={() => handleMessageClick(message)}
+              onClick={() => handleThreadClick(thread)}
             >
               <CardHeader className="pb-3">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex items-center gap-2">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      !message.is_read ? 'bg-primary/20' : 'bg-muted'
+                      thread.unread_count > 0 ? 'bg-primary/20' : 'bg-muted'
                     }`}>
                       <User className="h-4 w-4" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <span className="font-medium text-sm break-words">
-                        {message.sender_profile?.full_name || message.sender_profile?.email || 'Client'}
+                        {thread.buyer_profile?.full_name || thread.buyer_profile?.email || 'Client'}
                       </span>
-                      {!message.is_read && (
+                      {thread.unread_count > 0 && (
                         <Badge variant="destructive" className="text-xs ml-2 animate-pulse">
-                          Nouveau
+                          {thread.unread_count} nouveau{thread.unread_count > 1 ? 'x' : ''}
                         </Badge>
                       )}
                     </div>
                   </div>
                   <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {format(new Date(message.created_at), 'dd MMM', { locale: fr })}
+                    {format(new Date(thread.latest_message.created_at), 'dd MMM HH:mm', { locale: fr })}
                   </span>
                 </div>
-                {message.subject && (
-                  <h4 className="text-sm font-medium mt-2 line-clamp-1">{message.subject}</h4>
-                )}
-                {message.product && (
-                  <p className="text-xs text-primary font-medium mt-1 bg-primary/10 px-2 py-1 rounded">
-                    📦 {message.product.title}
-                  </p>
+                {thread.product && (
+                  <div className="flex items-center gap-1.5 text-xs text-primary font-medium mt-2 bg-primary/10 px-2 py-1 rounded w-fit">
+                    <Package className="h-3 w-3" />
+                    {thread.product.title}
+                  </div>
                 )}
               </CardHeader>
               <CardContent className="pt-0">
                 <p className="text-sm text-muted-foreground line-clamp-2 mb-3 leading-relaxed">
-                  {message.content}
+                  {thread.latest_message.content === '[PRODUCT_SHARE]' 
+                    ? '📦 Carte produit partagée' 
+                    : thread.latest_message.content}
                 </p>
                 <Button 
-                  variant={!message.is_read ? "default" : "outline"} 
+                  variant={thread.unread_count > 0 ? "default" : "outline"} 
                   size="sm" 
                   className={`w-full transition-all duration-200 ${
-                    !message.is_read 
+                    thread.unread_count > 0
                       ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm' 
                       : 'hover:bg-primary/10 hover:border-primary/30'
                   }`}
                 >
                   <MessageCircle className="h-4 w-4 mr-2" />
-                  {!message.is_read ? 'Répondre maintenant' : 'Ouvrir le chat'}
+                  {thread.unread_count > 0 ? 'Répondre maintenant' : 'Ouvrir le chat'}
                 </Button>
               </CardContent>
             </Card>
@@ -239,12 +274,30 @@ export const SellerMessages = () => {
         </div>
       )}
       
-      <ChatDialog
-        initialMessage={selectedMessage}
-        open={chatOpen}
-        onOpenChange={setChatOpen}
-        userType="seller"
-      />
+      {selectedThread && (
+        <ChatDialog
+          initialMessage={{
+            id: selectedThread.latest_message.id,
+            sender_id: selectedThread.buyer_id,
+            recipient_id: user?.id || '',
+            product_id: selectedThread.product_id || undefined,
+            subject: selectedThread.latest_message.subject,
+            content: selectedThread.latest_message.content,
+            product: selectedThread.product ? {
+              title: selectedThread.product.title,
+              images: selectedThread.product.images,
+              price: selectedThread.product.price,
+            } : undefined,
+            sender_profile: selectedThread.buyer_profile ? {
+              full_name: selectedThread.buyer_profile.full_name || undefined,
+              email: selectedThread.buyer_profile.email || undefined,
+            } : undefined,
+          }}
+          open={chatOpen}
+          onOpenChange={handleChatClose}
+          userType="seller"
+        />
+      )}
     </div>
   );
 };

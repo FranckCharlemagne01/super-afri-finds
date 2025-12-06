@@ -19,13 +19,13 @@ export const CategoryCard = ({
   onClick 
 }: CategoryCardProps) => {
   if (image) {
-    // Mobile-native image-based design
+    // Mobile-native & desktop enhanced image-based design
     return (
       <motion.div 
-        className="relative overflow-hidden rounded-2xl cursor-pointer group shadow-md border border-border/20 bg-card"
+        className="relative overflow-hidden rounded-2xl lg:rounded-3xl cursor-pointer group shadow-md lg:shadow-lg border border-border/20 bg-card"
         onClick={onClick}
         whileTap={{ scale: 0.96 }}
-        whileHover={{ scale: 1.02 }}
+        whileHover={{ scale: 1.03, y: -4 }}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
@@ -36,12 +36,12 @@ export const CategoryCard = ({
             alt={title}
             loading="lazy"
             decoding="async"
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-3 text-center">
-            <h3 className="text-sm font-bold text-white mb-1 line-clamp-2 leading-tight drop-shadow-md">{title}</h3>
-            <p className="text-xs text-white/90 font-medium">{itemCount} articles</p>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/90 transition-all duration-300" />
+          <div className="absolute bottom-0 left-0 right-0 p-3 lg:p-4 text-center">
+            <h3 className="text-sm lg:text-base font-bold text-white mb-1 lg:mb-2 line-clamp-2 leading-tight drop-shadow-md">{title}</h3>
+            <p className="text-xs lg:text-sm text-white/90 font-medium">{itemCount} articles</p>
           </div>
         </div>
       </motion.div>

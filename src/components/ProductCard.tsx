@@ -84,14 +84,15 @@ export const ProductCard = ({
   return (
     <motion.div
       whileTap={{ scale: 0.97 }}
-      whileHover={{ y: -4 }}
+      whileHover={{ y: -6, scale: 1.02 }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      className="h-full"
     >
       <Card 
-        className={`relative overflow-hidden cursor-pointer border-0 shadow-md rounded-2xl bg-card transition-shadow duration-300 ${
+        className={`relative overflow-hidden cursor-pointer border-0 shadow-md rounded-2xl lg:rounded-3xl bg-card transition-all duration-300 h-full ${
           isActiveBoosted 
             ? 'ring-2 ring-amber-400 shadow-lg shadow-amber-100/50' 
-            : 'hover:shadow-xl'
+            : 'hover:shadow-xl lg:hover:shadow-2xl'
         }`} 
         onClick={handleProductClick}
       >
@@ -160,21 +161,21 @@ export const ProductCard = ({
           </div>
         )}
 
-        {/* Product Info */}
-        <div className="p-3 space-y-2 relative z-10">
-          <h3 className={`text-xs sm:text-sm font-medium text-foreground line-clamp-2 leading-snug min-h-[2.5rem] ${
+        {/* Product Info - Enhanced spacing for desktop */}
+        <div className="p-3 lg:p-4 space-y-2 lg:space-y-3 relative z-10">
+          <h3 className={`text-xs sm:text-sm lg:text-base font-medium text-foreground line-clamp-2 leading-snug min-h-[2.5rem] lg:min-h-[3rem] ${
             isActiveBoosted ? 'font-semibold' : ''
           }`}>
             {title}
           </h3>
           
-          {/* Rating */}
-          <div className="flex items-center gap-1">
+          {/* Rating - Enhanced for desktop */}
+          <div className="flex items-center gap-1.5">
             <div className="flex">
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
-                  className={`w-2.5 h-2.5 ${
+                  className={`w-3 h-3 lg:w-3.5 lg:h-3.5 ${
                     i < Math.floor(rating)
                       ? "text-accent fill-current"
                       : "text-muted-foreground/40"
@@ -182,16 +183,16 @@ export const ProductCard = ({
                 />
               ))}
             </div>
-            <span className="text-[10px] text-muted-foreground">({reviews})</span>
+            <span className="text-[10px] lg:text-xs text-muted-foreground">({reviews})</span>
           </div>
 
-          {/* Price */}
-          <div className="flex flex-col gap-0.5">
-            <span className="text-sm sm:text-base font-bold text-promo">
+          {/* Price - Enhanced typography for desktop */}
+          <div className="flex flex-col gap-0.5 lg:gap-1">
+            <span className="text-sm sm:text-base lg:text-lg font-bold text-promo">
               {salePrice.toLocaleString()} FCFA
             </span>
             {originalPrice > salePrice && (
-              <span className="text-[10px] sm:text-xs text-muted-foreground line-through">
+              <span className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground line-through">
                 {originalPrice.toLocaleString()} FCFA
               </span>
             )}
@@ -227,19 +228,19 @@ export const ProductCard = ({
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="space-y-1.5 pt-1">
-            {/* Desktop: Full buttons */}
-            <div className="hidden sm:flex flex-col space-y-1.5">
-              <motion.div whileTap={{ scale: 0.97 }}>
+          {/* Action Buttons - Enhanced for desktop */}
+          <div className="space-y-2 lg:space-y-2.5 pt-2">
+            {/* Desktop: Full buttons with better styling */}
+            <div className="hidden sm:flex flex-col space-y-2">
+              <motion.div whileTap={{ scale: 0.97 }} whileHover={{ scale: 1.02 }}>
                 <Button 
                   variant="promo" 
                   size="sm" 
-                  className="w-full text-xs min-h-[44px] rounded-xl font-medium"
+                  className="w-full text-xs lg:text-sm min-h-[44px] lg:min-h-[48px] rounded-xl lg:rounded-2xl font-medium shadow-sm hover:shadow-md transition-all"
                   onClick={handleAddToCart}
                   disabled={isUnavailable}
                 >
-                  <ShoppingCart className="w-3.5 h-3.5 mr-1.5" />
+                  <ShoppingCart className="w-4 h-4 lg:w-5 lg:h-5 mr-2" />
                   {isUnavailable ? 'Épuisé' : 'Ajouter au panier'}
                 </Button>
               </motion.div>

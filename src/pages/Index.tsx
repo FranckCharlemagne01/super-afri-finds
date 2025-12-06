@@ -316,20 +316,20 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-8 overflow-x-hidden">
-      {/* Header */}
+      {/* Header - Enhanced for desktop */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-border/50">
-        <div className="container mx-auto px-3 sm:px-4 py-2.5 sm:py-3">
-          <div className="flex items-center gap-2 sm:gap-3">
+        <div className="container mx-auto px-3 sm:px-4 lg:px-8 xl:px-12 py-2.5 sm:py-3 lg:py-4 max-w-[1600px]">
+          <div className="flex items-center gap-3 sm:gap-4 lg:gap-6">
             {/* Logo Djassa */}
             <h1 
-              className="text-lg sm:text-xl lg:text-2xl font-bold gradient-text-primary cursor-pointer transition-transform active:scale-95 whitespace-nowrap" 
+              className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold gradient-text-primary cursor-pointer transition-transform active:scale-95 hover:opacity-90 whitespace-nowrap" 
               onClick={handleLogoClick}
             >
               Djassa
             </h1>
             
-            {/* Search Bar */}
-            <div className="flex-1 md:max-w-md">
+            {/* Search Bar - Centered and wider on desktop */}
+            <div className="flex-1 lg:max-w-xl xl:max-w-2xl lg:mx-auto">
               <SearchBar placeholder="Rechercher des produits..." />
             </div>
             
@@ -339,34 +339,54 @@ const Index = () => {
               <MobileInfoDrawer />
             </div>
 
-            {/* Desktop Icons Only */}
-            <div className="hidden md:flex items-center gap-2">
-              <Badge className="gradient-accent text-xs px-2 py-1">
+            {/* Desktop Icons Only - Enhanced spacing */}
+            <div className="hidden md:flex items-center gap-3 lg:gap-4">
+              <Badge className="gradient-accent text-xs lg:text-sm px-3 py-1.5 rounded-full shadow-sm">
                 {userCountry}
               </Badge>
-              <Button variant="ghost" size="icon" className="relative p-2 min-w-[44px] min-h-[44px]" onClick={handleFavoritesClick}>
-                <Heart className={`w-5 h-5 ${favoriteIds.length > 0 ? 'fill-current text-promo' : ''}`} />
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="relative p-2 min-w-[44px] min-h-[44px] rounded-xl hover:bg-muted/80 transition-colors" 
+                onClick={handleFavoritesClick}
+              >
+                <Heart className={`w-5 h-5 lg:w-6 lg:h-6 ${favoriteIds.length > 0 ? 'fill-current text-promo' : ''}`} />
                 <RealtimeNotificationBadge count={favoriteIds.length} className="bg-promo text-white" />
               </Button>
-              <Button variant="ghost" size="icon" className="relative p-2 min-w-[44px] min-h-[44px]" onClick={handleCartClick}>
-                <ShoppingCart className="w-5 h-5" />
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="relative p-2 min-w-[44px] min-h-[44px] rounded-xl hover:bg-muted/80 transition-colors" 
+                onClick={handleCartClick}
+              >
+                <ShoppingCart className="w-5 h-5 lg:w-6 lg:h-6" />
                 <RealtimeNotificationBadge count={cartCount} className="bg-promo text-white" />
               </Button>
-              <Button variant="ghost" size="icon" className="p-2 min-w-[44px] min-h-[44px]" onClick={handleProfileClick}>
-                <User className={`w-5 h-5 ${user ? 'text-primary' : ''}`} />
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="p-2 min-w-[44px] min-h-[44px] rounded-xl hover:bg-muted/80 transition-colors" 
+                onClick={handleProfileClick}
+              >
+                <User className={`w-5 h-5 lg:w-6 lg:h-6 ${user ? 'text-primary' : ''}`} />
               </Button>
               {isSuperAdmin && (
                 <Button 
                   variant="default" 
                   size="sm" 
                   onClick={() => navigate('/superadmin')}
-                  className="text-xs min-h-[36px] bg-primary hover:bg-primary/90"
+                  className="text-xs lg:text-sm min-h-[40px] px-4 rounded-xl bg-primary hover:bg-primary/90 shadow-sm"
                 >
                   Retour au Dashboard
                 </Button>
               )}
               {user && (
-                <Button variant="ghost" size="sm" onClick={signOut} className="text-xs min-h-[36px]">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={signOut} 
+                  className="text-xs lg:text-sm min-h-[40px] px-4 rounded-xl hover:bg-destructive/10 hover:text-destructive transition-colors"
+                >
                   Déconnexion
                 </Button>
               )}
@@ -378,18 +398,18 @@ const Index = () => {
       {/* Native Announcement Slider - Mobile App Style */}
       <NativeAnnouncementSlider />
 
-      {/* Main Content - Mobile optimized with smooth scroll */}
-      <main className="container mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 max-w-[100vw] overflow-x-hidden">
+      {/* Main Content - Enhanced for desktop */}
+      <main className="container mx-auto px-3 sm:px-4 lg:px-8 xl:px-12 py-4 sm:py-6 lg:py-8 max-w-[1600px] overflow-x-hidden">
         {specialOffersProducts.length > 0 && (
-          <section className="mb-5 sm:mb-6 md:mb-8">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-3 sm:mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 gradient-primary rounded-xl flex items-center justify-center animate-pulse shadow-md">
-                  <span className="text-white text-sm sm:text-base">⚡</span>
+          <section className="mb-6 sm:mb-8 lg:mb-12">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 lg:gap-4 mb-4 lg:mb-6">
+              <div className="flex items-center gap-2 lg:gap-3">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 gradient-primary rounded-xl flex items-center justify-center animate-pulse shadow-md">
+                  <span className="text-white text-sm sm:text-base lg:text-lg">⚡</span>
                 </div>
-                <h2 className="text-base sm:text-lg md:text-xl font-bold text-foreground">Offres Spéciales</h2>
+                <h2 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-foreground">Offres Spéciales</h2>
               </div>
-              <Badge className="bg-promo text-promo-foreground animate-pulse-promo w-fit text-[10px] sm:text-xs rounded-lg">
+              <Badge className="bg-promo text-promo-foreground animate-pulse-promo w-fit text-[10px] sm:text-xs lg:text-sm rounded-lg lg:rounded-xl px-3 lg:px-4 py-1 lg:py-1.5">
                 Limitées dans le temps
               </Badge>
               <div className="sm:ml-auto">
@@ -397,14 +417,14 @@ const Index = () => {
                   variant="ghost" 
                   size="sm" 
                   onClick={() => navigate('/flash-sales')} 
-                  className="text-xs hover:text-primary transition-colors px-2 h-8 active:scale-95"
+                  className="text-xs lg:text-sm hover:text-primary transition-colors px-3 lg:px-4 h-9 lg:h-10 rounded-lg active:scale-95"
                 >
                   Voir tout →
                 </Button>
               </div>
             </div>
             
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5 sm:gap-3 md:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-5 xl:gap-6">
               {specialOffersProducts.slice(0, 12).map((product, index) => (
                 <div 
                   key={product.id} 
@@ -418,32 +438,32 @@ const Index = () => {
           </section>
         )}
 
-        {/* Bannière statique promotionnelle - Remplace le bloc produits boostés */}
-        <section className="mb-6 sm:mb-8">
+        {/* Bannière statique promotionnelle */}
+        <section className="mb-6 sm:mb-8 lg:mb-12">
           <DynamicPromoBanner />
         </section>
 
 
         {/* Catégories populaires */}
-        <section className="mb-5 sm:mb-6 md:mb-8">
+        <section className="mb-6 sm:mb-8 lg:mb-12">
           <PopularCategories />
         </section>
 
         {/* Produits Recommandés */}
-        <section className="mb-5 sm:mb-6 md:mb-8">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base sm:text-lg md:text-xl font-bold text-foreground">Recommandés pour vous</h2>
+        <section className="mb-6 sm:mb-8 lg:mb-12">
+          <div className="flex items-center justify-between mb-4 lg:mb-6">
+            <h2 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-foreground">Recommandés pour vous</h2>
             <Button 
               variant="ghost" 
               size="sm" 
               onClick={handleRefreshRecommendations} 
-              className="text-xs hover:text-primary transition-colors px-2 h-8 active:scale-95"
+              className="text-xs lg:text-sm hover:text-primary transition-colors px-3 lg:px-4 h-9 lg:h-10 rounded-lg active:scale-95"
             >
               Actualiser
             </Button>
           </div>
           
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5 sm:gap-3 md:gap-4" key={refreshKey}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-5 xl:gap-6" key={refreshKey}>
             {shuffledProducts.slice(0, 12).map((product, index) => (
               <div 
                 key={`${product.id}-${refreshKey}`} 
@@ -457,21 +477,21 @@ const Index = () => {
         </section>
 
         {/* Tendances du moment */}
-        <section className="mb-5 sm:mb-6 md:mb-8">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base sm:text-lg md:text-xl font-bold text-foreground">
+        <section className="mb-6 sm:mb-8 lg:mb-12">
+          <div className="flex items-center justify-between mb-4 lg:mb-6">
+            <h2 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-foreground">
               Tendances du moment
             </h2>
-            <Badge variant="outline" className="text-[10px] sm:text-xs rounded-lg">
+            <Badge variant="outline" className="text-xs lg:text-sm rounded-lg lg:rounded-xl px-3 lg:px-4 py-1 lg:py-1.5">
               {regularProducts.length} produits
             </Badge>
           </div>
           
           {regularProducts.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5 sm:gap-3 md:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-5 xl:gap-6">
               {regularProducts.map((product, index) => (
                 <div 
-                  key={product.id} 
+                  key={product.id}
                   className="animate-fade-in"
                   style={{ animationDelay: `${index * 40}ms` }}
                 >
@@ -487,45 +507,47 @@ const Index = () => {
         </section>
 
         {/* Section vendeur - data attribute conservé pour le scroll programmatique */}
-        <section className="mb-6 sm:mb-8" data-seller-upgrade />
+        <section className="mb-6 sm:mb-8 lg:mb-12" data-seller-upgrade />
       </main>
 
-      {/* FAQ Section - Hidden on mobile/tablet */}
+      {/* FAQ Section - Hidden on mobile/tablet, enhanced for desktop */}
       <div className="hidden md:block">
-        <FAQ />
+        <div className="container mx-auto px-4 lg:px-8 xl:px-12 max-w-[1600px]">
+          <FAQ />
+        </div>
       </div>
 
-      {/* Footer - Simple et professionnel - Hidden on mobile/tablet */}
-      <footer className="hidden md:block bg-secondary mt-8 sm:mt-12 py-8 sm:py-10 border-t">
-        <div className="container mx-auto px-3 sm:px-4">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8 mb-8">
+      {/* Footer - Enhanced for desktop */}
+      <footer className="hidden md:block bg-secondary mt-8 lg:mt-16 py-10 lg:py-14 border-t">
+        <div className="container mx-auto px-4 lg:px-8 xl:px-12 max-w-[1600px]">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-10 lg:mb-12">
             <div>
-              <h4 className="font-semibold mb-3 text-sm sm:text-base text-foreground">Assistance</h4>
-              <ul className="space-y-2">
+              <h4 className="font-semibold mb-4 text-sm lg:text-base text-foreground">Assistance</h4>
+              <ul className="space-y-3">
                 <li>
-                  <button className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors">
+                  <button className="text-sm text-muted-foreground hover:text-primary transition-colors">
                     Centre d'aide
                   </button>
                 </li>
                 <li>
-                  <button className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors">
+                  <button className="text-sm text-muted-foreground hover:text-primary transition-colors">
                     Support 24/7
                   </button>
                 </li>
                 <li>
-                  <button className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors">
+                  <button className="text-sm text-muted-foreground hover:text-primary transition-colors">
                     FAQ
                   </button>
                 </li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-3 text-sm sm:text-base text-foreground">Informations</h4>
-              <ul className="space-y-2">
+              <h4 className="font-semibold mb-4 text-sm lg:text-base text-foreground">Informations</h4>
+              <ul className="space-y-3">
                 <li>
                   <button 
                     onClick={() => navigate("/about")}
-                    className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     À propos de Djassa
                   </button>
@@ -533,7 +555,7 @@ const Index = () => {
                 <li>
                   <button 
                     onClick={() => navigate("/legal")}
-                    className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     Politique de confidentialité
                   </button>
@@ -541,25 +563,25 @@ const Index = () => {
                 <li>
                   <button 
                     onClick={() => navigate("/legal")}
-                    className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     Mentions légales
                   </button>
                 </li>
                 <li>
-                  <button className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors">
+                  <button className="text-sm text-muted-foreground hover:text-primary transition-colors">
                     CGV
                   </button>
                 </li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-3 text-sm sm:text-base text-foreground">Contact</h4>
-              <ul className="space-y-2">
+              <h4 className="font-semibold mb-4 text-sm lg:text-base text-foreground">Contact</h4>
+              <ul className="space-y-3">
                 <li>
                   <a 
                     href="mailto:djassa@djassa.tech" 
-                    className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     Email: djassa@djassa.tech
                   </a>
@@ -569,33 +591,36 @@ const Index = () => {
                     href="https://wa.me/2250788281222" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     WhatsApp: +225 07 88 28 12 22
                   </a>
                 </li>
-                <li className="text-xs sm:text-sm text-muted-foreground">Abidjan, Côte d'Ivoire</li>
+                <li className="text-sm text-muted-foreground">Abidjan, Côte d'Ivoire</li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-3 text-sm sm:text-base text-foreground">Paiement & Livraison</h4>
-              <ul className="space-y-2">
-                <li className="text-xs sm:text-sm text-muted-foreground">Orange Money</li>
-                <li className="text-xs sm:text-sm text-muted-foreground">MTN Mobile Money</li>
-                <li className="text-xs sm:text-sm text-muted-foreground">Livraison 2-5 jours</li>
+              <h4 className="font-semibold mb-4 text-sm lg:text-base text-foreground">Paiement & Livraison</h4>
+              <ul className="space-y-3">
+                <li className="text-sm text-muted-foreground">Orange Money</li>
+                <li className="text-sm text-muted-foreground">MTN Mobile Money</li>
+                <li className="text-sm text-muted-foreground">Livraison 2-5 jours</li>
               </ul>
             </div>
           </div>
           
-          <div className="border-t pt-6 text-center">
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              © 2025 Djassa. Tous droits réservés. Plateforme de commerce en ligne en Côte d'Ivoire.
+          <div className="border-t pt-8 text-center">
+            <p className="text-sm lg:text-base text-muted-foreground mb-2">
+              © {new Date().getFullYear()} Djassa - Votre marketplace de confiance
+            </p>
+            <p className="text-xs lg:text-sm text-muted-foreground">
+              Fait avec ❤️ en Côte d'Ivoire 🇨🇮
             </p>
           </div>
         </div>
       </footer>
-      
-      {/* Floating Buttons - Desktop only */}
+
+      {/* Floating elements */}
       <FloatingChatButton />
       <ScrollToTopButton />
     </div>

@@ -94,8 +94,8 @@ export const ChatInput = ({
           onChange={handleChange}
           onKeyDown={handleKeyPress}
           placeholder={placeholder}
-          className="w-full text-[15px] rounded-3xl border-0 bg-card focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-200 resize-none py-3 px-4 shadow-sm"
-          style={{ minHeight: '44px', maxHeight }}
+          className="w-full text-[15px] rounded-2xl border border-border/50 bg-muted/30 focus:ring-1 focus:ring-primary/30 focus-visible:ring-1 focus-visible:ring-primary/30 focus-visible:ring-offset-0 transition-all duration-200 resize-none py-3 px-4 shadow-sm placeholder:text-muted-foreground/60"
+          style={{ minHeight: '46px', maxHeight }}
           autoComplete="off"
           rows={1}
           disabled={disabled}
@@ -105,7 +105,7 @@ export const ChatInput = ({
         onClick={handleSend} 
         size="icon" 
         disabled={!localValue.trim() || disabled} 
-        className="h-11 w-11 rounded-full shadow-md transition-all duration-200 disabled:opacity-40 flex-shrink-0 active:scale-95 bg-primary hover:bg-primary-hover"
+        className="h-11 w-11 rounded-full shadow-md transition-all duration-200 disabled:opacity-40 flex-shrink-0 active:scale-95 bg-primary hover:bg-primary/90"
       >
         <Send className="h-5 w-5" />
       </Button>

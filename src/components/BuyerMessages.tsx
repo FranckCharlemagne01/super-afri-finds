@@ -197,22 +197,30 @@ export const BuyerMessages = () => {
           </p>
         </div>
       ) : (
-        <div className="bg-card rounded-2xl border border-border/50 overflow-hidden divide-y divide-border/50">
+        <div className="space-y-2">
           {threads.map((thread) => (
             <button
               key={thread.thread_id}
-              className={`w-full flex items-center gap-3 p-4 hover:bg-muted/50 active:bg-muted transition-colors text-left ${
-                thread.unread_count > 0 ? 'bg-primary/5' : ''
+              className={`w-full flex items-center gap-3 p-3.5 rounded-2xl hover:bg-muted/50 active:bg-muted transition-all text-left bg-card border border-border/50 ${
+                thread.unread_count > 0 ? 'border-primary/30 bg-primary/5' : ''
               }`}
               onClick={() => handleThreadClick(thread)}
             >
-              {/* Avatar */}
+              {/* Avatar - Style WhatsApp */}
               <div className="relative flex-shrink-0">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center border border-border/50">
-                  <Store className="h-5 w-5 text-primary" />
-                </div>
+                {thread.product?.images?.[0] ? (
+                  <img 
+                    src={thread.product.images[0]} 
+                    alt=""
+                    className="w-14 h-14 rounded-xl object-cover border border-border/50"
+                  />
+                ) : (
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center border border-border/50">
+                    <Store className="h-6 w-6 text-primary" />
+                  </div>
+                )}
                 {thread.unread_count > 0 && (
-                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                  <div className="absolute -top-1 -right-1 min-w-5 h-5 bg-primary rounded-full flex items-center justify-center px-1">
                     <span className="text-[10px] font-bold text-primary-foreground">
                       {thread.unread_count > 9 ? '9+' : thread.unread_count}
                     </span>
@@ -223,26 +231,29 @@ export const BuyerMessages = () => {
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-0.5">
-                  <span className={`font-semibold text-sm truncate ${thread.unread_count > 0 ? 'text-foreground' : 'text-foreground'}`}>
+                  <span className={`font-bold text-sm truncate ${thread.unread_count > 0 ? 'text-foreground' : 'text-foreground'}`}>
                     {thread.other_user_profile?.full_name || 
-                     thread.other_user_profile?.email || 
+                     thread.other_user_profile?.email?.split('@')[0] || 
                      'Vendeur'}
                   </span>
-                  <span className="text-[11px] text-muted-foreground flex-shrink-0">
+                  <span className={`text-[11px] flex-shrink-0 ${thread.unread_count > 0 ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
                     {format(new Date(thread.latest_message.created_at), 'dd MMM', { locale: fr })}
                   </span>
                 </div>
                 
                 {thread.product && (
-                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground mb-0.5">
-                    <Package className="h-3 w-3 flex-shrink-0" />
-                    <span className="truncate">{thread.product.title}</span>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Package className="h-3 w-3 text-primary flex-shrink-0" />
+                    <span className="text-xs text-primary font-medium truncate">{thread.product.title}</span>
                   </div>
                 )}
                 
                 <p className={`text-sm line-clamp-1 ${
                   thread.unread_count > 0 ? 'text-foreground font-medium' : 'text-muted-foreground'
                 }`}>
+                  {thread.latest_message.sender_id !== user?.id && thread.unread_count > 0 && (
+                    <span className="inline-block w-2 h-2 bg-primary rounded-full mr-1.5 align-middle" />
+                  )}
                   {thread.latest_message.content === '[PRODUCT_SHARE]' 
                     ? '📦 Carte produit partagée' 
                     : thread.latest_message.content}

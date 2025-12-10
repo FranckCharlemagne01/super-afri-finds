@@ -132,20 +132,20 @@ export const MarketplaceTutorial = () => {
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[100] flex items-center justify-center p-4"
         >
-          {/* Blurred product background */}
+          {/* Semi-transparent backdrop - products visible behind */}
           <div className="absolute inset-0 overflow-hidden">
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-background/95 via-background/90 to-background/95 z-10" />
+            {/* Light overlay to keep products visible */}
+            <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] z-10" />
             
-            {/* Product images grid */}
-            <div className="absolute inset-0 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 p-2 blur-sm opacity-60">
+            {/* Product images grid - more visible */}
+            <div className="absolute inset-0 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 p-3 opacity-80">
               {productImages.map((img, index) => (
                 <motion.div
                   key={`${img.id}-${index}`}
-                  initial={{ opacity: 0, scale: 0.8 }}
+                  initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: index * 0.05, duration: 0.3 }}
-                  className="aspect-square rounded-xl overflow-hidden"
+                  transition={{ delay: index * 0.03, duration: 0.4 }}
+                  className="aspect-square rounded-xl overflow-hidden shadow-md"
                 >
                   <img
                     src={img.url}
@@ -160,41 +160,30 @@ export const MarketplaceTutorial = () => {
               ))}
             </div>
 
-            {/* Animated floating elements */}
+            {/* Subtle animated accents */}
             <motion.div
               animate={{ 
-                y: [0, -20, 0],
-                rotate: [0, 5, 0]
-              }}
-              transition={{ 
-                duration: 6,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-              className="absolute top-[15%] left-[10%] w-20 h-20 bg-primary/20 rounded-full blur-2xl z-0"
-            />
-            <motion.div
-              animate={{ 
-                y: [0, 20, 0],
-                rotate: [0, -5, 0]
+                y: [0, -15, 0],
+                opacity: [0.3, 0.5, 0.3]
               }}
               transition={{ 
                 duration: 5,
                 repeat: Infinity,
                 ease: "easeInOut"
               }}
-              className="absolute bottom-[20%] right-[15%] w-32 h-32 bg-accent/20 rounded-full blur-2xl z-0"
+              className="absolute top-[10%] left-[5%] w-24 h-24 bg-primary/30 rounded-full blur-3xl z-5"
             />
             <motion.div
               animate={{ 
-                scale: [1, 1.2, 1],
+                y: [0, 15, 0],
+                opacity: [0.2, 0.4, 0.2]
               }}
               transition={{ 
-                duration: 4,
+                duration: 6,
                 repeat: Infinity,
                 ease: "easeInOut"
               }}
-              className="absolute top-[40%] right-[25%] w-24 h-24 bg-success/15 rounded-full blur-2xl z-0"
+              className="absolute bottom-[15%] right-[10%] w-32 h-32 bg-accent/25 rounded-full blur-3xl z-5"
             />
           </div>
 

@@ -16,7 +16,6 @@ const Verify = lazy(() => import("./pages/Verify"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const AuthWelcome = lazy(() => import("./pages/AuthWelcome"));
 const Welcome = lazy(() => import("./pages/Welcome"));
-const Landing = lazy(() => import("./pages/Landing"));
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
 const SellerDashboard = lazy(() => import("./pages/SellerDashboard"));
@@ -90,7 +89,7 @@ const App = () => {
           <BrowserRouter>
             <Suspense fallback={<PageLoadingFallback />}>
               <Routes>
-                <Route path="/" element={<Landing />} />
+                <Route path="/" element={<Index />} />
                 <Route path="/marketplace" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />

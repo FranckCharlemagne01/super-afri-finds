@@ -23,32 +23,32 @@ const tutorialSteps: TutorialStep[] = [
   {
     id: 1,
     icon: <Sparkles className="h-8 w-8 text-primary" />,
-    title: "Bienvenue sur Djassa !",
-    message: "Votre marketplace 100% ivoirienne. Découvrez des milliers de produits locaux de qualité près de chez vous."
+    title: "Bienvenue sur Djassa",
+    message: "La marketplace qui connecte acheteurs et vendeurs. Rejoignez une communauté dynamique et découvrez des opportunités uniques."
   },
   {
     id: 2,
     icon: <Search className="h-8 w-8 text-primary" />,
-    title: "Naviguez facilement",
-    message: "Utilisez la barre de recherche ou explorez les catégories pour trouver exactement ce que vous cherchez."
+    title: "Trouvez l'exceptionnel",
+    message: "Recherche intelligente, catégories claires. Accédez instantanément à des milliers de produits sélectionnés pour vous."
   },
   {
     id: 3,
     icon: <ShoppingCart className="h-8 w-8 text-success" />,
-    title: "Achetez en confiance",
-    message: "Ajoutez des produits au panier et passez votre commande en quelques clics. Paiement sécurisé par Mobile Money."
+    title: "Achetez en toute sécurité",
+    message: "Paiement sécurisé, transaction protégée. Commandez en quelques clics avec une confiance totale."
   },
   {
     id: 4,
     icon: <Store className="h-8 w-8 text-accent" />,
-    title: "Créez votre boutique",
-    message: "Vous êtes vendeur ? Lancez votre boutique en ligne gratuitement pendant 28 jours et touchez des milliers de clients."
+    title: "Lancez votre boutique",
+    message: "Créez votre e-commerce en 2 minutes. 28 jours gratuits pour tester, zéro risque, potentiel illimité."
   },
   {
     id: 5,
     icon: <Truck className="h-8 w-8 text-promo" />,
-    title: "Suivez vos commandes",
-    message: "Retrouvez toutes vos commandes dans votre espace personnel et suivez leur statut en temps réel."
+    title: "Gérez tout, simplement",
+    message: "Tableau de bord intuitif, suivi en temps réel. Gardez le contrôle de vos achats et ventes depuis n'importe où."
   }
 ];
 
@@ -279,7 +279,7 @@ export const MarketplaceTutorial = () => {
                     DJASSA
                   </span>
                 </motion.div>
-                <p className="text-xs text-muted-foreground">Votre marketplace ivoirienne</p>
+                <p className="text-xs text-muted-foreground">Achetez. Vendez. Prospérez.</p>
               </div>
 
               {/* Step content */}

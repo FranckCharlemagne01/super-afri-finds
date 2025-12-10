@@ -1,7 +1,7 @@
 project_id = "zqskpspbyzptzjcoitwt"
 
 [functions.cleanup-broken-images]
-verify_jwt = false
+verify_jwt = true
 
 [functions.subscription-payment]
 verify_jwt = true

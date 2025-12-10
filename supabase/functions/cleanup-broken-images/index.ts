@@ -23,7 +23,62 @@ serve(async (req: Request) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     
+    // Authentication check - verify JWT token
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      console.error("Missing Authorization header");
+      return new Response(JSON.stringify({ error: "Unauthorized - Missing token" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    
+    // Create client with user's token to verify identity
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    });
+
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+    
+    if (authError || !user) {
+      console.error("Authentication failed:", authError?.message);
+      return new Response(JSON.stringify({ error: "Unauthorized - Invalid token" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+
+    console.log(`User ${user.id} attempting cleanup operation`);
+
+    // Authorization check - only superadmins can trigger cleanup
+    const { data: isSuperAdmin, error: roleError } = await supabaseAuth.rpc("has_role", {
+      _user_id: user.id,
+      _role: "superadmin",
+    });
+
+    if (roleError) {
+      console.error("Role check failed:", roleError.message);
+      return new Response(JSON.stringify({ error: "Authorization check failed" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
+    }
+
+    if (!isSuperAdmin) {
+      console.error(`User ${user.id} is not a superadmin - access denied`);
+      return new Response(JSON.stringify({ error: "Forbidden - Superadmin access required" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 403,
+      });
+    }
+
+    console.log(`Superadmin ${user.id} authorized - starting cleanup operation`);
+
+    // Now use service role for actual cleanup operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const result: CleanupResult = {
@@ -170,6 +225,8 @@ serve(async (req: Request) => {
         }
       }
     }
+
+    console.log(`Cleanup completed by superadmin ${user.id}:`, result);
 
     return new Response(JSON.stringify({
       success: true,

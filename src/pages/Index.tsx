@@ -1,4 +1,3 @@
-
 import { ProductCard } from "@/components/ProductCard";
 import { CategoryCard } from "@/components/CategoryCard";
 import { SearchBar } from "@/components/SearchBar";
@@ -15,6 +14,7 @@ import { PopularCategories } from "@/components/PopularCategories";
 import { FeaturedProductsGrid } from "@/components/FeaturedProductsGrid";
 import { DynamicPromoBanner } from "@/components/DynamicPromoBanner";
 import { NativeAnnouncementSlider } from "@/components/NativeAnnouncementSlider";
+import { MarketplaceTutorial } from "@/components/MarketplaceTutorial";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -315,7 +315,11 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-8 overflow-x-hidden">
+    <>
+      {/* Tutorial Overlay */}
+      <MarketplaceTutorial />
+      
+      <div className="min-h-screen bg-background pb-20 md:pb-8 overflow-x-hidden">
       {/* Header - Enhanced for desktop */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-border/50">
         <div className="container mx-auto px-3 sm:px-4 lg:px-8 xl:px-12 py-2.5 sm:py-3 lg:py-4 max-w-[1600px]">
@@ -624,6 +628,7 @@ const Index = () => {
       <FloatingChatButton />
       <ScrollToTopButton />
     </div>
+    </>
   );
 };
 

@@ -42,15 +42,15 @@ const ProductCardImage = memo(({
   }, []);
 
   return (
-    <div className="relative w-full bg-gray-50 overflow-hidden" style={{ paddingBottom: '100%' }}>
+    <div className="relative w-full bg-muted/30 overflow-hidden aspect-[4/5]">
       {/* Loader */}
       {isLoading && !hasError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-          <div className="w-6 h-6 rounded-full border-2 border-gray-200 border-t-primary animate-spin" />
+        <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
+          <div className="w-5 h-5 rounded-full border-2 border-muted-foreground/20 border-t-primary animate-spin" />
         </div>
       )}
       
-      {/* Image */}
+      {/* Image - object-contain pour voir l'image entière sans zoom */}
       <img
         src={hasError ? '/placeholder.svg' : src}
         alt={alt}
@@ -59,7 +59,7 @@ const ProductCardImage = memo(({
         onLoad={handleLoad}
         onError={handleError}
         className={cn(
-          "absolute inset-0 w-full h-full object-contain p-1 transition-opacity duration-200",
+          "absolute inset-0 w-full h-full object-contain p-2 transition-opacity duration-300",
           isLoading ? "opacity-0" : "opacity-100"
         )}
       />
@@ -103,30 +103,30 @@ export const CategoryProductCard = memo(({
     <div
       onClick={handleClick}
       className={cn(
-        "relative bg-white rounded-xl overflow-hidden cursor-pointer transition-all duration-200 active:scale-[0.98]",
-        "border border-gray-100 shadow-sm hover:shadow-md",
+        "relative bg-card rounded-xl overflow-hidden cursor-pointer transition-all duration-200 active:scale-[0.98]",
+        "border border-border/50 shadow-sm hover:shadow-md",
         isActiveBoosted && "ring-1 ring-amber-400/50"
       )}
     >
       {/* Badges - Position absolue en haut à gauche */}
-      <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
+      <div className="absolute top-1.5 left-1.5 z-10 flex flex-col gap-0.5">
         {isActiveBoosted && (
-          <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] px-2 py-0.5 font-medium rounded-md shadow-sm">
+          <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[9px] px-1.5 py-0.5 font-medium rounded-md shadow-sm">
             ⭐ Vedette
           </Badge>
         )}
         {!isActiveBoosted && badge && (
-          <Badge className="bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-md shadow-sm">
+          <Badge className="bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded-md shadow-sm">
             {badge}
           </Badge>
         )}
         {isFlashSale && (
-          <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] px-2 py-0.5 rounded-md shadow-sm">
+          <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-[9px] px-1.5 py-0.5 rounded-md shadow-sm">
             ⚡ Flash
           </Badge>
         )}
         {discount > 0 && (
-          <Badge className="bg-red-500 text-white text-[10px] px-2 py-0.5 font-bold rounded-md shadow-sm">
+          <Badge className="bg-destructive text-destructive-foreground text-[9px] px-1.5 py-0.5 font-bold rounded-md shadow-sm">
             -{discount}%
           </Badge>
         )}
@@ -136,64 +136,64 @@ export const CategoryProductCard = memo(({
       <button
         onClick={handleFavoriteClick}
         className={cn(
-          "absolute top-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all",
-          "bg-white/90 shadow-sm backdrop-blur-sm active:scale-90",
+          "absolute top-1.5 right-1.5 z-10 w-7 h-7 rounded-full flex items-center justify-center transition-all",
+          "bg-background/90 shadow-sm backdrop-blur-sm active:scale-90",
           isFav && "bg-red-50"
         )}
       >
         <Heart 
           className={cn(
-            "w-4 h-4 transition-colors",
-            isFav ? "text-red-500 fill-current" : "text-gray-400"
+            "w-3.5 h-3.5 transition-colors",
+            isFav ? "text-red-500 fill-current" : "text-muted-foreground"
           )} 
         />
       </button>
 
-      {/* Image du produit - Aspect ratio 1:1 avec contain */}
+      {/* Image du produit - Aspect ratio 4:5 avec contain */}
       <ProductCardImage src={image} alt={title} />
 
-      {/* Informations produit */}
-      <div className="p-2.5 space-y-1.5">
+      {/* Informations produit - Compact pour mobile */}
+      <div className="p-2 space-y-1">
         {/* Titre du produit - Max 2 lignes */}
-        <h3 className="text-xs font-medium text-gray-800 line-clamp-2 leading-snug min-h-[2.5rem]">
+        <h3 className="text-[11px] sm:text-xs font-medium text-foreground line-clamp-2 leading-tight min-h-[2rem]">
           {title}
         </h3>
 
         {/* Rating inline compact */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
           <div className="flex">
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
                 className={cn(
-                  "w-3 h-3",
+                  "w-2.5 h-2.5",
                   i < Math.floor(rating)
                     ? "text-amber-400 fill-current"
-                    : "text-gray-200 fill-current"
+                    : "text-muted fill-current"
                 )}
               />
             ))}
           </div>
-          <span className="text-[10px] text-gray-400">({reviews})</span>
+          <span className="text-[9px] text-muted-foreground ml-0.5">({reviews})</span>
         </div>
 
         {/* Prix - Mise en évidence */}
-        <div className="flex items-baseline gap-1.5 flex-wrap">
-          <span className="text-base font-bold text-gray-900">
+        <div className="flex items-baseline gap-1 flex-wrap">
+          <span className="text-sm sm:text-base font-bold text-foreground tabular-nums">
             {salePrice.toLocaleString()}
           </span>
-          <span className="text-[10px] text-gray-500 font-medium">FCFA</span>
+          <span className="text-[9px] text-muted-foreground font-medium">FCFA</span>
         </div>
         
         {originalPrice > salePrice && (
-          <span className="text-[10px] text-gray-400 line-through">
+          <span className="text-[9px] text-muted-foreground line-through tabular-nums">
             {originalPrice.toLocaleString()} FCFA
           </span>
         )}
 
         {/* Nom de la boutique */}
         {shop_name && (
-          <p className="text-[10px] text-primary truncate pt-0.5">
+          <p className="text-[9px] text-primary truncate pt-0.5">
             {shop_name}
           </p>
         )}

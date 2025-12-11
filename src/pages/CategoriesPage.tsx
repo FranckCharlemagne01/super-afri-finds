@@ -30,7 +30,7 @@ interface Product {
   shop_name?: string;
 }
 
-export const CategoriesPage = () => {
+const CategoriesPage = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -357,3 +357,5 @@ export const CategoriesPage = () => {
     </div>
   );
 };
+
+export default CategoriesPage;

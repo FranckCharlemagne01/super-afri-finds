@@ -33,7 +33,7 @@ const LegalNotice = lazy(() => import("./pages/LegalNotice"));
 const About = lazy(() => import("./pages/About"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const MessagesPage = lazy(() => import("./pages/MessagesPage"));
-const CategoriesPage = lazy(() => import("./pages/CategoriesPage").then(m => ({ default: m.CategoriesPage })));
+const CategoriesPage = lazy(() => import("./pages/CategoriesPage"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const DemoVideo = lazy(() => import("./pages/DemoVideo"));
 

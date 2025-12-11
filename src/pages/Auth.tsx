@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useStableAuth } from '@/hooks/useStableAuth';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Globe, Mail, Lock, User, Phone, MapPin, Building2, Loader2 } from 'lucide-react';
+import { ArrowLeft, Globe, Mail, Lock, User, Phone, MapPin, Building2, Loader2, Smartphone } from 'lucide-react';
 import { CountrySelect } from '@/components/CountrySelect';
 import { CitySelect } from '@/components/CitySelect';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,11 +23,20 @@ const Auth = () => {
 
   // Form states - grouped logically
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
   const [loading, setLoading] = useState(false);
   
   // Sign in states
   const [loginIdentifier, setLoginIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  
+  // Phone auth states
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
+  const [phoneOtpCode, setPhoneOtpCode] = useState('');
+  const [sendingPhoneOtp, setSendingPhoneOtp] = useState(false);
+  const [verifyingPhoneOtp, setVerifyingPhoneOtp] = useState(false);
+  const [phoneOtpError, setPhoneOtpError] = useState('');
   
   // Sign up states
   const [email, setEmail] = useState('');
@@ -164,6 +173,131 @@ const Auth = () => {
 
   const handleUserRoleChange = useCallback((value: 'buyer' | 'seller') => {
     setUserRole(value);
+  }, []);
+
+  // Phone auth handlers
+  const handlePhoneNumberChange = useCallback((value: string) => {
+    // Allow only digits and + for phone
+    if (value === '' || /^[+\d\s]*$/.test(value)) {
+      setPhoneNumber(value);
+      setPhoneOtpError('');
+    }
+  }, []);
+
+  const handleSendPhoneOtp = useCallback(async () => {
+    if (!phoneNumber || phoneNumber.length < 8) {
+      setPhoneOtpError('Entrez un numéro valide');
+      return;
+    }
+    
+    setSendingPhoneOtp(true);
+    setPhoneOtpError('');
+    
+    try {
+      const response = await supabase.functions.invoke('send-otp', {
+        body: { phone: phoneNumber }
+      });
+      
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+      
+      if (response.data?.error) {
+        setPhoneOtpError(response.data.error);
+        return;
+      }
+      
+      setPhoneOtpSent(true);
+      toast({
+        title: "📱 Code envoyé",
+        description: "Vérifiez vos SMS",
+        duration: 4000,
+      });
+      
+      // Debug: Si en mode test, afficher le code
+      if (response.data?.debug_code) {
+        console.log('Code OTP (test):', response.data.debug_code);
+        toast({
+          title: "🔧 Mode test",
+          description: `Code: ${response.data.debug_code}`,
+          duration: 10000,
+        });
+      }
+    } catch (error) {
+      setPhoneOtpError(error instanceof Error ? error.message : 'Erreur d\'envoi');
+    } finally {
+      setSendingPhoneOtp(false);
+    }
+  }, [phoneNumber, toast]);
+
+  const handleVerifyPhoneOtp = useCallback(async (code?: string) => {
+    const otpToVerify = code || phoneOtpCode;
+    if (otpToVerify.length !== 6) {
+      setPhoneOtpError('Entrez le code à 6 chiffres');
+      return;
+    }
+    
+    setVerifyingPhoneOtp(true);
+    setPhoneOtpError('');
+    
+    try {
+      const response = await supabase.functions.invoke('verify-otp', {
+        body: { 
+          phone: phoneNumber, 
+          otp: otpToVerify,
+          fullName: authMode === 'signup' ? `${firstName} ${lastName}`.trim() : undefined,
+          isSignUp: authMode === 'signup'
+        }
+      });
+      
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+      
+      if (response.data?.error) {
+        setPhoneOtpError(response.data.error);
+        if (response.data?.needsSignUp) {
+          toast({
+            title: "Compte introuvable",
+            description: "Créez un compte avec ce numéro",
+            duration: 4000,
+          });
+          setAuthMode('signup');
+          setPhone(phoneNumber);
+        }
+        return;
+      }
+      
+      // Succès - connexion via magic link ou nouvelle session
+      if (response.data?.magicLink) {
+        window.location.href = response.data.magicLink;
+      } else {
+        toast({
+          title: "✅ Connexion réussie",
+          description: response.data?.isNewUser ? "Bienvenue sur Djassa !" : "Vous êtes connecté",
+          duration: 3000,
+        });
+        setTimeout(() => navigate('/', { replace: true }), 500);
+      }
+    } catch (error) {
+      setPhoneOtpError(error instanceof Error ? error.message : 'Code invalide');
+    } finally {
+      setVerifyingPhoneOtp(false);
+    }
+  }, [phoneNumber, phoneOtpCode, firstName, lastName, authMode, toast, navigate]);
+
+  const handlePhoneOtpChange = useCallback((value: string) => {
+    setPhoneOtpCode(value);
+    setPhoneOtpError('');
+    if (value.length === 6) {
+      handleVerifyPhoneOtp(value);
+    }
+  }, [handleVerifyPhoneOtp]);
+
+  const handleBackFromPhoneOtp = useCallback(() => {
+    setPhoneOtpSent(false);
+    setPhoneOtpCode('');
+    setPhoneOtpError('');
   }, []);
 
   const handleSignIn = useCallback(async (e: React.FormEvent) => {
@@ -770,44 +904,184 @@ const Auth = () => {
               </form>
             ) : (
               /* Sign In Form */
-              <form onSubmit={handleSignIn} className="space-y-5">
-                {formError && <AuthErrorAlert message={formError} />}
-
-                <OptimizedInput
-                  id="loginEmail"
-                  label="Email"
-                  icon={Mail}
-                  type="email"
-                  placeholder="exemple : nom@email.com"
-                  value={loginIdentifier}
-                  onChange={handleLoginIdentifierChange}
-                  required
-                  autoComplete="email"
-                />
-
-                <OptimizedInput
-                  id="loginPassword"
-                  label="Mot de passe"
-                  icon={Lock}
-                  placeholder="Votre mot de passe"
-                  value={password}
-                  onChange={handlePasswordChange}
-                  required
-                  showPasswordToggle
-                  autoComplete="current-password"
-                />
-
-                <div className="flex justify-end">
+              <div className="space-y-5">
+                {/* Auth method toggle */}
+                <div className="flex rounded-xl bg-muted/50 p-1 gap-1">
                   <button
                     type="button"
-                    onClick={handleForgotPassword}
-                    className="text-sm text-primary hover:underline font-medium"
+                    onClick={() => { setAuthMethod('email'); setFormError(''); setPhoneOtpError(''); }}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium transition-all ${
+                      authMethod === 'email' 
+                        ? 'bg-background text-foreground shadow-sm' 
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
                   >
-                    Mot de passe oublié ?
+                    <Mail className="w-4 h-4" />
+                    Email
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setAuthMethod('phone'); setFormError(''); setPhoneOtpError(''); }}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium transition-all ${
+                      authMethod === 'phone' 
+                        ? 'bg-background text-foreground shadow-sm' 
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <Smartphone className="w-4 h-4" />
+                    Téléphone
                   </button>
                 </div>
 
-                <AuthSubmitButton loading={loading} text="Se connecter" loadingText="Connexion..." />
+                {authMethod === 'email' ? (
+                  /* Email Sign In */
+                  <form onSubmit={handleSignIn} className="space-y-5 animate-fade-in">
+                    {formError && <AuthErrorAlert message={formError} />}
+
+                    <OptimizedInput
+                      id="loginEmail"
+                      label="Email"
+                      icon={Mail}
+                      type="email"
+                      placeholder="exemple : nom@email.com"
+                      value={loginIdentifier}
+                      onChange={handleLoginIdentifierChange}
+                      required
+                      autoComplete="email"
+                    />
+
+                    <OptimizedInput
+                      id="loginPassword"
+                      label="Mot de passe"
+                      icon={Lock}
+                      placeholder="Votre mot de passe"
+                      value={password}
+                      onChange={handlePasswordChange}
+                      required
+                      showPasswordToggle
+                      autoComplete="current-password"
+                    />
+
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={handleForgotPassword}
+                        className="text-sm text-primary hover:underline font-medium"
+                      >
+                        Mot de passe oublié ?
+                      </button>
+                    </div>
+
+                    <AuthSubmitButton loading={loading} text="Se connecter" loadingText="Connexion..." />
+                  </form>
+                ) : phoneOtpSent ? (
+                  /* Phone OTP Verification */
+                  <div className="space-y-6 animate-fade-in">
+                    <div className="text-center space-y-2">
+                      <div className="mx-auto w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center">
+                        <Smartphone className="w-7 h-7 text-primary" />
+                      </div>
+                      <h3 className="text-lg font-semibold">Vérifiez votre téléphone</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Code envoyé au <strong className="text-foreground">{phoneNumber}</strong>
+                      </p>
+                    </div>
+
+                    {phoneOtpError && <AuthErrorAlert message={phoneOtpError} />}
+
+                    <div className="flex flex-col items-center space-y-4">
+                      <InputOTP
+                        maxLength={6}
+                        value={phoneOtpCode}
+                        onChange={handlePhoneOtpChange}
+                      >
+                        <InputOTPGroup className="gap-2">
+                          {[0, 1, 2, 3, 4, 5].map((i) => (
+                            <InputOTPSlot 
+                              key={i} 
+                              index={i} 
+                              className="w-12 h-14 text-lg rounded-xl border-2" 
+                            />
+                          ))}
+                        </InputOTPGroup>
+                      </InputOTP>
+                      <p className="text-xs text-muted-foreground">Expire dans 5 minutes</p>
+                    </div>
+
+                    <Button
+                      onClick={() => handleVerifyPhoneOtp()}
+                      disabled={verifyingPhoneOtp || phoneOtpCode.length !== 6}
+                      className="w-full h-14 rounded-xl font-semibold text-base"
+                    >
+                      {verifyingPhoneOtp ? (
+                        <><Loader2 className="h-5 w-5 animate-spin mr-2" />Vérification...</>
+                      ) : (
+                        'Confirmer'
+                      )}
+                    </Button>
+
+                    <div className="text-center space-y-3">
+                      <Button 
+                        variant="outline" 
+                        onClick={handleSendPhoneOtp} 
+                        disabled={sendingPhoneOtp}
+                        className="w-full h-12 rounded-xl"
+                      >
+                        {sendingPhoneOtp ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Envoi...</> : "Renvoyer le code"}
+                      </Button>
+                      <button
+                        type="button"
+                        onClick={handleBackFromPhoneOtp}
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        Modifier le numéro
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  /* Phone Number Input */
+                  <div className="space-y-5 animate-fade-in">
+                    {phoneOtpError && <AuthErrorAlert message={phoneOtpError} />}
+
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-muted-foreground" />
+                        Numéro de téléphone
+                      </Label>
+                      <input
+                        type="tel"
+                        inputMode="tel"
+                        placeholder="+225 07 07 07 07 07"
+                        value={phoneNumber}
+                        onChange={(e) => handlePhoneNumberChange(e.target.value)}
+                        className="w-full h-14 px-4 rounded-xl border-2 border-border bg-background text-lg font-medium placeholder:text-muted-foreground/50 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                        autoComplete="tel"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Avec indicatif pays (+225 pour Côte d'Ivoire)
+                      </p>
+                    </div>
+
+                    <Button
+                      onClick={handleSendPhoneOtp}
+                      disabled={sendingPhoneOtp || !phoneNumber || phoneNumber.length < 8}
+                      className="w-full h-14 rounded-xl font-semibold text-base"
+                    >
+                      {sendingPhoneOtp ? (
+                        <><Loader2 className="h-5 w-5 animate-spin mr-2" />Envoi du code...</>
+                      ) : (
+                        <>
+                          <Smartphone className="w-5 h-5 mr-2" />
+                          Recevoir un code SMS
+                        </>
+                      )}
+                    </Button>
+
+                    <p className="text-center text-xs text-muted-foreground">
+                      Connexion rapide sans mot de passe
+                    </p>
+                  </div>
+                )}
 
                 <div className="relative py-4">
                   <div className="absolute inset-0 flex items-center">
@@ -826,7 +1100,7 @@ const Auth = () => {
                 >
                   Créer un compte
                 </Button>
-              </form>
+              </div>
             )}
           </div>
         </div>

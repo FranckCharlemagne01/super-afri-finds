@@ -218,21 +218,26 @@ export const ProductImage = ({
   className,
   productId,
   enableAutoCleanup = true,
+  aspectRatio = 'product',
 }: {
   src: string | undefined | null;
   alt: string;
   className?: string;
   productId?: string;
   enableAutoCleanup?: boolean;
+  aspectRatio?: 'square' | 'product' | 'portrait';
 }) => {
+  // Use 4:5 aspect ratio for product cards - less cropping than square
+  const aspectClass = aspectRatio === 'product' ? 'aspect-[4/5]' : aspectRatio === 'portrait' ? 'aspect-[3/4]' : 'aspect-square';
+  
   return (
     <OptimizedImage
       src={src}
       alt={alt}
-      aspectRatio="square"
-      objectFit="cover"
-      className={cn('rounded-t-lg', className)}
-      containerClassName="rounded-t-lg"
+      aspectRatio="auto"
+      objectFit="contain"
+      className={cn('rounded-t-2xl bg-white', className)}
+      containerClassName={cn('rounded-t-2xl bg-white', aspectClass)}
       productId={productId}
       enableAutoCleanup={enableAutoCleanup}
     />

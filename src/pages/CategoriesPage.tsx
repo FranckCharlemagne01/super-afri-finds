@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ProductCard } from "@/components/ProductCard";
+import { CategoryProductCard } from "@/components/CategoryProductCard";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
@@ -110,19 +111,19 @@ const CategoriesPage = () => {
   // Mobile layout: Style native e-commerce (Jumia, Amazon)
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-gray-50 pb-20 flex flex-col">
+      <div className="min-h-screen bg-gray-50/80 pb-20 flex flex-col">
         {/* Header mobile - Clean native style */}
-        <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
+        <div className="sticky top-0 z-40 bg-white border-b border-gray-100/80 shadow-sm">
           <div className="px-3 py-2.5">
             {/* Titre et bouton retour */}
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2.5 mb-2.5">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate('/')}
-                className="w-9 h-9 rounded-full bg-gray-50 hover:bg-gray-100"
+                className="w-9 h-9 rounded-full bg-gray-50 hover:bg-gray-100 active:scale-95 transition-transform"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-4 h-4 text-gray-700" />
               </Button>
               <h1 className="text-base font-semibold text-gray-900">Catégories</h1>
             </div>
@@ -132,10 +133,10 @@ const CategoriesPage = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
                 type="text"
-                placeholder="Rechercher..."
+                placeholder="Rechercher un produit..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-10 pl-9 pr-3 rounded-full bg-gray-100 border-0 text-sm placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-primary/20"
+                className="w-full h-10 pl-10 pr-4 rounded-full bg-gray-100 border-0 text-sm placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all"
               />
             </div>
           </div>
@@ -144,8 +145,8 @@ const CategoriesPage = () => {
         {/* Layout split - Sidebar étroite + Produits */}
         <div className="flex flex-1 overflow-hidden">
           {/* Sidebar gauche - Style natif compact */}
-          <div className="w-[72px] bg-white border-r border-gray-100 overflow-y-auto scrollbar-hide">
-            <div className="py-1">
+          <div className="w-[76px] bg-white border-r border-gray-100/80 overflow-y-auto scrollbar-hide flex-shrink-0">
+            <div className="py-2">
               {/* Option "Tous" */}
               <button
                 onClick={() => {
@@ -153,19 +154,19 @@ const CategoriesPage = () => {
                   setSearchQuery("");
                 }}
                 className={cn(
-                  "w-full py-2.5 px-1 flex flex-col items-center gap-1 transition-all",
+                  "w-full py-3 px-1.5 flex flex-col items-center gap-1.5 transition-all active:bg-gray-50",
                   selectedCategory === null
-                    ? "bg-primary/5 border-l-2 border-primary"
-                    : "border-l-2 border-transparent hover:bg-gray-50"
+                    ? "bg-primary/5 border-l-[3px] border-primary"
+                    : "border-l-[3px] border-transparent"
                 )}
               >
                 <div className={cn(
-                  "w-10 h-10 rounded-xl flex items-center justify-center transition-all",
+                  "w-11 h-11 rounded-xl flex items-center justify-center transition-all shadow-sm",
                   selectedCategory === null 
-                    ? "bg-primary text-white shadow-sm" 
+                    ? "bg-primary text-white" 
                     : "bg-gray-100 text-gray-500"
                 )}>
-                  <span className="text-base">🛍️</span>
+                  <span className="text-lg">🛍️</span>
                 </div>
                 <span className={cn(
                   "text-[10px] font-medium text-center leading-tight",
@@ -174,7 +175,7 @@ const CategoriesPage = () => {
                   Tous
                 </span>
                 <span className={cn(
-                  "text-[9px] font-medium px-1.5 py-0.5 rounded-full",
+                  "text-[9px] font-semibold px-2 py-0.5 rounded-full",
                   selectedCategory === null 
                     ? "bg-primary/10 text-primary" 
                     : "bg-gray-100 text-gray-500"
@@ -198,28 +199,28 @@ const CategoriesPage = () => {
                       setSearchQuery("");
                     }}
                     className={cn(
-                      "w-full py-2.5 px-1 flex flex-col items-center gap-1 transition-all",
+                      "w-full py-3 px-1.5 flex flex-col items-center gap-1.5 transition-all active:bg-gray-50",
                       selectedCategory === category.id
-                        ? "bg-primary/5 border-l-2 border-primary"
-                        : "border-l-2 border-transparent hover:bg-gray-50"
+                        ? "bg-primary/5 border-l-[3px] border-primary"
+                        : "border-l-[3px] border-transparent"
                     )}
                   >
                     <div className={cn(
-                      "w-10 h-10 rounded-xl flex items-center justify-center transition-all",
+                      "w-11 h-11 rounded-xl flex items-center justify-center transition-all shadow-sm",
                       selectedCategory === category.id 
-                        ? "bg-primary text-white shadow-sm" 
+                        ? "bg-primary text-white" 
                         : "bg-gray-100 text-gray-500"
                     )}>
                       <Icon className="w-5 h-5" />
                     </div>
                     <span className={cn(
-                      "text-[9px] font-medium text-center leading-tight line-clamp-2 px-0.5",
+                      "text-[9px] font-medium text-center leading-tight line-clamp-2 px-0.5 min-h-[24px] flex items-center",
                       selectedCategory === category.id ? "text-primary" : "text-gray-600"
                     )}>
                       {category.name}
                     </span>
                     <span className={cn(
-                      "text-[9px] font-medium px-1.5 py-0.5 rounded-full",
+                      "text-[9px] font-semibold px-2 py-0.5 rounded-full",
                       selectedCategory === category.id 
                         ? "bg-primary/10 text-primary" 
                         : "bg-gray-100 text-gray-500"
@@ -233,52 +234,52 @@ const CategoriesPage = () => {
           </div>
 
           {/* Zone principale - Produits */}
-          <ScrollArea className="flex-1 bg-gray-50">
-            <div className="p-2">
+          <ScrollArea className="flex-1 bg-gray-50/50">
+            <div className="p-2.5">
               {/* Info résultats recherche */}
               {searchQuery && (
-                <div className="px-2 py-2 mb-2 bg-white rounded-lg border border-gray-100">
-                  <p className="text-[11px] text-gray-600">
-                    <span className="font-semibold text-gray-900">{filteredProducts.length}</span> résultat{filteredProducts.length !== 1 ? 's' : ''} pour "<span className="font-medium">{searchQuery}</span>"
+                <div className="px-3 py-2.5 mb-2.5 bg-white rounded-xl border border-gray-100 shadow-sm">
+                  <p className="text-xs text-gray-600">
+                    <span className="font-bold text-gray-900">{filteredProducts.length}</span> résultat{filteredProducts.length !== 1 ? 's' : ''} pour "<span className="font-medium text-primary">{searchQuery}</span>"
                   </p>
                 </div>
               )}
 
               {/* Titre catégorie sélectionnée */}
               {selectedCategory && !searchQuery && (
-                <div className="px-1 py-1.5 mb-2">
-                  <h2 className="text-sm font-semibold text-gray-900">
+                <div className="px-1 py-2 mb-2">
+                  <h2 className="text-sm font-bold text-gray-900">
                     {categories.find(c => c.id === selectedCategory)?.name || 'Produits'}
                   </h2>
-                  <p className="text-[10px] text-gray-500">{filteredProducts.length} produit{filteredProducts.length !== 1 ? 's' : ''}</p>
+                  <p className="text-[11px] text-gray-500 mt-0.5">{filteredProducts.length} produit{filteredProducts.length !== 1 ? 's' : ''} disponible{filteredProducts.length !== 1 ? 's' : ''}</p>
                 </div>
               )}
 
               {loading ? (
-                <div className="flex items-center justify-center py-16">
-                  <div className="w-8 h-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+                <div className="flex items-center justify-center py-20">
+                  <div className="w-10 h-10 rounded-full border-3 border-primary/20 border-t-primary animate-spin" />
                 </div>
               ) : filteredProducts.length === 0 ? (
-                <div className="text-center py-16 px-4">
-                  <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
-                    <Search className="w-6 h-6 text-gray-400" />
+                <div className="text-center py-20 px-6">
+                  <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                    <Search className="w-8 h-8 text-gray-300" />
                   </div>
-                  <p className="text-sm font-medium text-gray-700 mb-1">
+                  <p className="text-sm font-semibold text-gray-700 mb-1">
                     Aucun produit trouvé
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-400">
                     {searchQuery 
                       ? `Essayez une autre recherche`
                       : selectedCategory 
-                        ? "Cette catégorie est vide"
+                        ? "Cette catégorie est vide pour le moment"
                         : "Aucun produit disponible"
                     }
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2.5">
                   {filteredProducts.map((product) => (
-                    <ProductCard
+                    <CategoryProductCard
                       key={product.id}
                       id={product.id}
                       image={product.images[0] || '/placeholder.svg'}
@@ -290,11 +291,8 @@ const CategoriesPage = () => {
                       reviews={product.reviews_count}
                       badge={product.badge}
                       isFlashSale={product.is_flash_sale}
-                      seller_id={product.seller_id}
-                      videoUrl={product.video_url}
                       isBoosted={product.is_boosted}
                       boostedUntil={product.boosted_until}
-                      shop_slug={product.shop_slug}
                       shop_name={product.shop_name}
                     />
                   ))}

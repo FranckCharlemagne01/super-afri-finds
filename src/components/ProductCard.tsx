@@ -83,201 +83,203 @@ export const ProductCard = ({
 
   return (
     <motion.div
-      whileTap={{ scale: 0.97 }}
-      whileHover={{ y: -6, scale: 1.02 }}
-      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      whileTap={{ scale: 0.98 }}
+      whileHover={{ y: -4 }}
+      transition={{ type: "spring", stiffness: 400, damping: 30 }}
       className="h-full"
     >
       <Card 
-        className={`relative overflow-hidden cursor-pointer border-0 shadow-md rounded-2xl lg:rounded-3xl bg-card transition-all duration-300 h-full ${
+        className={`relative overflow-hidden cursor-pointer border border-border/40 shadow-sm rounded-xl bg-card transition-all duration-200 h-full flex flex-col ${
           isActiveBoosted 
-            ? 'ring-2 ring-amber-400 shadow-lg shadow-amber-100/50' 
-            : 'hover:shadow-xl lg:hover:shadow-2xl'
+            ? 'ring-1 ring-amber-400/60 shadow-md' 
+            : 'hover:shadow-md active:shadow-sm'
         }`} 
         onClick={handleProductClick}
       >
         {/* Gradient overlay pour produits boostés */}
         {isActiveBoosted && (
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-50/40 via-transparent to-amber-50/20 pointer-events-none z-0" />
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-50/30 via-transparent to-transparent pointer-events-none z-0" />
         )}
         
-        {/* Badges */}
-        <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
+        {/* Badges - Compact mobile style */}
+        <div className="absolute top-1.5 left-1.5 z-10 flex flex-col gap-0.5">
           {isProductSold && (
-            <Badge className="bg-destructive text-destructive-foreground text-[10px] sm:text-xs px-2 py-0.5 font-bold shadow-md rounded-lg">
-              🔴 VENDU
+            <Badge className="bg-destructive/90 text-destructive-foreground text-[9px] px-1.5 py-0.5 font-semibold shadow-sm rounded-md">
+              VENDU
             </Badge>
           )}
           {!isProductSold && isActiveBoosted && (
-            <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-white text-[10px] sm:text-xs px-2 py-0.5 font-semibold shadow-md rounded-lg animate-pulse flex items-center gap-1">
-              <span>⭐</span>
-              En vedette
+            <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[9px] px-1.5 py-0.5 font-medium shadow-sm rounded-md">
+              ⭐ Vedette
             </Badge>
           )}
           {!isProductSold && badge && !isActiveBoosted && (
-            <Badge className="bg-success text-success-foreground text-[10px] sm:text-xs px-1.5 py-0.5 rounded-lg">
+            <Badge className="bg-success/90 text-success-foreground text-[9px] px-1.5 py-0.5 rounded-md">
               {badge}
             </Badge>
           )}
           {!isProductSold && isFlashSale && (
-            <Badge className="gradient-primary text-white text-[10px] sm:text-xs px-1.5 py-0.5 rounded-lg animate-pulse-promo">
-              ⚡ FLASH
+            <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-[9px] px-1.5 py-0.5 rounded-md">
+              ⚡ Flash
             </Badge>
           )}
           {!isProductSold && discount > 0 && (
-            <Badge className="bg-promo text-promo-foreground text-[10px] sm:text-xs px-1.5 py-0.5 font-bold rounded-lg">
+            <Badge className="bg-promo text-promo-foreground text-[9px] px-1.5 py-0.5 font-bold rounded-md">
               -{discount}%
             </Badge>
           )}
         </div>
 
-        {/* Heart Icon - Touch optimized */}
+        {/* Heart Icon - Compact touch target */}
         <motion.button 
           onClick={handleToggleFavorite}
-          whileTap={{ scale: 0.85 }}
-          className="absolute top-2 right-2 z-10 p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-sm min-w-[40px] min-h-[40px] flex items-center justify-center active:bg-white"
+          whileTap={{ scale: 0.9 }}
+          className="absolute top-1.5 right-1.5 z-10 w-8 h-8 rounded-full bg-white/95 shadow-sm flex items-center justify-center active:bg-gray-50"
         >
-          <Heart className={`w-4 h-4 transition-colors ${
+          <Heart className={`w-3.5 h-3.5 transition-colors ${
             isFavorite(id) 
-              ? 'text-promo fill-current' 
-              : 'text-muted-foreground'
+              ? 'text-red-500 fill-current' 
+              : 'text-gray-400'
           }`} />
         </motion.button>
 
-        {/* Product Image - With rounded corners */}
-        <div className="overflow-hidden rounded-t-2xl">
+        {/* Product Image - Clean contained display */}
+        <div className="relative overflow-hidden rounded-t-xl bg-gray-50">
           <ProductImage src={image} alt={title} productId={id} enableAutoCleanup={true} />
-        </div>
-        
-        {/* Video indicator */}
-        {videoUrl && (
-          <div className="absolute bottom-[45%] right-2 z-10">
-            <div className="bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
-              <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M8 5v10l7-5-7-5z"/>
-              </svg>
-              <span className="hidden sm:inline text-xs">Video</span>
+          
+          {/* Video indicator overlay */}
+          {videoUrl && (
+            <div className="absolute bottom-1.5 right-1.5 z-10">
+              <div className="bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded-md flex items-center gap-0.5 backdrop-blur-sm">
+                <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M8 5v10l7-5-7-5z"/>
+                </svg>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* Product Info - Enhanced spacing for desktop */}
-        <div className="p-3 lg:p-4 space-y-2 lg:space-y-3 relative z-10">
-          <h3 className={`text-xs sm:text-sm lg:text-base font-medium text-foreground line-clamp-2 leading-snug min-h-[2.5rem] lg:min-h-[3rem] ${
+        {/* Product Info - Compact native mobile style */}
+        <div className="p-2 sm:p-3 flex-1 flex flex-col gap-1.5 relative z-10">
+          <h3 className={`text-[11px] sm:text-xs lg:text-sm font-medium text-foreground line-clamp-2 leading-tight ${
             isActiveBoosted ? 'font-semibold' : ''
           }`}>
             {title}
           </h3>
           
-          {/* Rating - Enhanced for desktop */}
-          <div className="flex items-center gap-1.5">
+          {/* Rating - Compact inline */}
+          <div className="flex items-center gap-1">
             <div className="flex">
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
-                  className={`w-3 h-3 lg:w-3.5 lg:h-3.5 ${
+                  className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${
                     i < Math.floor(rating)
-                      ? "text-accent fill-current"
-                      : "text-muted-foreground/40"
+                      ? "text-amber-400 fill-current"
+                      : "text-gray-200"
                   }`}
                 />
               ))}
             </div>
-            <span className="text-[10px] lg:text-xs text-muted-foreground">({reviews})</span>
+            <span className="text-[9px] sm:text-[10px] text-muted-foreground">({reviews})</span>
           </div>
 
-          {/* Price - Enhanced typography for desktop */}
-          <div className="flex flex-col gap-0.5 lg:gap-1">
-            <span className="text-sm sm:text-base lg:text-lg font-bold text-promo">
-              {salePrice.toLocaleString()} FCFA
+          {/* Price - Clear hierarchy */}
+          <div className="flex items-baseline gap-1.5 flex-wrap">
+            <span className="text-sm sm:text-base font-bold text-foreground">
+              {salePrice.toLocaleString()}
             </span>
+            <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">FCFA</span>
             {originalPrice > salePrice && (
-              <span className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground line-through">
-                {originalPrice.toLocaleString()} FCFA
+              <span className="text-[9px] sm:text-[10px] text-muted-foreground/70 line-through">
+                {originalPrice.toLocaleString()}
               </span>
             )}
           </div>
 
-          {/* Countdown Timer for boosted products */}
+          {/* Countdown Timer for boosted products - Compact */}
           {isActiveBoosted && boostedUntil && (
-            <CountdownTimer 
-              expiryDate={boostedUntil} 
-              boostedAt={boostedAt}
-            />
-          )}
-
-          {/* Boutique du vendeur */}
-          {shop_slug && shop_name && (
-            <div className="pt-1.5 border-t border-border/30">
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/boutique/${shop_slug}`);
-                }}
-                className="w-full text-left px-2 py-1.5 hover:bg-muted/50 rounded-lg transition-colors"
-              >
-                <div className="flex items-center gap-1.5">
-                  <Store className="w-3 h-3 text-primary flex-shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[10px] sm:text-xs font-medium text-primary truncate">{shop_name}</p>
-                    <p className="text-[9px] sm:text-[10px] text-muted-foreground">Voir la boutique →</p>
-                  </div>
-                </div>
-              </motion.button>
-            </div>
-          )}
-
-          {/* Action Buttons - Enhanced for desktop */}
-          <div className="space-y-2 lg:space-y-2.5 pt-2">
-            {/* Desktop: Full buttons with better styling */}
-            <div className="hidden sm:flex flex-col space-y-2">
-              <motion.div whileTap={{ scale: 0.97 }} whileHover={{ scale: 1.02 }}>
-                <Button 
-                  variant="promo" 
-                  size="sm" 
-                  className="w-full text-xs lg:text-sm min-h-[44px] lg:min-h-[48px] rounded-xl lg:rounded-2xl font-medium shadow-sm hover:shadow-md transition-all"
-                  onClick={handleAddToCart}
-                  disabled={isUnavailable}
-                >
-                  <ShoppingCart className="w-4 h-4 lg:w-5 lg:h-5 mr-2" />
-                  {isUnavailable ? 'Épuisé' : 'Ajouter au panier'}
-                </Button>
-              </motion.div>
-              
-              <div onClick={(e) => e.stopPropagation()}>
-                <QuickOrderDialog
-                  productId={id}
-                  productTitle={title}
-                  productPrice={salePrice}
-                  sellerId={seller_id}
-                />
-              </div>
-              
-              <ContactSellerButton
-                productId={id}
-                sellerId={seller_id}
-                productTitle={title}
-                productPrice={salePrice}
-                productImage={image}
+            <div className="scale-90 origin-left">
+              <CountdownTimer 
+                expiryDate={boostedUntil} 
+                boostedAt={boostedAt}
               />
             </div>
+          )}
 
-            {/* Mobile: Compact buttons with tap feedback */}
-            <div className="flex sm:hidden gap-1.5">
-              <motion.div whileTap={{ scale: 0.92 }} className="flex-1">
+          {/* Spacer to push buttons to bottom */}
+          <div className="flex-1" />
+
+          {/* Boutique du vendeur - Minimal */}
+          {shop_slug && shop_name && (
+            <motion.button
+              whileTap={{ scale: 0.98 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/boutique/${shop_slug}`);
+              }}
+              className="w-full text-left py-1 -mx-0.5 px-0.5 rounded transition-colors"
+            >
+              <div className="flex items-center gap-1">
+                <Store className="w-2.5 h-2.5 text-primary flex-shrink-0" />
+                <p className="text-[9px] sm:text-[10px] font-medium text-primary truncate">{shop_name}</p>
+              </div>
+            </motion.button>
+          )}
+
+          {/* Action Buttons - Native mobile style */}
+          <div className="pt-1.5 mt-auto">
+            {/* Desktop: Full buttons */}
+            <div className="hidden sm:flex flex-col gap-1.5">
+              <Button 
+                variant="default" 
+                size="sm" 
+                className="w-full text-xs h-9 rounded-lg font-medium"
+                onClick={handleAddToCart}
+                disabled={isUnavailable}
+              >
+                <ShoppingCart className="w-3.5 h-3.5 mr-1.5" />
+                {isUnavailable ? 'Épuisé' : 'Ajouter'}
+              </Button>
+              
+              <div className="flex gap-1.5" onClick={(e) => e.stopPropagation()}>
+                <div className="flex-1">
+                  <QuickOrderDialog
+                    productId={id}
+                    productTitle={title}
+                    productPrice={salePrice}
+                    sellerId={seller_id}
+                    iconOnly={true}
+                  />
+                </div>
+                <div className="flex-1">
+                  <ContactSellerButton
+                    productId={id}
+                    sellerId={seller_id}
+                    productTitle={title}
+                    productPrice={salePrice}
+                    productImage={image}
+                    iconOnly={true}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile: Single row compact buttons */}
+            <div className="flex sm:hidden gap-1">
+              <motion.div whileTap={{ scale: 0.95 }} className="flex-1">
                 <Button 
-                  variant="promo" 
+                  variant="default" 
                   size="sm" 
-                  className="w-full text-xs p-2 min-h-[44px] rounded-xl"
+                  className="w-full h-8 rounded-lg text-[10px] px-2"
                   onClick={handleAddToCart}
                   disabled={isUnavailable}
                 >
-                  <ShoppingCart className="w-4 h-4" />
+                  <ShoppingCart className="w-3 h-3" />
                 </Button>
               </motion.div>
               
-              <motion.div whileTap={{ scale: 0.92 }} onClick={(e) => e.stopPropagation()} className="flex-1">
+              <motion.div whileTap={{ scale: 0.95 }} onClick={(e) => e.stopPropagation()} className="flex-1">
                 <QuickOrderDialog
                   productId={id}
                   productTitle={title}
@@ -287,7 +289,7 @@ export const ProductCard = ({
                 />
               </motion.div>
               
-              <motion.div whileTap={{ scale: 0.92 }} className="flex-1">
+              <motion.div whileTap={{ scale: 0.95 }} className="flex-1">
                 <ContactSellerButton
                   productId={id}
                   sellerId={seller_id}

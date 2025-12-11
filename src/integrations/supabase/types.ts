@@ -248,6 +248,36 @@ export type Database = {
         }
         Relationships: []
       }
+      phone_otp: {
+        Row: {
+          attempts: number
+          created_at: string
+          expires_at: string
+          id: string
+          otp_code: string
+          phone: string
+          verified: boolean
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          expires_at?: string
+          id?: string
+          otp_code: string
+          phone: string
+          verified?: boolean
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          expires_at?: string
+          id?: string
+          otp_code?: string
+          phone?: string
+          verified?: boolean
+        }
+        Relationships: []
+      }
       premium_payments: {
         Row: {
           amount: number
@@ -797,6 +827,7 @@ export type Database = {
       can_publish_products: { Args: { _user_id: string }; Returns: boolean }
       cancel_order_by_customer: { Args: { order_id: string }; Returns: Json }
       check_token_balance: { Args: { _seller_id: string }; Returns: Json }
+      cleanup_expired_otp: { Args: never; Returns: undefined }
       confirm_sale_by_seller: {
         Args: { _mark_product_as_sold?: boolean; _order_id: string }
         Returns: Json

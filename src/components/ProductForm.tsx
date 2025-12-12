@@ -257,6 +257,9 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
         finalShopId = shopData?.id || null;
       }
 
+      // Garantir un stock minimum de 1 si non spécifié ou invalide
+      const finalStockQuantity = formData.stock_quantity > 0 ? formData.stock_quantity : 1;
+
       const productData = {
         title: formData.title,
         description: formData.description,
@@ -264,7 +267,7 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
         original_price: formData.original_price || null,
         discount_percentage: discount_percentage || null,
         category: formData.category,
-        stock_quantity: formData.stock_quantity,
+        stock_quantity: finalStockQuantity,
         is_active: formData.is_active,
         is_flash_sale: formData.is_flash_sale,
         badge: formData.badge || null,
@@ -642,9 +645,13 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
           </Label>
           <NumericInput
             id="stock_quantity"
-            value={formData.stock_quantity?.toString() || ''}
-            onChange={(value) => handleInputChange('stock_quantity', Number(value) || 0)}
-            placeholder="0"
+            value={formData.stock_quantity?.toString() || '10'}
+            onChange={(value) => {
+              const numValue = Number(value);
+              // Minimum 1 en stock, forcer à 1 si 0 ou vide
+              handleInputChange('stock_quantity', numValue > 0 ? numValue : 1);
+            }}
+            placeholder="10"
             className={isMobile ? "text-base min-h-[44px]" : ""}
             inputMode="numeric"
           />

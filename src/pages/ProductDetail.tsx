@@ -246,10 +246,11 @@ const ProductDetail = () => {
   
   // Check if offer is still active for price display
   const hasActiveOffer = isOfferActive(product) && !offerExpired;
-  const originalPrice = product.original_price || product.price;
-  // If offer expired, show original price as sale price
-  const salePrice = hasActiveOffer ? product.price : originalPrice;
-  const discount = hasActiveOffer ? (product.discount_percentage || 0) : 0;
+  // Always use product.price as the main price - this is what the seller entered
+  const salePrice = product.price;
+  // original_price is only used for showing crossed-out price when there's a discount
+  const originalPrice = product.original_price && product.original_price > product.price ? product.original_price : product.price;
+  const discount = hasActiveOffer && product.discount_percentage ? product.discount_percentage : 0;
   const rating = product.rating || 0;
   const reviewsCount = product.reviews_count || 0;
 

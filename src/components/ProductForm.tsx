@@ -64,7 +64,7 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
     price: product?.price || 0,
     original_price: product?.original_price || 0,
     category: product?.category || '',
-    stock_quantity: product?.stock_quantity || 0,
+    stock_quantity: product?.stock_quantity ?? 10,
     is_active: product?.is_active ?? true,
     is_flash_sale: product?.is_flash_sale || false,
     badge: product?.badge || '',

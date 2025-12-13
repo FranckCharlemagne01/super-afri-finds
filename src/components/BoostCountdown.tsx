@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Clock } from 'lucide-react';
+import { Timer } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface BoostCountdownProps {
@@ -39,7 +39,6 @@ export const BoostCountdown = ({
       }
 
       const totalSeconds = Math.floor(difference / 1000);
-      // Convert everything to hours (no days limit)
       const hours = Math.floor(difference / (1000 * 60 * 60));
       const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((difference % (1000 * 60)) / 1000);
@@ -53,7 +52,6 @@ export const BoostCountdown = ({
     return () => clearInterval(interval);
   }, [boostedUntil, onExpire]);
 
-  // Urgency level based on remaining time
   const urgencyLevel = useMemo(() => {
     if (!timeLeft) return 'expired';
     const totalHours = timeLeft.totalSeconds / 3600;
@@ -72,37 +70,33 @@ export const BoostCountdown = ({
   if (compact) {
     return (
       <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
+        initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         className={`inline-flex items-center ${className}`}
       >
-        <div className={`
-          flex items-center gap-1.5 px-2 py-1 rounded-lg
-          ${urgencyLevel === 'critical' 
-            ? 'bg-destructive text-destructive-foreground' 
-            : urgencyLevel === 'high'
-              ? 'bg-orange-500 text-white'
-              : 'bg-primary text-primary-foreground'
-          }
-          shadow-md backdrop-blur-sm
-        `}>
-          <Clock className="w-3 h-3" />
-          <div className="flex items-center font-mono text-xs font-bold tabular-nums">
-            <span>{pad(timeLeft.hours)}</span>
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-foreground/95 backdrop-blur-sm shadow-lg">
+          <Timer className="w-3.5 h-3.5 text-background" />
+          <div className="flex items-center gap-0.5 font-mono text-xs font-bold text-background tabular-nums tracking-wide">
+            <span>{pad(timeLeft.hours)}h</span>
             <motion.span
               animate={{ opacity: [1, 0.4, 1] }}
               transition={{ duration: 1, repeat: Infinity }}
+              className="mx-0.5"
             >:</motion.span>
-            <span>{pad(timeLeft.minutes)}</span>
+            <span>{pad(timeLeft.minutes)}m</span>
             <motion.span
               animate={{ opacity: [1, 0.4, 1] }}
               transition={{ duration: 1, repeat: Infinity }}
+              className="mx-0.5"
             >:</motion.span>
             <motion.span
-              animate={urgencyLevel === 'critical' ? { scale: [1, 1.1, 1] } : {}}
-              transition={{ duration: 1, repeat: Infinity }}
+              animate={urgencyLevel === 'critical' ? { 
+                scale: [1, 1.05, 1],
+                opacity: [1, 0.8, 1]
+              } : {}}
+              transition={{ duration: 0.5, repeat: Infinity }}
             >
-              {pad(timeLeft.seconds)}
+              {pad(timeLeft.seconds)}s
             </motion.span>
           </div>
         </div>
@@ -110,86 +104,87 @@ export const BoostCountdown = ({
     );
   }
 
-  // Full version for product detail page
+  // Full version for product detail page - Premium 24h Chrono style
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`flex flex-col gap-2 ${className}`}
+      className={`flex flex-col gap-3 ${className}`}
     >
-      {/* Label */}
+      {/* Header with icon */}
       <div className="flex items-center gap-2">
-        <Clock className={`w-4 h-4 ${
-          urgencyLevel === 'critical' 
-            ? 'text-destructive' 
-            : urgencyLevel === 'high'
-              ? 'text-orange-500'
-              : 'text-primary'
-        }`} />
-        <span className={`text-sm font-semibold ${
-          urgencyLevel === 'critical' 
-            ? 'text-destructive' 
-            : urgencyLevel === 'high'
-              ? 'text-orange-500'
-              : 'text-primary'
-        }`}>
-          {urgencyLevel === 'critical' ? 'Derniers instants !' : 'Offre limitée'}
+        <motion.div
+          animate={{ 
+            scale: [1, 1.1, 1],
+            opacity: [1, 0.8, 1]
+          }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="p-1.5 rounded-full bg-foreground/10"
+        >
+          <Timer className="w-4 h-4 text-foreground" />
+        </motion.div>
+        <span className="text-sm font-semibold text-foreground tracking-wide uppercase">
+          {urgencyLevel === 'critical' ? '⚡ Derniers instants' : 'Offre limitée'}
         </span>
       </div>
 
-      {/* 24h Chrono Timer - HH:MM:SS only */}
-      <div className="flex items-center gap-1">
-        <TimeBlock value={pad(timeLeft.hours)} urgency={urgencyLevel} />
-        <TimeSeparator urgency={urgencyLevel} />
-        <TimeBlock value={pad(timeLeft.minutes)} urgency={urgencyLevel} />
-        <TimeSeparator urgency={urgencyLevel} />
-        <TimeBlock value={pad(timeLeft.seconds)} urgency={urgencyLevel} pulse={urgencyLevel === 'critical'} />
+      {/* 24h Chrono Timer - Premium Black Style */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        <TimeUnit value={pad(timeLeft.hours)} unit="h" urgency={urgencyLevel} />
+        <TimeDivider />
+        <TimeUnit value={pad(timeLeft.minutes)} unit="m" urgency={urgencyLevel} />
+        <TimeDivider />
+        <TimeUnit value={pad(timeLeft.seconds)} unit="s" urgency={urgencyLevel} pulse />
       </div>
     </motion.div>
   );
 };
 
-// Time block component - 24h Chrono style
-const TimeBlock = ({ 
+// Premium time unit block
+const TimeUnit = ({ 
   value, 
+  unit,
   urgency,
   pulse = false
 }: { 
   value: string; 
+  unit: string;
   urgency: string;
   pulse?: boolean;
 }) => {
-  const bgClass = urgency === 'critical' 
-    ? 'bg-destructive text-destructive-foreground shadow-destructive/30'
-    : urgency === 'high'
-      ? 'bg-orange-500 text-white shadow-orange-500/25'
-      : 'bg-primary text-primary-foreground shadow-primary/20';
-
   return (
     <motion.div 
-      className={`${bgClass} rounded-lg px-2.5 py-1.5 sm:px-3 sm:py-2 min-w-[40px] sm:min-w-[48px] flex items-center justify-center shadow-lg`}
+      className="relative flex items-baseline gap-0.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-foreground shadow-xl"
       animate={pulse ? { 
-        scale: [1, 1.02, 1],
+        boxShadow: [
+          '0 10px 25px -5px rgba(0, 0, 0, 0.3)',
+          '0 15px 35px -5px rgba(0, 0, 0, 0.4)',
+          '0 10px 25px -5px rgba(0, 0, 0, 0.3)'
+        ]
       } : {}}
       transition={{ duration: 1, repeat: Infinity }}
     >
-      <span className="font-mono font-bold text-lg sm:text-xl tabular-nums">
+      {/* Glossy effect overlay */}
+      <div className="absolute inset-0 rounded-xl bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
+      
+      <motion.span 
+        className="font-mono font-black text-xl sm:text-2xl text-background tabular-nums tracking-tight"
+        animate={pulse ? { scale: [1, 1.02, 1] } : {}}
+        transition={{ duration: 0.5, repeat: Infinity }}
+      >
         {value}
+      </motion.span>
+      <span className="font-semibold text-sm sm:text-base text-background/80">
+        {unit}
       </span>
     </motion.div>
   );
 };
 
-// Animated separator
-const TimeSeparator = ({ urgency }: { urgency: string }) => (
+// Animated divider
+const TimeDivider = () => (
   <motion.span 
-    className={`font-bold text-lg sm:text-xl ${
-      urgency === 'critical' 
-        ? 'text-destructive' 
-        : urgency === 'high'
-          ? 'text-orange-500'
-          : 'text-primary'
-    }`}
+    className="font-black text-xl sm:text-2xl text-foreground"
     animate={{ opacity: [1, 0.3, 1] }}
     transition={{ duration: 1, repeat: Infinity }}
   >

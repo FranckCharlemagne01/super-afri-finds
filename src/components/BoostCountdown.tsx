@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Flame, Timer } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Clock } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface BoostCountdownProps {
   boostedUntil: string;
@@ -10,7 +10,6 @@ interface BoostCountdownProps {
 }
 
 interface TimeLeft {
-  days: number;
   hours: number;
   minutes: number;
   seconds: number;
@@ -40,12 +39,12 @@ export const BoostCountdown = ({
       }
 
       const totalSeconds = Math.floor(difference / 1000);
-      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      // Convert everything to hours (no days limit)
+      const hours = Math.floor(difference / (1000 * 60 * 60));
       const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-      setTimeLeft({ days, hours, minutes, seconds, totalSeconds });
+      setTimeLeft({ hours, minutes, seconds, totalSeconds });
     };
 
     calculateTimeLeft();
@@ -54,81 +53,56 @@ export const BoostCountdown = ({
     return () => clearInterval(interval);
   }, [boostedUntil, onExpire]);
 
-  // Déterminer le niveau d'urgence basé sur le temps restant
+  // Urgency level based on remaining time
   const urgencyLevel = useMemo(() => {
     if (!timeLeft) return 'expired';
     const totalHours = timeLeft.totalSeconds / 3600;
-    if (totalHours <= 1) return 'critical'; // Dernière heure
+    if (totalHours <= 1) return 'critical';
     if (totalHours <= 6) return 'high';
-    if (totalHours <= 24) return 'medium';
-    return 'low';
+    return 'normal';
   }, [timeLeft]);
 
-  // Si expiré, ne rien afficher
   if (isExpired || !timeLeft) {
     return null;
   }
 
-  const formatNumber = (num: number) => num.toString().padStart(2, '0');
+  const pad = (num: number) => num.toString().padStart(2, '0');
 
-  // Version compacte pour les cartes produits
+  // Compact version for product cards
   if (compact) {
     return (
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className={`inline-flex items-center gap-1.5 ${className}`}
+        className={`inline-flex items-center ${className}`}
       >
         <div className={`
-          flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
+          flex items-center gap-1.5 px-2 py-1 rounded-lg
           ${urgencyLevel === 'critical' 
-            ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white' 
+            ? 'bg-destructive text-destructive-foreground' 
             : urgencyLevel === 'high'
-              ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white'
-              : 'bg-gradient-to-r from-amber-500/90 to-yellow-500/90 text-white'
+              ? 'bg-orange-500 text-white'
+              : 'bg-primary text-primary-foreground'
           }
-          shadow-md
+          shadow-md backdrop-blur-sm
         `}>
-          <motion.div
-            animate={urgencyLevel === 'critical' ? { scale: [1, 1.2, 1] } : {}}
-            transition={{ duration: 0.5, repeat: Infinity }}
-          >
-            {urgencyLevel === 'critical' || urgencyLevel === 'high' ? (
-              <Flame className="w-3.5 h-3.5" />
-            ) : (
-              <Timer className="w-3.5 h-3.5" />
-            )}
-          </motion.div>
-          
-          {/* Chrono digital style avec jours */}
-          <div className="flex items-center font-mono text-xs font-bold tracking-tight">
-            {timeLeft.days > 0 && (
-              <>
-                <span>{formatNumber(timeLeft.days)}j</span>
-                <motion.span
-                  animate={{ opacity: [1, 0.3, 1] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                  className="mx-0.5"
-                >:</motion.span>
-              </>
-            )}
-            <span>{formatNumber(timeLeft.hours)}h</span>
+          <Clock className="w-3 h-3" />
+          <div className="flex items-center font-mono text-xs font-bold tabular-nums">
+            <span>{pad(timeLeft.hours)}</span>
             <motion.span
-              animate={{ opacity: [1, 0.3, 1] }}
+              animate={{ opacity: [1, 0.4, 1] }}
               transition={{ duration: 1, repeat: Infinity }}
-              className="mx-0.5"
             >:</motion.span>
-            <span>{formatNumber(timeLeft.minutes)}m</span>
+            <span>{pad(timeLeft.minutes)}</span>
             <motion.span
-              animate={{ opacity: [1, 0.3, 1] }}
+              animate={{ opacity: [1, 0.4, 1] }}
               transition={{ duration: 1, repeat: Infinity }}
-              className="mx-0.5"
             >:</motion.span>
             <motion.span
-              animate={{ opacity: [1, 0.7, 1] }}
+              animate={urgencyLevel === 'critical' ? { scale: [1, 1.1, 1] } : {}}
               transition={{ duration: 1, repeat: Infinity }}
             >
-              {formatNumber(timeLeft.seconds)}s
+              {pad(timeLeft.seconds)}
             </motion.span>
           </div>
         </div>
@@ -136,140 +110,85 @@ export const BoostCountdown = ({
     );
   }
 
-  // Version complète pour la page détail produit
+  // Full version for product detail page
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`flex flex-col gap-3 ${className}`}
+      className={`flex flex-col gap-2 ${className}`}
     >
-      {/* Label avec icône */}
+      {/* Label */}
       <div className="flex items-center gap-2">
-        <motion.div
-          animate={urgencyLevel === 'critical' ? { 
-            scale: [1, 1.15, 1],
-            rotate: [0, -5, 5, 0]
-          } : {}}
-          transition={{ duration: 0.6, repeat: Infinity }}
-        >
-          <Flame className={`w-5 h-5 ${
-            urgencyLevel === 'critical' 
-              ? 'text-red-500' 
-              : urgencyLevel === 'high'
-                ? 'text-orange-500'
-                : 'text-amber-500'
-          }`} />
-        </motion.div>
-        <span className={`text-sm font-bold uppercase tracking-wide ${
+        <Clock className={`w-4 h-4 ${
           urgencyLevel === 'critical' 
-            ? 'text-red-600 dark:text-red-400' 
+            ? 'text-destructive' 
             : urgencyLevel === 'high'
-              ? 'text-orange-600 dark:text-orange-400'
-              : 'text-amber-600 dark:text-amber-400'
+              ? 'text-orange-500'
+              : 'text-primary'
+        }`} />
+        <span className={`text-sm font-semibold ${
+          urgencyLevel === 'critical' 
+            ? 'text-destructive' 
+            : urgencyLevel === 'high'
+              ? 'text-orange-500'
+              : 'text-primary'
         }`}>
           {urgencyLevel === 'critical' ? 'Derniers instants !' : 'Offre limitée'}
         </span>
       </div>
 
-      {/* Timer 24h Chrono Style avec jours */}
-      <div className="flex items-center gap-1.5 sm:gap-2">
-        <AnimatePresence mode="popLayout">
-          {/* Jours - uniquement si > 0 */}
-          {timeLeft.days > 0 && (
-            <>
-              <TimeBlock 
-                value={formatNumber(timeLeft.days)} 
-                label="j" 
-                urgency={urgencyLevel}
-              />
-              <TimeSeparator urgency={urgencyLevel} />
-            </>
-          )}
-          
-          {/* Heures */}
-          <TimeBlock 
-            value={formatNumber(timeLeft.hours)} 
-            label="h" 
-            urgency={urgencyLevel}
-          />
-          
-          <TimeSeparator urgency={urgencyLevel} />
-          
-          {/* Minutes */}
-          <TimeBlock 
-            value={formatNumber(timeLeft.minutes)} 
-            label="m" 
-            urgency={urgencyLevel}
-          />
-          
-          <TimeSeparator urgency={urgencyLevel} />
-          
-          {/* Secondes avec animation pulse */}
-          <TimeBlock 
-            value={formatNumber(timeLeft.seconds)} 
-            label="s" 
-            urgency={urgencyLevel}
-            pulse={urgencyLevel === 'critical' || urgencyLevel === 'high'}
-          />
-        </AnimatePresence>
+      {/* 24h Chrono Timer - HH:MM:SS only */}
+      <div className="flex items-center gap-1">
+        <TimeBlock value={pad(timeLeft.hours)} urgency={urgencyLevel} />
+        <TimeSeparator urgency={urgencyLevel} />
+        <TimeBlock value={pad(timeLeft.minutes)} urgency={urgencyLevel} />
+        <TimeSeparator urgency={urgencyLevel} />
+        <TimeBlock value={pad(timeLeft.seconds)} urgency={urgencyLevel} pulse={urgencyLevel === 'critical'} />
       </div>
     </motion.div>
   );
 };
 
-// Composant bloc de temps style 24h Chrono
+// Time block component - 24h Chrono style
 const TimeBlock = ({ 
   value, 
-  label, 
   urgency,
   pulse = false
 }: { 
   value: string; 
-  label: string; 
   urgency: string;
   pulse?: boolean;
 }) => {
   const bgClass = urgency === 'critical' 
-    ? 'bg-gradient-to-br from-red-600 to-red-700 dark:from-red-500 dark:to-red-600 shadow-lg shadow-red-500/30'
+    ? 'bg-destructive text-destructive-foreground shadow-destructive/30'
     : urgency === 'high'
-      ? 'bg-gradient-to-br from-orange-600 to-orange-700 dark:from-orange-500 dark:to-orange-600 shadow-lg shadow-orange-500/25'
-      : urgency === 'medium'
-        ? 'bg-gradient-to-br from-amber-600 to-amber-700 dark:from-amber-500 dark:to-amber-600 shadow-lg shadow-amber-500/20'
-        : 'bg-gradient-to-br from-gray-800 to-gray-900 dark:from-gray-700 dark:to-gray-800 shadow-lg shadow-gray-500/15';
+      ? 'bg-orange-500 text-white shadow-orange-500/25'
+      : 'bg-primary text-primary-foreground shadow-primary/20';
 
   return (
-    <div className="flex flex-col items-center">
-      <motion.div 
-        className={`${bgClass} rounded-xl px-3 py-2 sm:px-4 sm:py-3 min-w-[48px] sm:min-w-[60px] flex items-center justify-center`}
-        animate={pulse ? { 
-          boxShadow: [
-            '0 4px 15px rgba(239, 68, 68, 0.3)',
-            '0 4px 25px rgba(239, 68, 68, 0.5)',
-            '0 4px 15px rgba(239, 68, 68, 0.3)'
-          ]
-        } : {}}
-        transition={{ duration: 1, repeat: Infinity }}
-      >
-        <span className="text-white font-black text-xl sm:text-3xl font-mono leading-none tracking-tight">
-          {value}
-        </span>
-      </motion.div>
-      <span className="text-xs font-medium text-muted-foreground mt-1">{label}</span>
-    </div>
+    <motion.div 
+      className={`${bgClass} rounded-lg px-2.5 py-1.5 sm:px-3 sm:py-2 min-w-[40px] sm:min-w-[48px] flex items-center justify-center shadow-lg`}
+      animate={pulse ? { 
+        scale: [1, 1.02, 1],
+      } : {}}
+      transition={{ duration: 1, repeat: Infinity }}
+    >
+      <span className="font-mono font-bold text-lg sm:text-xl tabular-nums">
+        {value}
+      </span>
+    </motion.div>
   );
 };
 
-// Séparateur animé
+// Animated separator
 const TimeSeparator = ({ urgency }: { urgency: string }) => (
   <motion.span 
-    className={`font-black text-xl sm:text-3xl pb-5 ${
+    className={`font-bold text-lg sm:text-xl ${
       urgency === 'critical' 
-        ? 'text-red-500 dark:text-red-400' 
+        ? 'text-destructive' 
         : urgency === 'high'
-          ? 'text-orange-500 dark:text-orange-400'
-          : urgency === 'medium'
-            ? 'text-amber-500 dark:text-amber-400'
-            : 'text-foreground/40'
+          ? 'text-orange-500'
+          : 'text-primary'
     }`}
     animate={{ opacity: [1, 0.3, 1] }}
     transition={{ duration: 1, repeat: Infinity }}

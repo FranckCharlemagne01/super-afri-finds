@@ -9,7 +9,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { useToast } from "@/hooks/use-toast";
 import { ContactSellerButton } from "@/components/ContactSellerButton";
 import { QuickOrderDialog } from "@/components/QuickOrderDialog";
-import { CountdownTimer } from "@/components/CountdownTimer";
+import { BoostCountdown } from "@/components/BoostCountdown";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserLocation } from "@/hooks/useUserLocation";
@@ -471,11 +471,11 @@ const ProductDetail = () => {
                 )}
               </div>
 
-              {/* Countdown Timer for Special Offers - Only show if offer is still active */}
+              {/* Countdown Timer for Special Offers - 24h Chrono Style */}
               {isOfferActive(product) && !offerExpired && (
-                <div className="mb-3 sm:mb-4 animate-fade-in">
-                  <CountdownTimer 
-                    expiryDate={product.boosted_until}
+                <div className="mb-3 sm:mb-4">
+                  <BoostCountdown 
+                    boostedUntil={product.boosted_until!}
                     onExpire={() => {
                       setOfferExpired(true);
                       toast({

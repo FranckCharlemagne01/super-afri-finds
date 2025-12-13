@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { ContactSellerButton } from "@/components/ContactSellerButton";
 import { QuickOrderDialog } from "@/components/QuickOrderDialog";
-import { CountdownTimer } from "@/components/CountdownTimer";
+import { BoostCountdown } from "@/components/BoostCountdown";
 import { ProductImage } from "@/components/ui/optimized-image";
 import { motion } from "framer-motion";
 
@@ -197,14 +197,12 @@ export const ProductCard = ({
             )}
           </div>
 
-          {/* Countdown Timer for boosted products - Compact */}
+          {/* Countdown Timer for boosted products - 24h Chrono Style */}
           {isActiveBoosted && boostedUntil && (
-            <div className="scale-90 origin-left">
-              <CountdownTimer 
-                expiryDate={boostedUntil} 
-                boostedAt={boostedAt}
-              />
-            </div>
+            <BoostCountdown 
+              boostedUntil={boostedUntil} 
+              compact={true}
+            />
           )}
 
           {/* Spacer to push buttons to bottom */}

@@ -327,10 +327,9 @@ const Auth = () => {
           setFormError('Email ou mot de passe incorrect.');
         } else if (error.message.includes('Email not confirmed') || 
                    error.message.includes('email_not_confirmed')) {
-          // Show the unconfirmed email alert with resend option
-          setUnconfirmedEmail(loginIdentifier);
-          setShowUnconfirmedAlert(true);
-          setFormError('');
+          // Redirect to confirmation page
+          navigate(`/auth/confirm-email?email=${encodeURIComponent(loginIdentifier)}`, { replace: true });
+          return;
         } else if (error.message.includes('Too many requests')) {
           setFormError('Trop de tentatives. Patientez quelques minutes.');
         } else {
@@ -429,22 +428,19 @@ const Auth = () => {
         return;
       }
 
-      setOtpEmail(email);
-      setRegistrationSuccess(true);
+      // Redirect to confirmation page
+      const userEmail = email;
       
-      toast({
-        title: "✅ Inscription réussie !",
-        description: "Email de confirmation envoyé.",
-        duration: 8000,
-      });
-
-      // Reset form
+      // Reset form first
       setEmail('');
       setSignupPassword('');
       setFirstName('');
       setLastName('');
       setPhone('');
       setShopName('');
+      
+      // Navigate to confirmation page
+      navigate(`/auth/confirm-email?email=${encodeURIComponent(userEmail)}`, { replace: true });
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erreur inattendue";

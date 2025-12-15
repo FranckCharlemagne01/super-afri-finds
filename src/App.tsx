@@ -36,6 +36,7 @@ const MessagesPage = lazy(() => import("./pages/MessagesPage"));
 const CategoriesPage = lazy(() => import("./pages/CategoriesPage"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const DemoVideo = lazy(() => import("./pages/DemoVideo"));
+const ConfirmEmail = lazy(() => import("./pages/ConfirmEmail"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -94,6 +95,7 @@ const App = () => {
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/auth/welcome" element={<AuthWelcome />} />
+                <Route path="/auth/confirm-email" element={<ConfirmEmail />} />
                 <Route path="/welcome" element={<Welcome />} />
                 <Route path="/auth/reset-password" element={<ResetPassword />} />
                 <Route path="/verify" element={<Verify />} />

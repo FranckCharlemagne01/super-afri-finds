@@ -89,6 +89,7 @@ interface Product {
 }
 
 const Index = () => {
+  // Marketplace component
   const { user, signOut } = useStableAuth();
   const { cartCount } = useCart();
   const { favoriteIds } = useFavorites();

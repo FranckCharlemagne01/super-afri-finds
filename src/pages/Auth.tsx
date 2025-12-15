@@ -15,6 +15,7 @@ import AuthErrorAlert from '@/components/auth/AuthErrorAlert';
 import AuthSubmitButton from '@/components/auth/AuthSubmitButton';
 import AccountTypeSelector from '@/components/auth/AccountTypeSelector';
 import UnconfirmedEmailAlert from '@/components/auth/UnconfirmedEmailAlert';
+import GoogleAuthButton from '@/components/GoogleAuthButton';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -179,6 +180,44 @@ const Auth = () => {
   const handleUserRoleChange = useCallback((value: 'buyer' | 'seller') => {
     setUserRole(value);
   }, []);
+
+  // Google OAuth handler
+  const handleGoogleSignIn = useCallback(async () => {
+    setLoading(true);
+    setFormError('');
+    
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectUrl,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Redirect will happen automatically
+    } catch (error) {
+      console.error('Google auth error:', error);
+      setFormError('Impossible de se connecter avec Google. Veuillez réessayer.');
+      toast({
+        title: "❌ Erreur de connexion",
+        description: "Impossible de se connecter avec Google. Veuillez réessayer.",
+        variant: "destructive",
+        duration: 4000,
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
 
   // Phone auth handlers
   const handlePhoneNumberChange = useCallback((value: string) => {
@@ -903,6 +942,21 @@ const Auth = () => {
 
                 <AuthSubmitButton loading={loading} text="Créer mon compte" loadingText="Création..." />
 
+                <div className="relative py-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-border" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-3 text-muted-foreground">ou</span>
+                  </div>
+                </div>
+
+                <GoogleAuthButton 
+                  onClick={handleGoogleSignIn} 
+                  disabled={loading}
+                  mode="signup"
+                />
+
                 <p className="text-center text-sm text-muted-foreground pt-2">
                   Déjà un compte ?{' '}
                   <button
@@ -1112,6 +1166,12 @@ const Auth = () => {
                     <span className="bg-card px-3 text-muted-foreground">ou</span>
                   </div>
                 </div>
+
+                <GoogleAuthButton 
+                  onClick={handleGoogleSignIn} 
+                  disabled={loading}
+                  mode="signin"
+                />
 
                 <Button
                   type="button"

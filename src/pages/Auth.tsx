@@ -14,6 +14,7 @@ import OptimizedInput from '@/components/auth/OptimizedInput';
 import AuthErrorAlert from '@/components/auth/AuthErrorAlert';
 import AuthSubmitButton from '@/components/auth/AuthSubmitButton';
 import AccountTypeSelector from '@/components/auth/AccountTypeSelector';
+import UnconfirmedEmailAlert from '@/components/auth/UnconfirmedEmailAlert';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -66,6 +67,10 @@ const Auth = () => {
   const [otpEmail, setOtpEmail] = useState('');
   const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [resendingOtp, setResendingOtp] = useState(false);
+  
+  // Unconfirmed email state
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState('');
+  const [showUnconfirmedAlert, setShowUnconfirmedAlert] = useState(false);
   
   // Error states
   const [formError, setFormError] = useState('');
@@ -300,10 +305,17 @@ const Auth = () => {
     setPhoneOtpError('');
   }, []);
 
+  const handleDismissUnconfirmedAlert = useCallback(() => {
+    setShowUnconfirmedAlert(false);
+    setUnconfirmedEmail('');
+    setFormError('');
+  }, []);
+
   const handleSignIn = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setFormError('');
+    setShowUnconfirmedAlert(false);
 
     try {
       const { error } = await signIn(loginIdentifier, password);
@@ -313,8 +325,12 @@ const Auth = () => {
             error.message.includes('Invalid email or password') ||
             error.message.includes('Invalid password')) {
           setFormError('Email ou mot de passe incorrect.');
-        } else if (error.message.includes('Email not confirmed')) {
-          setFormError('Veuillez confirmer votre email.');
+        } else if (error.message.includes('Email not confirmed') || 
+                   error.message.includes('email_not_confirmed')) {
+          // Show the unconfirmed email alert with resend option
+          setUnconfirmedEmail(loginIdentifier);
+          setShowUnconfirmedAlert(true);
+          setFormError('');
         } else if (error.message.includes('Too many requests')) {
           setFormError('Trop de tentatives. Patientez quelques minutes.');
         } else {
@@ -937,6 +953,15 @@ const Auth = () => {
                   /* Email Sign In */
                   <form onSubmit={handleSignIn} className="space-y-5 animate-fade-in">
                     {formError && <AuthErrorAlert message={formError} />}
+                    
+                    {/* Unconfirmed email alert with resend option */}
+                    {showUnconfirmedAlert && unconfirmedEmail && (
+                      <UnconfirmedEmailAlert 
+                        email={unconfirmedEmail}
+                        onSwitchToSignin={handleDismissUnconfirmedAlert}
+                        onDismiss={handleDismissUnconfirmedAlert}
+                      />
+                    )}
 
                     <OptimizedInput
                       id="loginEmail"

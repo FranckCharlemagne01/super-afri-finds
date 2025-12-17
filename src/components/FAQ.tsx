@@ -100,7 +100,11 @@ const FAQ = () => {
         },
         {
           question: "L'inscription est-elle gratuite ?",
-          answer: "Oui, l'inscription est gratuite et vous bénéficiez de 28 jours d'essai gratuit avant de choisir une formule premium."
+          answer: "Oui, l'inscription est 100% gratuite. Les nouveaux utilisateurs reçoivent 100 jetons offerts, valables pendant 28 jours durant la phase de test de Djassa."
+        },
+        {
+          question: "Que sont les jetons Djassa et comment fonctionnent-ils ?",
+          answer: "Les jetons Djassa permettent de publier des produits et de booster leur visibilité. Les nouveaux utilisateurs reçoivent 100 jetons gratuits lors de leur inscription, valables pendant 28 jours. Ces jetons permettent de tester les fonctionnalités premium de la marketplace, notamment la mise en avant de produits."
         },
         {
           question: "Puis-je utiliser Djassa sans compte ?",

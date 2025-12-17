@@ -152,7 +152,7 @@ const About = () => {
                   <ul className="space-y-3 text-foreground/80">
                     <li className="flex items-start gap-2">
                       <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span><strong>28 jours d'essai gratuit</strong> avec 50 jetons offerts</span>
+                      <span><strong>100 jetons offerts</strong> valables 28 jours durant la phase de test</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
@@ -234,11 +234,11 @@ const About = () => {
               <Card className="shadow-md hover:shadow-lg transition-shadow text-center">
                 <CardHeader>
                   <Zap className="w-12 h-12 text-primary mx-auto mb-2" />
-                  <CardTitle className="text-lg">Essai Gratuit Généreux</CardTitle>
+                  <CardTitle className="text-lg">100 Jetons Offerts</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-foreground/80">
-                    <strong>28 jours d'essai gratuit</strong> avec 50 jetons offerts pour tester toutes les fonctionnalités sans engagement.
+                    <strong>100 jetons gratuits</strong> offerts aux nouveaux utilisateurs, valables 28 jours durant la phase de test de Djassa.
                   </p>
                 </CardContent>
               </Card>

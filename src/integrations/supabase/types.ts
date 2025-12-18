@@ -335,7 +335,7 @@ export type Database = {
           description: string | null
           discount_percentage: number | null
           id: string
-          images: string[] | null
+          images: string[]
           is_active: boolean | null
           is_boosted: boolean | null
           is_flash_sale: boolean | null
@@ -363,7 +363,7 @@ export type Database = {
           description?: string | null
           discount_percentage?: number | null
           id?: string
-          images?: string[] | null
+          images?: string[]
           is_active?: boolean | null
           is_boosted?: boolean | null
           is_flash_sale?: boolean | null
@@ -391,7 +391,7 @@ export type Database = {
           description?: string | null
           discount_percentage?: number | null
           id?: string
-          images?: string[] | null
+          images?: string[]
           is_active?: boolean | null
           is_boosted?: boolean | null
           is_flash_sale?: boolean | null

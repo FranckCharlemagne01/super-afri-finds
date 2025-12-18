@@ -3,7 +3,7 @@ import * as React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Package } from 'lucide-react';
-import { ProductForm } from '@/components/ProductForm';
+import { ProductFormWizard } from '@/components/product-form';
 import { SellerProducts } from '@/components/SellerProducts';
 import { ProductBoostDialog } from '@/components/ProductBoostDialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -11,7 +11,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useTokens } from '@/hooks/useTokens';
 import { useIsMobile } from '@/hooks/use-mobile';
-
 interface Product {
   id: string;
   title: string;
@@ -165,53 +164,23 @@ export const ProductsTab = ({
         </CardContent>
       </Card>
 
-      {/* Formulaire de produit - Sheet sur mobile/tablette, Card sur desktop */}
-      {isMobile ? (
-        <Sheet open={showProductForm} onOpenChange={setShowProductForm}>
-          <SheetContent 
-            side="bottom" 
-            className="h-[95vh] overflow-y-auto rounded-t-xl"
-          >
-            <SheetHeader className="pb-4">
-              <SheetTitle className="flex items-center gap-2">
-                <Plus className="h-5 w-5" />
-                {editingProduct ? 'Modifier le produit' : 'Publier un nouveau produit'}
-              </SheetTitle>
-            </SheetHeader>
-            <ProductForm
-              product={editingProduct || undefined}
-              onSave={handleProductSaved}
-              onCancel={() => {
-                setShowProductForm(false);
-                setEditingProduct(null);
-              }}
-              shopId={shopId}
-            />
-          </SheetContent>
-        </Sheet>
-      ) : (
-        showProductForm && (
-          <Card className="border-0 shadow-lg animate-in fade-in-0 slide-in-from-top-4 duration-300">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Plus className="h-5 w-5" />
-                {editingProduct ? 'Modifier le produit' : 'Publier un nouveau produit'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ProductForm
-                product={editingProduct || undefined}
-                onSave={handleProductSaved}
-                onCancel={() => {
-                  setShowProductForm(false);
-                  setEditingProduct(null);
-                }}
-                shopId={shopId}
-              />
-            </CardContent>
-          </Card>
-        )
-      )}
+      {/* Formulaire de produit - Sheet fullscreen avec wizard */}
+      <Sheet open={showProductForm} onOpenChange={setShowProductForm}>
+        <SheetContent 
+          side="bottom" 
+          className="h-[95vh] p-0 rounded-t-3xl overflow-hidden"
+        >
+          <ProductFormWizard
+            product={editingProduct || undefined}
+            onSave={handleProductSaved}
+            onCancel={() => {
+              setShowProductForm(false);
+              setEditingProduct(null);
+            }}
+            shopId={shopId}
+          />
+        </SheetContent>
+      </Sheet>
 
       {/* Boost Dialog */}
       {selectedProductForBoost && (

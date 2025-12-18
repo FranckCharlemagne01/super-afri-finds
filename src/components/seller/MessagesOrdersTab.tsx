@@ -1,7 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { MessageSquare, ShoppingBag } from 'lucide-react';
-import { SellerMessages } from '@/components/SellerMessages';
+import { MyMessagesTabs } from '@/components/messages/MyMessagesTabs';
 import { MyOrdersTabs } from '@/components/orders/MyOrdersTabs';
 
 interface MessagesOrdersTabProps {
@@ -30,12 +30,12 @@ export const MessagesOrdersTab = ({ userId }: MessagesOrdersTabProps) => {
         </TabsList>
 
         <TabsContent value="orders" className="mt-3 md:mt-4">
-          {/* Default to sales to preserve seller dashboard behavior, but keep Mes Achats fully available */}
           <MyOrdersTabs initialTab="sales" />
         </TabsContent>
 
         <TabsContent value="messages" className="mt-3 md:mt-4">
-          <SellerMessages />
+          {/* Messages with tabs: Mes Achats / Mes Ventes - default to sales for seller dashboard */}
+          <MyMessagesTabs initialTab="sales" />
         </TabsContent>
       </Tabs>
     </Card>

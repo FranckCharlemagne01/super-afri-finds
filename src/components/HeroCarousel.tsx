@@ -102,7 +102,7 @@ export const HeroCarousel = () => {
         {boostedProducts.map((product, index) => (
           <img
             key={product.id}
-            src={product.images[0] || "/placeholder.svg"}
+            src={product.images?.[0] || "/placeholder.svg"}
             alt={product.title}
             loading={index === 0 ? "eager" : "lazy"}
             decoding="async"

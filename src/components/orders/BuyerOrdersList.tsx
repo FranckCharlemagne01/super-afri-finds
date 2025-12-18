@@ -30,6 +30,8 @@ interface Order {
   seller_id: string;
   created_at: string;
   updated_at: string;
+  shop_name?: string;
+  shop_slug?: string;
 }
 
 interface BuyerOrdersListProps {
@@ -197,12 +199,21 @@ export const BuyerOrdersList = ({ orders, onCancelOrder, cancellingId }: BuyerOr
                 </div>
                 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1.5">
+                  <div className="flex items-center gap-2 mb-1">
                     <Badge className={`${statusInfo.bgColor} ${statusInfo.textColor} border-0 text-[10px] px-2 py-0.5 font-bold rounded-md`}>
                       {statusInfo.label}
                     </Badge>
                     <span className="text-[10px] font-medium text-muted-foreground">#{order.id.slice(-6).toUpperCase()}</span>
                   </div>
+                  {order.shop_name && (
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); order.shop_slug && navigate(`/boutique/${order.shop_slug}`); }}
+                      className="flex items-center gap-1 text-[10px] text-primary font-medium hover:underline mb-1"
+                    >
+                      <Store className="w-3 h-3" />
+                      {order.shop_name}
+                    </button>
+                  )}
                   <p className="text-sm font-semibold text-foreground truncate mb-1.5">{order.product_title}</p>
                   <OrderProgress status={order.status} />
                 </div>
@@ -236,6 +247,23 @@ export const BuyerOrdersList = ({ orders, onCancelOrder, cancellingId }: BuyerOr
                           <Calendar className="w-3.5 h-3.5" />
                           <span>Commandé le {formatDate(order.created_at)} à {formatTime(order.created_at)}</span>
                         </div>
+
+                        {/* Shop Info */}
+                        {order.shop_name && (
+                          <button 
+                            onClick={() => order.shop_slug && navigate(`/boutique/${order.shop_slug}`)}
+                            className="w-full bg-primary/5 hover:bg-primary/10 rounded-xl p-3.5 border border-primary/20 flex items-center gap-3 transition-colors"
+                          >
+                            <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+                              <Store className="w-5 h-5 text-primary" />
+                            </div>
+                            <div className="flex-1 text-left">
+                              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Boutique vendeur</p>
+                              <p className="text-sm font-semibold text-primary">{order.shop_name}</p>
+                            </div>
+                            <ChevronDown className="w-4 h-4 text-primary rotate-[-90deg]" />
+                          </button>
+                        )}
 
                         {/* Product Card */}
                         <div className="bg-card rounded-xl p-3.5 border border-border/40">

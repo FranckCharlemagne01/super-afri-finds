@@ -282,7 +282,7 @@ const CategoriesPage = () => {
                     <CategoryProductCard
                       key={product.id}
                       id={product.id}
-                      image={product.images[0] || '/placeholder.svg'}
+                      image={product.images?.[0] || '/placeholder.svg'}
                       title={product.title}
                       originalPrice={product.original_price}
                       salePrice={product.price}

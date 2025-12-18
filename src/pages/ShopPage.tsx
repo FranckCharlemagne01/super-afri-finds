@@ -435,7 +435,7 @@ const ShopPage = () => {
                           title={product.title}
                           originalPrice={product.original_price || product.price}
                           salePrice={product.price}
-                          image={product.images[0] || ''}
+                          image={product.images?.[0] || '/placeholder.svg'}
                           rating={product.rating}
                           reviews={product.reviews_count}
                           badge={product.badge || undefined}

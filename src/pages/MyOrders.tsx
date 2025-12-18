@@ -28,6 +28,8 @@ interface Order {
   created_at: string;
   updated_at: string;
   is_confirmed_by_seller?: boolean;
+  shop_name?: string;
+  shop_slug?: string;
 }
 
 interface CancelOrderResponse {
@@ -91,7 +93,28 @@ const MyOrders = () => {
       const purchases = data?.filter((order: Order) => order.customer_id === user.id) || [];
       const sales = data?.filter((order: Order) => order.seller_id === user.id) || [];
       
-      setBuyerOrders(purchases);
+      // Enrichir les achats avec les infos de boutique
+      if (purchases.length > 0) {
+        const sellerIds = [...new Set(purchases.map((o: Order) => o.seller_id))];
+        const { data: shops } = await supabase
+          .from('seller_shops')
+          .select('seller_id, shop_name, shop_slug')
+          .in('seller_id', sellerIds)
+          .eq('is_active', true);
+        
+        const shopMap = new Map(shops?.map(s => [s.seller_id, { shop_name: s.shop_name, shop_slug: s.shop_slug }]) || []);
+        
+        const enrichedPurchases = purchases.map((order: Order) => ({
+          ...order,
+          shop_name: shopMap.get(order.seller_id)?.shop_name || 'Boutique',
+          shop_slug: shopMap.get(order.seller_id)?.shop_slug || '',
+        }));
+        
+        setBuyerOrders(enrichedPurchases);
+      } else {
+        setBuyerOrders([]);
+      }
+      
       setSellerOrders(sales);
     } catch (error) {
       console.error('Error fetching orders:', error);

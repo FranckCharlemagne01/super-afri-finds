@@ -4,7 +4,7 @@ import { useStableAuth } from "@/hooks/useStableAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BuyerMessages } from "@/components/BuyerMessages";
+import { MyMessagesTabs } from "@/components/messages/MyMessagesTabs";
 import { ArrowLeft, MessageSquare, Package, Bell } from "lucide-react";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import MyOrders from "@/pages/MyOrders";
@@ -78,7 +78,7 @@ const MessagesPage = () => {
           </TabsList>
 
           <TabsContent value="messages" className="mt-0 animate-fade-in">
-            <BuyerMessages />
+            <MyMessagesTabs initialTab="purchases" />
           </TabsContent>
 
           <TabsContent value="orders" className="mt-0 animate-fade-in">

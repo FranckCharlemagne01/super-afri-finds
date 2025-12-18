@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Package, Eye, Calendar, User, Phone, MapPin, ChevronRight, CheckCircle } from "lucide-react";
-import { motion } from "framer-motion";
+import { Package, Eye, Calendar, User, Phone, MapPin, ChevronRight, CheckCircle, Clock, Truck, X, AlertTriangle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { OrderDetailDialog } from '@/components/OrderDetailDialog';
+import { supabase } from "@/integrations/supabase/client";
 
 interface Order {
   id: string;
@@ -30,35 +31,82 @@ interface SellerOrdersListProps {
   onOrderUpdated: () => void;
 }
 
-const statusColors = {
-  pending: 'destructive',
-  confirmed: 'default',
-  processing: 'secondary',
-  shipped: 'default',
-  delivered: 'default',
-  cancelled: 'destructive',
-} as const;
-
-const statusLabels = {
-  pending: 'En attente',
-  confirmed: 'Confirmée',
-  processing: 'En préparation',
-  shipped: 'Expédiée',
-  delivered: 'Livrée',
-  cancelled: 'Annulée',
+const statusConfig = {
+  pending: { 
+    label: 'En attente', 
+    icon: Clock,
+    bgColor: 'bg-amber-500/15',
+    textColor: 'text-amber-600 dark:text-amber-400',
+    iconBg: 'bg-amber-500/20'
+  },
+  confirmed: { 
+    label: 'Confirmée', 
+    icon: CheckCircle,
+    bgColor: 'bg-blue-500/15',
+    textColor: 'text-blue-600 dark:text-blue-400',
+    iconBg: 'bg-blue-500/20'
+  },
+  processing: { 
+    label: 'En préparation', 
+    icon: Package,
+    bgColor: 'bg-purple-500/15',
+    textColor: 'text-purple-600 dark:text-purple-400',
+    iconBg: 'bg-purple-500/20'
+  },
+  shipped: { 
+    label: 'Expédiée', 
+    icon: Truck,
+    bgColor: 'bg-indigo-500/15',
+    textColor: 'text-indigo-600 dark:text-indigo-400',
+    iconBg: 'bg-indigo-500/20'
+  },
+  delivered: { 
+    label: 'Livrée', 
+    icon: CheckCircle,
+    bgColor: 'bg-emerald-500/15',
+    textColor: 'text-emerald-600 dark:text-emerald-400',
+    iconBg: 'bg-emerald-500/20'
+  },
+  cancelled: { 
+    label: 'Annulée', 
+    icon: X,
+    bgColor: 'bg-red-500/15',
+    textColor: 'text-red-600 dark:text-red-400',
+    iconBg: 'bg-red-500/20'
+  },
 };
 
 export const SellerOrdersList = ({ orders, onOrderUpdated }: SellerOrdersListProps) => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderDetailOpen, setOrderDetailOpen] = useState(false);
+  const [productImages, setProductImages] = useState<Record<string, string>>({});
+
+  // Fetch product images
+  useEffect(() => {
+    const fetchProductImages = async () => {
+      const productIds = [...new Set(orders.map(o => o.product_id))];
+      if (productIds.length === 0) return;
+
+      const { data } = await supabase
+        .from('products')
+        .select('id, images')
+        .in('id', productIds);
+
+      if (data) {
+        const imageMap: Record<string, string> = {};
+        data.forEach(p => {
+          imageMap[p.id] = p.images?.[0] || '/placeholder.svg';
+        });
+        setProductImages(imageMap);
+      }
+    };
+
+    fetchProductImages();
+  }, [orders]);
 
   const handleOrderClick = (order: Order) => {
     setSelectedOrder(order);
     setOrderDetailOpen(true);
-  };
-
-  const getStatusBadgeVariant = (status: string) => {
-    return statusColors[status as keyof typeof statusColors] || 'default';
   };
 
   if (orders.length === 0) {
@@ -67,15 +115,15 @@ export const SellerOrdersList = ({ orders, onOrderUpdated }: SellerOrdersListPro
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        className="bg-card rounded-3xl border border-border/50 p-8 text-center mt-4"
+        className="bg-card rounded-3xl border border-border/50 p-8 text-center"
       >
         <motion.div 
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-          className="w-20 h-20 mx-auto bg-muted/50 rounded-3xl flex items-center justify-center mb-5"
+          className="w-20 h-20 mx-auto bg-gradient-to-br from-primary/10 to-accent/10 rounded-3xl flex items-center justify-center mb-5"
         >
-          <Package className="w-10 h-10 text-muted-foreground" />
+          <Package className="w-10 h-10 text-primary" />
         </motion.div>
         <h2 className="text-xl font-bold text-foreground mb-2">Aucune vente</h2>
         <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed">
@@ -85,130 +133,131 @@ export const SellerOrdersList = ({ orders, onOrderUpdated }: SellerOrdersListPro
     );
   }
 
+  // Count pending orders
+  const pendingCount = orders.filter(o => o.status === 'pending').length;
+
   return (
     <>
+      {/* Alert for pending orders */}
+      {pendingCount > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center gap-3"
+        >
+          <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-bold text-amber-900 dark:text-amber-100">
+              {pendingCount} commande{pendingCount > 1 ? 's' : ''} en attente
+            </p>
+            <p className="text-xs text-amber-700 dark:text-amber-300">
+              Répondez rapidement pour satisfaire vos clients
+            </p>
+          </div>
+        </motion.div>
+      )}
+
       <div className="space-y-3">
-        {orders.map((order, index) => (
-          <motion.div
-            key={order.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
-            transition={{ delay: index * 0.05, duration: 0.3 }}
-          >
-            <div className="bg-card rounded-2xl border border-border/50 overflow-hidden shadow-sm">
-              {/* Header with status */}
-              <div className="px-4 py-3 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-b border-border/50">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                      <Package className="h-5 w-5 text-primary" />
-                    </div>
-                    <span className="text-sm font-bold text-foreground truncate tabular-nums">
-                      #{order.id.slice(-8).toUpperCase()}
-                    </span>
-                  </div>
-                  <Badge 
-                    variant={getStatusBadgeVariant(order.status)} 
-                    className="text-xs px-3 py-1 rounded-full flex-shrink-0 font-semibold"
-                  >
-                    {statusLabels[order.status as keyof typeof statusLabels]}
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-                  <Calendar className="h-3.5 w-3.5 flex-shrink-0" />
-                  <span className="truncate font-medium">
-                    {format(new Date(order.created_at), 'dd MMM yyyy · HH:mm', { locale: fr })}
-                  </span>
-                </div>
-              </div>
+        {orders.map((order, index) => {
+          const statusInfo = statusConfig[order.status as keyof typeof statusConfig] || statusConfig.pending;
+          const StatusIcon = statusInfo.icon;
+          const productImage = productImages[order.product_id] || '/placeholder.svg';
+          const isPending = order.status === 'pending';
+          const needsConfirmation = order.status === 'delivered' && !order.is_confirmed_by_seller;
 
-              <div className="p-4 space-y-3">
-                {/* Product */}
-                <div className="p-3 bg-muted/30 rounded-xl border border-border/30">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Package className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm text-foreground line-clamp-2 mb-1">
-                        {order.product_title}
-                      </p>
-                      <div className="flex items-center justify-between gap-3 text-xs">
-                        <span className="text-muted-foreground font-medium">
-                          Qté: <span className="font-bold text-foreground">{order.quantity}</span>
-                        </span>
-                        <span className="font-bold text-base text-primary tabular-nums">
-                          {order.total_amount.toLocaleString()} F
-                        </span>
+          return (
+            <motion.div
+              key={order.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ delay: index * 0.05, duration: 0.3 }}
+              onClick={() => handleOrderClick(order)}
+              className={`bg-card rounded-2xl border overflow-hidden shadow-sm cursor-pointer active:bg-muted/20 transition-colors ${
+                isPending ? 'border-amber-500/40 ring-1 ring-amber-500/20' : 'border-border/50'
+              }`}
+            >
+              <div className="p-3.5 flex gap-3.5">
+                {/* Product Image */}
+                <div className="relative flex-shrink-0">
+                  <img 
+                    src={productImage}
+                    alt={order.product_title}
+                    className="w-[72px] h-[72px] rounded-xl object-cover border border-border/30"
+                    onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                  />
+                  <div className={`absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full flex items-center justify-center ${statusInfo.iconBg}`}>
+                    <StatusIcon className={`w-3.5 h-3.5 ${statusInfo.textColor}`} />
+                  </div>
+                  {isPending && (
+                    <div className="absolute -top-1 -left-1 w-3 h-3 bg-amber-500 rounded-full animate-pulse" />
+                  )}
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <p className="text-sm font-bold text-foreground line-clamp-2 leading-tight">{order.product_title}</p>
+                    <p className="text-base font-bold text-primary tabular-nums flex-shrink-0">{order.total_amount.toLocaleString()} F</p>
+                  </div>
+
+                  {/* Customer info row */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <div className="w-5 h-5 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                        <User className="w-3 h-3 text-blue-500" />
                       </div>
+                      <span className="text-xs font-semibold text-foreground truncate">{order.customer_name}</span>
                     </div>
-                  </div>
-                </div>
-
-                {/* Customer info */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3 p-2.5 bg-blue-50 dark:bg-blue-950/20 rounded-xl border border-blue-200 dark:border-blue-800">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center flex-shrink-0">
-                      <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <span className="text-sm font-bold text-blue-900 dark:text-blue-100 truncate">
-                      {order.customer_name}
+                    <span className="text-muted-foreground">·</span>
+                    <span className="text-[10px] text-muted-foreground font-medium flex-shrink-0">
+                      {format(new Date(order.created_at), 'dd MMM · HH:mm', { locale: fr })}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-3 p-2.5 bg-green-50 dark:bg-green-950/20 rounded-xl border border-green-200 dark:border-green-800">
-                    <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center flex-shrink-0">
-                      <Phone className="h-4 w-4 text-green-600 dark:text-green-400" />
-                    </div>
-                    <span className="text-sm font-bold text-green-900 dark:text-green-100 truncate tabular-nums">
-                      {order.customer_phone}
-                    </span>
-                  </div>
-
-                  <div className="flex items-start gap-3 p-2.5 bg-orange-50 dark:bg-orange-950/20 rounded-xl border border-orange-200 dark:border-orange-800">
-                    <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <MapPin className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                    </div>
-                    <p className="text-xs font-semibold text-orange-900 dark:text-orange-100 line-clamp-2 flex-1 leading-relaxed">
-                      {order.delivery_location}
-                    </p>
+                  {/* Status & Action row */}
+                  <div className="flex items-center justify-between gap-2">
+                    <Badge className={`${statusInfo.bgColor} ${statusInfo.textColor} border-0 text-[10px] px-2 py-0.5 font-bold rounded-lg`}>
+                      {statusInfo.label}
+                    </Badge>
+                    
+                    {needsConfirmation && (
+                      <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400">
+                        ⚠️ À confirmer
+                      </span>
+                    )}
+                    
+                    {order.is_confirmed_by_seller && (
+                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                        <CheckCircle className="w-3 h-3" />
+                        Confirmée
+                      </span>
+                    )}
                   </div>
                 </div>
 
-                {/* Status badges */}
-                {(order.status === 'delivered' && !order.is_confirmed_by_seller) && (
-                  <div className="p-2.5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl">
-                    <p className="text-xs font-bold text-amber-800 dark:text-amber-200 text-center">
-                      ⚠️ En attente de confirmation de vente
-                    </p>
-                  </div>
-                )}
-
-                {order.is_confirmed_by_seller && (
-                  <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center justify-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    <p className="text-xs font-bold text-emerald-800 dark:text-emerald-200">
-                      Vente confirmée
-                    </p>
-                  </div>
-                )}
-
-                {/* Action button */}
-                <Button 
-                  onClick={() => handleOrderClick(order)}
-                  className="w-full h-12 text-sm font-bold rounded-xl shadow-sm"
-                  size="lg"
-                >
-                  <Eye className="h-4 w-4 mr-2" />
-                  Gérer la commande
-                  <ChevronRight className="h-4 w-4 ml-auto" />
-                </Button>
+                {/* Arrow */}
+                <div className="self-center flex-shrink-0">
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                </div>
               </div>
-            </div>
-          </motion.div>
-        ))}
+
+              {/* Quick info footer */}
+              <div className="px-3.5 pb-3 flex items-center gap-4 text-[11px] text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  <Phone className="w-3 h-3" />
+                  <span className="tabular-nums">{order.customer_phone}</span>
+                </div>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <MapPin className="w-3 h-3 flex-shrink-0" />
+                  <span className="truncate">{order.delivery_location}</span>
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
       
       <OrderDetailDialog

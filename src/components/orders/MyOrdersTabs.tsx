@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingBag, Store } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -176,20 +176,20 @@ export const MyOrdersTabs = ({ initialTab }: { initialTab?: OrdersTabsInitialTab
   return (
     <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as OrdersTabsInitialTab)} className="w-full">
       <TabsList
-        className={`grid w-full mb-4 bg-muted/50 rounded-xl p-1 ${
+        className={`grid w-full mb-4 bg-muted/40 rounded-2xl p-1.5 h-auto ${
           isSeller ? 'grid-cols-2' : 'grid-cols-1'
         }`}
       >
         <TabsTrigger
           value="purchases"
-          className="gap-2 data-[state=active]:bg-card data-[state=active]:shadow-sm rounded-lg py-2.5 text-sm font-semibold transition-all"
+          className="gap-2 data-[state=active]:bg-card data-[state=active]:shadow-md rounded-xl py-3 text-sm font-bold transition-all"
         >
           <ShoppingBag className="h-4 w-4" />
           <span>Mes Achats</span>
           {totalBuyerOrders > 0 && (
             <Badge
               variant="secondary"
-              className="ml-1 h-5 min-w-5 flex items-center justify-center rounded-full text-[10px] font-bold"
+              className="ml-1 h-5 min-w-5 flex items-center justify-center rounded-full text-[10px] font-bold bg-primary/15 text-primary"
             >
               {totalBuyerOrders}
             </Badge>
@@ -199,14 +199,14 @@ export const MyOrdersTabs = ({ initialTab }: { initialTab?: OrdersTabsInitialTab
         {isSeller && (
           <TabsTrigger
             value="sales"
-            className="gap-2 data-[state=active]:bg-card data-[state=active]:shadow-sm rounded-lg py-2.5 text-sm font-semibold transition-all"
+            className="gap-2 data-[state=active]:bg-card data-[state=active]:shadow-md rounded-xl py-3 text-sm font-bold transition-all"
           >
             <Store className="h-4 w-4" />
             <span>Mes Ventes</span>
             {totalSellerOrders > 0 && (
               <Badge
                 variant="secondary"
-                className="ml-1 h-5 min-w-5 flex items-center justify-center rounded-full text-[10px] font-bold"
+                className="ml-1 h-5 min-w-5 flex items-center justify-center rounded-full text-[10px] font-bold bg-primary/15 text-primary"
               >
                 {totalSellerOrders}
               </Badge>
@@ -215,19 +215,33 @@ export const MyOrdersTabs = ({ initialTab }: { initialTab?: OrdersTabsInitialTab
         )}
       </TabsList>
 
-      <TabsContent value="purchases" className="mt-0">
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-          <BuyerOrdersList orders={buyerOrders} onCancelOrder={cancelOrder} cancellingId={cancellingId} />
-        </motion.div>
-      </TabsContent>
-
-      {isSeller && (
-        <TabsContent value="sales" className="mt-0">
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-            <SellerOrdersList orders={sellerOrders} onOrderUpdated={fetchOrders} />
+      <AnimatePresence mode="wait">
+        <TabsContent value="purchases" className="mt-0">
+          <motion.div 
+            key="purchases"
+            initial={{ opacity: 0, x: -20 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.2 }}
+          >
+            <BuyerOrdersList orders={buyerOrders} onCancelOrder={cancelOrder} cancellingId={cancellingId} />
           </motion.div>
         </TabsContent>
-      )}
+
+        {isSeller && (
+          <TabsContent value="sales" className="mt-0">
+            <motion.div 
+              key="sales"
+              initial={{ opacity: 0, x: 20 }} 
+              animate={{ opacity: 1, x: 0 }} 
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+            >
+              <SellerOrdersList orders={sellerOrders} onOrderUpdated={fetchOrders} />
+            </motion.div>
+          </TabsContent>
+        )}
+      </AnimatePresence>
     </Tabs>
   );
 };

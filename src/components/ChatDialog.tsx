@@ -292,13 +292,12 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
                             className="cursor-pointer active:opacity-80 transition-opacity"
                           >
                             <div className="flex items-start gap-2.5 p-2 bg-background/80 rounded-xl border border-border/50 min-w-[200px] max-w-[260px]">
-                              {initialMessage.product.images?.[0] && (
-                                <img 
-                                  src={initialMessage.product.images[0]} 
-                                  alt={initialMessage.product.title}
-                                  className="w-14 h-14 object-cover rounded-lg flex-shrink-0"
-                                />
-                              )}
+                              <img 
+                                src={initialMessage.product.images?.[0] || '/placeholder.svg'} 
+                                alt={initialMessage.product.title}
+                                className="w-14 h-14 object-cover rounded-lg flex-shrink-0"
+                                onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                              />
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm font-semibold line-clamp-2 text-foreground">
                                   {initialMessage.product.title}
@@ -372,13 +371,12 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
               className="flex items-center gap-3 p-2 bg-card rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors"
               onClick={() => handleProductClick(initialMessage.product_id || '')}
             >
-              {initialMessage.product.images?.[0] && (
-                <img 
-                  src={initialMessage.product.images[0]} 
-                  alt={initialMessage.product.title}
-                  className="w-10 h-10 object-cover rounded-md"
-                />
-              )}
+              <img 
+                src={initialMessage.product.images?.[0] || '/placeholder.svg'} 
+                alt={initialMessage.product.title}
+                className="w-10 h-10 object-cover rounded-md"
+                onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+              />
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium truncate">{initialMessage.product.title}</p>
                 {initialMessage.product.price && (

@@ -1,1 +1,7 @@
-/*    /index.html   200
+# SPA fallback (keep client-side routing)
+# Important: exclude Vite dev module paths, otherwise dynamic imports break in preview.
+/src/*          /src/:splat          200
+/@vite/*        /@vite/:splat        200
+/node_modules/* /node_modules/:splat 200
+/assets/*       /assets/:splat       200
+/*              /index.html          200

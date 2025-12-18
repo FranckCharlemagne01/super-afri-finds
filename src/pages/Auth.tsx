@@ -16,6 +16,7 @@ import AuthSubmitButton from '@/components/auth/AuthSubmitButton';
 import AccountTypeSelector from '@/components/auth/AccountTypeSelector';
 import UnconfirmedEmailAlert from '@/components/auth/UnconfirmedEmailAlert';
 import GoogleAuthButton from '@/components/GoogleAuthButton';
+import FacebookAuthButton from '@/components/FacebookAuthButton';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -211,6 +212,41 @@ const Auth = () => {
       toast({
         title: "❌ Erreur de connexion",
         description: "Impossible de se connecter avec Google. Veuillez réessayer.",
+        variant: "destructive",
+        duration: 4000,
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  // Facebook OAuth handler
+  const handleFacebookSignIn = useCallback(async () => {
+    setLoading(true);
+    setFormError('');
+    
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'facebook',
+        options: {
+          redirectTo: redirectUrl,
+          scopes: 'email,public_profile',
+        },
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Redirect will happen automatically
+    } catch (error) {
+      console.error('Facebook auth error:', error);
+      setFormError('Impossible de se connecter avec Facebook. Veuillez réessayer.');
+      toast({
+        title: "❌ Erreur de connexion",
+        description: "Impossible de se connecter avec Facebook. Veuillez réessayer.",
         variant: "destructive",
         duration: 4000,
       });
@@ -957,6 +993,12 @@ const Auth = () => {
                   mode="signup"
                 />
 
+                <FacebookAuthButton 
+                  onClick={handleFacebookSignIn} 
+                  disabled={loading}
+                  mode="signup"
+                />
+
                 <p className="text-center text-sm text-muted-foreground pt-2">
                   Déjà un compte ?{' '}
                   <button
@@ -1169,6 +1211,12 @@ const Auth = () => {
 
                 <GoogleAuthButton 
                   onClick={handleGoogleSignIn} 
+                  disabled={loading}
+                  mode="signin"
+                />
+
+                <FacebookAuthButton 
+                  onClick={handleFacebookSignIn} 
                   disabled={loading}
                   mode="signin"
                 />

@@ -208,17 +208,12 @@ export const BuyerMessages = () => {
             >
               {/* Avatar - Style WhatsApp */}
               <div className="relative flex-shrink-0">
-                {thread.product?.images?.[0] ? (
-                  <img 
-                    src={thread.product.images[0]} 
-                    alt=""
-                    className="w-14 h-14 rounded-xl object-cover border border-border/50"
-                  />
-                ) : (
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center border border-border/50">
-                    <Store className="h-6 w-6 text-primary" />
-                  </div>
-                )}
+                <img 
+                  src={thread.product?.images?.[0] || '/placeholder.svg'} 
+                  alt=""
+                  className="w-14 h-14 rounded-xl object-cover border border-border/50"
+                  onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                />
                 {thread.unread_count > 0 && (
                   <div className="absolute -top-1 -right-1 min-w-5 h-5 bg-primary rounded-full flex items-center justify-center px-1">
                     <span className="text-[10px] font-bold text-primary-foreground">

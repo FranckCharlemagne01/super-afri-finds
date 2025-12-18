@@ -222,12 +222,12 @@ export const MyMessagesTabs = ({ initialTab = 'purchases' }: MyMessagesTabsProps
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       whileTap={{ scale: 0.98 }}
-      className={`w-full flex items-center gap-3 p-3.5 rounded-2xl hover:bg-muted/50 active:bg-muted transition-all text-left bg-card border border-border/50 ${
-        thread.unread_count > 0 ? 'border-primary/30 bg-primary/5' : ''
+      className={`w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-muted/50 active:bg-muted transition-all text-left bg-card border ${
+        thread.unread_count > 0 ? 'border-primary/40 bg-primary/5 shadow-sm' : 'border-border/50'
       }`}
       onClick={() => handleThreadClick(thread)}
     >
-      {/* Avatar */}
+      {/* Product Image Avatar */}
       <div className="relative flex-shrink-0">
         <img 
           src={thread.product?.images?.[0] || '/placeholder.svg'} 
@@ -236,31 +236,34 @@ export const MyMessagesTabs = ({ initialTab = 'purchases' }: MyMessagesTabsProps
           onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
         />
         {thread.unread_count > 0 && (
-          <div className="absolute -top-1 -right-1 min-w-5 h-5 bg-primary rounded-full flex items-center justify-center px-1">
+          <div className="absolute -top-1.5 -right-1.5 min-w-5 h-5 bg-primary rounded-full flex items-center justify-center px-1.5 shadow-lg">
             <span className="text-[10px] font-bold text-primary-foreground">
               {thread.unread_count > 9 ? '9+' : thread.unread_count}
             </span>
           </div>
         )}
+        {/* Online indicator for type */}
+        <div className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center ${
+          thread.type === 'buyer' ? 'bg-primary' : 'bg-muted-foreground'
+        }`}>
+          {thread.type === 'buyer' ? (
+            <Store className="h-2.5 w-2.5 text-primary-foreground" />
+          ) : (
+            <User className="h-2.5 w-2.5 text-background" />
+          )}
+        </div>
       </div>
       
       {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2 mb-0.5">
-          <div className="flex items-center gap-2 min-w-0">
-            {thread.type === 'buyer' ? (
-              <Store className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-            ) : (
-              <User className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-            )}
-            <span className={`font-bold text-sm truncate ${thread.unread_count > 0 ? 'text-foreground' : 'text-foreground'}`}>
-              {thread.type === 'buyer' 
-                ? (thread.shop?.shop_name || thread.other_user_profile?.full_name || 'Vendeur')
-                : (thread.other_user_profile?.full_name || thread.other_user_profile?.email?.split('@')[0] || 'Client')
-              }
-            </span>
-          </div>
-          <span className={`text-[11px] flex-shrink-0 ${thread.unread_count > 0 ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
+          <span className={`font-bold text-sm truncate ${thread.unread_count > 0 ? 'text-foreground' : 'text-foreground'}`}>
+            {thread.type === 'buyer' 
+              ? (thread.shop?.shop_name || thread.other_user_profile?.full_name || 'Vendeur')
+              : (thread.other_user_profile?.full_name || thread.other_user_profile?.email?.split('@')[0] || 'Client')
+            }
+          </span>
+          <span className={`text-[11px] flex-shrink-0 ${thread.unread_count > 0 ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
             {format(new Date(thread.latest_message.created_at), 'dd MMM', { locale: fr })}
           </span>
         </div>
@@ -268,15 +271,15 @@ export const MyMessagesTabs = ({ initialTab = 'purchases' }: MyMessagesTabsProps
         {thread.product && (
           <div className="flex items-center gap-1.5 mb-1">
             <Package className="h-3 w-3 text-primary flex-shrink-0" />
-            <span className="text-xs text-primary font-medium truncate">{thread.product.title}</span>
+            <span className="text-[11px] text-primary font-semibold truncate">{thread.product.title}</span>
           </div>
         )}
         
-        <p className={`text-sm line-clamp-1 ${
-          thread.unread_count > 0 ? 'text-foreground font-medium' : 'text-muted-foreground'
+        <p className={`text-[13px] line-clamp-1 ${
+          thread.unread_count > 0 ? 'text-foreground font-semibold' : 'text-muted-foreground'
         }`}>
           {thread.latest_message.sender_id !== user?.id && thread.unread_count > 0 && (
-            <span className="inline-block w-2 h-2 bg-primary rounded-full mr-1.5 align-middle" />
+            <span className="inline-block w-1.5 h-1.5 bg-primary rounded-full mr-1.5 align-middle animate-pulse" />
           )}
           {thread.latest_message.content === '[PRODUCT_SHARE]' 
             ? '📦 Carte produit partagée' 

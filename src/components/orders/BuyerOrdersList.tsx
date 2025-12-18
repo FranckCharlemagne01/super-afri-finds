@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Package, Clock, CheckCircle, Truck, ChevronDown, MapPin, Phone, User, Calendar, Eye, MessageSquare, X, Store } from "lucide-react";
+import { Package, Clock, CheckCircle, Truck, ChevronDown, MapPin, Phone, User, Calendar, Eye, MessageSquare, X, Store, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,52 +45,79 @@ const statusConfig = {
   pending: { 
     label: "En attente", 
     icon: Clock, 
-    bgColor: "bg-amber-500/10", 
+    bgColor: "bg-amber-500/15", 
     textColor: "text-amber-600 dark:text-amber-400", 
     iconBg: "bg-amber-500/20",
+    progressColor: "bg-amber-500",
     step: 1
   },
   confirmed: { 
     label: "Confirmée", 
     icon: CheckCircle, 
-    bgColor: "bg-blue-500/10", 
+    bgColor: "bg-blue-500/15", 
     textColor: "text-blue-600 dark:text-blue-400", 
     iconBg: "bg-blue-500/20",
+    progressColor: "bg-blue-500",
     step: 2
   },
   shipped: { 
     label: "En livraison", 
     icon: Truck, 
-    bgColor: "bg-indigo-500/10", 
+    bgColor: "bg-indigo-500/15", 
     textColor: "text-indigo-600 dark:text-indigo-400", 
     iconBg: "bg-indigo-500/20",
+    progressColor: "bg-indigo-500",
     step: 3
   },
   delivered: { 
     label: "Livrée", 
     icon: CheckCircle, 
-    bgColor: "bg-emerald-500/10", 
+    bgColor: "bg-emerald-500/15", 
     textColor: "text-emerald-600 dark:text-emerald-400", 
     iconBg: "bg-emerald-500/20",
+    progressColor: "bg-emerald-500",
     step: 4
   },
   cancelled: { 
     label: "Annulée", 
     icon: X, 
-    bgColor: "bg-red-500/10", 
+    bgColor: "bg-red-500/15", 
     textColor: "text-red-600 dark:text-red-400", 
     iconBg: "bg-red-500/20",
+    progressColor: "bg-red-500",
     step: 0
   },
 };
 
 export const BuyerOrdersList = ({ orders, onCancelOrder, cancellingId }: BuyerOrdersListProps) => {
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [productImages, setProductImages] = useState<Record<string, string>>({});
   const navigate = useNavigate();
 
-  const canCancelOrder = (status: string) => {
-    return status === 'pending' || status === 'confirmed';
-  };
+  // Fetch product images
+  useEffect(() => {
+    const fetchProductImages = async () => {
+      const productIds = [...new Set(orders.map(o => o.product_id))];
+      if (productIds.length === 0) return;
+
+      const { data } = await supabase
+        .from('products')
+        .select('id, images')
+        .in('id', productIds);
+
+      if (data) {
+        const imageMap: Record<string, string> = {};
+        data.forEach(p => {
+          imageMap[p.id] = p.images?.[0] || '/placeholder.svg';
+        });
+        setProductImages(imageMap);
+      }
+    };
+
+    fetchProductImages();
+  }, [orders]);
+
+  const canCancelOrder = (status: string) => status === 'pending' || status === 'confirmed';
 
   const toggleOrderExpand = (orderId: string) => {
     setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
@@ -97,51 +125,40 @@ export const BuyerOrdersList = ({ orders, onCancelOrder, cancellingId }: BuyerOr
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString('fr-FR', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   };
 
   const OrderProgress = ({ status }: { status: string }) => {
     const currentStep = statusConfig[status as keyof typeof statusConfig]?.step || 0;
-    const steps = [
-      { label: "Reçue", step: 1 },
-      { label: "Confirmée", step: 2 },
-      { label: "Expédiée", step: 3 },
-      { label: "Livrée", step: 4 },
-    ];
+    const progressColor = statusConfig[status as keyof typeof statusConfig]?.progressColor || 'bg-primary';
 
     if (status === 'cancelled') {
       return (
-        <div className="flex items-center gap-2 px-3 py-2 bg-red-500/10 rounded-xl">
-          <X className="w-4 h-4 text-red-500" />
-          <span className="text-xs font-semibold text-red-600 dark:text-red-400">Commande annulée</span>
+        <div className="flex items-center gap-2 mt-2">
+          <div className="flex-1 h-1.5 bg-red-500/30 rounded-full overflow-hidden">
+            <div className="h-full w-full bg-red-500 rounded-full" />
+          </div>
+          <span className="text-[10px] font-bold text-red-500">Annulée</span>
         </div>
       );
     }
 
     return (
-      <div className="flex items-center gap-1">
-        {steps.map((s, index) => (
-          <div key={s.step} className="flex items-center">
-            <div className={`h-1.5 rounded-full transition-all duration-300 ${
-              s.step <= currentStep 
-                ? 'bg-primary w-8' 
-                : 'bg-muted w-8'
-            }`} />
-            {index < steps.length - 1 && <div className="w-0.5" />}
-          </div>
-        ))}
+      <div className="flex items-center gap-2 mt-2">
+        <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+          <motion.div 
+            initial={{ width: 0 }}
+            animate={{ width: `${(currentStep / 4) * 100}%` }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className={`h-full ${progressColor} rounded-full`}
+          />
+        </div>
+        <span className="text-[10px] font-semibold text-muted-foreground tabular-nums">{currentStep}/4</span>
       </div>
     );
   };
@@ -151,10 +168,10 @@ export const BuyerOrdersList = ({ orders, onCancelOrder, cancellingId }: BuyerOr
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card rounded-3xl border border-border/50 p-8 text-center mt-4"
+        className="bg-card rounded-3xl border border-border/50 p-8 text-center"
       >
-        <div className="w-20 h-20 mx-auto bg-muted/50 rounded-3xl flex items-center justify-center mb-5">
-          <Package className="w-10 h-10 text-muted-foreground" />
+        <div className="w-20 h-20 mx-auto bg-gradient-to-br from-primary/10 to-accent/10 rounded-3xl flex items-center justify-center mb-5">
+          <Package className="w-10 h-10 text-primary" />
         </div>
         <h2 className="text-xl font-bold text-foreground mb-2">Aucun achat</h2>
         <p className="text-sm text-muted-foreground mb-6 max-w-xs mx-auto">
@@ -162,7 +179,7 @@ export const BuyerOrdersList = ({ orders, onCancelOrder, cancellingId }: BuyerOr
         </p>
         <Button 
           onClick={() => navigate('/marketplace')}
-          className="h-12 px-8 rounded-xl font-semibold"
+          className="h-12 px-8 rounded-2xl font-bold shadow-lg"
         >
           Découvrir les produits
         </Button>
@@ -177,6 +194,7 @@ export const BuyerOrdersList = ({ orders, onCancelOrder, cancellingId }: BuyerOr
           const statusInfo = statusConfig[order.status as keyof typeof statusConfig] || statusConfig.pending;
           const StatusIcon = statusInfo.icon;
           const isExpanded = expandedOrderId === order.id;
+          const productImage = productImages[order.product_id] || '/placeholder.svg';
 
           return (
             <motion.div 
@@ -190,44 +208,62 @@ export const BuyerOrdersList = ({ orders, onCancelOrder, cancellingId }: BuyerOr
             >
               {/* Order Card Header */}
               <motion.button
-                whileTap={{ scale: 0.995 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => toggleOrderExpand(order.id)}
-                className="w-full p-4 flex items-start gap-3.5 hover:bg-muted/20 active:bg-muted/40 transition-colors text-left"
+                className="w-full p-3.5 flex gap-3.5 hover:bg-muted/20 active:bg-muted/40 transition-colors text-left"
               >
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${statusInfo.iconBg}`}>
-                  <StatusIcon className={`w-5 h-5 ${statusInfo.textColor}`} />
+                {/* Product Image */}
+                <div className="relative flex-shrink-0">
+                  <img 
+                    src={productImage}
+                    alt={order.product_title}
+                    className="w-[72px] h-[72px] rounded-xl object-cover border border-border/30"
+                    onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                  />
+                  <div className={`absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full flex items-center justify-center ${statusInfo.iconBg}`}>
+                    <StatusIcon className={`w-3.5 h-3.5 ${statusInfo.textColor}`} />
+                  </div>
                 </div>
                 
+                {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Badge className={`${statusInfo.bgColor} ${statusInfo.textColor} border-0 text-[10px] px-2 py-0.5 font-bold rounded-md`}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-foreground line-clamp-2 leading-tight mb-1">{order.product_title}</p>
+                      {order.shop_name && (
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); order.shop_slug && navigate(`/boutique/${order.shop_slug}`); }}
+                          className="flex items-center gap-1.5 text-[11px] text-primary font-semibold hover:underline"
+                        >
+                          <Store className="w-3 h-3" />
+                          {order.shop_name}
+                        </button>
+                      )}
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="font-bold text-primary text-base tabular-nums">{order.total_amount.toLocaleString()} F</p>
+                      <span className="text-[10px] text-muted-foreground">×{order.quantity}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between gap-2 mt-2">
+                    <Badge className={`${statusInfo.bgColor} ${statusInfo.textColor} border-0 text-[10px] px-2 py-0.5 font-bold rounded-lg`}>
                       {statusInfo.label}
                     </Badge>
-                    <span className="text-[10px] font-medium text-muted-foreground">#{order.id.slice(-6).toUpperCase()}</span>
+                    <span className="text-[10px] text-muted-foreground font-medium">{formatDate(order.created_at)}</span>
                   </div>
-                  {order.shop_name && (
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); order.shop_slug && navigate(`/boutique/${order.shop_slug}`); }}
-                      className="flex items-center gap-1 text-[10px] text-primary font-medium hover:underline mb-1"
-                    >
-                      <Store className="w-3 h-3" />
-                      {order.shop_name}
-                    </button>
-                  )}
-                  <p className="text-sm font-semibold text-foreground truncate mb-1.5">{order.product_title}</p>
+                  
                   <OrderProgress status={order.status} />
                 </div>
                 
-                <div className="text-right shrink-0 flex flex-col items-end">
-                  <p className="font-bold text-primary text-base tabular-nums">{order.total_amount.toLocaleString()} F</p>
-                  <motion.div
-                    animate={{ rotate: isExpanded ? 180 : 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="mt-1"
-                  >
-                    <ChevronDown className="w-5 h-5 text-muted-foreground" />
-                  </motion.div>
-                </div>
+                {/* Expand Arrow */}
+                <motion.div
+                  animate={{ rotate: isExpanded ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="self-center flex-shrink-0"
+                >
+                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                </motion.div>
               </motion.button>
               
               {/* Expanded Details */}
@@ -240,57 +276,43 @@ export const BuyerOrdersList = ({ orders, onCancelOrder, cancellingId }: BuyerOr
                     transition={{ duration: 0.25 }}
                     className="overflow-hidden"
                   >
-                    <div className="px-4 pb-4 pt-0 border-t border-border/40 bg-muted/10">
-                      <div className="pt-4 space-y-3">
-                        {/* Date Info */}
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Calendar className="w-3.5 h-3.5" />
-                          <span>Commandé le {formatDate(order.created_at)} à {formatTime(order.created_at)}</span>
+                    <div className="px-3.5 pb-3.5 border-t border-border/40 bg-muted/10">
+                      <div className="pt-3.5 space-y-3">
+                        {/* Order ID & Date */}
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span className="font-mono">#{order.id.slice(-8).toUpperCase()}</span>
+                          <div className="flex items-center gap-1.5">
+                            <Calendar className="w-3.5 h-3.5" />
+                            <span>{formatDate(order.created_at)} · {formatTime(order.created_at)}</span>
+                          </div>
                         </div>
 
-                        {/* Shop Info */}
+                        {/* Shop Card */}
                         {order.shop_name && (
                           <button 
                             onClick={() => order.shop_slug && navigate(`/boutique/${order.shop_slug}`)}
-                            className="w-full bg-primary/5 hover:bg-primary/10 rounded-xl p-3.5 border border-primary/20 flex items-center gap-3 transition-colors"
+                            className="w-full bg-primary/5 hover:bg-primary/10 rounded-xl p-3 border border-primary/20 flex items-center gap-3 transition-colors active:scale-[0.98]"
                           >
-                            <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+                            <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center">
                               <Store className="w-5 h-5 text-primary" />
                             </div>
-                            <div className="flex-1 text-left">
-                              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Boutique vendeur</p>
-                              <p className="text-sm font-semibold text-primary">{order.shop_name}</p>
+                            <div className="flex-1 text-left min-w-0">
+                              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Vendeur</p>
+                              <p className="text-sm font-bold text-primary truncate">{order.shop_name}</p>
                             </div>
-                            <ChevronDown className="w-4 h-4 text-primary rotate-[-90deg]" />
+                            <ChevronRight className="w-4 h-4 text-primary" />
                           </button>
                         )}
 
-                        {/* Product Card */}
-                        <div className="bg-card rounded-xl p-3.5 border border-border/40">
-                          <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                              <Package className="w-6 h-6 text-primary" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-foreground truncate">{order.product_title}</p>
-                              <div className="flex items-center gap-3 mt-1">
-                                <span className="text-xs text-muted-foreground">Qté: <span className="font-semibold text-foreground">{order.quantity}</span></span>
-                                <span className="text-xs text-muted-foreground">×</span>
-                                <span className="text-xs text-muted-foreground">{order.product_price.toLocaleString()} F</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Delivery Info */}
-                        <div className="bg-card rounded-xl p-3.5 border border-border/40 space-y-2.5">
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Livraison</p>
+                        {/* Delivery Info Card */}
+                        <div className="bg-card rounded-xl p-3 border border-border/40 space-y-2">
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Livraison</p>
                           <div className="space-y-2">
                             <div className="flex items-center gap-2.5">
                               <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
                                 <User className="w-4 h-4 text-blue-500" />
                               </div>
-                              <span className="text-sm text-foreground font-medium">{order.customer_name}</span>
+                              <span className="text-sm text-foreground font-medium truncate">{order.customer_name}</span>
                             </div>
                             <div className="flex items-center gap-2.5">
                               <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center">
@@ -299,7 +321,7 @@ export const BuyerOrdersList = ({ orders, onCancelOrder, cancellingId }: BuyerOr
                               <span className="text-sm text-foreground font-medium tabular-nums">{order.customer_phone}</span>
                             </div>
                             <div className="flex items-start gap-2.5">
-                              <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0">
+                              <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center flex-shrink-0">
                                 <MapPin className="w-4 h-4 text-orange-500" />
                               </div>
                               <span className="text-sm text-foreground leading-relaxed">{order.delivery_location}</span>
@@ -307,20 +329,20 @@ export const BuyerOrdersList = ({ orders, onCancelOrder, cancellingId }: BuyerOr
                           </div>
                         </div>
                         
-                        {/* Total */}
-                        <div className="bg-primary/5 rounded-xl p-3.5 border border-primary/20">
+                        {/* Total Card */}
+                        <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl p-3.5 border border-primary/20">
                           <div className="flex justify-between items-center">
-                            <span className="text-sm font-semibold text-foreground">Total</span>
-                            <span className="text-xl font-bold text-primary tabular-nums">{order.total_amount.toLocaleString()} FCFA</span>
+                            <span className="text-sm font-bold text-foreground">Total payé</span>
+                            <span className="text-xl font-bold text-primary tabular-nums">{order.total_amount.toLocaleString()} F</span>
                           </div>
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="flex gap-2 pt-1">
+                        <div className="flex gap-2">
                           <Button 
                             variant="outline"
                             onClick={() => navigate(`/product/${order.product_id}`)}
-                            className="flex-1 h-11 rounded-xl text-sm font-medium"
+                            className="flex-1 h-12 rounded-xl text-sm font-semibold active:scale-[0.98] transition-transform"
                           >
                             <Eye className="w-4 h-4 mr-2" />
                             Voir produit
@@ -328,7 +350,7 @@ export const BuyerOrdersList = ({ orders, onCancelOrder, cancellingId }: BuyerOr
                           <Button 
                             variant="outline"
                             onClick={() => navigate(`/messages`)}
-                            className="flex-1 h-11 rounded-xl text-sm font-medium"
+                            className="flex-1 h-12 rounded-xl text-sm font-semibold active:scale-[0.98] transition-transform"
                           >
                             <MessageSquare className="w-4 h-4 mr-2" />
                             Contacter
@@ -341,7 +363,7 @@ export const BuyerOrdersList = ({ orders, onCancelOrder, cancellingId }: BuyerOr
                             <AlertDialogTrigger asChild>
                               <Button 
                                 variant="destructive"
-                                className="w-full h-11 rounded-xl text-sm font-medium"
+                                className="w-full h-12 rounded-xl text-sm font-bold active:scale-[0.98] transition-transform"
                                 disabled={cancellingId === order.id}
                               >
                                 {cancellingId === order.id ? (
@@ -357,18 +379,18 @@ export const BuyerOrdersList = ({ orders, onCancelOrder, cancellingId }: BuyerOr
                                 )}
                               </Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent className="rounded-2xl">
+                            <AlertDialogContent className="rounded-2xl mx-4">
                               <AlertDialogHeader>
                                 <AlertDialogTitle>Annuler cette commande ?</AlertDialogTitle>
                                 <AlertDialogDescription>
                                   Cette action est irréversible. La commande sera définitivement annulée.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel className="rounded-xl">Non, garder</AlertDialogCancel>
+                              <AlertDialogFooter className="gap-2">
+                                <AlertDialogCancel className="rounded-xl h-11">Non, garder</AlertDialogCancel>
                                 <AlertDialogAction 
                                   onClick={() => onCancelOrder(order.id)}
-                                  className="bg-destructive text-destructive-foreground rounded-xl"
+                                  className="bg-destructive text-destructive-foreground rounded-xl h-11"
                                 >
                                   Oui, annuler
                                 </AlertDialogAction>

@@ -1,3 +1,4 @@
+// Djassa Marketplace - Index Page
 import { ProductCard } from "@/components/ProductCard";
 import { CategoryCard } from "@/components/CategoryCard";
 import { SearchBar } from "@/components/SearchBar";

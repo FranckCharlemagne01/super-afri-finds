@@ -14,6 +14,12 @@ import { useVisitorTracking } from "@/hooks/useVisitorTracking";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import { useNotificationTriggers } from "@/hooks/useNotificationTriggers";
 
+// Component that uses auth-dependent hooks (must be inside AuthProvider)
+const NotificationInitializer = () => {
+  useNotificationTriggers();
+  return null;
+};
+
 const Verify = lazy(() => import("./pages/Verify"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const AuthWelcome = lazy(() => import("./pages/AuthWelcome"));
@@ -64,9 +70,6 @@ const App = () => {
 
   // Track visitor activity
   useVisitorTracking();
-  
-  // Initialize notification triggers
-  useNotificationTriggers();
 
   const handleSplashComplete = useCallback(() => {
     setShowSplash(false);
@@ -88,6 +91,7 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <NotificationInitializer />
         <TooltipProvider>
           <Toaster />
           <Sonner />

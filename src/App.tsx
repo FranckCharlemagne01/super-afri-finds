@@ -11,6 +11,8 @@ import { lazy, Suspense, useState, useCallback } from "react";
 import { SplashScreen } from "@/components/SplashScreen";
 import { useInactivityDetector } from "@/hooks/useInactivityDetector";
 import { useVisitorTracking } from "@/hooks/useVisitorTracking";
+import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
+import { useNotificationTriggers } from "@/hooks/useNotificationTriggers";
 
 const Verify = lazy(() => import("./pages/Verify"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
@@ -62,6 +64,9 @@ const App = () => {
 
   // Track visitor activity
   useVisitorTracking();
+  
+  // Initialize notification triggers
+  useNotificationTriggers();
 
   const handleSplashComplete = useCallback(() => {
     setShowSplash(false);
@@ -140,6 +145,7 @@ const App = () => {
               </Routes>
             </Suspense>
             <MobileBottomNav />
+            <PushNotificationPrompt />
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>

@@ -12,6 +12,7 @@ import { fr } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { sendPushNotification } from '@/utils/pushNotifications';
 
 interface Order {
   id: string;
@@ -59,6 +60,14 @@ export const OrdersManagement = ({ orders, onRefresh }: OrdersManagementProps) =
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     try {
+      const { data: orderRow, error: orderFetchError } = await supabase
+        .from('orders')
+        .select('customer_id, product_title')
+        .eq('id', orderId)
+        .single();
+
+      if (orderFetchError) throw orderFetchError;
+
       const { error } = await supabase.rpc('update_order_status', {
         order_id: orderId,
         new_status: newStatus
@@ -66,9 +75,20 @@ export const OrdersManagement = ({ orders, onRefresh }: OrdersManagementProps) =
 
       if (error) throw error;
 
+      const label = statusConfig[newStatus]?.label || newStatus;
+
+      // 🔔 Push réel côté client
+      await sendPushNotification(supabase, {
+        user_id: orderRow.customer_id,
+        title: `📦 Statut de commande: ${label}`,
+        body: `Votre commande "${orderRow.product_title}" est maintenant: ${label}`,
+        url: '/my-orders',
+        tag: 'order_status',
+      });
+
       toast({
         title: "Statut mis à jour",
-        description: `La commande a été marquée comme "${statusConfig[newStatus]?.label}"`,
+        description: `La commande a été marquée comme "${label}"`,
       });
 
       onRefresh();

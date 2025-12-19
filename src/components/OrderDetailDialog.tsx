@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { sendPushNotification } from '@/utils/pushNotifications';
 import { User, Phone, MapPin, Package, Calendar, CheckCircle, CheckCircle2, Loader2, Truck, Clock, X, ShoppingBag, CreditCard, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -210,9 +211,19 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
 
       if (error) throw error;
 
+      // 🔔 Push réel côté client (fonctionne même si l'app est fermée)
+      const statusLabel = statusConfig[newStatus as keyof typeof statusConfig]?.label || newStatus;
+      await sendPushNotification(supabase, {
+        user_id: order.customer_id,
+        title: `📦 Statut de commande: ${statusLabel}`,
+        body: `Votre commande "${order.product_title}" est maintenant: ${statusLabel}`,
+        url: '/my-orders',
+        tag: 'order_status',
+      });
+
       toast({
         title: "✅ Statut mis à jour",
-        description: `Commande marquée comme "${statusConfig[newStatus as keyof typeof statusConfig]?.label || newStatus}"`,
+        description: `Commande marquée comme "${statusLabel}"`,
       });
 
       onOrderUpdated();

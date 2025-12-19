@@ -31,6 +31,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from '@/hooks/use-toast';
+import { sendPushNotification } from '@/utils/pushNotifications';
 import { ProfileUpdateForm } from '@/components/ProfileUpdateForm';
 import { PasswordUpdateForm } from '@/components/PasswordUpdateForm';
 import { ProductEditDialog } from '@/components/ProductEditDialog';
@@ -238,6 +239,14 @@ const SuperAdmin = () => {
 
   const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
+      const { data: orderRow, error: orderFetchError } = await supabase
+        .from('orders')
+        .select('customer_id, product_title')
+        .eq('id', orderId)
+        .single();
+
+      if (orderFetchError) throw orderFetchError;
+
       // Utiliser la fonction sécurisée pour mettre à jour le statut
       const { error } = await supabase
         .rpc('update_order_status', {
@@ -250,6 +259,15 @@ const SuperAdmin = () => {
       setOrders(orders.map(o => 
         o.id === orderId ? { ...o, status: newStatus } : o
       ));
+
+      // 🔔 Push réel côté client
+      await sendPushNotification(supabase, {
+        user_id: orderRow.customer_id,
+        title: `📦 Statut de commande: ${newStatus}`,
+        body: `Votre commande "${orderRow.product_title}" a changé de statut: ${newStatus}`,
+        url: '/my-orders',
+        tag: 'order_status',
+      });
 
       toast({
         title: "Succès",

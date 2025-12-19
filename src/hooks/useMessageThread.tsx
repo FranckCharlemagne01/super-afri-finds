@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { sendPushNotification } from '@/utils/pushNotifications';
 
 export interface Message {
   id: string;
@@ -53,25 +54,25 @@ export const useMessageThread = ({ sellerId, buyerId, productId, enabled = true 
     try {
       // Determine the other user in the conversation
       const otherUserId = user.id === sellerId ? buyerId : sellerId;
-      
+
       console.log('📨 Fetching messages for conversation:', {
         currentUser: user.id,
         otherUser: otherUserId,
         productId,
-        threadId
+        threadId,
       });
-      
+
       // Build the query to get all messages between these two users
       let query = supabase
         .from('messages')
         .select('id, sender_id, recipient_id, product_id, subject, content, media_url, media_type, media_name, is_read, created_at')
         .or(`and(sender_id.eq.${user.id},recipient_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},recipient_id.eq.${user.id})`);
-      
+
       // Filter by product_id if specified
       if (productId) {
         query = query.eq('product_id', productId);
       }
-      
+
       const { data, error } = await query.order('created_at', { ascending: true });
 
       if (error) {
@@ -80,24 +81,27 @@ export const useMessageThread = ({ sellerId, buyerId, productId, enabled = true 
       }
 
       console.log('📨 Messages loaded:', data?.length || 0, data);
-      
-      setMessages((data || []).map(msg => ({
-        ...msg,
-        thread_id: threadId,
-        media_type: msg.media_type as 'image' | 'video' | null
-      })));
+
+      setMessages(
+        (data || []).map((msg) => ({
+          ...msg,
+          thread_id: threadId,
+          media_type: msg.media_type as 'image' | 'video' | null,
+        }))
+      );
 
       // Mark unread messages as read
-      const unreadMessages = (data || []).filter(msg => 
-        msg.recipient_id === user.id && !msg.is_read
-      );
-      
+      const unreadMessages = (data || []).filter((msg) => msg.recipient_id === user.id && !msg.is_read);
+
       if (unreadMessages.length > 0) {
         console.log('📨 Marking', unreadMessages.length, 'messages as read');
         await supabase
           .from('messages')
           .update({ is_read: true })
-          .in('id', unreadMessages.map(m => m.id))
+          .in(
+            'id',
+            unreadMessages.map((m) => m.id)
+          )
           .eq('recipient_id', user.id);
       }
     } catch (error) {
@@ -130,31 +134,31 @@ export const useMessageThread = ({ sellerId, buyerId, productId, enabled = true 
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'messages'
+          table: 'messages',
         },
         (payload) => {
           const newMsg = payload.new as any;
-          
+
           // Check if this message is part of our conversation
-          const isOurConversation = 
+          const isOurConversation =
             (newMsg.sender_id === user.id && newMsg.recipient_id === otherUserId) ||
             (newMsg.sender_id === otherUserId && newMsg.recipient_id === user.id);
-          
+
           // If we have a product_id filter, also check that
           const matchesProduct = !productId || newMsg.product_id === productId;
-          
+
           if (isOurConversation && matchesProduct) {
             console.log('🔔 New message in conversation:', newMsg.id);
-            
+
             const formattedMsg: Message = {
               ...newMsg,
               thread_id: threadId,
-              media_type: newMsg.media_type as 'image' | 'video' | null
+              media_type: newMsg.media_type as 'image' | 'video' | null,
             };
-            
-            setMessages(prev => {
+
+            setMessages((prev) => {
               // Avoid duplicates
-              if (prev.some(m => m.id === formattedMsg.id)) return prev;
+              if (prev.some((m) => m.id === formattedMsg.id)) return prev;
               return [...prev, formattedMsg];
             });
 
@@ -185,50 +189,60 @@ export const useMessageThread = ({ sellerId, buyerId, productId, enabled = true 
   }, [threadId, user, enabled, fetchMessages, sellerId, buyerId, productId]);
 
   // Send a message with thread_id
-  const sendMessage = useCallback(async (
-    content: string,
-    mediaUrl?: string,
-    mediaType?: 'image' | 'video',
-    mediaName?: string,
-    subject?: string
-  ) => {
-    if (!user || (!content.trim() && !mediaUrl)) return false;
+  const sendMessage = useCallback(
+    async (content: string, mediaUrl?: string, mediaType?: 'image' | 'video', mediaName?: string, subject?: string) => {
+      if (!user || (!content.trim() && !mediaUrl)) return false;
 
-    setSending(true);
-    try {
-      const recipientId = user.id === sellerId ? buyerId : sellerId;
+      setSending(true);
+      try {
+        const recipientId = user.id === sellerId ? buyerId : sellerId;
 
-      console.log('📤 Sending message to:', recipientId);
+        console.log('📤 Sending message to:', recipientId);
 
-      const { error } = await supabase
-        .from('messages')
-        .insert([{
-          sender_id: user.id,
-          recipient_id: recipientId,
-          product_id: productId || null,
-          subject: subject || null,
-          content: content.trim() || (mediaName ? `📎 ${mediaName}` : ''),
-          media_url: mediaUrl || null,
-          media_type: mediaType || null,
-          media_name: mediaName || null,
-        }]);
+        const messageContent = content.trim() || (mediaName ? `📎 ${mediaName}` : '');
 
-      if (error) throw error;
-      
-      console.log('📤 Message sent successfully');
-      return true;
-    } catch (error) {
-      console.error('Error sending message:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'envoyer le message",
-        variant: "destructive",
-      });
-      return false;
-    } finally {
-      setSending(false);
-    }
-  }, [user, sellerId, buyerId, productId, toast]);
+        const { error } = await supabase
+          .from('messages')
+          .insert([
+            {
+              sender_id: user.id,
+              recipient_id: recipientId,
+              product_id: productId || null,
+              subject: subject || null,
+              content: messageContent,
+              media_url: mediaUrl || null,
+              media_type: mediaType || null,
+              media_name: mediaName || null,
+            },
+          ]);
+
+        if (error) throw error;
+
+        // 🔔 Push réel côté destinataire (fonctionne même si l'app est fermée)
+        await sendPushNotification(supabase, {
+          user_id: recipientId,
+          title: '💬 Nouveau message',
+          body: messageContent.length > 120 ? `${messageContent.slice(0, 117)}...` : messageContent,
+          url: '/messages',
+          tag: 'new_message',
+        });
+
+        console.log('📤 Message sent successfully');
+        return true;
+      } catch (error) {
+        console.error('Error sending message:', error);
+        toast({
+          title: 'Erreur',
+          description: "Impossible d'envoyer le message",
+          variant: 'destructive',
+        });
+        return false;
+      } finally {
+        setSending(false);
+      }
+    },
+    [user, sellerId, buyerId, productId, toast]
+  );
 
   return {
     messages,

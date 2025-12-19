@@ -151,7 +151,9 @@ serve(async (req) => {
     console.log('[Push] Received notification request:', {
       user_id: payload.user_id,
       user_ids: payload.user_ids?.length,
-      title: payload.title
+      title: payload.title,
+      tag: payload.tag,
+      url: payload.url,
     });
 
     // Get target user IDs

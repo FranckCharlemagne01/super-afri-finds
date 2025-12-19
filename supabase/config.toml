@@ -15,6 +15,9 @@ verify_jwt = false
 [functions.send-push-notification]
 verify_jwt = false
 
+[functions.notification-push-sender]
+verify_jwt = false
+
 [functions.send-otp]
 verify_jwt = false
 

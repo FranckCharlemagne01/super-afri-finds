@@ -3,32 +3,44 @@ import { supabase } from '@/integrations/supabase/client';
 import { useStableAuth } from '@/hooks/useStableAuth';
 
 /**
- * Hook to trigger push + in-app notifications on important events
- * Listens to realtime changes and creates notifications
+ * Hook to trigger push notifications when new in-app notifications are created
+ * Listens to realtime changes on the notifications table and sends push notifications
  */
 export const useNotificationTriggers = () => {
   const { userId } = useStableAuth();
   const mountedRef = useRef(true);
+  const processedIds = useRef<Set<string>>(new Set());
 
-  // Helper to create in-app notification
-  const createInAppNotification = async (
+  // Send push notification via edge function
+  const sendPushNotification = async (
     targetUserId: string,
-    type: string,
     title: string,
-    message: string,
-    link?: string
+    body: string,
+    url?: string,
+    type?: string,
+    notificationId?: string
   ) => {
     try {
-      await supabase.from('notifications').insert({
-        user_id: targetUserId,
-        type,
-        title,
-        message,
-        link,
-        is_read: false
+      console.log('[NotificationTriggers] Sending push notification:', { title, targetUserId });
+      
+      const response = await supabase.functions.invoke('notification-push-sender', {
+        body: {
+          notification_id: notificationId,
+          user_id: targetUserId,
+          title,
+          body,
+          url,
+          type
+        }
       });
+
+      if (response.error) {
+        console.error('[NotificationTriggers] Push notification error:', response.error);
+      } else {
+        console.log('[NotificationTriggers] Push notification sent:', response.data);
+      }
     } catch (error) {
-      console.error('[Notifications] Failed to create in-app notification:', error);
+      console.error('[NotificationTriggers] Failed to send push notification:', error);
     }
   };
 
@@ -36,178 +48,71 @@ export const useNotificationTriggers = () => {
     if (!userId) return;
 
     mountedRef.current = true;
+    processedIds.current.clear();
 
-    // Listen for new orders (for sellers)
-    const ordersChannel = supabase
-      .channel('notification-orders')
+    console.log('[NotificationTriggers] Setting up realtime listener for user:', userId);
+
+    // Listen for new notifications created for this user
+    const notificationsChannel = supabase
+      .channel('push-notifications-trigger')
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'orders',
-          filter: `seller_id=eq.${userId}`
+          table: 'notifications',
+          filter: `user_id=eq.${userId}`
         },
         async (payload) => {
           if (!mountedRef.current) return;
           
-          const order = payload.new as any;
-          console.log('[Notifications] New order received:', order.id);
-          
-          const title = 'Nouvelle commande !';
-          const body = `${order.customer_name} a commandé ${order.product_title}`;
-          
-          // Create in-app notification
-          await createInAppNotification(
-            userId,
-            'new_order',
-            title,
-            body,
-            '/seller-dashboard'
-          );
-          
-          // Send push notification
-          try {
-            await supabase.functions.invoke('send-push-notification', {
-              body: {
-                user_id: userId,
-                title: `🛒 ${title}`,
-                body,
-                url: '/seller-dashboard',
-                tag: 'new-order'
-              }
-            });
-          } catch (error) {
-            console.error('[Notifications] Failed to send order push:', error);
-          }
-        }
-      )
-      .subscribe();
+          const notification = payload.new as {
+            id: string;
+            user_id: string;
+            title: string;
+            message: string;
+            link?: string;
+            type: string;
+          };
 
-    // Listen for order status changes (for buyers)
-    const orderStatusChannel = supabase
-      .channel('notification-order-status')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'orders',
-          filter: `customer_id=eq.${userId}`
-        },
-        async (payload) => {
-          if (!mountedRef.current) return;
+          // Prevent duplicate processing
+          if (processedIds.current.has(notification.id)) {
+            console.log('[NotificationTriggers] Skipping duplicate notification:', notification.id);
+            return;
+          }
+          processedIds.current.add(notification.id);
+
+          console.log('[NotificationTriggers] New notification received:', notification.id, notification.title);
           
-          const order = payload.new as any;
-          const oldOrder = payload.old as any;
-          
-          // Only notify on status change
-          if (order.status === oldOrder.status) return;
-          
-          console.log('[Notifications] Order status changed:', order.id, order.status);
-          
-          const statusConfig: Record<string, { title: string; emoji: string; type: string }> = {
-            confirmed: { title: 'Commande confirmée', emoji: '✅', type: 'order_status' },
-            shipped: { title: 'Commande expédiée', emoji: '🚚', type: 'order_shipped' },
-            delivered: { title: 'Commande livrée', emoji: '📦', type: 'order_delivered' },
-            cancelled: { title: 'Commande annulée', emoji: '❌', type: 'order_status' }
+          // Add emoji based on notification type
+          const emojiMap: Record<string, string> = {
+            'new_order': '🛒',
+            'order_status': '📦',
+            'new_message': '💬',
+            'default': '🔔'
           };
           
-          const config = statusConfig[order.status];
-          if (!config) return;
-          
-          const message = `${order.product_title} - ${config.title}`;
-          
-          // Create in-app notification
-          await createInAppNotification(
-            userId,
-            config.type,
-            config.title,
-            message,
-            '/my-orders'
-          );
+          const emoji = emojiMap[notification.type] || emojiMap['default'];
+          const pushTitle = `${emoji} ${notification.title}`;
           
           // Send push notification
-          try {
-            await supabase.functions.invoke('send-push-notification', {
-              body: {
-                user_id: userId,
-                title: `${config.emoji} ${config.title}`,
-                body: message,
-                url: '/my-orders',
-                tag: 'order-status'
-              }
-            });
-          } catch (error) {
-            console.error('[Notifications] Failed to send status push:', error);
-          }
+          await sendPushNotification(
+            notification.user_id,
+            pushTitle,
+            notification.message,
+            notification.link,
+            notification.type,
+            notification.id
+          );
         }
       )
-      .subscribe();
-
-    // Listen for new messages
-    const messagesChannel = supabase
-      .channel('notification-messages')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `recipient_id=eq.${userId}`
-        },
-        async (payload) => {
-          if (!mountedRef.current) return;
-          
-          const message = payload.new as any;
-          console.log('[Notifications] New message received:', message.id);
-          
-          // Don't notify for own messages
-          if (message.sender_id === userId) return;
-          
-          try {
-            // Get sender info
-            const { data: senderProfile } = await supabase
-              .from('profiles')
-              .select('full_name')
-              .eq('user_id', message.sender_id)
-              .single();
-            
-            const senderName = senderProfile?.full_name || 'Quelqu\'un';
-            const title = 'Nouveau message';
-            const body = `${senderName}: ${message.content.substring(0, 80)}${message.content.length > 80 ? '...' : ''}`;
-            
-            // Create in-app notification
-            await createInAppNotification(
-              userId,
-              'new_message',
-              title,
-              body,
-              '/messages'
-            );
-            
-            // Send push notification
-            await supabase.functions.invoke('send-push-notification', {
-              body: {
-                user_id: userId,
-                title: `💬 ${title}`,
-                body,
-                url: '/messages',
-                tag: 'new-message'
-              }
-            });
-          } catch (error) {
-            console.error('[Notifications] Failed to send message notification:', error);
-          }
-        }
-      )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[NotificationTriggers] Subscription status:', status);
+      });
 
     return () => {
       mountedRef.current = false;
-      supabase.removeChannel(ordersChannel);
-      supabase.removeChannel(orderStatusChannel);
-      supabase.removeChannel(messagesChannel);
+      supabase.removeChannel(notificationsChannel);
     };
   }, [userId]);
 };

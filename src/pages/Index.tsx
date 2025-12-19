@@ -16,6 +16,7 @@ import { FeaturedProductsGrid } from "@/components/FeaturedProductsGrid";
 import { DynamicPromoBanner } from "@/components/DynamicPromoBanner";
 import { NativeAnnouncementSlider } from "@/components/NativeAnnouncementSlider";
 import { MarketplaceTutorial } from "@/components/MarketplaceTutorial";
+import { NotificationBell } from "@/components/NotificationBell";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -350,6 +351,10 @@ const Index = () => {
               <Badge className="gradient-accent text-xs lg:text-sm px-3 py-1.5 rounded-full shadow-sm">
                 {userCountry}
               </Badge>
+              
+              {/* Notification Bell */}
+              {user && <NotificationBell />}
+              
               <Button 
                 variant="ghost" 
                 size="icon" 

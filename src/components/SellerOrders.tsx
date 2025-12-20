@@ -1,16 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useStableAuth } from '@/hooks/useStableAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
 import { Package, Eye, Calendar, User, Phone, MapPin, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { OrderDetailDialog } from './OrderDetailDialog';
 import { SmoothListSkeleton } from '@/components/ui/smooth-skeleton';
 import { motion } from 'framer-motion';
+import { getProductImage, handleImageError } from '@/utils/productImageHelper';
+import { useNavigate } from 'react-router-dom';
 
 interface Order {
   id: string;
@@ -50,11 +51,35 @@ const statusLabels = {
 
 export const SellerOrders = () => {
   const { user } = useStableAuth();
-  const { toast } = useToast();
+  const navigate = useNavigate();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderDetailOpen, setOrderDetailOpen] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [productImages, setProductImages] = useState<Record<string, string>>({});
+
+  // Fetch product images for all orders
+  useEffect(() => {
+    const fetchProductImages = async () => {
+      const productIds = [...new Set(orders.map(o => o.product_id))];
+      if (productIds.length === 0) return;
+
+      const { data } = await supabase
+        .from('products')
+        .select('id, images')
+        .in('id', productIds);
+
+      if (data) {
+        const imageMap: Record<string, string> = {};
+        data.forEach(p => {
+          imageMap[p.id] = getProductImage(p.images, 0);
+        });
+        setProductImages(imageMap);
+      }
+    };
+
+    fetchProductImages();
+  }, [orders]);
 
   // Fonction pour récupérer les commandes
   const fetchOrders = useCallback(async () => {
@@ -203,19 +228,34 @@ export const SellerOrders = () => {
                 </div>
 
                 <CardContent className="p-5 space-y-4">
-                  {/* Product */}
-                  <div className="p-4 bg-gradient-to-br from-muted/50 to-muted/30 rounded-2xl border border-border/30 shadow-sm">
+                  {/* Product with real image */}
+                  <div 
+                    className="p-4 bg-gradient-to-br from-muted/50 to-muted/30 rounded-2xl border border-border/30 shadow-sm cursor-pointer hover:border-primary/30 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/product/${order.product_id}`);
+                    }}
+                  >
                     <div className="flex items-start gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 shadow-sm">
-                        <Package className="h-6 w-6 text-primary" />
+                      {/* Product Image - clickable to view product */}
+                      <div className="relative flex-shrink-0">
+                        <img 
+                          src={productImages[order.product_id] || '/placeholder.svg'}
+                          alt={order.product_title}
+                          className="w-16 h-16 md:w-20 md:h-20 rounded-xl object-cover border border-border/30 shadow-sm"
+                          onError={handleImageError}
+                        />
+                        <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary/90 flex items-center justify-center shadow-md">
+                          <span className="text-[10px] font-bold text-primary-foreground">x{order.quantity}</span>
+                        </div>
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-sm md:text-base text-foreground line-clamp-2 mb-2 leading-snug">
                           {order.product_title}
                         </p>
                         <div className="flex items-center justify-between gap-3 text-xs md:text-sm">
-                          <span className="text-muted-foreground font-medium">
-                            Qté: <span className="font-bold text-foreground">{order.quantity}</span>
+                          <span className="text-muted-foreground font-medium text-xs">
+                            Voir le produit →
                           </span>
                           <span className="font-bold text-base md:text-lg text-primary tabular-nums">
                             {order.total_amount.toLocaleString()} FCFA

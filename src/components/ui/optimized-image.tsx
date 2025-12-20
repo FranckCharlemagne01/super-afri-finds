@@ -27,7 +27,6 @@ export const OptimizedImage = ({
   onLoad,
   onError,
 }: OptimizedImageProps) => {
-  const [isLoading, setIsLoading] = useState(true);
   const imgRef = useRef<HTMLImageElement>(null);
 
   const aspectRatioClass = {
@@ -46,6 +45,9 @@ export const OptimizedImage = ({
   const isValid = isValidProductImageUrl(src);
   const displaySrc = isValid ? (src as string) : PLACEHOLDER;
 
+  // If no valid image, show placeholder immediately without loader
+  const [isLoading, setIsLoading] = useState(isValid);
+
   useEffect(() => {
     // Reset loader only for real images; placeholder should render immediately.
     setIsLoading(isValid);
@@ -63,9 +65,22 @@ export const OptimizedImage = ({
     onError?.();
   };
 
+  // If no valid image, render clean placeholder immediately
+  if (!isValid) {
+    return (
+      <div className={cn('relative overflow-hidden bg-muted/5', aspectRatioClass, containerClassName)}>
+        <img
+          src={PLACEHOLDER}
+          alt={alt}
+          className={cn('w-full h-full', objectFitClass, className)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className={cn('relative overflow-hidden bg-muted/10', aspectRatioClass, containerClassName)}>
-      {showLoader && isLoading && isValid && (
+      {showLoader && isLoading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-muted/20">
           <div className="w-5 h-5 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
         </div>

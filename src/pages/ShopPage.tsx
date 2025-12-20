@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import SEOHead from "@/components/SEOHead";
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -193,8 +194,22 @@ const ShopPage = () => {
   // Public shop view for visitors
   return (
     <div className="min-h-screen bg-background pb-6">
+      {/* SEO Head */}
+      <SEOHead 
+        title={shop.shop_name}
+        description={shop.shop_description || `Découvrez la boutique ${shop.shop_name} sur Djassa Marketplace. Achetez en ligne en Côte d'Ivoire.`}
+        keywords={`${shop.shop_name}, boutique en ligne, Djassa Marketplace, Côte d'Ivoire, achat en ligne`}
+        image={shop.logo_url || undefined}
+        url={`/shop/${shop.shop_slug}`}
+        shopData={{
+          name: shop.shop_name,
+          description: shop.shop_description || '',
+          logo: shop.logo_url || undefined,
+        }}
+      />
+      
       {/* Header with back button - Mobile optimized */}
-      <motion.header 
+      <motion.header
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="sticky top-0 z-50 bg-card/98 backdrop-blur-md border-b shadow-sm"

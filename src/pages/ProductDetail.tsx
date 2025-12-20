@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -256,6 +257,26 @@ const ProductDetail = () => {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
+      {/* SEO Head */}
+      <SEOHead 
+        title={product.title}
+        description={product.description || `Achetez ${product.title} sur Djassa Marketplace. Livraison en Côte d'Ivoire.`}
+        keywords={`${product.title}, ${product.category}, achat en ligne, Djassa Marketplace, Côte d'Ivoire`}
+        image={productImages[0]}
+        url={`/product/${product.id}`}
+        type="product"
+        productData={{
+          name: product.title,
+          description: product.description || '',
+          price: product.price,
+          currency: 'XOF',
+          availability: product.stock_quantity && product.stock_quantity > 0 ? 'InStock' : 'OutOfStock',
+          category: product.category,
+          image: productImages[0],
+          sku: product.id,
+        }}
+      />
+      
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-3">

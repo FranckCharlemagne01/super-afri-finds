@@ -1,57 +1,125 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  
+  <!-- Homepage - Highest Priority -->
   <url>
-    <loc>https://djassa.tech/</loc>
-    <lastmod>2025-12-10</lastmod>
+    <loc>https://djassa.djassa.tech/</loc>
+    <xhtml:link rel="alternate" hreflang="fr-CI" href="https://djassa.djassa.tech/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://djassa.djassa.tech/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://djassa.djassa.tech/"/>
+    <lastmod>2024-12-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
+  
+  <!-- Marketplace - Core Page -->
   <url>
-    <loc>https://djassa.tech/marketplace</loc>
-    <lastmod>2025-12-10</lastmod>
-    <changefreq>daily</changefreq>
+    <loc>https://djassa.djassa.tech/marketplace</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>hourly</changefreq>
     <priority>1.0</priority>
   </url>
+  
+  <!-- Categories Page -->
   <url>
-    <loc>https://djassa.tech/auth</loc>
-    <lastmod>2025-12-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://djassa.djassa.tech/categories</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
   </url>
+  
+  <!-- Individual Category Pages -->
   <url>
-    <loc>https://djassa.tech/categories</loc>
-    <lastmod>2025-12-10</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://djassa.tech/flash-sales</loc>
-    <lastmod>2025-12-10</lastmod>
+    <loc>https://djassa.djassa.tech/category/phones</loc>
+    <lastmod>2024-12-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://djassa.tech/search</loc>
-    <lastmod>2025-12-10</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://djassa.djassa.tech/category/fashion</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://djassa.tech/about</loc>
-    <lastmod>2025-12-10</lastmod>
+    <loc>https://djassa.djassa.tech/category/electronics</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://djassa.djassa.tech/category/beauty</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://djassa.djassa.tech/category/home</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://djassa.djassa.tech/category/grocery</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://djassa.djassa.tech/category/auto</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <!-- Flash Sales - High Priority for promotions -->
+  <url>
+    <loc>https://djassa.djassa.tech/flash-sales</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.95</priority>
+  </url>
+  
+  <!-- Search Page -->
+  <url>
+    <loc>https://djassa.djassa.tech/search</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <!-- Auth Page -->
+  <url>
+    <loc>https://djassa.djassa.tech/auth</loc>
+    <lastmod>2024-12-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
+  
+  <!-- About Page -->
   <url>
-    <loc>https://djassa.tech/legal</loc>
-    <lastmod>2025-12-10</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://djassa.tech/demo</loc>
-    <lastmod>2025-12-10</lastmod>
+    <loc>https://djassa.djassa.tech/about</loc>
+    <lastmod>2024-12-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+  
+  <!-- Legal Page -->
+  <url>
+    <loc>https://djassa.djassa.tech/legal</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  
+  <!-- Demo Page -->
+  <url>
+    <loc>https://djassa.djassa.tech/demo</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
 </urlset>

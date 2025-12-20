@@ -1,8 +1,37 @@
+# Djassa Marketplace - Robots.txt
+# E-commerce marketplace en Côte d'Ivoire
+
 User-agent: Googlebot
 Allow: /
+Allow: /marketplace
+Allow: /categories
+Allow: /category/
+Allow: /flash-sales
+Allow: /search
+Allow: /product/
+Allow: /shop/
+Allow: /about
+Disallow: /seller-dashboard
+Disallow: /buyer-dashboard
+Disallow: /super-admin
+Disallow: /messages
+Disallow: /my-orders
+Disallow: /cart
+Disallow: /favorites
 
 User-agent: Bingbot
 Allow: /
+Allow: /marketplace
+Allow: /categories
+Allow: /category/
+Allow: /flash-sales
+Allow: /search
+Allow: /product/
+Allow: /shop/
+Disallow: /seller-dashboard
+Disallow: /buyer-dashboard
+Disallow: /super-admin
+Disallow: /messages
 
 User-agent: Twitterbot
 Allow: /
@@ -10,5 +39,43 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+User-agent: Slackbot
+Allow: /
+
 User-agent: *
 Allow: /
+Allow: /marketplace
+Allow: /categories
+Allow: /category/
+Allow: /flash-sales
+Allow: /search
+Allow: /product/
+Allow: /shop/
+Allow: /about
+Allow: /legal
+Disallow: /seller-dashboard
+Disallow: /buyer-dashboard
+Disallow: /super-admin
+Disallow: /messages
+Disallow: /my-orders
+Disallow: /cart
+Disallow: /favorites
+Disallow: /auth-callback
+Disallow: /confirm-email
+Disallow: /reset-password
+Disallow: /verify
+
+# Sitemap
+Sitemap: https://djassa.djassa.tech/sitemap.xml
+
+# Crawl-delay (optional, for politeness)
+Crawl-delay: 1
+
+# Host
+Host: https://djassa.djassa.tech

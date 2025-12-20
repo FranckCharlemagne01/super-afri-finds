@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { ImageIcon } from 'lucide-react';
+import { isValidProductImageUrl } from '@/utils/productImageHelper';
 
 interface OptimizedImageProps {
   src: string | undefined | null;
@@ -15,9 +16,6 @@ interface OptimizedImageProps {
 }
 
 const PLACEHOLDER = '/placeholder.svg';
-
-// Centralized validation
-import { isValidProductImageUrl } from '@/utils/productImageHelper';
 
 export const OptimizedImage = ({
   src,
@@ -34,7 +32,6 @@ export const OptimizedImage = ({
   const [showPlaceholder, setShowPlaceholder] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
-  // Aspect ratio classes
   const aspectRatioClass = {
     square: 'aspect-square',
     video: 'aspect-video',
@@ -42,14 +39,12 @@ export const OptimizedImage = ({
     auto: '',
   }[aspectRatio];
 
-  // Object fit class
   const objectFitClass = {
     cover: 'object-cover',
     contain: 'object-contain',
     fill: 'object-fill',
   }[objectFit];
 
-  // Determine final source
   const isValid = isValidProductImageUrl(src);
   const displaySrc = isValid ? src! : PLACEHOLDER;
 
@@ -72,22 +67,22 @@ export const OptimizedImage = ({
   return (
     <div 
       className={cn(
-        'relative overflow-hidden bg-muted/20',
+        'relative overflow-hidden bg-muted/10',
         aspectRatioClass,
         containerClassName
       )}
     >
-      {/* Loading state */}
+      {/* Loading spinner */}
       {showLoader && isLoading && !showPlaceholder && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-muted/30">
-          <div className="w-6 h-6 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-muted/20">
+          <div className="w-5 h-5 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
         </div>
       )}
 
-      {/* Placeholder state - clean and professional */}
+      {/* Clean placeholder - no error message, neutral look */}
       {showPlaceholder && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-gradient-to-br from-muted/50 to-muted/30">
-          <ImageIcon className="w-10 h-10 text-muted-foreground/40" />
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-br from-muted/40 to-muted/20">
+          <ImageIcon className="w-8 h-8 text-muted-foreground/30" />
         </div>
       )}
 

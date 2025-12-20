@@ -141,13 +141,12 @@ const SuperAdminDashboard = () => {
         return;
       }
 
-      const result = data.result;
+      const r = data.result;
       toast({
-        title: "Nettoyage images terminé",
-        description: `Images cassées: ${result?.brokenImagesFound ?? 0} • Retirées: ${result?.imagesRemoved ?? 0} • Fichiers storage: ${result?.storageFilesDeleted ?? 0}`,
+        title: "✅ Nettoyage définitif terminé",
+        description: `${r?.brokenImagesFound ?? 0} images cassées • ${r?.imagesRemovedFromDB ?? 0} retirées de la DB • ${(r?.storageFilesDeleted ?? 0) + (r?.orphanedFilesDeleted ?? 0)} fichiers supprimés du storage • ${r?.productsUpdated ?? 0} produits mis à jour`,
       });
 
-      // Refresh analytics after cleanup
       fetchData();
     } catch (e: any) {
       toast({

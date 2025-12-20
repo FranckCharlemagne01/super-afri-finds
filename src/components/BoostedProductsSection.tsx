@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/carousel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Star } from "lucide-react";
+import { getProductImage } from "@/utils/productImageHelper";
 
 interface Product {
   id: string;
@@ -127,7 +128,7 @@ export const BoostedProductsSection = () => {
             <div key={product.id} className="group relative hover-scale">
               <ProductCard
                 id={product.id}
-                image={product.images?.[0] || "/placeholder.svg"}
+                image={getProductImage(product.images, 0)}
                 title={product.title}
                 originalPrice={product.original_price || undefined}
                 salePrice={product.price}
@@ -181,7 +182,7 @@ export const BoostedProductsSection = () => {
               <div className="group relative hover-scale">
                 <ProductCard
                   id={product.id}
-                  image={product.images?.[0] || "/placeholder.svg"}
+                  image={getProductImage(product.images, 0)}
                   title={product.title}
                   originalPrice={product.original_price || undefined}
                   salePrice={product.price}

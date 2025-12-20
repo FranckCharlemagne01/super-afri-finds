@@ -103,25 +103,24 @@ serve(async (req: Request) => {
 
     // 2. Check each product's images
     for (const product of products || []) {
-      // Handle empty arrays or null images - deactivate if active
+      // Handle empty arrays or null images: keep the product visible, just normalize images to []
       if (!product.images || !Array.isArray(product.images) || product.images.length === 0) {
-        if (product.is_active) {
-          const { error: deactivateError } = await supabase
-            .from("products")
-            .update({ is_active: false, updated_at: new Date().toISOString() })
-            .eq("id", product.id);
-          
-          if (!deactivateError) {
-            result.productsUpdated.push(`${product.title} (${product.id}) - désactivé (aucune image)`);
-            result.brokenImagesFound++;
-          }
+        const { error: normalizeError } = await supabase
+          .from("products")
+          .update({ images: [], updated_at: new Date().toISOString() })
+          .eq("id", product.id);
+
+        if (!normalizeError) {
+          result.productsUpdated.push(`${product.title} (${product.id}) - images normalisées (aucune image)`);
+        } else {
+          result.errors.push(`Failed to normalize product ${product.id}: ${normalizeError.message}`);
         }
+
         continue;
       }
 
       const validImages: string[] = [];
       const brokenImages: string[] = [];
-
       for (const imageUrl of product.images) {
         // Skip invalid URLs
         if (!imageUrl || typeof imageUrl !== "string" || imageUrl.trim() === "") {

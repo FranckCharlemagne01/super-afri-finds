@@ -15,6 +15,7 @@ import { OptimizedImage } from "@/components/ui/optimized-image";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { useRecommendations } from "@/hooks/useRecommendations";
+import { getProductImage, getProductImages, handleImageError } from "@/utils/productImageHelper";
 import { 
   ArrowLeft, 
   Heart, 
@@ -242,8 +243,9 @@ const ProductDetail = () => {
     toggleFavorite(product.id);
   };
 
-  const productImages = product.images && product.images.length > 0 ? product.images : ["/placeholder.svg"];
-  const productImage = productImages[selectedImageIndex];
+  const productImages = getProductImages(product.images);
+  const safeSelectedIndex = Math.min(selectedImageIndex, Math.max(productImages.length - 1, 0));
+  const productImage = productImages[safeSelectedIndex];
   
   // Check if offer is still active for price display
   const hasActiveOffer = isOfferActive(product) && !offerExpired;
@@ -738,9 +740,10 @@ const ProductDetail = () => {
               >
                 <div className="relative aspect-square overflow-hidden rounded-lg bg-muted mb-2">
                   <img
-                    src={prod.images?.[0] || "/placeholder.svg"}
+                    src={getProductImage(prod.images, 0)}
                     alt={prod.title}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                    className="w-full h-full object-cover"
+                    onError={(e) => handleImageError(e)}
                   />
                   {prod.discount_percentage && prod.discount_percentage > 0 && (
                     <Badge className="absolute top-1 sm:top-2 left-1 sm:left-2 bg-promo text-promo-foreground text-xs">
@@ -775,9 +778,10 @@ const ProductDetail = () => {
               >
                 <div className="relative aspect-square overflow-hidden rounded-lg bg-muted mb-2">
                   <img
-                    src={prod.images?.[0] || "/placeholder.svg"}
+                    src={getProductImage(prod.images, 0)}
                     alt={prod.title}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                    className="w-full h-full object-cover"
+                    onError={(e) => handleImageError(e)}
                   />
                   {prod.discount_percentage && prod.discount_percentage > 0 && (
                     <Badge className="absolute top-1 sm:top-2 left-1 sm:left-2 bg-promo text-promo-foreground text-xs">

@@ -1,7 +1,6 @@
 import { useRef, useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { isValidProductImageUrl } from '@/utils/productImageHelper';
-import { ImageOff } from 'lucide-react';
 
 interface OptimizedImageProps {
   src: string | undefined | null;
@@ -15,8 +14,10 @@ interface OptimizedImageProps {
   onError?: () => void;
 }
 
-const PLACEHOLDER = '/placeholder.svg';
-
+/**
+ * Optimized image component - displays ONLY valid Supabase product images
+ * No placeholder, no fallback - products without valid images are filtered at DB level
+ */
 export const OptimizedImage = ({
   src,
   alt,
@@ -30,7 +31,6 @@ export const OptimizedImage = ({
   onError,
 }: OptimizedImageProps) => {
   const imgRef = useRef<HTMLImageElement>(null);
-  const [hasError, setHasError] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
   const aspectRatioClass = {
@@ -47,7 +47,11 @@ export const OptimizedImage = ({
   }[objectFit];
 
   const isValid = isValidProductImageUrl(src);
-  const displaySrc = isValid && !hasError ? (src as string) : PLACEHOLDER;
+  
+  // If no valid image, render nothing (products should be filtered at DB level)
+  if (!isValid) {
+    return null;
+  }
 
   const handleLoad = useCallback(() => {
     setIsLoaded(true);
@@ -55,24 +59,23 @@ export const OptimizedImage = ({
   }, [onLoad]);
 
   const handleError = useCallback(() => {
-    // Set error state and fallback to placeholder
-    setHasError(true);
-    if (imgRef.current && imgRef.current.src !== PLACEHOLDER) {
-      imgRef.current.src = PLACEHOLDER;
+    // Hide the container if image fails to load
+    if (imgRef.current?.parentElement) {
+      imgRef.current.parentElement.style.display = 'none';
     }
     onError?.();
   }, [onError]);
 
   return (
-    <div className={cn('relative overflow-hidden bg-muted/10', aspectRatioClass, containerClassName)}>
-      {/* Show subtle loading state */}
-      {!isLoaded && !hasError && isValid && (
-        <div className="absolute inset-0 bg-muted/20 animate-pulse" />
+    <div className={cn('relative overflow-hidden bg-muted/5', aspectRatioClass, containerClassName)}>
+      {/* Loading skeleton */}
+      {!isLoaded && (
+        <div className="absolute inset-0 bg-muted/10 animate-pulse" />
       )}
       
       <img
         ref={imgRef}
-        src={displaySrc}
+        src={src as string}
         alt={alt}
         loading="lazy"
         decoding="async"
@@ -85,18 +88,11 @@ export const OptimizedImage = ({
         onLoad={handleLoad}
         onError={handleError}
       />
-      
-      {/* Show broken image indicator for errors on valid URLs */}
-      {hasError && isValid && (
-        <div className="absolute inset-0 flex items-center justify-center bg-muted/30">
-          <ImageOff className="w-8 h-8 text-muted-foreground/50" />
-        </div>
-      )}
     </div>
   );
 };
 
-// Product card image - clean and consistent
+// Product card image - clean display only for valid images
 export const ProductImage = ({
   src,
   alt,

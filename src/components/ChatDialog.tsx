@@ -11,6 +11,7 @@ import { ChatInput } from '@/components/ChatInput';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useNavigate } from 'react-router-dom';
 import { useMessageThread, generateThreadId, Message } from '@/hooks/useMessageThread';
+import { getProductImage, handleImageError } from '@/utils/productImageHelper';
 
 interface ChatDialogProps {
   initialMessage: {
@@ -293,10 +294,10 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
                           >
                             <div className="flex items-start gap-2.5 p-2 bg-background/80 rounded-xl border border-border/50 min-w-[200px] max-w-[260px]">
                               <img 
-                                src={initialMessage.product.images?.[0] || '/placeholder.svg'} 
+                                src={getProductImage(initialMessage.product.images, 0)} 
                                 alt={initialMessage.product.title}
-                                className="w-14 h-14 object-cover rounded-lg flex-shrink-0"
-                                onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                                className="w-14 h-14 object-contain rounded-lg flex-shrink-0 bg-muted/20"
+                                onError={handleImageError}
                               />
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm font-semibold line-clamp-2 text-foreground">
@@ -372,10 +373,10 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
               onClick={() => handleProductClick(initialMessage.product_id || '')}
             >
               <img 
-                src={initialMessage.product.images?.[0] || '/placeholder.svg'} 
+                src={getProductImage(initialMessage.product.images, 0)} 
                 alt={initialMessage.product.title}
-                className="w-10 h-10 object-cover rounded-md"
-                onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                className="w-10 h-10 object-contain rounded-md bg-muted/20"
+                onError={handleImageError}
               />
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium truncate">{initialMessage.product.title}</p>

@@ -19,22 +19,8 @@ interface OptimizedImageProps {
 
 const FALLBACK_IMAGE = '/placeholder.svg';
 
-// Validate if URL is a valid image URL
-const isValidImageUrl = (url: string | undefined | null): boolean => {
-  if (!url || typeof url !== 'string') return false;
-  if (url.trim() === '') return false;
-  
-  // Check for common invalid patterns
-  if (url === 'undefined' || url === 'null') return false;
-  
-  // Allow data URLs, blob URLs, and http(s) URLs
-  if (url.startsWith('data:image/')) return true;
-  if (url.startsWith('blob:')) return true;
-  if (url.startsWith('http://') || url.startsWith('https://')) return true;
-  if (url.startsWith('/')) return true; // Relative URLs
-  
-  return false;
-};
+// Import centralized image validation
+import { isValidImageUrl, getProductImage } from '@/utils/productImageHelper';
 
 export const OptimizedImage = ({
   src,

@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { CheckoutDialog } from "@/components/CheckoutDialog";
+import { getProductImage, handleImageError } from '@/utils/productImageHelper';
 
 const Cart = () => {
   const { cartItems, cartCount, loading, updateQuantity, removeFromCart } = useCart();
@@ -81,13 +82,14 @@ const Cart = () => {
                 <Card key={item.id} className="native-card p-4">
                   <div className="flex gap-4">
                     <div 
-                      className="w-24 h-24 bg-muted rounded-xl overflow-hidden cursor-pointer active:scale-95 transition-transform flex-shrink-0"
+                      className="w-24 h-24 bg-muted/10 rounded-xl overflow-hidden cursor-pointer active:scale-95 transition-transform flex-shrink-0"
                       onClick={() => navigate(`/product/${item.product.id}`)}
                     >
                       <img
-                        src={item.product.images?.[0] || '/placeholder.svg'}
+                        src={getProductImage(item.product.images, 0)}
                         alt={item.product.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain p-1"
+                        onError={handleImageError}
                       />
                     </div>
                     

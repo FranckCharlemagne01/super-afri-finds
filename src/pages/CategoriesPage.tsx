@@ -10,6 +10,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { CategoryProductCard } from "@/components/CategoryProductCard";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { getProductImage } from "@/utils/productImageHelper";
 
 interface Product {
   id: string;
@@ -282,7 +283,7 @@ const CategoriesPage = () => {
                     <CategoryProductCard
                       key={product.id}
                       id={product.id}
-                      image={product.images?.[0] || '/placeholder.svg'}
+                      image={getProductImage(product.images, 0)}
                       title={product.title}
                       originalPrice={product.original_price}
                       salePrice={product.price}

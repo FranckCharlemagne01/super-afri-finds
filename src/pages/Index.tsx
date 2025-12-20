@@ -56,6 +56,7 @@ import productPhone from "@/assets/product-phone.jpg";
 import productClothing from "@/assets/product-clothing.jpg";
 import productHeadphones from "@/assets/product-headphones.jpg";
 import productBlender from "@/assets/product-blender.jpg";
+import { getProductImage } from "@/utils/productImageHelper";
 
 // Import category images
 import categoryPhones from "@/assets/category-phones.jpg";
@@ -263,7 +264,7 @@ const Index = () => {
   // Convert Supabase product to ProductCard props
   const convertToProductCardProps = (product: any) => ({
     id: product.id,
-    image: product.images?.[0] || "/placeholder.svg",
+    image: getProductImage(product.images, 0),
     title: product.title,
     originalPrice: product.original_price || product.price,
     salePrice: product.price,

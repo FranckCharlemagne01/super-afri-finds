@@ -9,6 +9,7 @@ import { ArrowLeft } from 'lucide-react';
 import { ProductCard } from '@/components/ProductCard';
 import { useToast } from '@/hooks/use-toast';
 import { useUserLocation } from '@/hooks/useUserLocation';
+import { getProductImage } from '@/utils/productImageHelper';
 
 interface Product {
   id: string;
@@ -197,7 +198,7 @@ const CategoryPage = () => {
                 title={product.title}
                 originalPrice={product.original_price || product.price}
                 salePrice={product.price}
-                image={product.images?.[0] || "/placeholder.svg"}
+                image={getProductImage(product.images, 0)}
                 rating={product.rating}
                 reviews={product.reviews_count}
                 badge={product.badge || undefined}

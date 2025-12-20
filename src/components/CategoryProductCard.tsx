@@ -4,6 +4,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { useNavigate } from "react-router-dom";
 import { useState, memo, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { getProductImage, handleImageError } from "@/utils/productImageHelper";
 
 interface CategoryProductCardProps {
   id: string;
@@ -42,25 +43,31 @@ const ProductCardImage = memo(({
     setHasError(true);
   }, []);
 
+  // Secure image source
+  const safeSrc = getProductImage([src], 0);
+  
   return (
-    <div className="relative w-full bg-muted/20 overflow-hidden h-[140px] sm:h-[160px] md:h-[180px]">
+    <div className="relative w-full bg-muted/10 overflow-hidden h-[140px] sm:h-[160px] md:h-[180px]">
       {/* Loader */}
       {isLoading && !hasError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-muted/30">
-          <div className="w-4 h-4 rounded-full border-2 border-muted-foreground/20 border-t-primary animate-spin" />
+        <div className="absolute inset-0 flex items-center justify-center bg-muted/20">
+          <div className="w-5 h-5 rounded-full border-2 border-muted-foreground/20 border-t-primary animate-spin" />
         </div>
       )}
       
       {/* Image - object-contain centré pour voir le produit entier sans zoom */}
       <img
-        src={hasError ? '/placeholder.svg' : src}
+        src={hasError ? '/placeholder.svg' : safeSrc}
         alt={alt}
         loading="lazy"
         decoding="async"
         onLoad={handleLoad}
-        onError={handleError}
+        onError={(e) => {
+          handleError();
+          handleImageError(e);
+        }}
         className={cn(
-          "w-full h-full object-contain p-1.5 transition-opacity duration-200",
+          "w-full h-full object-contain p-2 transition-opacity duration-300",
           isLoading ? "opacity-0" : "opacity-100"
         )}
       />

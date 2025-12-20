@@ -14,6 +14,7 @@ import { useUserLocation } from '@/hooks/useUserLocation';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import { motion } from 'framer-motion';
+import { getProductImage } from '@/utils/productImageHelper';
 
 interface Shop {
   id: string;
@@ -450,7 +451,7 @@ const ShopPage = () => {
                           title={product.title}
                           originalPrice={product.original_price || product.price}
                           salePrice={product.price}
-                          image={product.images?.[0] || '/placeholder.svg'}
+                          image={getProductImage(product.images, 0)}
                           rating={product.rating}
                           reviews={product.reviews_count}
                           badge={product.badge || undefined}

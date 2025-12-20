@@ -82,11 +82,12 @@ serve(async (req) => {
     }
 
     // Get decrypted secret key based on mode
-    const encryptionKey = Deno.env.get('PAYSTACK_ENCRYPTION_KEY');
+    // Try both key names for backwards compatibility
+    const encryptionKey = Deno.env.get('ENCRYPTION_KEY') || Deno.env.get('PAYSTACK_ENCRYPTION_KEY');
     if (!encryptionKey) {
-      console.error('Missing PAYSTACK_ENCRYPTION_KEY');
+      console.error('Missing ENCRYPTION_KEY or PAYSTACK_ENCRYPTION_KEY');
       return new Response(
-        JSON.stringify({ success: false, error: 'Configuration serveur manquante' }),
+        JSON.stringify({ success: false, error: 'Configuration serveur manquante - clé de chiffrement non configurée' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
       );
     }

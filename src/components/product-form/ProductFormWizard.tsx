@@ -126,15 +126,18 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
     fetchUserCountry();
   }, [user, product?.id]);
 
-  // Validate steps
+  // Validate steps - step 2 requires actual uploaded images (not URLs)
+  const STORAGE_PREFIX = 'https://zqskpspbyzptzjcoitwt.supabase.co/storage/v1/object/public/product-images/';
+  const existingValidImages = product?.images?.filter(url => url.startsWith(STORAGE_PREFIX)) || [];
+  
   useEffect(() => {
     setStepValidation({
       1: formData.title.trim().length >= 2 && formData.category !== '',
-      2: previewImages.length > 0 || (product?.images && product.images.length > 0),
+      2: previewImages.length > 0 || existingValidImages.length > 0,
       3: formData.price > 0,
       4: true,
     });
-  }, [formData, previewImages, product?.images]);
+  }, [formData, previewImages, existingValidImages.length]);
 
   const handleInputChange = useCallback((field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -290,16 +293,34 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
     setLoading(true);
 
     try {
-      // Upload images
+      // Upload images - ONLY accept uploaded files, reject external URLs
       let imageUrls: string[] = [];
       if (imageFiles.length > 0) {
         imageUrls = await uploadImages();
+        
+        // Strict validation: only Supabase product-images URLs
+        imageUrls = imageUrls.filter(url => 
+          url.startsWith('https://zqskpspbyzptzjcoitwt.supabase.co/storage/v1/object/public/product-images/')
+        );
       }
+
+      // BLOCK if no valid images (new product only)
+      if (!product?.id && imageUrls.length === 0) {
+        toast({
+          title: "⚠️ Image requise",
+          description: "Veuillez ajouter au moins une image valide pour publier votre produit.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // For existing products, keep existing valid images if no new ones
+      const existingImages = product?.images?.filter(url => 
+        url.startsWith('https://zqskpspbyzptzjcoitwt.supabase.co/storage/v1/object/public/product-images/')
+      ) || [];
       
-      const allImages = [...imageUrls];
-      if (formData.images && formData.images.trim()) {
-        allImages.push(formData.images);
-      }
+      const finalImages = imageUrls.length > 0 ? imageUrls : existingImages;
 
       // Upload video
       let videoUrl = formData.video_url;
@@ -346,7 +367,7 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
         is_active: formData.is_active,
         is_flash_sale: formData.is_flash_sale,
         badge: formData.badge || null,
-        images: allImages,
+        images: finalImages,
         video_url: videoUrl || null,
         seller_id: user.id,
         shop_id: finalShopId,

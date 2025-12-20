@@ -931,6 +931,83 @@ const SuperAdmin = () => {
           {/* Settings Tab */}
           <TabsContent value="settings">
             <div className="grid gap-6">
+              {/* RESET IMAGES PRODUITS */}
+              <Card className="border-destructive/50">
+                <CardHeader>
+                  <CardTitle className="text-destructive flex items-center gap-2">
+                    <Trash2 className="w-5 h-5" />
+                    RESET IMAGES PRODUITS (TOTAL)
+                  </CardTitle>
+                  <CardDescription>
+                    ⚠️ Action irréversible : supprime TOUTES les images de TOUS les produits
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-4 bg-destructive/10 rounded-lg border border-destructive/20">
+                    <p className="text-sm text-foreground mb-2">
+                      Cette action va :
+                    </p>
+                    <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+                      <li>Mettre <code className="bg-muted px-1 rounded">images = []</code> pour tous les produits</li>
+                      <li>Les vendeurs devront réuploader leurs images</li>
+                      <li>Aucune image cassée ne sera plus visible sur le site</li>
+                    </ul>
+                  </div>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" className="w-full">
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        RÉINITIALISER TOUTES LES IMAGES
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-destructive">
+                          ⚠️ CONFIRMATION RESET IMAGES
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="space-y-2">
+                          <p>Vous êtes sur le point de supprimer TOUTES les images de TOUS les produits.</p>
+                          <p className="font-semibold text-destructive">Cette action est IRRÉVERSIBLE.</p>
+                          <p>Les vendeurs devront réuploader leurs images manuellement.</p>
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-destructive hover:bg-destructive/90"
+                          onClick={async () => {
+                            try {
+                              const { error } = await supabase
+                                .from('products')
+                                .update({ images: [], updated_at: new Date().toISOString() })
+                                .neq('id', '00000000-0000-0000-0000-000000000000');
+
+                              if (error) throw error;
+
+                              toast({
+                                title: "✅ RESET TERMINÉ",
+                                description: `Toutes les images de tous les produits ont été supprimées.`,
+                              });
+                              
+                              // Refresh products list
+                              fetchData();
+                            } catch (error: any) {
+                              toast({
+                                title: "Erreur",
+                                description: error.message || "Impossible de réinitialiser les images",
+                                variant: "destructive",
+                              });
+                            }
+                          }}
+                        >
+                          OUI, SUPPRIMER TOUTES LES IMAGES
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </CardContent>
+              </Card>
+
               <Card>
                 <CardHeader>
                   <CardTitle>Informations du profil</CardTitle>

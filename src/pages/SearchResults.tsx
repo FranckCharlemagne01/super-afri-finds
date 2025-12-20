@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { SearchBar } from '@/components/SearchBar';
 import { ArrowLeft, Search } from 'lucide-react';
 import { useSearch } from '@/hooks/useSearch';
+import { getProductImage } from '@/utils/productImageHelper';
 
 interface Product {
   id: string;
@@ -38,7 +39,7 @@ const SearchResults = () => {
 
   const convertToProductCardProps = (product: Product) => ({
     id: product.id,
-    image: product.images?.[0] || '/placeholder.svg',
+    image: getProductImage(product.images, 0),
     title: product.title,
     originalPrice: product.original_price || product.price,
     salePrice: product.price,

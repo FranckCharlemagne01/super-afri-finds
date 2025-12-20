@@ -8,6 +8,7 @@ import { useCart } from "@/hooks/useCart";
 import { useNavigate } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { getProductImage, handleImageError } from '@/utils/productImageHelper';
 
 interface Product {
   id: string;
@@ -143,13 +144,14 @@ export default function Favorites() {
 
                 {/* Product Image */}
                 <div 
-                  className="relative aspect-square overflow-hidden bg-muted cursor-pointer active:opacity-80 transition-opacity"
+                  className="relative aspect-square overflow-hidden bg-muted/10 cursor-pointer active:opacity-80 transition-opacity"
                   onClick={() => handleProductClick(product.id)}
                 >
                   <img
-                    src={product.images?.[0] || "/placeholder.svg"}
+                    src={getProductImage(product.images, 0)}
                     alt={product.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain p-2"
+                    onError={handleImageError}
                   />
                 </div>
 

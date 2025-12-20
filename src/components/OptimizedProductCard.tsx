@@ -7,6 +7,7 @@ import { Heart, ShoppingCart, Star, Store, MessageCircle, ExternalLink } from 'l
 import { useCart } from '@/hooks/useCart';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useStableAuth } from '@/hooks/useStableAuth';
+import { isValidImageUrl, handleImageError } from '@/utils/productImageHelper';
 
 interface OptimizedProductCardProps {
   id: string;
@@ -79,22 +80,22 @@ export const OptimizedProductCard = memo(({
     }
   }, [navigate, shop_slug]);
 
+  // Secure image source
+  const safeImage = isValidImageUrl(image) ? image : '/placeholder.svg';
+  
   return (
     <Card 
       className="group cursor-pointer hover:shadow-lg transition-all duration-300 border-border/50 overflow-hidden h-full flex flex-col"
       onClick={handleCardClick}
     >
-      <div className="relative overflow-hidden bg-muted/30 aspect-square rounded-t-lg">
+      <div className="relative overflow-hidden bg-muted/10 aspect-[4/5] rounded-t-lg">
         <img 
-          src={image} 
+          src={safeImage} 
           alt={title}
           loading="lazy"
           decoding="async"
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.src = '/placeholder.svg';
-          }}
+          className="w-full h-full object-contain p-2"
+          onError={handleImageError}
         />
         
         {discount > 0 && (

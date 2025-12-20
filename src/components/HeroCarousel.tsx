@@ -9,6 +9,7 @@ import dressImg from "@/assets/product-dress.jpg";
 import shirtImg from "@/assets/product-shirt.jpg";
 import watchImg from "@/assets/product-watch.jpg";
 import sunglassesImg from "@/assets/product-sunglasses.jpg";
+import { getProductImage, handleImageError } from "@/utils/productImageHelper";
 
 interface BoostedProduct {
   id: string;
@@ -102,10 +103,11 @@ export const HeroCarousel = () => {
         {boostedProducts.map((product, index) => (
           <img
             key={product.id}
-            src={product.images?.[0] || "/placeholder.svg"}
+            src={getProductImage(product.images, 0)}
             alt={product.title}
             loading={index === 0 ? "eager" : "lazy"}
             decoding="async"
+            onError={handleImageError}
             className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ${
               index === currentIndex 
                 ? "opacity-100 scale-100" 

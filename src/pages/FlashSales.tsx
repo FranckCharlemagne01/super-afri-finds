@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Clock } from 'lucide-react';
 import { useUserLocation } from '@/hooks/useUserLocation';
+import { getProductImage } from '@/utils/productImageHelper';
 
 interface Product {
   id: string;
@@ -62,7 +63,7 @@ const FlashSales = () => {
   // Convert Supabase product to ProductCard props
   const convertToProductCardProps = (product: Product) => ({
     id: product.id,
-    image: product.images?.[0] || "/placeholder.svg",
+    image: getProductImage(product.images, 0),
     title: product.title,
     originalPrice: product.original_price || product.price,
     salePrice: product.price,

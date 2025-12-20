@@ -62,7 +62,7 @@ interface Shop {
   logo_url?: string;
 }
 
-const ProductDetail = () => {
+const ProductDetail = (): JSX.Element | null => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();

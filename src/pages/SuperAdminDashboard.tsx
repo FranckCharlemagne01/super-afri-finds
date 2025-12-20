@@ -138,26 +138,37 @@ const SuperAdminDashboard = () => {
       const data = await runFullCleanup();
 
       if (!data?.success) {
+        const failed =
+          (data?.report?.failed?.db_updates ?? 0) +
+          (data?.report?.failed?.storage_deletes ?? 0) +
+          (data?.report?.failed?.http_checks ?? 0) +
+          (data?.report?.failed?.storage_list ?? 0);
+
         toast({
-          title: "Nettoyage échoué",
-          description: data?.error || "Impossible de lancer le nettoyage des images.",
+          title: "Nettoyage terminé avec erreurs",
+          description: data?.error || `${failed} erreur(s) rencontrée(s). Voir les logs.`,
           variant: "destructive",
         });
         return;
       }
 
       const report = data?.report;
-      const failedCount =
+      const summary = report?.summary;
+
+      const failedCount = summary?.failed ??
         (report?.failed?.db_updates ?? 0) +
-        (report?.failed?.storage_deletes ?? 0) +
-        (report?.failed?.http_checks ?? 0);
+          (report?.failed?.storage_deletes ?? 0) +
+          (report?.failed?.http_checks ?? 0) +
+          (report?.failed?.storage_list ?? 0);
 
       const removedDb = report?.deleted?.db_urls_removed ?? data?.result?.imagesRemovedFromDB ?? 0;
-      const deletedStorage = report?.deleted?.storage_files_deleted ?? ((data?.result?.storageFilesDeleted ?? 0) + (data?.result?.orphanedFilesDeleted ?? 0));
+      const deletedStorage = report?.deleted?.storage_files_deleted ??
+        ((data?.result?.storageFilesDeleted ?? 0) + (data?.result?.orphanedFilesDeleted ?? 0));
+      const productsCleaned = summary?.db_cleaned ?? data?.result?.productsUpdated ?? 0;
 
       toast({
         title: failedCount > 0 ? "Nettoyage terminé (partiel)" : "✅ Nettoyage terminé",
-        description: `${removedDb} URLs retirées DB • ${deletedStorage} fichiers supprimés storage • ${failedCount} échecs`,
+        description: `${productsCleaned} produits nettoyés • ${removedDb} URLs retirées DB • ${deletedStorage} fichiers supprimés storage • ${failedCount} échecs`,
         variant: failedCount > 0 ? "destructive" : "default",
       });
 

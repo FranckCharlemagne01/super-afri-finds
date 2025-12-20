@@ -169,8 +169,8 @@ export const OptimizedImage = ({
         </div>
       )}
 
-      {/* Error state overlay */}
-      {hasError && currentSrc === fallbackSrc && (
+      {/* Error state overlay (only if the fallback itself fails to load) */}
+      {hasError && currentSrc === fallbackSrc && !isLoading && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-muted/80 text-muted-foreground">
           <ImageOff className="w-8 h-8 mb-2 opacity-50" />
           <span className="text-xs opacity-70">Image non disponible</span>

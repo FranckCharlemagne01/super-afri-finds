@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { ChatDialog } from '@/components/ChatDialog';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getProductImage, handleImageError } from '@/utils/productImageHelper';
 
 interface MessageThread {
   thread_id: string;
@@ -230,10 +231,10 @@ export const MyMessagesTabs = ({ initialTab = 'purchases' }: MyMessagesTabsProps
       {/* Product Image Avatar */}
       <div className="relative flex-shrink-0">
         <img 
-          src={thread.product?.images?.[0] || '/placeholder.svg'} 
+          src={getProductImage(thread.product?.images, 0)} 
           alt=""
           className="w-14 h-14 rounded-xl object-cover border border-border/50"
-          onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+          onError={(e) => handleImageError(e)}
         />
         {thread.unread_count > 0 && (
           <div className="absolute -top-1.5 -right-1.5 min-w-5 h-5 bg-primary rounded-full flex items-center justify-center px-1.5 shadow-lg">

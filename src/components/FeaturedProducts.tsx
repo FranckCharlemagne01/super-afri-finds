@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { useStableAuth } from "@/hooks/useStableAuth";
 import { useStableRole } from "@/hooks/useStableRole";
 import { Button } from "@/components/ui/button";
+import { getProductImage } from "@/utils/productImageHelper";
 
 interface Product {
   id: string;
@@ -167,7 +168,7 @@ export const FeaturedProducts = () => {
                       </div>
                       <ProductCard
                         id={product.id}
-                        image={product.images?.[0] || "/placeholder.svg"}
+                        image={getProductImage(product.images, 0)}
                         title={product.title}
                         originalPrice={product.original_price || undefined}
                         salePrice={product.price}

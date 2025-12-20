@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { OrderDetailDialog } from '@/components/OrderDetailDialog';
 import { supabase } from "@/integrations/supabase/client";
+import { getProductImage, handleImageError } from '@/utils/productImageHelper';
 
 interface Order {
   id: string;
@@ -95,7 +96,7 @@ export const SellerOrdersList = ({ orders, onOrderUpdated }: SellerOrdersListPro
       if (data) {
         const imageMap: Record<string, string> = {};
         data.forEach(p => {
-          imageMap[p.id] = p.images?.[0] || '/placeholder.svg';
+          imageMap[p.id] = getProductImage(p.images, 0);
         });
         setProductImages(imageMap);
       }
@@ -186,7 +187,7 @@ export const SellerOrdersList = ({ orders, onOrderUpdated }: SellerOrdersListPro
                     src={productImage}
                     alt={order.product_title}
                     className="w-[72px] h-[72px] rounded-xl object-cover border border-border/30"
-                    onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                    onError={(e) => handleImageError(e)}
                   />
                   <div className={`absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full flex items-center justify-center ${statusInfo.iconBg}`}>
                     <StatusIcon className={`w-3.5 h-3.5 ${statusInfo.textColor}`} />

@@ -1,5 +1,6 @@
 // Djassa Marketplace - Index Page
 import { ProductCard } from "@/components/ProductCard";
+import SEOHead from "@/components/SEOHead";
 import { CategoryCard } from "@/components/CategoryCard";
 import { SearchBar } from "@/components/SearchBar";
 import PromoBanner from "@/components/PromoBanner";
@@ -319,6 +320,14 @@ const Index = () => {
 
   return (
     <>
+      {/* SEO Head */}
+      <SEOHead 
+        title="Marketplace"
+        description="Découvrez les meilleures offres sur Djassa Marketplace. Achetez en ligne des téléphones, vêtements, électronique et plus en Côte d'Ivoire. Livraison rapide à Abidjan, Bouaké, Yamoussoukro."
+        keywords="marketplace Côte d'Ivoire, achat en ligne Abidjan, vente en ligne, téléphones, vêtements, électronique, beauté, livraison Côte d'Ivoire"
+        url="/marketplace"
+      />
+      
       {/* Tutorial Overlay */}
       <MarketplaceTutorial />
       

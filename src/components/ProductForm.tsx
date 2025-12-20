@@ -192,6 +192,8 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
     }
   };
 
+  const STORAGE_PREFIX = 'https://zqskpspbyzptzjcoitwt.supabase.co/storage/v1/object/public/product-images/';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -199,17 +201,28 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
     setLoading(true);
 
     try {
-      // Upload images if present
+      // Upload images - ONLY uploaded files, no external URLs
       let imageUrls: string[] = [];
       if (imageFiles.length > 0) {
         imageUrls = await uploadImages();
+        // Strict filter: only Supabase product-images URLs
+        imageUrls = imageUrls.filter(url => url.startsWith(STORAGE_PREFIX));
       }
-      
-      // Combine uploaded images with URL image
-      const allImages = [...imageUrls];
-      if (formData.images && formData.images.trim()) {
-        allImages.push(formData.images);
+
+      // BLOCK if no valid images (new product only)
+      if (!product?.id && imageUrls.length === 0) {
+        toast({
+          title: "⚠️ Image requise",
+          description: "Veuillez ajouter au moins une image pour publier votre produit.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
       }
+
+      // For existing products, keep valid existing images if no new ones
+      const existingImages = product?.images?.filter(url => url.startsWith(STORAGE_PREFIX)) || [];
+      const finalImages = imageUrls.length > 0 ? imageUrls : existingImages;
 
       // Upload video if present
       let videoUrl = formData.video_url;
@@ -227,6 +240,7 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
           description: "Le prix original doit être supérieur ou égal au prix de vente",
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
 
@@ -242,6 +256,7 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
           description: "La remise doit être entre 0% et 100%",
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
 
@@ -271,12 +286,12 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
         is_active: formData.is_active,
         is_flash_sale: formData.is_flash_sale,
         badge: formData.badge || null,
-        images: allImages,
+        images: finalImages,
         video_url: videoUrl || null,
         seller_id: user.id,
         shop_id: finalShopId,
-        city: formData.city || null, // Ville de publication
-        country: userCountry || 'CI', // Pays fixe du vendeur
+        city: formData.city || null,
+        country: userCountry || 'CI',
       };
 
       if (product?.id) {

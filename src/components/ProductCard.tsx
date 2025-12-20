@@ -145,7 +145,7 @@ export const ProductCard = ({
 
         {/* Product Image - Clean contained display */}
         <div className="relative overflow-hidden rounded-t-xl bg-gray-50">
-          <ProductImage src={image} alt={title} productId={id} enableAutoCleanup={true} />
+          <ProductImage src={image} alt={title} />
           
           {/* Video indicator overlay */}
           {videoUrl && (

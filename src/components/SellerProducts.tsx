@@ -94,8 +94,6 @@ export const SellerProducts = ({
               aspectRatio="video"
               objectFit="cover"
               containerClassName="w-full h-48"
-              productId={product.id}
-              enableAutoCleanup={true}
             />
             
             <div className="absolute top-2 left-2 flex gap-2 flex-wrap z-10">

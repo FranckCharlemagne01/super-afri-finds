@@ -1,97 +1,93 @@
 /**
- * Product Image Helper - Secure image handling for all product displays
- * Ensures no broken images are ever displayed
+ * Product Image Helper - STRICT image handling for Djassa Marketplace
+ * Only accepts valid Supabase product-images URLs - NO workarounds
  */
 
-const DEFAULT_PLACEHOLDER = '/placeholder.svg';
+const SUPABASE_STORAGE_PREFIX = 'https://zqskpspbyzptzjcoitwt.supabase.co/storage/v1/object/public/product-images/';
+const PLACEHOLDER_IMAGE = '/placeholder.svg';
 
 /**
- * Safely get the first valid image from a product's images array
+ * Check if a URL is a valid Supabase product-images URL
+ */
+export const isValidProductImageUrl = (url: string | null | undefined): boolean => {
+  if (!url || typeof url !== 'string') return false;
+  const trimmed = url.trim();
+  if (trimmed === '' || trimmed === 'null' || trimmed === 'undefined') return false;
+  return trimmed.startsWith(SUPABASE_STORAGE_PREFIX);
+};
+
+/**
+ * Legacy compatibility - same behavior as isValidProductImageUrl
+ */
+export const isValidImageUrl = isValidProductImageUrl;
+
+/**
+ * Get a single validated image from product images array
  * Returns placeholder if no valid image exists
  */
 export const getProductImage = (
-  images: string[] | null | undefined, 
-  index: number = 0,
-  fallback: string = DEFAULT_PLACEHOLDER
+  images: string[] | null | undefined,
+  index: number = 0
 ): string => {
-  // Handle null/undefined/empty arrays
   if (!images || !Array.isArray(images) || images.length === 0) {
-    return fallback;
+    return PLACEHOLDER_IMAGE;
   }
-  
-  // Get the image at the specified index, or fallback
-  const image = images[index];
-  
-  // Validate the image URL
-  if (!image || typeof image !== 'string' || image.trim() === '') {
-    // Try to find any valid image in the array
-    const validImage = images.find(img => isValidImageUrl(img));
-    return validImage || fallback;
+
+  // Find first valid image at or after the requested index
+  for (let i = index; i < images.length; i++) {
+    if (isValidProductImageUrl(images[i])) {
+      return images[i];
+    }
   }
-  
-  return isValidImageUrl(image) ? image : fallback;
+
+  // Fallback: find any valid image in array
+  const validImage = images.find(img => isValidProductImageUrl(img));
+  return validImage || PLACEHOLDER_IMAGE;
 };
 
 /**
- * Get all valid images from a product's images array
+ * Get all valid images from product images array
  */
 export const getProductImages = (
-  images: string[] | null | undefined,
-  fallback: string = DEFAULT_PLACEHOLDER
+  images: string[] | null | undefined
 ): string[] => {
   if (!images || !Array.isArray(images) || images.length === 0) {
-    return [fallback];
+    return [];
   }
-  
-  const validImages = images.filter(img => isValidImageUrl(img));
-  
-  return validImages.length > 0 ? validImages : [fallback];
+  return images.filter(img => isValidProductImageUrl(img));
 };
 
 /**
- * Check if a URL is a valid image URL
+ * Check if product has at least one valid image
  */
-export const isValidImageUrl = (url: string | undefined | null): boolean => {
-  if (!url || typeof url !== 'string') return false;
-  if (url.trim() === '') return false;
-  
-  // Check for common invalid patterns
-  if (url === 'undefined' || url === 'null' || url === 'NULL') return false;
-  
-  // Allow data URLs, blob URLs, and http(s) URLs
-  if (url.startsWith('data:image/')) return true;
-  if (url.startsWith('blob:')) return true;
-  if (url.startsWith('http://') || url.startsWith('https://')) return true;
-  if (url.startsWith('/')) return true; // Relative URLs
-  
-  return false;
+export const hasValidImage = (images: string[] | null | undefined): boolean => {
+  return getProductImages(images).length > 0;
 };
 
 /**
- * Handle image load error with fallback
+ * Handle image load error - switch to placeholder
+ * Fallback should be rare since DB validation now prevents bad URLs
  */
 export const handleImageError = (
-  event: React.SyntheticEvent<HTMLImageElement, Event>,
-  fallback: string = DEFAULT_PLACEHOLDER
+  event: React.SyntheticEvent<HTMLImageElement, Event>
 ): void => {
   const target = event.currentTarget;
-  // Prevent infinite loop
-  if (target.src !== fallback) {
-    target.src = fallback;
+  if (target.src !== PLACEHOLDER_IMAGE) {
+    console.warn(`[Image Error] Failed to load: ${target.src}`);
+    target.src = PLACEHOLDER_IMAGE;
   }
 };
 
 /**
- * Create a safe image props object
+ * Create safe image props for consistent usage
  */
 export const getSafeImageProps = (
   src: string | undefined | null,
-  alt: string,
-  fallback: string = DEFAULT_PLACEHOLDER
+  alt: string
 ) => ({
-  src: isValidImageUrl(src) ? src : fallback,
+  src: isValidProductImageUrl(src) ? src : PLACEHOLDER_IMAGE,
   alt,
-  onError: (e: React.SyntheticEvent<HTMLImageElement, Event>) => handleImageError(e, fallback),
+  onError: handleImageError,
 });
 
 export default getProductImage;

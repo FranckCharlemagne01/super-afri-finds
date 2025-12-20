@@ -1,6 +1,7 @@
-import { useRef } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { isValidProductImageUrl } from '@/utils/productImageHelper';
+import { ImageOff } from 'lucide-react';
 
 interface OptimizedImageProps {
   src: string | undefined | null;
@@ -29,6 +30,8 @@ export const OptimizedImage = ({
   onError,
 }: OptimizedImageProps) => {
   const imgRef = useRef<HTMLImageElement>(null);
+  const [hasError, setHasError] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const aspectRatioClass = {
     square: 'aspect-square',
@@ -44,30 +47,51 @@ export const OptimizedImage = ({
   }[objectFit];
 
   const isValid = isValidProductImageUrl(src);
-  const displaySrc = isValid ? (src as string) : PLACEHOLDER;
+  const displaySrc = isValid && !hasError ? (src as string) : PLACEHOLDER;
 
-  const handleLoad = () => {
+  const handleLoad = useCallback(() => {
+    setIsLoaded(true);
     onLoad?.();
-  };
+  }, [onLoad]);
 
-  const handleError = () => {
-    // Neutral fallback only (no overlay, no error UI)
-    if (imgRef.current) imgRef.current.src = PLACEHOLDER;
+  const handleError = useCallback(() => {
+    // Set error state and fallback to placeholder
+    setHasError(true);
+    if (imgRef.current && imgRef.current.src !== PLACEHOLDER) {
+      imgRef.current.src = PLACEHOLDER;
+    }
     onError?.();
-  };
+  }, [onError]);
 
   return (
-    <div className={cn('relative overflow-hidden bg-muted/5', aspectRatioClass, containerClassName)}>
+    <div className={cn('relative overflow-hidden bg-muted/10', aspectRatioClass, containerClassName)}>
+      {/* Show subtle loading state */}
+      {!isLoaded && !hasError && isValid && (
+        <div className="absolute inset-0 bg-muted/20 animate-pulse" />
+      )}
+      
       <img
         ref={imgRef}
         src={displaySrc}
         alt={alt}
         loading="lazy"
         decoding="async"
-        className={cn('w-full h-full', objectFitClass, className)}
+        className={cn(
+          'w-full h-full transition-opacity duration-200',
+          objectFitClass,
+          isLoaded ? 'opacity-100' : 'opacity-0',
+          className
+        )}
         onLoad={handleLoad}
         onError={handleError}
       />
+      
+      {/* Show broken image indicator for errors on valid URLs */}
+      {hasError && isValid && (
+        <div className="absolute inset-0 flex items-center justify-center bg-muted/30">
+          <ImageOff className="w-8 h-8 text-muted-foreground/50" />
+        </div>
+      )}
     </div>
   );
 };

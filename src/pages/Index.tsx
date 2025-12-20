@@ -340,9 +340,10 @@ const Index = () => {
               <SearchBar placeholder="Rechercher des produits..." />
             </div>
             
-            {/* Mobile/Tablet Help Button & Info Menu */}
+            {/* Mobile/Tablet Help Button, Notification Bell & Info Menu */}
             <div className="md:hidden flex items-center gap-0.5">
               <HelpButton />
+              {user && <NotificationBell />}
               <MobileInfoDrawer />
             </div>
 

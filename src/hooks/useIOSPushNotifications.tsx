@@ -1,6 +1,4 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Capacitor } from '@capacitor/core';
-import { PushNotifications, Token, ActionPerformed, PushNotificationSchema } from '@capacitor/push-notifications';
 import { supabase } from '@/integrations/supabase/client';
 import { useStableAuth } from '@/hooks/useStableAuth';
 
@@ -13,6 +11,7 @@ interface IOSPushState {
 /**
  * iOS Push Notifications hook using Capacitor
  * Handles APNs registration and notification handling for App Store
+ * Safe for web builds - only loads Capacitor when on native platform
  */
 export const useIOSPushNotifications = () => {
   const { userId } = useStableAuth();
@@ -22,28 +21,22 @@ export const useIOSPushNotifications = () => {
     token: null
   });
 
-  // Check if push notifications are supported
-  const checkSupport = useCallback(async () => {
-    if (!Capacitor.isNativePlatform()) {
+  // Check if running on native platform
+  const isNativePlatform = useCallback(async () => {
+    try {
+      const { Capacitor } = await import('@capacitor/core');
+      return Capacitor.isNativePlatform();
+    } catch {
       return false;
     }
-    
-    // iOS requires explicit permission check
-    if (Capacitor.getPlatform() === 'ios') {
-      const permStatus = await PushNotifications.checkPermissions();
-      return permStatus.receive !== 'denied';
-    }
-    
-    return true;
   }, []);
 
   // Request push notification permissions
   const requestPermissions = useCallback(async () => {
-    if (!Capacitor.isNativePlatform()) {
-      return false;
-    }
-
     try {
+      if (!(await isNativePlatform())) return false;
+
+      const { PushNotifications } = await import('@capacitor/push-notifications');
       const permStatus = await PushNotifications.checkPermissions();
       
       if (permStatus.receive === 'prompt') {
@@ -56,30 +49,29 @@ export const useIOSPushNotifications = () => {
       console.error('[IOSPush] Permission request error:', error);
       return false;
     }
-  }, []);
+  }, [isNativePlatform]);
 
   // Register for push notifications
   const register = useCallback(async () => {
-    if (!Capacitor.isNativePlatform()) {
-      console.log('[IOSPush] Not running on native platform');
-      return;
-    }
-
     try {
+      if (!(await isNativePlatform())) {
+        console.log('[IOSPush] Not running on native platform');
+        return;
+      }
+
       const hasPermission = await requestPermissions();
-      
       if (!hasPermission) {
         console.log('[IOSPush] Push notification permission denied');
         return;
       }
 
-      // Register with APNs
+      const { PushNotifications } = await import('@capacitor/push-notifications');
       await PushNotifications.register();
       console.log('[IOSPush] Registration initiated');
     } catch (error) {
       console.error('[IOSPush] Registration error:', error);
     }
-  }, [requestPermissions]);
+  }, [isNativePlatform, requestPermissions]);
 
   // Save token to Supabase
   const saveTokenToDatabase = useCallback(async (token: string) => {
@@ -89,7 +81,6 @@ export const useIOSPushNotifications = () => {
     }
 
     try {
-      // Update profile with push token
       const { error } = await supabase
         .from('profiles')
         .update({ push_token: token })
@@ -107,79 +98,74 @@ export const useIOSPushNotifications = () => {
 
   // Setup listeners
   useEffect(() => {
-    if (!Capacitor.isNativePlatform()) {
-      return;
-    }
+    let cleanupReg: (() => void) | undefined;
+    let cleanupErr: (() => void) | undefined;
+    let cleanupRec: (() => void) | undefined;
+    let cleanupAct: (() => void) | undefined;
 
-    // Check support on mount
-    checkSupport().then(supported => {
-      setState(prev => ({ ...prev, isSupported: supported }));
-    });
+    const setupListeners = async () => {
+      try {
+        if (!(await isNativePlatform())) return;
 
-    // Registration success handler
-    const registrationListener = PushNotifications.addListener(
-      'registration',
-      async (token: Token) => {
-        console.log('[IOSPush] Registration successful:', token.value);
-        setState(prev => ({
-          ...prev,
-          isRegistered: true,
-          token: token.value
-        }));
+        const { PushNotifications } = await import('@capacitor/push-notifications');
         
-        // Save token to database
-        await saveTokenToDatabase(token.value);
-      }
-    );
+        // Check support
+        const permStatus = await PushNotifications.checkPermissions();
+        setState(prev => ({ ...prev, isSupported: permStatus.receive !== 'denied' }));
 
-    // Registration error handler
-    const errorListener = PushNotifications.addListener(
-      'registrationError',
-      (error: any) => {
-        console.error('[IOSPush] Registration error:', error);
-        setState(prev => ({ ...prev, isRegistered: false }));
-      }
-    );
+        // Registration success handler
+        const regListener = await PushNotifications.addListener('registration', async (token) => {
+          console.log('[IOSPush] Registration successful:', token.value);
+          setState(prev => ({
+            ...prev,
+            isRegistered: true,
+            token: token.value
+          }));
+          await saveTokenToDatabase(token.value);
+        });
+        cleanupReg = () => regListener.remove();
 
-    // Notification received (foreground)
-    const receivedListener = PushNotifications.addListener(
-      'pushNotificationReceived',
-      (notification: PushNotificationSchema) => {
-        console.log('[IOSPush] Notification received:', notification);
-        
-        // The notification is displayed by iOS automatically
-        // You can add custom handling here if needed
-      }
-    );
+        // Registration error handler
+        const errListener = await PushNotifications.addListener('registrationError', (error) => {
+          console.error('[IOSPush] Registration error:', error);
+          setState(prev => ({ ...prev, isRegistered: false }));
+        });
+        cleanupErr = () => errListener.remove();
 
-    // Notification action performed (tapped)
-    const actionListener = PushNotifications.addListener(
-      'pushNotificationActionPerformed',
-      (action: ActionPerformed) => {
-        console.log('[IOSPush] Notification action:', action);
-        
-        // Handle notification tap - navigate to relevant page
-        const data = action.notification.data;
-        if (data?.url) {
-          window.location.href = data.url;
-        } else if (data?.link) {
-          window.location.href = data.link;
-        }
-      }
-    );
+        // Notification received (foreground)
+        const recListener = await PushNotifications.addListener('pushNotificationReceived', (notification) => {
+          console.log('[IOSPush] Notification received:', notification);
+        });
+        cleanupRec = () => recListener.remove();
 
-    // Cleanup
-    return () => {
-      registrationListener.then(l => l.remove());
-      errorListener.then(l => l.remove());
-      receivedListener.then(l => l.remove());
-      actionListener.then(l => l.remove());
+        // Notification action performed (tapped)
+        const actListener = await PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
+          console.log('[IOSPush] Notification action:', action);
+          const data = action.notification.data;
+          if (data?.url) {
+            window.location.href = data.url;
+          } else if (data?.link) {
+            window.location.href = data.link;
+          }
+        });
+        cleanupAct = () => actListener.remove();
+      } catch (error) {
+        console.log('[IOSPush] Push notifications not available:', error);
+      }
     };
-  }, [checkSupport, saveTokenToDatabase]);
+
+    setupListeners();
+    return () => {
+      cleanupReg?.();
+      cleanupErr?.();
+      cleanupRec?.();
+      cleanupAct?.();
+    };
+  }, [isNativePlatform, saveTokenToDatabase]);
 
   // Auto-register when user is authenticated
   useEffect(() => {
-    if (userId && Capacitor.isNativePlatform()) {
+    if (userId) {
       register();
     }
   }, [userId, register]);

@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, RefreshCw, LayoutDashboard } from 'lucide-react';
+import { ArrowLeft, RefreshCw, LayoutDashboard, ImageOff } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
+import { useImageCleanup } from '@/hooks/useImageCleanup';
 
 // Vertical Layout Components
 import { VerticalKPISection } from '@/components/superadmin/VerticalKPISection';
@@ -16,11 +17,13 @@ import { ManagementSection } from '@/components/superadmin/ManagementSection';
 const SuperAdminDashboard = () => {
   const navigate = useNavigate();
   const { isSuperAdmin, loading: roleLoading } = useUserRole();
+  const { runFullCleanup } = useImageCleanup();
   const [users, setUsers] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [chartData, setChartData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isCleaningImages, setIsCleaningImages] = useState(false);
 
   useEffect(() => {
     if (!roleLoading && !isSuperAdmin) {
@@ -124,6 +127,39 @@ const SuperAdminDashboard = () => {
     }
   };
 
+  const handleCleanupBrokenImages = async () => {
+    try {
+      setIsCleaningImages(true);
+      const data = await runFullCleanup();
+
+      if (!data?.success) {
+        toast({
+          title: "Nettoyage échoué",
+          description: data?.error || "Impossible de lancer le nettoyage des images.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const result = data.result;
+      toast({
+        title: "Nettoyage images terminé",
+        description: `Images cassées: ${result?.brokenImagesFound ?? 0} • Retirées: ${result?.imagesRemoved ?? 0} • Fichiers storage: ${result?.storageFilesDeleted ?? 0}`,
+      });
+
+      // Refresh analytics after cleanup
+      fetchData();
+    } catch (e: any) {
+      toast({
+        title: "Nettoyage échoué",
+        description: e?.message || "Erreur inconnue",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCleaningImages(false);
+    }
+  };
+
   if (roleLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center">
@@ -158,6 +194,16 @@ const SuperAdminDashboard = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <Button
+                onClick={handleCleanupBrokenImages}
+                variant="outline"
+                size="sm"
+                className="gap-2 rounded-full"
+                disabled={isCleaningImages}
+              >
+                <ImageOff className={isCleaningImages ? "w-4 h-4 animate-spin" : "w-4 h-4"} />
+                <span className="hidden sm:inline">Nettoyer images</span>
+              </Button>
               <Button onClick={fetchData} variant="outline" size="sm" className="gap-2 rounded-full">
                 <RefreshCw className="w-4 h-4" />
                 <span className="hidden sm:inline">Actualiser</span>

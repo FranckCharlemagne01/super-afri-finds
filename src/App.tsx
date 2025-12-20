@@ -12,6 +12,9 @@ import { SplashScreen } from "@/components/SplashScreen";
 import { useInactivityDetector } from "@/hooks/useInactivityDetector";
 import { useVisitorTracking } from "@/hooks/useVisitorTracking";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
+import { useNativeApp } from "@/hooks/useNativeApp";
+import { useIOSPushNotifications } from "@/hooks/useIOSPushNotifications";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
 
 const Verify = lazy(() => import("./pages/Verify"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
@@ -61,6 +64,12 @@ const App = () => {
   const [showSplash, setShowSplash] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
+  // Native iOS app features
+  const { isNative, isOnline } = useNativeApp();
+  
+  // iOS Push Notifications (auto-registers when user is authenticated)
+  useIOSPushNotifications();
+
   // Track visitor activity
   useVisitorTracking();
 
@@ -88,6 +97,8 @@ const App = () => {
           <Toaster />
           <Sonner />
           {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+          {/* Offline indicator for iOS native app */}
+          <OfflineIndicator isOffline={isNative && !isOnline} />
           <BrowserRouter>
             <Suspense fallback={<PageLoadingFallback />}>
               <Routes>

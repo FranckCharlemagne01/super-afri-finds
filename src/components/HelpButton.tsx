@@ -15,12 +15,12 @@ export const HelpButton = () => {
     <>
       <Button
         variant="ghost"
-        size="sm"
+        size="icon"
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-1 text-primary hover:text-primary/90 px-2"
+        className="w-8 h-8 rounded-full bg-primary/10 hover:bg-primary/20 text-primary flex items-center justify-center p-0"
+        aria-label="Aide"
       >
-        <HelpCircle className="w-5 h-5" />
-        <span className="text-sm font-medium">Aide</span>
+        <span className="text-sm font-bold">?</span>
       </Button>
       
       <ChatbotDialog open={isOpen} onOpenChange={setIsOpen} />

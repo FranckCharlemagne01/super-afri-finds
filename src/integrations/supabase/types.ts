@@ -863,6 +863,7 @@ export type Database = {
             Returns: boolean
           }
       can_access_seller_features: { Args: { _user_id: string }; Returns: Json }
+      can_insert_products: { Args: { _user_id: string }; Returns: boolean }
       can_publish_products: { Args: { _user_id: string }; Returns: boolean }
       cancel_order_by_customer: { Args: { order_id: string }; Returns: Json }
       check_token_balance: { Args: { _seller_id: string }; Returns: Json }

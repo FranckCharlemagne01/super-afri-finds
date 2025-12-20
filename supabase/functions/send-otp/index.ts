@@ -60,15 +60,14 @@ serve(async (req) => {
     const termiiSenderId = Deno.env.get('TERMII_SENDER_ID') || 'Djassa';
 
     if (!termiiApiKey) {
-      console.error('TERMII_API_KEY non configuré');
-      // En mode dev, retourner le code (à supprimer en production)
+      console.error('TERMII_API_KEY not configured - SMS service unavailable');
+      // Log OTP for server-side debugging only (visible in edge function logs)
+      console.log('DEBUG OTP (server logs only):', otpCode);
       return new Response(
         JSON.stringify({ 
-          success: true, 
-          message: 'Code envoyé (mode test)',
-          debug_code: otpCode // SUPPRIMER EN PRODUCTION
+          error: 'Service SMS temporairement indisponible. Veuillez réessayer plus tard.' 
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 

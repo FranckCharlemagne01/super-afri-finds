@@ -9,24 +9,30 @@ const corsHeaders = {
 interface CleanupResult {
   totalProductsChecked: number;
   brokenImagesFound: number;
-  imagesRemoved: number;
-  productsUpdated: string[];
+  imagesRemovedFromDB: number;
+  productsUpdated: number;
   storageFilesDeleted: number;
   orphanedFilesDeleted: number;
   errors: string[];
+  details: {
+    productId: string;
+    productTitle: string;
+    brokenUrls: string[];
+    action: string;
+  }[];
 }
 
 const SUPABASE_URL = "https://zqskpspbyzptzjcoitwt.supabase.co";
 const STORAGE_BASE = `${SUPABASE_URL}/storage/v1/object/public/product-images/`;
 
-// Validate a URL is truly accessible (HTTP 200)
+// Real HTTP HEAD check with timeout
 async function isImageAccessible(url: string): Promise<boolean> {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
     const response = await fetch(url, { method: "HEAD", signal: controller.signal });
     clearTimeout(timeoutId);
-    return response.ok;
+    return response.ok && response.status === 200;
   } catch {
     return false;
   }
@@ -41,10 +47,9 @@ serve(async (req: Request) => {
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-  // Authentication check
+  // Auth check
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) {
-    console.error("Missing Authorization header");
     return new Response(JSON.stringify({ error: "Unauthorized - Missing token" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 401,
@@ -58,58 +63,58 @@ serve(async (req: Request) => {
 
   const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
   if (authError || !user) {
-    console.error("Authentication failed:", authError?.message);
     return new Response(JSON.stringify({ error: "Unauthorized - Invalid token" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 401,
     });
   }
 
-  console.log(`User ${user.id} attempting cleanup operation`);
-
-  // Authorization check (superadmin only)
-  const { data: isSuperAdmin, error: roleError } = await supabaseAuth.rpc("has_role", {
+  // Superadmin check
+  const { data: isSuperAdmin } = await supabaseAuth.rpc("has_role", {
     _user_id: user.id,
     _role: "superadmin",
   });
 
-  if (roleError || !isSuperAdmin) {
-    console.error(`User ${user.id} is not a superadmin`);
+  if (!isSuperAdmin) {
     return new Response(JSON.stringify({ error: "Forbidden - Superadmin access required" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 403,
     });
   }
 
-  console.log(`Superadmin ${user.id} authorized - starting FULL cleanup`);
+  console.log(`[CLEANUP] Superadmin ${user.id} starting HARD cleanup`);
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   const result: CleanupResult = {
     totalProductsChecked: 0,
     brokenImagesFound: 0,
-    imagesRemoved: 0,
-    productsUpdated: [],
+    imagesRemovedFromDB: 0,
+    productsUpdated: 0,
     storageFilesDeleted: 0,
     orphanedFilesDeleted: 0,
     errors: [],
+    details: [],
   };
 
   try {
-    // 1. Fetch all products
+    // 1. Fetch ALL products
     const { data: products, error: fetchError } = await supabase
       .from("products")
       .select("id, title, images");
 
     if (fetchError) throw new Error(`Failed to fetch products: ${fetchError.message}`);
-    result.totalProductsChecked = products?.length || 0;
 
-    console.log(`Checking ${result.totalProductsChecked} products...`);
+    result.totalProductsChecked = products?.length || 0;
+    console.log(`[CLEANUP] Scanning ${result.totalProductsChecked} products...`);
+
+    // Collect all valid URLs across products
+    const allValidUrls = new Set<string>();
 
     // 2. Check each product's images with real HTTP HEAD check
     for (const product of products || []) {
       if (!product.images || !Array.isArray(product.images) || product.images.length === 0) {
-        continue; // Nothing to check
+        continue;
       }
 
       const validImages: string[] = [];
@@ -117,35 +122,42 @@ serve(async (req: Request) => {
 
       for (const imageUrl of product.images) {
         if (!imageUrl || typeof imageUrl !== "string" || imageUrl.trim() === "") {
-          brokenImages.push("empty");
+          brokenImages.push("empty_url");
           continue;
         }
 
-        // Real accessibility check
-        const accessible = await isImageAccessible(imageUrl);
+        const cleanUrl = imageUrl.split("?")[0].trim();
+
+        // Must be our bucket
+        if (!cleanUrl.startsWith(STORAGE_BASE)) {
+          brokenImages.push(cleanUrl);
+          continue;
+        }
+
+        // Real HTTP accessibility check
+        const accessible = await isImageAccessible(cleanUrl);
 
         if (accessible) {
-          validImages.push(imageUrl);
+          validImages.push(cleanUrl);
+          allValidUrls.add(cleanUrl);
         } else {
-          brokenImages.push(imageUrl);
+          brokenImages.push(cleanUrl);
           result.brokenImagesFound++;
 
-          // Delete from storage if it's our bucket
-          if (imageUrl.startsWith(STORAGE_BASE)) {
-            const filePath = imageUrl.replace(STORAGE_BASE, "");
-            const { error: deleteError } = await supabase.storage
-              .from("product-images")
-              .remove([filePath]);
+          // Delete from storage
+          const filePath = cleanUrl.replace(STORAGE_BASE, "");
+          const { error: deleteError } = await supabase.storage
+            .from("product-images")
+            .remove([filePath]);
 
-            if (!deleteError) {
-              result.storageFilesDeleted++;
-              console.log(`Deleted broken file from storage: ${filePath}`);
-            }
+          if (!deleteError) {
+            result.storageFilesDeleted++;
+            console.log(`[CLEANUP] Deleted broken file: ${filePath}`);
           }
         }
       }
 
-      // Update product if any images were broken
+      // Update product if any broken
       if (brokenImages.length > 0) {
         const { error: updateError } = await supabase
           .from("products")
@@ -153,76 +165,69 @@ serve(async (req: Request) => {
           .eq("id", product.id);
 
         if (updateError) {
-          result.errors.push(`Failed to update product ${product.id}: ${updateError.message}`);
+          result.errors.push(`Update failed for ${product.id}: ${updateError.message}`);
         } else {
-          result.imagesRemoved += brokenImages.length;
-          result.productsUpdated.push(`${product.title} (${product.id})`);
-          console.log(`Cleaned product ${product.title}: removed ${brokenImages.length} broken image(s)`);
+          result.imagesRemovedFromDB += brokenImages.length;
+          result.productsUpdated++;
+          result.details.push({
+            productId: product.id,
+            productTitle: product.title || "Sans titre",
+            brokenUrls: brokenImages,
+            action: `Removed ${brokenImages.length} broken image(s), ${validImages.length} valid remaining`,
+          });
+          console.log(`[CLEANUP] Product ${product.title}: removed ${brokenImages.length} broken image(s)`);
         }
       }
     }
 
-    // 3. Clean orphaned storage files (files not referenced by any product)
-    console.log("Checking for orphaned storage files...");
+    // 3. Clean orphaned storage files
+    console.log("[CLEANUP] Scanning for orphaned storage files...");
 
-    const { data: allProducts } = await supabase.from("products").select("images");
-    const allImageUrls = new Set<string>();
-    for (const p of allProducts || []) {
-      if (p.images && Array.isArray(p.images)) {
-        for (const url of p.images) {
-          if (url) allImageUrls.add(url);
-        }
-      }
-    }
-
-    // List all folders in product-images bucket
-    const { data: storageFiles, error: listError } = await supabase.storage
+    const { data: storageList } = await supabase.storage
       .from("product-images")
       .list("", { limit: 1000 });
 
-    if (!listError && storageFiles) {
-      for (const folder of storageFiles) {
-        if (!folder.id || !folder.name) continue;
+    if (storageList) {
+      for (const folder of storageList) {
+        if (!folder.name) continue;
 
-        // List files in folder
-        const { data: folderFiles } = await supabase.storage
+        const { data: files } = await supabase.storage
           .from("product-images")
           .list(folder.name, { limit: 500 });
 
-        for (const file of folderFiles || []) {
+        for (const file of files || []) {
+          if (!file.name) continue;
           const fileUrl = `${STORAGE_BASE}${folder.name}/${file.name}`;
 
-          if (!allImageUrls.has(fileUrl)) {
-            // Orphaned file - delete
-            const { error: deleteError } = await supabase.storage
+          if (!allValidUrls.has(fileUrl)) {
+            const { error: delErr } = await supabase.storage
               .from("product-images")
               .remove([`${folder.name}/${file.name}`]);
 
-            if (!deleteError) {
+            if (!delErr) {
               result.orphanedFilesDeleted++;
-              console.log(`Deleted orphaned file: ${folder.name}/${file.name}`);
+              console.log(`[CLEANUP] Deleted orphaned file: ${folder.name}/${file.name}`);
             }
           }
         }
       }
     }
 
-    console.log(`Cleanup completed:`, result);
+    console.log(`[CLEANUP] Complete:`, result);
 
-    return new Response(JSON.stringify({
-      success: true,
-      result,
-      message: `Nettoyage terminé: ${result.brokenImagesFound} images cassées, ${result.imagesRemoved} retirées de la DB, ${result.storageFilesDeleted + result.orphanedFilesDeleted} fichiers supprimés du storage.`
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
-
+    return new Response(
+      JSON.stringify({
+        success: true,
+        result,
+        message: `Nettoyage terminé: ${result.brokenImagesFound} images cassées détectées, ${result.imagesRemovedFromDB} retirées de la DB, ${result.storageFilesDeleted + result.orphanedFilesDeleted} fichiers supprimés du storage, ${result.productsUpdated} produits mis à jour.`,
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+    );
   } catch (error) {
-    console.error("Cleanup error:", error);
-    return new Response(JSON.stringify({ success: false, error: (error as Error).message }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
-    });
+    console.error("[CLEANUP] Error:", error);
+    return new Response(
+      JSON.stringify({ success: false, error: (error as Error).message }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+    );
   }
 });

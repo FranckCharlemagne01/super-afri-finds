@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import { ImageIcon } from 'lucide-react';
 import { isValidProductImageUrl } from '@/utils/productImageHelper';
 
 interface OptimizedImageProps {
@@ -29,7 +28,6 @@ export const OptimizedImage = ({
   onError,
 }: OptimizedImageProps) => {
   const [isLoading, setIsLoading] = useState(true);
-  const [showPlaceholder, setShowPlaceholder] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
   const aspectRatioClass = {
@@ -46,11 +44,11 @@ export const OptimizedImage = ({
   }[objectFit];
 
   const isValid = isValidProductImageUrl(src);
-  const displaySrc = isValid ? src! : PLACEHOLDER;
+  const displaySrc = isValid ? (src as string) : PLACEHOLDER;
 
   useEffect(() => {
-    setIsLoading(true);
-    setShowPlaceholder(!isValid);
+    // Reset loader only for real images; placeholder should render immediately.
+    setIsLoading(isValid);
   }, [src, isValid]);
 
   const handleLoad = () => {
@@ -59,34 +57,20 @@ export const OptimizedImage = ({
   };
 
   const handleError = () => {
+    // Switch to placeholder (neutral, no overlay).
     setIsLoading(false);
-    setShowPlaceholder(true);
+    if (imgRef.current) imgRef.current.src = PLACEHOLDER;
     onError?.();
   };
 
   return (
-    <div 
-      className={cn(
-        'relative overflow-hidden bg-muted/10',
-        aspectRatioClass,
-        containerClassName
-      )}
-    >
-      {/* Loading spinner */}
-      {showLoader && isLoading && !showPlaceholder && (
+    <div className={cn('relative overflow-hidden bg-muted/10', aspectRatioClass, containerClassName)}>
+      {showLoader && isLoading && isValid && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-muted/20">
           <div className="w-5 h-5 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
         </div>
       )}
 
-      {/* Clean placeholder - no error message, neutral look */}
-      {showPlaceholder && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-br from-muted/40 to-muted/20">
-          <ImageIcon className="w-8 h-8 text-muted-foreground/30" />
-        </div>
-      )}
-
-      {/* Image */}
       <img
         ref={imgRef}
         src={displaySrc}
@@ -96,7 +80,7 @@ export const OptimizedImage = ({
         className={cn(
           'w-full h-full transition-opacity duration-200',
           objectFitClass,
-          (isLoading || showPlaceholder) ? 'opacity-0' : 'opacity-100',
+          isLoading ? 'opacity-0' : 'opacity-100',
           className
         )}
         onLoad={handleLoad}

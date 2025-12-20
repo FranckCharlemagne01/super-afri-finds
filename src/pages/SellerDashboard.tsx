@@ -17,7 +17,7 @@ import { SellerDashboardSkeleton } from '@/components/seller/SellerDashboardSkel
 import { RealtimeOrdersNotification } from '@/components/RealtimeOrdersNotification';
 import { RealtimeMessagesNotification } from '@/components/RealtimeMessagesNotification';
 import { TrialBanner } from '@/components/TrialBanner';
-import { SubscriptionRequired } from '@/components/SubscriptionRequired';
+import { SubscriptionExpiredBanner } from '@/components/SubscriptionExpiredBanner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Store, Package, MessageSquare, Coins, Settings } from 'lucide-react';
@@ -288,22 +288,11 @@ const SellerDashboard = () => {
     );
   }
 
-  // 🔒 SUBSCRIPTION WALL: Block access if trial expired and no subscription
-  if (!sellerAccess.canAccess) {
-    return (
-      <SubscriptionRequired 
-        userEmail={user?.email || ''} 
-        userId={userId}
-        onSubscriptionSuccess={() => sellerAccess.refresh()}
-      />
-    );
-  }
-
   // Create trial status object for components that need it
   const trialStatus = {
     isInTrial: sellerAccess.isInTrial,
     trialEndDate: sellerAccess.trialEndDate,
-    canPublish: sellerAccess.canAccess,
+    canPublish: sellerAccess.canPublish,
     isPremium: sellerAccess.hasActiveSubscription,
     loading: sellerAccess.loading,
   };
@@ -315,6 +304,15 @@ const SellerDashboard = () => {
       <RealtimeMessagesNotification />
       
       <div className="container mx-auto px-2.5 py-3 max-w-md md:max-w-3xl lg:max-w-7xl md:px-4 lg:px-6 md:py-4 lg:py-5">
+        {/* ⚠️ Subscription Expired Banner - Show when trial ended and no active subscription */}
+        {sellerAccess.subscriptionExpired && (
+          <SubscriptionExpiredBanner 
+            userEmail={user?.email || ''} 
+            userId={userId}
+            onSubscriptionSuccess={() => sellerAccess.refresh()}
+          />
+        )}
+        
         {/* 🎁 Trial Banner - Only show if in trial */}
         {sellerAccess.isInTrial && (
           <TrialBanner 
@@ -397,6 +395,9 @@ const SellerDashboard = () => {
               onRefresh={handleRefresh}
               openFormTrigger={openProductForm}
               onFormOpenChange={setOpenProductForm}
+              canPublish={sellerAccess.canPublish}
+              canEdit={sellerAccess.canEdit}
+              canBoost={sellerAccess.canBoost}
             />
           </TabsContent>
 

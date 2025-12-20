@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { isValidProductImageUrl } from '@/utils/productImageHelper';
 
@@ -7,7 +7,7 @@ interface OptimizedImageProps {
   alt: string;
   className?: string;
   containerClassName?: string;
-  showLoader?: boolean;
+  showLoader?: boolean; // kept for API compatibility (ignored)
   aspectRatio?: 'square' | 'video' | 'portrait' | 'auto';
   objectFit?: 'cover' | 'contain' | 'fill';
   onLoad?: () => void;
@@ -21,7 +21,8 @@ export const OptimizedImage = ({
   alt,
   className,
   containerClassName,
-  showLoader = true,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  showLoader = false,
   aspectRatio = 'square',
   objectFit = 'cover',
   onLoad,
@@ -45,59 +46,25 @@ export const OptimizedImage = ({
   const isValid = isValidProductImageUrl(src);
   const displaySrc = isValid ? (src as string) : PLACEHOLDER;
 
-  // If no valid image, show placeholder immediately without loader
-  const [isLoading, setIsLoading] = useState(isValid);
-
-  useEffect(() => {
-    // Reset loader only for real images; placeholder should render immediately.
-    setIsLoading(isValid);
-  }, [src, isValid]);
-
   const handleLoad = () => {
-    setIsLoading(false);
     onLoad?.();
   };
 
   const handleError = () => {
-    // Switch to placeholder (neutral, no overlay).
-    setIsLoading(false);
+    // Neutral fallback only (no overlay, no error UI)
     if (imgRef.current) imgRef.current.src = PLACEHOLDER;
     onError?.();
   };
 
-  // If no valid image, render clean placeholder immediately
-  if (!isValid) {
-    return (
-      <div className={cn('relative overflow-hidden bg-muted/5', aspectRatioClass, containerClassName)}>
-        <img
-          src={PLACEHOLDER}
-          alt={alt}
-          className={cn('w-full h-full', objectFitClass, className)}
-        />
-      </div>
-    );
-  }
-
   return (
-    <div className={cn('relative overflow-hidden bg-muted/10', aspectRatioClass, containerClassName)}>
-      {showLoader && isLoading && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-muted/20">
-          <div className="w-5 h-5 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
-        </div>
-      )}
-
+    <div className={cn('relative overflow-hidden bg-muted/5', aspectRatioClass, containerClassName)}>
       <img
         ref={imgRef}
         src={displaySrc}
         alt={alt}
         loading="lazy"
         decoding="async"
-        className={cn(
-          'w-full h-full transition-opacity duration-200',
-          objectFitClass,
-          isLoading ? 'opacity-0' : 'opacity-100',
-          className
-        )}
+        className={cn('w-full h-full', objectFitClass, className)}
         onLoad={handleLoad}
         onError={handleError}
       />

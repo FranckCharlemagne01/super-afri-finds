@@ -126,18 +126,16 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
     fetchUserCountry();
   }, [user, product?.id]);
 
-  // Validate steps - step 2 requires actual uploaded images (not URLs)
-  const STORAGE_PREFIX = 'https://zqskpspbyzptzjcoitwt.supabase.co/storage/v1/object/public/product-images/';
-  const existingValidImages = product?.images?.filter(url => url.startsWith(STORAGE_PREFIX)) || [];
-  
+  // Validate steps
+  // Images are OPTIONAL (reset mode): product can be created/updated with images = []
   useEffect(() => {
     setStepValidation({
       1: formData.title.trim().length >= 2 && formData.category !== '',
-      2: previewImages.length > 0 || existingValidImages.length > 0,
+      2: true,
       3: formData.price > 0,
       4: true,
     });
-  }, [formData, previewImages, existingValidImages.length]);
+  }, [formData]);
 
   const handleInputChange = useCallback((field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -302,17 +300,6 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
         imageUrls = imageUrls.filter(url => 
           url.startsWith('https://zqskpspbyzptzjcoitwt.supabase.co/storage/v1/object/public/product-images/')
         );
-      }
-
-      // BLOCK if no valid images (new product only)
-      if (!product?.id && imageUrls.length === 0) {
-        toast({
-          title: "⚠️ Image requise",
-          description: "Veuillez ajouter au moins une image valide pour publier votre produit.",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
       }
 
       // For existing products, keep existing valid images if no new ones

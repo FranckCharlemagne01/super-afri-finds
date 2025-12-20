@@ -3,13 +3,23 @@ import { supabase } from '@/integrations/supabase/client';
 import { useStableAuth } from './useStableAuth';
 
 export interface SellerAccessStatus {
+  // Dashboard access - always allowed for sellers
+  canAccessDashboard: boolean;
+  // Action permissions - blocked when subscription expired
+  canPublish: boolean;
+  canEdit: boolean;
+  canBoost: boolean;
+  // Legacy field for backwards compatibility
   canAccess: boolean;
+  // Subscription status
   isInTrial: boolean;
   trialDaysLeft: number;
   trialEndDate: Date | null;
   hasActiveSubscription: boolean;
   subscriptionEnd: Date | null;
   subscriptionStatus: string;
+  subscriptionExpired: boolean;
+  // Loading/error states
   loading: boolean;
   error: string | null;
 }
@@ -27,6 +37,10 @@ interface AccessData {
 export const useSellerAccess = () => {
   const { userId } = useStableAuth();
   const [status, setStatus] = useState<SellerAccessStatus>({
+    canAccessDashboard: true,
+    canPublish: false,
+    canEdit: false,
+    canBoost: false,
     canAccess: false,
     isInTrial: false,
     trialDaysLeft: 0,
@@ -34,6 +48,7 @@ export const useSellerAccess = () => {
     hasActiveSubscription: false,
     subscriptionEnd: null,
     subscriptionStatus: 'none',
+    subscriptionExpired: false,
     loading: true,
     error: null,
   });
@@ -54,23 +69,34 @@ export const useSellerAccess = () => {
         setStatus(prev => ({ 
           ...prev, 
           loading: false, 
-          error: error.message 
+          error: error.message,
+          canAccessDashboard: true, // Always allow dashboard access
         }));
         return;
       }
 
       if (data) {
-        // Cast data to the expected type
         const accessData = data as unknown as AccessData;
         
+        // Determine if subscription is expired (not in trial AND no active subscription)
+        const isInTrial = accessData.is_in_trial || false;
+        const hasActiveSubscription = accessData.has_active_subscription || false;
+        const canPerformActions = accessData.can_access || false;
+        const subscriptionExpired = !isInTrial && !hasActiveSubscription;
+        
         setStatus({
-          canAccess: accessData.can_access || false,
-          isInTrial: accessData.is_in_trial || false,
+          canAccessDashboard: true, // Always allow dashboard access for sellers
+          canPublish: canPerformActions,
+          canEdit: canPerformActions,
+          canBoost: canPerformActions,
+          canAccess: canPerformActions, // Legacy compatibility
+          isInTrial,
           trialDaysLeft: accessData.trial_days_left || 0,
           trialEndDate: accessData.trial_end_date ? new Date(accessData.trial_end_date) : null,
-          hasActiveSubscription: accessData.has_active_subscription || false,
+          hasActiveSubscription,
           subscriptionEnd: accessData.subscription_end ? new Date(accessData.subscription_end) : null,
           subscriptionStatus: accessData.subscription_status || 'none',
+          subscriptionExpired,
           loading: false,
           error: null,
         });
@@ -80,7 +106,8 @@ export const useSellerAccess = () => {
       setStatus(prev => ({ 
         ...prev, 
         loading: false, 
-        error: err.message 
+        error: err.message,
+        canAccessDashboard: true, // Always allow dashboard access
       }));
     }
   }, [userId]);

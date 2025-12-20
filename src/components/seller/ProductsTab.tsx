@@ -2,7 +2,7 @@ import { useState } from 'react';
 import * as React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Package } from 'lucide-react';
+import { Plus, Package, Lock } from 'lucide-react';
 import { ProductFormWizard } from '@/components/product-form';
 import { SellerProducts } from '@/components/SellerProducts';
 import { ProductBoostDialog } from '@/components/ProductBoostDialog';
@@ -11,6 +11,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useTokens } from '@/hooks/useTokens';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 interface Product {
   id: string;
   title: string;
@@ -38,6 +40,9 @@ interface ProductsTabProps {
   onRefresh: () => void;
   openFormTrigger?: boolean;
   onFormOpenChange?: (open: boolean) => void;
+  canPublish?: boolean;
+  canEdit?: boolean;
+  canBoost?: boolean;
 }
 
 export const ProductsTab = ({ 
@@ -46,7 +51,10 @@ export const ProductsTab = ({
   shopId, 
   onRefresh, 
   openFormTrigger = false,
-  onFormOpenChange 
+  onFormOpenChange,
+  canPublish = true,
+  canEdit = true,
+  canBoost = true
 }: ProductsTabProps) => {
   const { toast } = useToast();
   const { tokenBalance, refreshBalance } = useTokens();
@@ -58,14 +66,29 @@ export const ProductsTab = ({
 
   // Handle external trigger to open form
   React.useEffect(() => {
-    if (openFormTrigger) {
+    if (openFormTrigger && canPublish) {
       setShowProductForm(true);
       setEditingProduct(null);
       onFormOpenChange?.(false); // Reset trigger
+    } else if (openFormTrigger && !canPublish) {
+      toast({
+        title: "Abonnement requis",
+        description: "Renouvelez votre abonnement pour publier des produits",
+        variant: "destructive",
+      });
+      onFormOpenChange?.(false);
     }
-  }, [openFormTrigger, onFormOpenChange]);
+  }, [openFormTrigger, onFormOpenChange, canPublish, toast]);
 
   const handleEdit = (product: Product) => {
+    if (!canEdit) {
+      toast({
+        title: "Abonnement requis",
+        description: "Renouvelez votre abonnement pour modifier vos produits",
+        variant: "destructive",
+      });
+      return;
+    }
     setEditingProduct(product);
     setShowProductForm(true);
   };
@@ -122,6 +145,14 @@ export const ProductsTab = ({
   };
 
   const handleBoost = (productId: string, productTitle: string) => {
+    if (!canBoost) {
+      toast({
+        title: "Abonnement requis",
+        description: "Renouvelez votre abonnement pour booster vos produits",
+        variant: "destructive",
+      });
+      return;
+    }
     setSelectedProductForBoost({ id: productId, title: productTitle });
     setBoostDialogOpen(true);
   };
@@ -143,14 +174,33 @@ export const ProductsTab = ({
               </div>
               <span>Mes Produits ({products.length})</span>
             </CardTitle>
-            <Button 
-              onClick={() => setShowProductForm(true)} 
-              size={isMobile ? "default" : "lg"} 
-              className="gap-2 w-full sm:w-auto transition-all hover:scale-105 active:scale-95 touch-manipulation"
-            >
-              <Plus className="h-4 w-4 md:h-5 md:w-5" />
-              <span className="truncate">{isMobile ? "Ajouter" : "Ajouter un produit"}</span>
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="w-full sm:w-auto">
+                    <Button 
+                      onClick={() => canPublish && setShowProductForm(true)} 
+                      size={isMobile ? "default" : "lg"} 
+                      disabled={!canPublish}
+                      className={`gap-2 w-full sm:w-auto transition-all touch-manipulation ${
+                        canPublish 
+                          ? 'hover:scale-105 active:scale-95' 
+                          : 'opacity-60 cursor-not-allowed'
+                      }`}
+                    >
+                      {!canPublish && <Lock className="h-4 w-4" />}
+                      <Plus className="h-4 w-4 md:h-5 md:w-5" />
+                      <span className="truncate">{isMobile ? "Ajouter" : "Ajouter un produit"}</span>
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {!canPublish && (
+                  <TooltipContent>
+                    <p>Renouvelez votre abonnement pour publier</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </CardHeader>
         <CardContent className="relative">
@@ -159,7 +209,9 @@ export const ProductsTab = ({
             loading={loading}
             onEdit={handleEdit}
             onDelete={handleDelete}
-            onBoost={handleBoost}
+            onBoost={canBoost ? handleBoost : undefined}
+            canEdit={canEdit}
+            canBoost={canBoost}
           />
         </CardContent>
       </Card>

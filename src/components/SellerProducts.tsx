@@ -1,10 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, Eye, EyeOff, Zap } from 'lucide-react';
+import { Edit, Trash2, Eye, EyeOff, Zap, Lock } from 'lucide-react';
 import { SmoothListSkeleton } from '@/components/ui/smooth-skeleton';
 import { CountdownTimer } from './CountdownTimer';
 import { OptimizedImage } from '@/components/ui/optimized-image';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,9 +46,21 @@ interface SellerProductsProps {
   onBoost?: (productId: string, productTitle: string) => void;
   title?: string;
   emptyMessage?: string;
+  canEdit?: boolean;
+  canBoost?: boolean;
 }
 
-export const SellerProducts = ({ products, loading, onEdit, onDelete, onBoost, title, emptyMessage }: SellerProductsProps) => {
+export const SellerProducts = ({ 
+  products, 
+  loading, 
+  onEdit, 
+  onDelete, 
+  onBoost, 
+  title, 
+  emptyMessage,
+  canEdit = true,
+  canBoost = true
+}: SellerProductsProps) => {
   const isProductBoosted = (product: Product) => {
     return product.is_boosted && product.boosted_until && new Date(product.boosted_until) > new Date();
   };
@@ -144,15 +157,30 @@ export const SellerProducts = ({ products, loading, onEdit, onDelete, onBoost, t
 
             <div className="flex flex-col gap-2">
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onEdit(product)}
-                  className="flex-1"
-                >
-                  <Edit className="w-4 h-4 mr-1" />
-                  Modifier
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="flex-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onEdit(product)}
+                          disabled={!canEdit}
+                          className={`w-full ${!canEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
+                        >
+                          {!canEdit && <Lock className="w-3 h-3 mr-1" />}
+                          <Edit className="w-4 h-4 mr-1" />
+                          Modifier
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    {!canEdit && (
+                      <TooltipContent>
+                        <p>Renouvelez votre abonnement pour modifier</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
                 
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
@@ -184,7 +212,7 @@ export const SellerProducts = ({ products, loading, onEdit, onDelete, onBoost, t
                 </AlertDialog>
               </div>
 
-              {onBoost && !isProductBoosted(product) && (
+              {onBoost && !isProductBoosted(product) && canBoost && (
                 <Button
                   variant="default"
                   size="sm"
@@ -194,6 +222,30 @@ export const SellerProducts = ({ products, loading, onEdit, onDelete, onBoost, t
                   <Zap className="w-4 h-4 mr-1" />
                   Booster (2 jetons)
                 </Button>
+              )}
+              
+              {!isProductBoosted(product) && !canBoost && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled
+                          className="w-full opacity-60 cursor-not-allowed"
+                        >
+                          <Lock className="w-3 h-3 mr-1" />
+                          <Zap className="w-4 h-4 mr-1" />
+                          Booster (2 jetons)
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Renouvelez votre abonnement pour booster</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
               
               {isProductBoosted(product) && product.boosted_until && (

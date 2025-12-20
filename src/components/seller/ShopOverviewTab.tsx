@@ -7,9 +7,11 @@ import {
   ShoppingBag, 
   Plus,
   BarChart3,
-  Activity
+  Activity,
+  Lock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface Product {
   id: string;
@@ -27,6 +29,7 @@ interface Shop {
 interface TrialStatus {
   isInTrial: boolean;
   isPremium: boolean;
+  canPublish?: boolean;
 }
 
 interface ShopOverviewTabProps {
@@ -91,13 +94,16 @@ export const ShopOverviewTab = ({
     },
   ];
 
+  const canPublish = trialStatus.canPublish ?? true;
+
   const quickActions = [
     {
       label: 'Publier un produit',
-      icon: Plus,
-      onClick: onPublishProduct || (() => {}),
+      icon: canPublish ? Plus : Lock,
+      onClick: canPublish ? (onPublishProduct || (() => {})) : undefined,
       variant: 'default' as const,
-      description: 'Ajouter un nouveau produit',
+      description: canPublish ? 'Ajouter un nouveau produit' : 'Abonnement requis',
+      disabled: !canPublish,
     },
     {
       label: 'Voir ma boutique',
@@ -105,6 +111,7 @@ export const ShopOverviewTab = ({
       onClick: () => shop && navigate(`/boutique/${shop.shop_slug}`),
       variant: 'outline' as const,
       description: 'Voir la page publique',
+      disabled: false,
     },
   ];
 
@@ -125,20 +132,37 @@ export const ShopOverviewTab = ({
           {/* Quick Actions Grid - Mobile First */}
           <div className="grid grid-cols-2 gap-2 md:gap-3">
             {quickActions.map((action) => (
-              <Button
-                key={action.label}
-                onClick={action.onClick}
-                variant={action.variant}
-                className="h-auto py-3 md:py-4 flex flex-col items-center gap-2 transition-all hover:scale-[1.02] active:scale-95 touch-manipulation rounded-xl shadow-sm"
-              >
-                <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full ${action.variant === 'default' ? 'bg-primary-foreground/20' : 'bg-primary/10'} flex items-center justify-center`}>
-                  <action.icon className="h-5 w-5 md:h-6 md:w-6" />
-                </div>
-                <div className="text-center">
-                  <span className="text-xs md:text-sm font-medium block">{action.label}</span>
-                  <span className="text-[10px] md:text-xs text-muted-foreground/80 mt-0.5 block">{action.description}</span>
-                </div>
-              </Button>
+              <TooltipProvider key={action.label}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <Button
+                        onClick={action.onClick}
+                        variant={action.variant}
+                        disabled={action.disabled}
+                        className={`h-auto py-3 md:py-4 flex flex-col items-center gap-2 transition-all touch-manipulation rounded-xl shadow-sm w-full ${
+                          action.disabled 
+                            ? 'opacity-60 cursor-not-allowed' 
+                            : 'hover:scale-[1.02] active:scale-95'
+                        }`}
+                      >
+                        <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full ${action.variant === 'default' ? 'bg-primary-foreground/20' : 'bg-primary/10'} flex items-center justify-center`}>
+                          <action.icon className="h-5 w-5 md:h-6 md:w-6" />
+                        </div>
+                        <div className="text-center">
+                          <span className="text-xs md:text-sm font-medium block">{action.label}</span>
+                          <span className="text-[10px] md:text-xs text-muted-foreground/80 mt-0.5 block">{action.description}</span>
+                        </div>
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  {action.disabled && (
+                    <TooltipContent>
+                      <p>Renouvelez votre abonnement</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
             ))}
           </div>
         </CardContent>

@@ -105,31 +105,52 @@ serve(async (req) => {
       );
     }
 
-    // Simple XOR decryption
-    const decryptKey = (encrypted: string, key: string): string => {
+    // AES-256-GCM decryption (matching paystack-config encryption)
+    const decryptData = async (encryptedBase64: string, keyString: string): Promise<string> => {
       try {
-        const encryptedBytes = Uint8Array.from(atob(encrypted), c => c.charCodeAt(0));
-        const keyBytes = new TextEncoder().encode(key);
-        const decrypted = new Uint8Array(encryptedBytes.length);
-        for (let i = 0; i < encryptedBytes.length; i++) {
-          decrypted[i] = encryptedBytes[i] ^ keyBytes[i % keyBytes.length];
-        }
-        return new TextDecoder().decode(decrypted);
+        const encoder = new TextEncoder();
+        const keyData = encoder.encode(keyString.padEnd(32, '0').slice(0, 32));
+        
+        const key = await crypto.subtle.importKey(
+          'raw',
+          keyData,
+          { name: 'AES-GCM', length: 256 },
+          false,
+          ['decrypt']
+        );
+        
+        // Decode base64
+        const combined = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
+        
+        // Extract IV (first 12 bytes) and encrypted data
+        const iv = combined.slice(0, 12);
+        const encrypted = combined.slice(12);
+        
+        const decrypted = await crypto.subtle.decrypt(
+          { name: 'AES-GCM', iv },
+          key,
+          encrypted
+        );
+        
+        const decoder = new TextDecoder();
+        return decoder.decode(decrypted);
       } catch (e) {
-        console.error('Decryption error:', e);
+        console.error('AES-GCM Decryption error:', e);
         return '';
       }
     };
 
-    const paystackSecretKey = decryptKey(encryptedKey, encryptionKey);
+    const paystackSecretKey = await decryptData(encryptedKey, encryptionKey);
 
     if (!paystackSecretKey || !paystackSecretKey.startsWith('sk_')) {
-      console.error('Invalid Paystack key after decryption');
+      console.error('Invalid Paystack key after decryption - key does not start with sk_');
       return new Response(
-        JSON.stringify({ success: false, error: 'Clé Paystack invalide' }),
+        JSON.stringify({ success: false, error: 'Clé Paystack invalide - veuillez reconfigurer les clés dans le panneau admin' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
       );
     }
+    
+    console.log('Paystack key decrypted successfully, mode:', paystackConfig.mode);
 
     // Use authenticated user's ID for all operations
     const effectiveUserId = authenticatedUser.id;

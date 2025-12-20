@@ -209,17 +209,6 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
         imageUrls = imageUrls.filter(url => url.startsWith(STORAGE_PREFIX));
       }
 
-      // BLOCK if no valid images (new product only)
-      if (!product?.id && imageUrls.length === 0) {
-        toast({
-          title: "⚠️ Image requise",
-          description: "Veuillez ajouter au moins une image pour publier votre produit.",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-
       // For existing products, keep valid existing images if no new ones
       const existingImages = product?.images?.filter(url => url.startsWith(STORAGE_PREFIX)) || [];
       const finalImages = imageUrls.length > 0 ? imageUrls : existingImages;

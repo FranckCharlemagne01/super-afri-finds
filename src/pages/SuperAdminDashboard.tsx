@@ -130,6 +130,11 @@ const SuperAdminDashboard = () => {
   const handleCleanupBrokenImages = async () => {
     try {
       setIsCleaningImages(true);
+      toast({
+        title: "Nettoyage en cours",
+        description: "Scan DB + Storage… cela peut prendre quelques minutes.",
+      });
+
       const data = await runFullCleanup();
 
       if (!data?.success) {
@@ -141,10 +146,19 @@ const SuperAdminDashboard = () => {
         return;
       }
 
-      const r = data.result;
+      const report = data?.report;
+      const failedCount =
+        (report?.failed?.db_updates ?? 0) +
+        (report?.failed?.storage_deletes ?? 0) +
+        (report?.failed?.http_checks ?? 0);
+
+      const removedDb = report?.deleted?.db_urls_removed ?? data?.result?.imagesRemovedFromDB ?? 0;
+      const deletedStorage = report?.deleted?.storage_files_deleted ?? ((data?.result?.storageFilesDeleted ?? 0) + (data?.result?.orphanedFilesDeleted ?? 0));
+
       toast({
-        title: "✅ Nettoyage définitif terminé",
-        description: `${r?.brokenImagesFound ?? 0} images cassées • ${r?.imagesRemovedFromDB ?? 0} retirées de la DB • ${(r?.storageFilesDeleted ?? 0) + (r?.orphanedFilesDeleted ?? 0)} fichiers supprimés du storage • ${r?.productsUpdated ?? 0} produits mis à jour`,
+        title: failedCount > 0 ? "Nettoyage terminé (partiel)" : "✅ Nettoyage terminé",
+        description: `${removedDb} URLs retirées DB • ${deletedStorage} fichiers supprimés storage • ${failedCount} échecs`,
+        variant: failedCount > 0 ? "destructive" : "default",
       });
 
       fetchData();

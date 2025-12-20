@@ -12,9 +12,7 @@ import { SplashScreen } from "@/components/SplashScreen";
 import { useInactivityDetector } from "@/hooks/useInactivityDetector";
 import { useVisitorTracking } from "@/hooks/useVisitorTracking";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
-import { useNativeApp } from "@/hooks/useNativeApp";
-import { useIOSPushNotifications } from "@/hooks/useIOSPushNotifications";
-import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { NativeAppProvider } from "@/components/NativeAppProvider";
 
 const Verify = lazy(() => import("./pages/Verify"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
@@ -64,12 +62,6 @@ const App = () => {
   const [showSplash, setShowSplash] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  // Native iOS app features
-  const { isNative, isOnline } = useNativeApp();
-  
-  // iOS Push Notifications (auto-registers when user is authenticated)
-  useIOSPushNotifications();
-
   // Track visitor activity
   useVisitorTracking();
 
@@ -93,68 +85,68 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
-          {/* Offline indicator for iOS native app */}
-          <OfflineIndicator isOffline={isNative && !isOnline} />
-          <BrowserRouter>
-            <Suspense fallback={<PageLoadingFallback />}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/marketplace" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/auth/callback" element={<AuthCallback />} />
-                <Route path="/auth/welcome" element={<AuthWelcome />} />
-                <Route path="/auth/confirm-email" element={<ConfirmEmail />} />
-                <Route path="/welcome" element={<Welcome />} />
-                <Route path="/auth/reset-password" element={<ResetPassword />} />
-                <Route path="/verify" element={<Verify />} />
-                <Route 
-                  path="/seller-dashboard" 
-                  element={
-                    <ProtectedRoute requiredRole="seller">
-                      <SellerDashboard />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/buyer-dashboard" 
-                  element={
-                    <ProtectedRoute requiredRole="buyer">
-                      <BuyerDashboard />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/superadmin" 
-                  element={
-                    <ProtectedRoute requiredRole="superadmin">
-                      <SuperAdmin />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route path="/product/:id" element={<ProductDetail />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/favorites" element={<Favorites />} />
-                <Route path="/flash-sales" element={<FlashSales />} />
-                <Route path="/my-orders" element={<MyOrders />} />
-                <Route path="/search" element={<SearchResults />} />
-                <Route path="/boutique/:slug" element={<ShopPage />} />
-                <Route path="/category/:slug" element={<CategoryPage />} />
-                <Route path="/categories" element={<CategoriesPage />} />
-                <Route path="/messages" element={<MessagesPage />} />
-                <Route path="/legal" element={<LegalNotice />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/demo" element={<DemoVideo />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-            <MobileBottomNav />
-            <PushNotificationPrompt />
-          </BrowserRouter>
-        </TooltipProvider>
+        <NativeAppProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+            <BrowserRouter>
+              <Suspense fallback={<PageLoadingFallback />}>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/marketplace" element={<Index />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/auth/callback" element={<AuthCallback />} />
+                  <Route path="/auth/welcome" element={<AuthWelcome />} />
+                  <Route path="/auth/confirm-email" element={<ConfirmEmail />} />
+                  <Route path="/welcome" element={<Welcome />} />
+                  <Route path="/auth/reset-password" element={<ResetPassword />} />
+                  <Route path="/verify" element={<Verify />} />
+                  <Route 
+                    path="/seller-dashboard" 
+                    element={
+                      <ProtectedRoute requiredRole="seller">
+                        <SellerDashboard />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/buyer-dashboard" 
+                    element={
+                      <ProtectedRoute requiredRole="buyer">
+                        <BuyerDashboard />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/superadmin" 
+                    element={
+                      <ProtectedRoute requiredRole="superadmin">
+                        <SuperAdmin />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route path="/product/:id" element={<ProductDetail />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/favorites" element={<Favorites />} />
+                  <Route path="/flash-sales" element={<FlashSales />} />
+                  <Route path="/my-orders" element={<MyOrders />} />
+                  <Route path="/search" element={<SearchResults />} />
+                  <Route path="/boutique/:slug" element={<ShopPage />} />
+                  <Route path="/category/:slug" element={<CategoryPage />} />
+                  <Route path="/categories" element={<CategoriesPage />} />
+                  <Route path="/messages" element={<MessagesPage />} />
+                  <Route path="/legal" element={<LegalNotice />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/demo" element={<DemoVideo />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+              <MobileBottomNav />
+              <PushNotificationPrompt />
+            </BrowserRouter>
+          </TooltipProvider>
+        </NativeAppProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

@@ -1,9 +1,4 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Capacitor } from '@capacitor/core';
-import { App, URLOpenListenerEvent } from '@capacitor/app';
-import { StatusBar, Style } from '@capacitor/status-bar';
-import { SplashScreen } from '@capacitor/splash-screen';
-import { Network, ConnectionStatus } from '@capacitor/network';
 
 interface NativeAppState {
   isNative: boolean;
@@ -14,6 +9,7 @@ interface NativeAppState {
 /**
  * Hook for managing native iOS app features
  * Handles status bar, splash screen, network status, and deep links
+ * Safe for web builds - only loads Capacitor when on native platform
  */
 export const useNativeApp = () => {
   const [state, setState] = useState<NativeAppState>({
@@ -24,33 +20,41 @@ export const useNativeApp = () => {
 
   // Initialize native features
   const initializeNative = useCallback(async () => {
+    // Dynamic import to avoid build issues on web
+    const { Capacitor } = await import('@capacitor/core');
+    
     if (!Capacitor.isNativePlatform()) {
       return;
     }
 
     try {
+      const platform = Capacitor.getPlatform();
+      
       // Configure status bar for iOS
-      if (Capacitor.getPlatform() === 'ios') {
+      if (platform === 'ios') {
+        const { StatusBar, Style } = await import('@capacitor/status-bar');
         await StatusBar.setStyle({ style: Style.Dark });
         await StatusBar.setBackgroundColor({ color: '#ffffff' });
       }
 
       // Hide splash screen after app is ready
+      const { SplashScreen } = await import('@capacitor/splash-screen');
       await SplashScreen.hide({
         fadeOutDuration: 500
       });
 
       // Check initial network status
+      const { Network } = await import('@capacitor/network');
       const status = await Network.getStatus();
-      setState(prev => ({
-        ...prev,
+      
+      setState({
         isNative: true,
         isOnline: status.connected,
-        platform: Capacitor.getPlatform()
-      }));
+        platform
+      });
 
       console.log('[NativeApp] Initialized:', {
-        platform: Capacitor.getPlatform(),
+        platform,
         connected: status.connected
       });
     } catch (error) {
@@ -60,71 +64,71 @@ export const useNativeApp = () => {
 
   // Setup network listener
   useEffect(() => {
-    if (!Capacitor.isNativePlatform()) {
-      return;
-    }
+    let cleanup: (() => void) | undefined;
 
-    const networkHandler = Network.addListener(
-      'networkStatusChange',
-      (status: ConnectionStatus) => {
-        console.log('[NativeApp] Network status changed:', status);
-        setState(prev => ({
-          ...prev,
-          isOnline: status.connected
-        }));
+    const setupNetworkListener = async () => {
+      try {
+        const { Capacitor } = await import('@capacitor/core');
+        if (!Capacitor.isNativePlatform()) return;
+
+        const { Network } = await import('@capacitor/network');
+        const handler = await Network.addListener('networkStatusChange', (status) => {
+          console.log('[NativeApp] Network status changed:', status);
+          setState(prev => ({
+            ...prev,
+            isOnline: status.connected
+          }));
+        });
+
+        cleanup = () => handler.remove();
+      } catch (error) {
+        console.log('[NativeApp] Network listener not available');
       }
-    );
-
-    return () => {
-      networkHandler.then(handler => handler.remove());
     };
+
+    setupNetworkListener();
+    return () => cleanup?.();
   }, []);
 
-  // Setup deep link listener for iOS Universal Links
+  // Setup deep link and back button listeners
   useEffect(() => {
-    if (!Capacitor.isNativePlatform()) {
-      return;
-    }
+    let cleanupUrl: (() => void) | undefined;
+    let cleanupBack: (() => void) | undefined;
 
-    const urlHandler = App.addListener(
-      'appUrlOpen',
-      (event: URLOpenListenerEvent) => {
-        console.log('[NativeApp] Deep link received:', event.url);
-        
-        // Handle deep links - navigate to appropriate route
-        const url = new URL(event.url);
-        const path = url.pathname;
-        
-        if (path) {
-          // The WebView will handle navigation automatically
-          // since we're loading djassa.tech
-          window.location.href = event.url;
-        }
+    const setupAppListeners = async () => {
+      try {
+        const { Capacitor } = await import('@capacitor/core');
+        if (!Capacitor.isNativePlatform()) return;
+
+        const { App } = await import('@capacitor/app');
+
+        // Deep link handler
+        const urlHandler = await App.addListener('appUrlOpen', (event) => {
+          console.log('[NativeApp] Deep link received:', event.url);
+          if (event.url) {
+            window.location.href = event.url;
+          }
+        });
+        cleanupUrl = () => urlHandler.remove();
+
+        // Back button handler
+        const backHandler = await App.addListener('backButton', ({ canGoBack }) => {
+          if (canGoBack) {
+            window.history.back();
+          } else {
+            App.minimizeApp();
+          }
+        });
+        cleanupBack = () => backHandler.remove();
+      } catch (error) {
+        console.log('[NativeApp] App listeners not available');
       }
-    );
-
-    return () => {
-      urlHandler.then(handler => handler.remove());
     };
-  }, []);
 
-  // Setup back button handler for iOS (swipe gesture)
-  useEffect(() => {
-    if (!Capacitor.isNativePlatform()) {
-      return;
-    }
-
-    const backHandler = App.addListener('backButton', ({ canGoBack }) => {
-      if (canGoBack) {
-        window.history.back();
-      } else {
-        // Optionally minimize app or show exit confirmation
-        App.minimizeApp();
-      }
-    });
-
+    setupAppListeners();
     return () => {
-      backHandler.then(handler => handler.remove());
+      cleanupUrl?.();
+      cleanupBack?.();
     };
   }, []);
 
@@ -133,24 +137,34 @@ export const useNativeApp = () => {
     initializeNative();
   }, [initializeNative]);
 
-  // Show splash screen (for refresh scenarios)
+  // Show splash screen
   const showSplash = useCallback(async () => {
-    if (Capacitor.isNativePlatform()) {
+    try {
+      const { Capacitor } = await import('@capacitor/core');
+      if (!Capacitor.isNativePlatform()) return;
+
+      const { SplashScreen } = await import('@capacitor/splash-screen');
       await SplashScreen.show({
         showDuration: 2000,
         autoHide: true,
         fadeInDuration: 300,
         fadeOutDuration: 500
       });
+    } catch (error) {
+      console.log('[NativeApp] Splash not available');
     }
   }, []);
 
   // Hide splash screen
   const hideSplash = useCallback(async () => {
-    if (Capacitor.isNativePlatform()) {
-      await SplashScreen.hide({
-        fadeOutDuration: 500
-      });
+    try {
+      const { Capacitor } = await import('@capacitor/core');
+      if (!Capacitor.isNativePlatform()) return;
+
+      const { SplashScreen } = await import('@capacitor/splash-screen');
+      await SplashScreen.hide({ fadeOutDuration: 500 });
+    } catch (error) {
+      console.log('[NativeApp] Splash not available');
     }
   }, []);
 

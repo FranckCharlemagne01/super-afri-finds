@@ -111,11 +111,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error };
   };
 
-  const signUp = async (email: string, password: string, fullName: string, phone: string, country?: string, role?: 'buyer' | 'seller', shopName?: string) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    fullName: string,
+    phone: string,
+    country?: string,
+    role?: 'buyer' | 'seller',
+    shopName?: string
+  ) => {
     const redirectUrl = `https://djassa.siteviral.site/auth/callback`;
-    
-    console.log('🔵 [signUp] Début inscription pour:', email);
-    
+
+    // Logs temporaires (à retirer après validation)
+    console.log('🔵 [signUp] start', { email });
+
+    const safeResendConfirmation = async () => {
+      try {
+        const { error } = await supabase.auth.resend({
+          type: 'signup',
+          email,
+          options: { emailRedirectTo: redirectUrl },
+        });
+        console.log('📧 [signUp] resend result', {
+          hasError: !!error,
+          message: error?.message,
+        });
+        return { error };
+      } catch (e) {
+        console.log('⚠️ [signUp] resend exception', e);
+        return { error: e } as any;
+      }
+    };
+
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -124,86 +151,128 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           emailRedirectTo: redirectUrl,
           data: {
             full_name: fullName,
-            phone: phone,
+            phone,
             country: country || 'CI',
             user_role: role || 'buyer',
             shop_name: shopName || '',
-          }
-        }
+          },
+        },
       });
-      
-      console.log('🔵 [signUp] Réponse Supabase:', { 
-        hasUser: !!data?.user, 
+
+      const identitiesLen = data?.user?.identities?.length ?? 0;
+      const emailConfirmedAt = (data?.user as any)?.email_confirmed_at ?? null;
+      const createdAt = (data?.user as any)?.created_at ?? null;
+
+      console.log('🔵 [signUp] supabase response', {
+        hasUser: !!data?.user,
         hasSession: !!data?.session,
         hasError: !!error,
-        identitiesCount: data?.user?.identities?.length 
+        errorMessage: error?.message,
+        identitiesLen,
+        emailConfirmedAt,
+        createdAt,
       });
-      
-      // CAS 1: Erreur explicite de Supabase
+
+      // CAS A: Supabase renvoie une erreur
+      // - Certains cas "already registered" peuvent arriver ici → on fait un resend pour déterminer confirmé vs non-confirmé.
       if (error) {
-        console.error('❌ [signUp] Erreur Supabase:', error.message);
-        return { error, data: null };
-      }
-      
-      // CAS 2: User retourné - analyser les identities
-      // Supabase renvoie user avec identities = [] quand l'email existe déjà
-      const identities = data?.user?.identities;
-      const hasIdentities = identities && identities.length > 0;
-      
-      if (data?.user && !hasIdentities) {
-        // Email existe déjà - vérifier si confirmé ou non
-        console.log('⚠️ [signUp] Email existe (identities vides)');
-        
-        // Vérifier email_confirmed_at pour distinguer confirmé vs non-confirmé
-        if (data.user.email_confirmed_at) {
-          // Email confirmé = vrai doublon
-          console.log('❌ [signUp] Email déjà confirmé - doublon');
-          return { 
-            error: { 
-              message: 'EMAIL_ALREADY_CONFIRMED',
-              __isConfirmedEmail: true
-            } as any,
-            data: null
-          };
-        } else {
-          // Email non confirmé = renvoyer confirmation automatiquement
-          console.log('📧 [signUp] Email non confirmé - renvoi auto');
-          
-          // Renvoyer email de confirmation automatiquement
-          try {
-            await supabase.auth.resend({
-              type: 'signup',
-              email: email,
-              options: { emailRedirectTo: redirectUrl }
-            });
-            console.log('✅ [signUp] Email de confirmation renvoyé');
-          } catch (resendErr) {
-            console.log('⚠️ [signUp] Erreur renvoi (ignorée):', resendErr);
+        const msg = error.message || '';
+        const looksLikeAlreadyRegistered =
+          msg.toLowerCase().includes('already registered') ||
+          msg.toLowerCase().includes('already been registered') ||
+          msg.toLowerCase().includes('user already registered') ||
+          msg.toLowerCase().includes('email address has already been registered') ||
+          msg.toLowerCase().includes('email already exists');
+
+        if (looksLikeAlreadyRegistered) {
+          const resend = await safeResendConfirmation();
+          const resendMsg = (resend.error as any)?.message || '';
+
+          // Si Supabase dit que c'est déjà confirmé → vrai doublon
+          if (
+            resendMsg.toLowerCase().includes('already confirmed') ||
+            resendMsg.toLowerCase().includes('email link is invalid')
+          ) {
+            return {
+              error: {
+                message: 'EMAIL_ALREADY_CONFIRMED',
+                __isConfirmedEmail: true,
+              } as any,
+              data: null,
+            };
           }
-          
-          return { 
-            error: { 
+
+          // Sinon → email existant non confirmé (on a tenté un resend)
+          return {
+            error: {
               message: 'EMAIL_NOT_CONFIRMED',
-              __isUnconfirmedEmail: true
+              __isUnconfirmedEmail: true,
             } as any,
-            data: { user: data.user, session: null, needsConfirmation: true }
+            data: { user: data?.user ?? null, session: null, needsConfirmation: true },
           };
         }
+
+        return { error, data: null };
       }
-      
-      // CAS 3: Nouvel utilisateur créé avec succès (identities > 0)
-      console.log('✅ [signUp] Nouveau compte créé:', data.user?.id);
+
+      // CAS B: Pas d'erreur, mais Supabase renvoie un user
+      if (data?.user) {
+        // Heuristique robuste:
+        // - identities.length === 0 arrive souvent quand l'email existe déjà mais n'est pas confirmé.
+        // - MAIS certains setups (SMTP custom) semblent parfois renvoyer identities=[] même pour un nouvel email.
+        // → On distingue via created_at (nouvel user créé récemment).
+        if (identitiesLen === 0) {
+          const createdMs = createdAt ? new Date(createdAt).getTime() : NaN;
+          const isFreshUser = Number.isFinite(createdMs) && Date.now() - createdMs < 2 * 60 * 1000; // 2 min
+
+          console.log('🟣 [signUp] identities empty analysis', {
+            isFreshUser,
+            ageMs: Number.isFinite(createdMs) ? Date.now() - createdMs : null,
+          });
+
+          if (isFreshUser) {
+            // CAS 1 (email nouveau) → inscription normale
+            return { error: null, data };
+          }
+
+          // CAS 2 (email existant non confirmé) → ne pas bloquer, renvoyer la confirmation
+          await safeResendConfirmation();
+          return {
+            error: {
+              message: 'EMAIL_NOT_CONFIRMED',
+              __isUnconfirmedEmail: true,
+            } as any,
+            data: { user: data.user, session: null, needsConfirmation: true },
+          };
+        }
+
+        // identities > 0
+        // Si email_confirmed_at est présent, c'est un doublon confirmé.
+        if (emailConfirmedAt) {
+          return {
+            error: {
+              message: 'EMAIL_ALREADY_CONFIRMED',
+              __isConfirmedEmail: true,
+            } as any,
+            data: null,
+          };
+        }
+
+        // Sinon, user à confirmer / nouvel user
+        return { error: null, data };
+      }
+
+      // CAS C: Pas de user retourné (rare) → considérer comme succès silencieux
       return { error: null, data };
-      
     } catch (exception) {
-      console.error('❌ [signUp] Exception:', exception);
-      return { 
-        error: { 
+      console.error('❌ [signUp] exception', exception);
+      return {
+        error: {
           message: exception instanceof Error ? exception.message : 'Erreur inattendue',
           name: 'UnexpectedError',
-          status: 500
+          status: 500,
         } as any,
-        data: null
+        data: null,
       };
     }
   };

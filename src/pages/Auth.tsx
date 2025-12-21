@@ -467,24 +467,31 @@ const Auth = () => {
         shopNameToSend
       );
       
-      if (signUpError) {
-        // CAS 2: Email existe mais NON confirmé
-        // → Renvoi auto déjà fait, rediriger vers page confirmation
-        if (signUpError.message === 'EMAIL_NOT_CONFIRMED' || signUpError.__isUnconfirmedEmail) {
-          toast({
-            title: "📧 Email de confirmation renvoyé",
-            description: "Un compte existe avec cet email. Vérifiez votre boîte mail.",
-            duration: 5000,
-          });
-          navigate(`/auth/confirm-email?email=${encodeURIComponent(email)}&existing=true`, { replace: true });
-          return;
-        }
-        
-        // CAS 3: Email existe ET confirmé = vrai doublon
-        if (signUpError.message === 'EMAIL_ALREADY_CONFIRMED' || signUpError.__isConfirmedEmail) {
-          setFormError('Cet email est déjà utilisé. Veuillez vous connecter.');
-          return;
-        }
+       if (signUpError) {
+         // Logs temporaires (à retirer après validation)
+         console.log('🟣 [handleSignUp] signUpError', {
+           message: signUpError.message,
+           isUnconfirmed: !!(signUpError.__isUnconfirmedEmail),
+           isConfirmed: !!(signUpError.__isConfirmedEmail),
+         });
+
+         // CAS 2: Email existe mais NON confirmé
+         // → Renvoi auto déjà fait, rediriger vers page confirmation
+         if (signUpError.message === 'EMAIL_NOT_CONFIRMED' || signUpError.__isUnconfirmedEmail) {
+           toast({
+             title: "📧 Lien de confirmation renvoyé",
+             description: "Un compte existe déjà avec cet email. Nous venons de vous renvoyer le lien de confirmation.",
+             duration: 6000,
+           });
+           navigate(`/auth/confirm-email?email=${encodeURIComponent(email)}&existing=true`, { replace: true });
+           return;
+         }
+
+         // CAS 3: Email existe ET confirmé = vrai doublon
+         if (signUpError.message === 'EMAIL_ALREADY_CONFIRMED' || signUpError.__isConfirmedEmail) {
+           setFormError('Cet email est déjà utilisé. Veuillez vous connecter.');
+           return;
+         }
         
         // Autres patterns d'erreur email existant
         const emailExistsPatterns = [

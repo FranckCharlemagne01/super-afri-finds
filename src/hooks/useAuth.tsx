@@ -146,12 +146,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           status: error.status,
           name: error.name,
         });
-      } else {
-        console.log('✅ [useAuth.signUp] Utilisateur créé:', data.user?.id);
-        console.log('✅ [useAuth.signUp] Session:', data.session ? 'Présente' : 'Null (confirmation email requise)');
+        return { error, data: null };
       }
       
-      return { error, data };
+      // IMPORTANT: Check for existing unconfirmed user
+      // Supabase returns a user with empty identities array when email exists but isn't confirmed
+      const userIdentities = data?.user?.identities;
+      const hasNoIdentities = !userIdentities || userIdentities.length === 0;
+      
+      if (hasNoIdentities && data?.user) {
+        console.log('⚠️ [useAuth.signUp] Email existe déjà - identities vides');
+        
+        // Check if email is confirmed or not by looking at email_confirmed_at
+        const emailConfirmedAt = data.user.email_confirmed_at;
+        
+        if (!emailConfirmedAt) {
+          // Email exists but NOT confirmed - offer to resend confirmation
+          console.log('📧 [useAuth.signUp] Email non confirmé - proposer renvoi');
+          return { 
+            error: { 
+              message: 'EMAIL_NOT_CONFIRMED',
+              name: 'EmailNotConfirmed',
+              status: 409,
+              __isUnconfirmedEmail: true
+            } as any,
+            data: { user: data.user, session: null, unconfirmedEmail: true }
+          };
+        } else {
+          // Email exists AND is confirmed - true duplicate
+          console.log('❌ [useAuth.signUp] Email déjà confirmé - doublon');
+          return { 
+            error: { 
+              message: 'EMAIL_ALREADY_REGISTERED',
+              name: 'EmailAlreadyRegistered',
+              status: 409
+            } as any,
+            data: null
+          };
+        }
+      }
+      
+      console.log('✅ [useAuth.signUp] Utilisateur créé:', data.user?.id);
+      console.log('✅ [useAuth.signUp] Session:', data.session ? 'Présente' : 'Null (confirmation email requise)');
+      
+      return { error: null, data };
     } catch (exception) {
       console.error('❌ [useAuth.signUp] Exception inattendue:', exception);
       return { 

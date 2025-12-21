@@ -11,6 +11,7 @@ const ConfirmEmail = () => {
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const emailFromParams = searchParams.get('email') || '';
+  const shouldResend = searchParams.get('resend') === 'true';
   
   const [email] = useState(emailFromParams);
   const [isResending, setIsResending] = useState(false);
@@ -18,6 +19,7 @@ const ConfirmEmail = () => {
   const [resendSuccess, setResendSuccess] = useState(false);
   const [resendError, setResendError] = useState('');
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
+  const [isExistingAccount, setIsExistingAccount] = useState(shouldResend);
 
   // Cooldown timer
   useEffect(() => {
@@ -26,6 +28,17 @@ const ConfirmEmail = () => {
       return () => clearTimeout(timer);
     }
   }, [cooldownSeconds]);
+
+  // Auto-resend if resend=true (existing unconfirmed account)
+  useEffect(() => {
+    if (shouldResend && email && !resendSuccess && cooldownSeconds === 0) {
+      // Auto-trigger resend after a short delay for UX
+      const timer = setTimeout(() => {
+        handleResendConfirmation();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [shouldResend, email]);
 
   // Poll for email confirmation status
   useEffect(() => {
@@ -84,22 +97,28 @@ const ConfirmEmail = () => {
       });
 
       if (error) {
+        console.log('Resend error:', error.message);
+        
         if (error.message.includes('rate limit') || error.message.includes('too many')) {
           setResendError('Trop de tentatives. Réessayez dans quelques minutes.');
           setCooldownSeconds(120);
-        } else if (error.message.includes('already confirmed')) {
+        } else if (error.message.includes('already confirmed') || error.message.includes('Email link is invalid')) {
           toast({
             title: "✅ Email déjà confirmé",
             description: "Vous pouvez vous connecter.",
             duration: 4000,
           });
           navigate('/auth', { replace: true });
+        } else if (error.message.includes('User not found')) {
+          // User doesn't exist at all - redirect to signup
+          setResendError("Aucun compte trouvé avec cet email. Créez un compte.");
         } else {
           setResendError('Une erreur est survenue. Réessayez.');
         }
       } else {
         setResendSuccess(true);
         setCooldownSeconds(60);
+        setIsExistingAccount(false); // Clear the existing account flag
         toast({
           title: "📧 Email envoyé !",
           description: "Vérifiez votre boîte de réception.",
@@ -218,16 +237,29 @@ const ConfirmEmail = () => {
 
           {/* Content */}
           <div className="p-6 space-y-6">
-            {/* Message */}
+            {/* Message - different for existing account vs new signup */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
               className="text-center space-y-3"
             >
-              <p className="text-muted-foreground leading-relaxed">
-                Un email de confirmation vient de vous être envoyé à :
-              </p>
+              {isExistingAccount ? (
+                <>
+                  <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3 mb-3">
+                    <p className="text-amber-800 dark:text-amber-200 text-sm font-medium">
+                      Un compte existe déjà avec cet email mais n'a pas encore été confirmé.
+                    </p>
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Nous vous renvoyons un email de confirmation à :
+                  </p>
+                </>
+              ) : (
+                <p className="text-muted-foreground leading-relaxed">
+                  Un email de confirmation vient de vous être envoyé à :
+                </p>
+              )}
               <div className="bg-muted/50 rounded-xl px-4 py-3">
                 <p className="font-semibold text-foreground break-all">{email}</p>
               </div>

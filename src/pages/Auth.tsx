@@ -435,6 +435,7 @@ const Auth = () => {
   const handleSignUp = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
+    setShowUnconfirmedAlert(false);
 
     const PASSWORD_MIN_LENGTH = 12;
     const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{12,}$/;
@@ -467,11 +468,25 @@ const Auth = () => {
       );
       
       if (signUpError) {
+        // Handle EMAIL_NOT_CONFIRMED - user exists but hasn't confirmed email
+        if (signUpError.message === 'EMAIL_NOT_CONFIRMED' || signUpError.__isUnconfirmedEmail) {
+          // Redirect to confirmation page with option to resend
+          navigate(`/auth/confirm-email?email=${encodeURIComponent(email)}&resend=true`, { replace: true });
+          return;
+        }
+        
+        // Handle EMAIL_ALREADY_REGISTERED - user exists and email is confirmed
+        if (signUpError.message === 'EMAIL_ALREADY_REGISTERED') {
+          setFormError('Cet email est déjà utilisé. Connectez-vous ou utilisez "Mot de passe oublié".');
+          return;
+        }
+        
+        // Standard error patterns
         const emailExistsPatterns = [
           'already registered', 'already been registered', 'user already registered',
           'email address has already been registered', 'user with this email',
           'email already exists', 'duplicate key', 'unique constraint',
-          'already exists', 'email_exists', 'user_already_exists', 'rate limit exceeded'
+          'already exists', 'email_exists', 'user_already_exists'
         ];
         
         const isEmailExistsError = emailExistsPatterns.some(pattern => 
@@ -479,8 +494,17 @@ const Auth = () => {
         );
         
         if (isEmailExistsError) {
-          setFormError('Cet email possède déjà un compte.');
-        } else if (signUpError.message.includes('Invalid email')) {
+          // Could be unconfirmed - redirect to confirmation page
+          navigate(`/auth/confirm-email?email=${encodeURIComponent(email)}&resend=true`, { replace: true });
+          return;
+        }
+        
+        if (signUpError.message.includes('rate limit exceeded') || signUpError.message.includes('Too many')) {
+          setFormError('Trop de tentatives. Réessayez dans quelques minutes.');
+          return;
+        }
+        
+        if (signUpError.message.includes('Invalid email')) {
           setFormError('Adresse email invalide.');
         } else if (signUpError.message.includes('Password')) {
           setFormError('Mot de passe non conforme.');
@@ -490,32 +514,23 @@ const Auth = () => {
         return;
       }
 
-      const userIdentities = signUpData?.user?.identities;
-      const hasNoIdentities = !userIdentities || userIdentities.length === 0;
-      
-      if (hasNoIdentities && signUpData?.user) {
-        setFormError('Cet email possède déjà un compte.');
-        return;
-      }
-
-      if (!signUpData?.user) {
+      // Success path - redirect to confirmation page
+      if (signUpData?.user) {
+        const userEmail = email;
+        
+        // Reset form first
+        setEmail('');
+        setSignupPassword('');
+        setFirstName('');
+        setLastName('');
+        setPhone('');
+        setShopName('');
+        
+        // Navigate to confirmation page
+        navigate(`/auth/confirm-email?email=${encodeURIComponent(userEmail)}`, { replace: true });
+      } else {
         setFormError("Erreur lors de l'inscription. Réessayez.");
-        return;
       }
-
-      // Redirect to confirmation page
-      const userEmail = email;
-      
-      // Reset form first
-      setEmail('');
-      setSignupPassword('');
-      setFirstName('');
-      setLastName('');
-      setPhone('');
-      setShopName('');
-      
-      // Navigate to confirmation page
-      navigate(`/auth/confirm-email?email=${encodeURIComponent(userEmail)}`, { replace: true });
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erreur inattendue";
@@ -523,7 +538,7 @@ const Auth = () => {
     } finally {
       setLoading(false);
     }
-  }, [email, signupPassword, firstName, lastName, phone, country, userRole, shopName, signUp, toast]);
+  }, [email, signupPassword, firstName, lastName, phone, country, userRole, shopName, signUp, navigate]);
 
   const handleVerifyOtp = useCallback(async (e?: React.FormEvent) => {
     if (e) e.preventDefault();

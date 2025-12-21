@@ -35,11 +35,31 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Supprimer les anciens OTP pour ce numéro
+    // SECURITY: Rate limiting - max 5 OTP requests per hour per phone number
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const { data: recentOtps, error: countError } = await supabaseAdmin
+      .from('phone_otp')
+      .select('id, created_at')
+      .eq('phone', cleanPhone)
+      .gte('created_at', oneHourAgo);
+
+    if (countError) {
+      console.error('Erreur vérification rate limit:', countError);
+    }
+
+    if (recentOtps && recentOtps.length >= 5) {
+      return new Response(
+        JSON.stringify({ error: 'Trop de tentatives. Réessayez dans 1 heure.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Supprimer les anciens OTP pour ce numéro (keep for rate limiting check, only delete expired ones)
     await supabaseAdmin
       .from('phone_otp')
       .delete()
-      .eq('phone', cleanPhone);
+      .eq('phone', cleanPhone)
+      .lt('expires_at', new Date().toISOString());
 
     // Stocker le nouvel OTP
     const { error: insertError } = await supabaseAdmin

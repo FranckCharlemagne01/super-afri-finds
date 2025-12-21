@@ -112,13 +112,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, fullName: string, phone: string, country?: string, role?: 'buyer' | 'seller', shopName?: string) => {
-    // Utiliser le nouveau domaine pour le redirect
     const redirectUrl = `https://djassa.siteviral.site/auth/callback`;
     
-    console.log('🔵 [useAuth.signUp] Début du processus d\'inscription');
-    console.log('🔵 [useAuth.signUp] Email:', email);
-    console.log('🔵 [useAuth.signUp] Redirect URL:', redirectUrl);
-    console.log('🔵 [useAuth.signUp] Rôle utilisateur:', role);
+    console.log('🔵 [signUp] Début inscription pour:', email);
     
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -136,65 +132,74 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       });
       
-      console.log('🟢 [useAuth.signUp] Réponse Supabase:');
-      console.log('🟢 [useAuth.signUp] - Data:', data);
-      console.log('🟢 [useAuth.signUp] - Error:', error);
+      console.log('🔵 [signUp] Réponse Supabase:', { 
+        hasUser: !!data?.user, 
+        hasSession: !!data?.session,
+        hasError: !!error,
+        identitiesCount: data?.user?.identities?.length 
+      });
       
+      // CAS 1: Erreur explicite de Supabase
       if (error) {
-        console.error('❌ [useAuth.signUp] Erreur Supabase:', {
-          message: error.message,
-          status: error.status,
-          name: error.name,
-        });
+        console.error('❌ [signUp] Erreur Supabase:', error.message);
         return { error, data: null };
       }
       
-      // IMPORTANT: Check for existing unconfirmed user
-      // Supabase returns a user with empty identities array when email exists but isn't confirmed
-      const userIdentities = data?.user?.identities;
-      const hasNoIdentities = !userIdentities || userIdentities.length === 0;
+      // CAS 2: User retourné - analyser les identities
+      // Supabase renvoie user avec identities = [] quand l'email existe déjà
+      const identities = data?.user?.identities;
+      const hasIdentities = identities && identities.length > 0;
       
-      if (hasNoIdentities && data?.user) {
-        console.log('⚠️ [useAuth.signUp] Email existe déjà - identities vides');
+      if (data?.user && !hasIdentities) {
+        // Email existe déjà - vérifier si confirmé ou non
+        console.log('⚠️ [signUp] Email existe (identities vides)');
         
-        // Check if email is confirmed or not by looking at email_confirmed_at
-        const emailConfirmedAt = data.user.email_confirmed_at;
-        
-        if (!emailConfirmedAt) {
-          // Email exists but NOT confirmed - offer to resend confirmation
-          console.log('📧 [useAuth.signUp] Email non confirmé - proposer renvoi');
+        // Vérifier email_confirmed_at pour distinguer confirmé vs non-confirmé
+        if (data.user.email_confirmed_at) {
+          // Email confirmé = vrai doublon
+          console.log('❌ [signUp] Email déjà confirmé - doublon');
+          return { 
+            error: { 
+              message: 'EMAIL_ALREADY_CONFIRMED',
+              __isConfirmedEmail: true
+            } as any,
+            data: null
+          };
+        } else {
+          // Email non confirmé = renvoyer confirmation automatiquement
+          console.log('📧 [signUp] Email non confirmé - renvoi auto');
+          
+          // Renvoyer email de confirmation automatiquement
+          try {
+            await supabase.auth.resend({
+              type: 'signup',
+              email: email,
+              options: { emailRedirectTo: redirectUrl }
+            });
+            console.log('✅ [signUp] Email de confirmation renvoyé');
+          } catch (resendErr) {
+            console.log('⚠️ [signUp] Erreur renvoi (ignorée):', resendErr);
+          }
+          
           return { 
             error: { 
               message: 'EMAIL_NOT_CONFIRMED',
-              name: 'EmailNotConfirmed',
-              status: 409,
               __isUnconfirmedEmail: true
             } as any,
-            data: { user: data.user, session: null, unconfirmedEmail: true }
-          };
-        } else {
-          // Email exists AND is confirmed - true duplicate
-          console.log('❌ [useAuth.signUp] Email déjà confirmé - doublon');
-          return { 
-            error: { 
-              message: 'EMAIL_ALREADY_REGISTERED',
-              name: 'EmailAlreadyRegistered',
-              status: 409
-            } as any,
-            data: null
+            data: { user: data.user, session: null, needsConfirmation: true }
           };
         }
       }
       
-      console.log('✅ [useAuth.signUp] Utilisateur créé:', data.user?.id);
-      console.log('✅ [useAuth.signUp] Session:', data.session ? 'Présente' : 'Null (confirmation email requise)');
-      
+      // CAS 3: Nouvel utilisateur créé avec succès (identities > 0)
+      console.log('✅ [signUp] Nouveau compte créé:', data.user?.id);
       return { error: null, data };
+      
     } catch (exception) {
-      console.error('❌ [useAuth.signUp] Exception inattendue:', exception);
+      console.error('❌ [signUp] Exception:', exception);
       return { 
         error: { 
-          message: exception instanceof Error ? exception.message : 'Une erreur inattendue est survenue',
+          message: exception instanceof Error ? exception.message : 'Erreur inattendue',
           name: 'UnexpectedError',
           status: 500
         } as any,

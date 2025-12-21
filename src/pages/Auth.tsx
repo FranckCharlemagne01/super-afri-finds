@@ -468,25 +468,29 @@ const Auth = () => {
       );
       
       if (signUpError) {
-        // Handle EMAIL_NOT_CONFIRMED - user exists but hasn't confirmed email
+        // CAS 2: Email existe mais NON confirmé
+        // → Renvoi auto déjà fait, rediriger vers page confirmation
         if (signUpError.message === 'EMAIL_NOT_CONFIRMED' || signUpError.__isUnconfirmedEmail) {
-          // Redirect to confirmation page with option to resend
-          navigate(`/auth/confirm-email?email=${encodeURIComponent(email)}&resend=true`, { replace: true });
+          toast({
+            title: "📧 Email de confirmation renvoyé",
+            description: "Un compte existe avec cet email. Vérifiez votre boîte mail.",
+            duration: 5000,
+          });
+          navigate(`/auth/confirm-email?email=${encodeURIComponent(email)}&existing=true`, { replace: true });
           return;
         }
         
-        // Handle EMAIL_ALREADY_REGISTERED - user exists and email is confirmed
-        if (signUpError.message === 'EMAIL_ALREADY_REGISTERED') {
-          setFormError('Cet email est déjà utilisé. Connectez-vous ou utilisez "Mot de passe oublié".');
+        // CAS 3: Email existe ET confirmé = vrai doublon
+        if (signUpError.message === 'EMAIL_ALREADY_CONFIRMED' || signUpError.__isConfirmedEmail) {
+          setFormError('Cet email est déjà utilisé. Veuillez vous connecter.');
           return;
         }
         
-        // Standard error patterns
+        // Autres patterns d'erreur email existant
         const emailExistsPatterns = [
           'already registered', 'already been registered', 'user already registered',
           'email address has already been registered', 'user with this email',
-          'email already exists', 'duplicate key', 'unique constraint',
-          'already exists', 'email_exists', 'user_already_exists'
+          'email already exists', 'duplicate key', 'unique constraint'
         ];
         
         const isEmailExistsError = emailExistsPatterns.some(pattern => 
@@ -494,8 +498,7 @@ const Auth = () => {
         );
         
         if (isEmailExistsError) {
-          // Could be unconfirmed - redirect to confirmation page
-          navigate(`/auth/confirm-email?email=${encodeURIComponent(email)}&resend=true`, { replace: true });
+          setFormError('Cet email est déjà utilisé. Veuillez vous connecter.');
           return;
         }
         
@@ -514,11 +517,11 @@ const Auth = () => {
         return;
       }
 
-      // Success path - redirect to confirmation page
+      // CAS 1: Nouvel utilisateur créé → rediriger vers confirmation
       if (signUpData?.user) {
         const userEmail = email;
         
-        // Reset form first
+        // Reset form
         setEmail('');
         setSignupPassword('');
         setFirstName('');
@@ -526,7 +529,12 @@ const Auth = () => {
         setPhone('');
         setShopName('');
         
-        // Navigate to confirmation page
+        toast({
+          title: "✅ Compte créé !",
+          description: "Vérifiez votre boîte mail pour confirmer votre email.",
+          duration: 5000,
+        });
+        
         navigate(`/auth/confirm-email?email=${encodeURIComponent(userEmail)}`, { replace: true });
       } else {
         setFormError("Erreur lors de l'inscription. Réessayez.");
@@ -538,7 +546,7 @@ const Auth = () => {
     } finally {
       setLoading(false);
     }
-  }, [email, signupPassword, firstName, lastName, phone, country, userRole, shopName, signUp, navigate]);
+  }, [email, signupPassword, firstName, lastName, phone, country, userRole, shopName, signUp, navigate, toast]);
 
   const handleVerifyOtp = useCallback(async (e?: React.FormEvent) => {
     if (e) e.preventDefault();

@@ -11,15 +11,15 @@ const ConfirmEmail = () => {
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const emailFromParams = searchParams.get('email') || '';
-  const shouldResend = searchParams.get('resend') === 'true';
+  const isExistingUnconfirmed = searchParams.get('existing') === 'true' || searchParams.get('resend') === 'true';
   
   const [email] = useState(emailFromParams);
   const [isResending, setIsResending] = useState(false);
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
-  const [resendSuccess, setResendSuccess] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(isExistingUnconfirmed); // Show success immediately if existing account
   const [resendError, setResendError] = useState('');
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
-  const [isExistingAccount, setIsExistingAccount] = useState(shouldResend);
+  const [isExistingAccount, setIsExistingAccount] = useState(isExistingUnconfirmed);
 
   // Cooldown timer
   useEffect(() => {
@@ -29,16 +29,12 @@ const ConfirmEmail = () => {
     }
   }, [cooldownSeconds]);
 
-  // Auto-resend if resend=true (existing unconfirmed account)
+  // Set initial cooldown for existing accounts (resend already happened)
   useEffect(() => {
-    if (shouldResend && email && !resendSuccess && cooldownSeconds === 0) {
-      // Auto-trigger resend after a short delay for UX
-      const timer = setTimeout(() => {
-        handleResendConfirmation();
-      }, 1000);
-      return () => clearTimeout(timer);
+    if (isExistingUnconfirmed && cooldownSeconds === 0 && resendSuccess) {
+      setCooldownSeconds(60); // Start cooldown since email was already resent
     }
-  }, [shouldResend, email]);
+  }, [isExistingUnconfirmed]);
 
   // Poll for email confirmation status
   useEffect(() => {

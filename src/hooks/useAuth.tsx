@@ -122,26 +122,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   ) => {
     const redirectUrl = `https://djassa.siteviral.site/auth/callback`;
 
-    // Logs temporaires (à retirer après validation)
-    console.log('🔵 [signUp] start', { email });
-
-    const safeResendConfirmation = async () => {
-      try {
-        const { error } = await supabase.auth.resend({
-          type: 'signup',
-          email,
-          options: { emailRedirectTo: redirectUrl },
-        });
-        console.log('📧 [signUp] resend result', {
-          hasError: !!error,
-          message: error?.message,
-        });
-        return { error };
-      } catch (e) {
-        console.log('⚠️ [signUp] resend exception', e);
-        return { error: e } as any;
-      }
-    };
+    // === LOGS TEMPORAIRES ===
+    console.log('[signup] email:', email);
 
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -159,113 +141,122 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
       });
 
-      const identitiesLen = data?.user?.identities?.length ?? 0;
-      const emailConfirmedAt = (data?.user as any)?.email_confirmed_at ?? null;
-      const createdAt = (data?.user as any)?.created_at ?? null;
+      const userId = data?.user?.id ?? null;
+      const identities = data?.user?.identities ?? [];
+      const emailConfirmedAt = data?.user?.email_confirmed_at ?? null;
+      const createdAt = data?.user?.created_at ?? null;
 
-      console.log('🔵 [signUp] supabase response', {
-        hasUser: !!data?.user,
-        hasSession: !!data?.session,
-        hasError: !!error,
-        errorMessage: error?.message,
-        identitiesLen,
-        emailConfirmedAt,
-        createdAt,
-      });
+      // === LOGS TEMPORAIRES ===
+      console.log('[signup] user.id:', userId);
+      console.log('[signup] identities:', identities);
+      console.log('[signup] email_confirmed_at:', emailConfirmedAt);
+      console.log('[signup] created_at:', createdAt);
 
-      // CAS A: Supabase renvoie une erreur
-      // - Certains cas "already registered" peuvent arriver ici → on fait un resend pour déterminer confirmé vs non-confirmé.
+      // =========================================================
+      // LOGIQUE PRINCIPALE - 3 CAS DISTINCTS
+      // =========================================================
+
+      // CAS ERREUR EXPLICITE DE SUPABASE
       if (error) {
-        const msg = error.message || '';
-        const looksLikeAlreadyRegistered =
-          msg.toLowerCase().includes('already registered') ||
-          msg.toLowerCase().includes('already been registered') ||
-          msg.toLowerCase().includes('user already registered') ||
-          msg.toLowerCase().includes('email address has already been registered') ||
-          msg.toLowerCase().includes('email already exists');
-
-        if (looksLikeAlreadyRegistered) {
-          const resend = await safeResendConfirmation();
-          const resendMsg = (resend.error as any)?.message || '';
-
-          // Si Supabase dit que c'est déjà confirmé → vrai doublon
-          if (
-            resendMsg.toLowerCase().includes('already confirmed') ||
-            resendMsg.toLowerCase().includes('email link is invalid')
-          ) {
+        const msg = (error.message || '').toLowerCase();
+        
+        // Si Supabase dit explicitement "already registered" → on tente un resend
+        if (msg.includes('already registered') || msg.includes('already been registered')) {
+          console.log('[signup] final_decision: ERROR_ALREADY_REGISTERED → trying resend');
+          
+          const { error: resendError } = await supabase.auth.resend({
+            type: 'signup',
+            email,
+            options: { emailRedirectTo: redirectUrl },
+          });
+          
+          const resendMsg = (resendError?.message || '').toLowerCase();
+          console.log('[signup] resend result:', resendMsg || 'success');
+          
+          // Si le resend échoue car déjà confirmé → CAS 3 (email confirmé)
+          if (resendMsg.includes('already confirmed') || resendMsg.includes('invalid')) {
+            console.log('[signup] final_decision: EMAIL_ALREADY_CONFIRMED');
             return {
-              error: {
-                message: 'EMAIL_ALREADY_CONFIRMED',
-                __isConfirmedEmail: true,
-              } as any,
+              error: { message: 'EMAIL_ALREADY_CONFIRMED', __isConfirmedEmail: true } as any,
               data: null,
             };
           }
-
-          // Sinon → email existant non confirmé (on a tenté un resend)
+          
+          // Sinon → CAS 2 (email non confirmé, resend effectué)
+          console.log('[signup] final_decision: EMAIL_NOT_CONFIRMED (resend done)');
           return {
-            error: {
-              message: 'EMAIL_NOT_CONFIRMED',
-              __isUnconfirmedEmail: true,
-            } as any,
-            data: { user: data?.user ?? null, session: null, needsConfirmation: true },
+            error: { message: 'EMAIL_NOT_CONFIRMED', __isUnconfirmedEmail: true } as any,
+            data: { user: null, session: null, needsConfirmation: true },
           };
         }
-
+        
+        // Autre erreur → on la retourne telle quelle
+        console.log('[signup] final_decision: OTHER_ERROR:', error.message);
         return { error, data: null };
       }
 
-      // CAS B: Pas d'erreur, mais Supabase renvoie un user
-      if (data?.user) {
-        // Heuristique robuste:
-        // - identities.length === 0 arrive souvent quand l'email existe déjà mais n'est pas confirmé.
-        // - MAIS certains setups (SMTP custom) semblent parfois renvoyer identities=[] même pour un nouvel email.
-        // → On distingue via created_at (nouvel user créé récemment).
-        if (identitiesLen === 0) {
-          const createdMs = createdAt ? new Date(createdAt).getTime() : NaN;
-          const isFreshUser = Number.isFinite(createdMs) && Date.now() - createdMs < 2 * 60 * 1000; // 2 min
+      // =========================================================
+      // PAS D'ERREUR EXPLICITE - ANALYSER LA RÉPONSE
+      // =========================================================
 
-          console.log('🟣 [signUp] identities empty analysis', {
-            isFreshUser,
-            ageMs: Number.isFinite(createdMs) ? Date.now() - createdMs : null,
-          });
+      // RÈGLE CLÉE: NE JAMAIS utiliser `user !== null` comme condition d'erreur
+      // RÈGLE CLÉE: NE JAMAIS bloquer si `email_confirmed_at === null`
 
-          if (isFreshUser) {
-            // CAS 1 (email nouveau) → inscription normale
-            return { error: null, data };
-          }
-
-          // CAS 2 (email existant non confirmé) → ne pas bloquer, renvoyer la confirmation
-          await safeResendConfirmation();
-          return {
-            error: {
-              message: 'EMAIL_NOT_CONFIRMED',
-              __isUnconfirmedEmail: true,
-            } as any,
-            data: { user: data.user, session: null, needsConfirmation: true },
-          };
-        }
-
-        // identities > 0
-        // Si email_confirmed_at est présent, c'est un doublon confirmé.
-        if (emailConfirmedAt) {
-          return {
-            error: {
-              message: 'EMAIL_ALREADY_CONFIRMED',
-              __isConfirmedEmail: true,
-            } as any,
-            data: null,
-          };
-        }
-
-        // Sinon, user à confirmer / nouvel user
+      // CAS 1: INSCRIPTION RÉUSSIE (email nouveau)
+      // → identities.length > 0 ET email_confirmed_at === null
+      // → OU data.session existe (auto-confirm activé)
+      if (data?.session || (identities.length > 0 && !emailConfirmedAt)) {
+        console.log('[signup] final_decision: NEW_USER_SUCCESS');
         return { error: null, data };
       }
 
-      // CAS C: Pas de user retourné (rare) → considérer comme succès silencieux
+      // CAS 3: EMAIL DÉJÀ CONFIRMÉ
+      // → identities.length > 0 ET email_confirmed_at !== null
+      if (identities.length > 0 && emailConfirmedAt) {
+        console.log('[signup] final_decision: EMAIL_ALREADY_CONFIRMED');
+        return {
+          error: { message: 'EMAIL_ALREADY_CONFIRMED', __isConfirmedEmail: true } as any,
+          data: null,
+        };
+      }
+
+      // CAS SPÉCIAL: identities.length === 0
+      // → Cela signifie généralement un email existant non confirmé
+      // → MAIS peut aussi arriver pour un nouvel email avec certains SMTP
+      // → On vérifie via un resend pour être sûr
+      if (identities.length === 0) {
+        console.log('[signup] identities empty → checking via resend...');
+        
+        const { error: resendError } = await supabase.auth.resend({
+          type: 'signup',
+          email,
+          options: { emailRedirectTo: redirectUrl },
+        });
+        
+        const resendMsg = (resendError?.message || '').toLowerCase();
+        console.log('[signup] resend check result:', resendMsg || 'success');
+        
+        // Si resend échoue car confirmé → CAS 3
+        if (resendMsg.includes('already confirmed') || resendMsg.includes('invalid')) {
+          console.log('[signup] final_decision: EMAIL_ALREADY_CONFIRMED (via resend check)');
+          return {
+            error: { message: 'EMAIL_ALREADY_CONFIRMED', __isConfirmedEmail: true } as any,
+            data: null,
+          };
+        }
+        
+        // Resend réussi ou erreur autre → considérer comme nouveau / non confirmé
+        // On retourne succès pour rediriger vers page confirmation
+        console.log('[signup] final_decision: NEW_OR_UNCONFIRMED → proceed to confirmation');
+        return { error: null, data };
+      }
+
+      // FALLBACK: Cas non couvert → considérer comme succès
+      console.log('[signup] final_decision: FALLBACK_SUCCESS');
       return { error: null, data };
+
     } catch (exception) {
-      console.error('❌ [signUp] exception', exception);
+      console.error('[signup] EXCEPTION:', exception);
       return {
         error: {
           message: exception instanceof Error ? exception.message : 'Erreur inattendue',

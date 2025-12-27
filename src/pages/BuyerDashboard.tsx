@@ -22,7 +22,8 @@ import {
   Settings,
   Phone,
   Mail,
-  ChevronRight
+  ChevronRight,
+  Sparkles
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -35,7 +36,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useNavigate } from 'react-router-dom';
+import { SellerUpgradeForm } from '@/components/SellerUpgradeForm';
 
 // Lazy load heavy components
 const BuyerMessages = lazy(() => import('@/components/BuyerMessages').then(module => ({ default: module.BuyerMessages })));
@@ -89,6 +97,7 @@ const BuyerDashboard = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
   const [editingSettings, setEditingSettings] = useState(false);
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
@@ -348,7 +357,7 @@ const BuyerDashboard = () => {
                 </button>
 
                 <button 
-                  className="w-full flex items-center gap-4 p-4 hover:bg-muted/50 active:bg-muted transition-all text-left"
+                  className="w-full flex items-center gap-4 p-4 hover:bg-muted/50 active:bg-muted transition-all text-left border-b border-border/50"
                   onClick={() => setActiveSection('settings')}
                 >
                   <div className="w-11 h-11 bg-gray-100 rounded-xl flex items-center justify-center shrink-0">
@@ -360,8 +369,33 @@ const BuyerDashboard = () => {
                   </div>
                   <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
                 </button>
+
+                {/* Bouton Devenir vendeur */}
+                <button 
+                  className="w-full flex items-center gap-4 p-4 hover:bg-muted/50 active:bg-muted transition-all text-left bg-gradient-to-r from-primary/5 to-primary/10"
+                  onClick={() => setShowUpgradeDialog(true)}
+                >
+                  <div className="w-11 h-11 bg-gradient-to-br from-primary to-primary-hover rounded-xl flex items-center justify-center shrink-0 shadow-md">
+                    <Store className="w-5 h-5 text-primary-foreground" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-sm text-foreground flex items-center gap-2">
+                      Devenir vendeur
+                      <Sparkles className="w-4 h-4 text-primary" />
+                    </h4>
+                    <p className="text-xs text-muted-foreground">28 jours d'essai gratuit</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-primary shrink-0" />
+                </button>
               </div>
             </div>
+
+            {/* Dialog Devenir vendeur */}
+            <Dialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
+              <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto p-0">
+                <SellerUpgradeForm onSuccess={() => setShowUpgradeDialog(false)} />
+              </DialogContent>
+            </Dialog>
           </>
         )}
 

@@ -12,6 +12,7 @@ import { ContactSellerButton } from "@/components/ContactSellerButton";
 import { QuickOrderDialog } from "@/components/QuickOrderDialog";
 import { BoostCountdown } from "@/components/BoostCountdown";
 import { OptimizedImage } from "@/components/ui/optimized-image";
+import ImageLightbox from "@/components/ImageLightbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { useRecommendations } from "@/hooks/useRecommendations";
@@ -93,6 +94,7 @@ const ProductDetail = (): JSX.Element | null => {
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [offerExpired, setOfferExpired] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   // Helper function to check if a special offer is still active
   const isOfferActive = (product: Product | null): boolean => {
@@ -354,7 +356,10 @@ const ProductDetail = (): JSX.Element | null => {
               ) : (
                 <div className="space-y-4">
                   {/* Image principale avec loader et fallback */}
-                  <div className="relative">
+                  <div 
+                    className="relative cursor-zoom-in"
+                    onClick={() => setLightboxOpen(true)}
+                  >
                     <OptimizedImage
                       src={productImage}
                       alt={`${product.title} - Image ${selectedImageIndex + 1}`}
@@ -368,7 +373,10 @@ const ProductDetail = (): JSX.Element | null => {
                         variant="outline"
                         size="sm"
                         className="absolute top-3 right-3 bg-white/90 flex items-center gap-2 z-20"
-                        onClick={() => setShowVideo(true)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowVideo(true);
+                        }}
                       >
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M8 5v10l7-5-7-5z"/>
@@ -446,6 +454,15 @@ const ProductDetail = (): JSX.Element | null => {
               )}
             </div>
           </div>
+
+          {/* Image Lightbox */}
+          <ImageLightbox
+            images={productImages}
+            initialIndex={selectedImageIndex}
+            isOpen={lightboxOpen}
+            onClose={() => setLightboxOpen(false)}
+            alt={product.title}
+          />
 
           {/* Product Info */}
           <div className="space-y-4 sm:space-y-6">

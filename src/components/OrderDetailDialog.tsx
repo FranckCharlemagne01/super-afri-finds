@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { DeliveryConfirmationDialog } from '@/components/DeliveryConfirmationDialog';
 import { motion } from 'framer-motion';
+import { getProductImage, handleImageError } from '@/utils/productImageHelper';
 
 interface Order {
   id: string;
@@ -150,6 +151,28 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
   const [showDeliveryConfirm, setShowDeliveryConfirm] = useState(false);
   const [productStock, setProductStock] = useState(0);
   const [confirmingSale, setConfirmingSale] = useState(false);
+  const [productImage, setProductImage] = useState<string>('/placeholder.svg');
+
+  // Fetch product image when order changes
+  useEffect(() => {
+    const fetchProductImage = async () => {
+      if (!order?.product_id) return;
+      
+      const { data } = await supabase
+        .from('products')
+        .select('images')
+        .eq('id', order.product_id)
+        .single();
+      
+      if (data?.images) {
+        setProductImage(getProductImage(data.images, 0));
+      }
+    };
+    
+    if (open && order) {
+      fetchProductImage();
+    }
+  }, [order?.product_id, open]);
 
   if (!order) return null;
 
@@ -330,14 +353,20 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
                 <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Produit</span>
               </div>
               <div className="flex items-start gap-3">
-                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <Package className="w-7 h-7 text-primary" />
+                {/* Product Image - 120px for detail view */}
+                <div className="relative flex-shrink-0">
+                  <img 
+                    src={productImage}
+                    alt={order.product_title}
+                    className="w-[100px] h-[100px] sm:w-[120px] sm:h-[120px] rounded-xl object-cover border border-border/30 bg-muted/20"
+                    onError={handleImageError}
+                  />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-foreground leading-snug mb-2">{order.product_title}</p>
-                  <div className="flex items-center gap-4 text-sm">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm">
                     <span className="text-muted-foreground">Qté: <span className="font-semibold text-foreground">{order.quantity}</span></span>
-                    <span className="text-muted-foreground">×</span>
+                    <span className="text-muted-foreground hidden sm:inline">×</span>
                     <span className="font-semibold text-foreground tabular-nums">{order.product_price.toLocaleString()} F</span>
                   </div>
                 </div>

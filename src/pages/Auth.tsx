@@ -16,7 +16,8 @@ import AuthSubmitButton from '@/components/auth/AuthSubmitButton';
 import AccountTypeSelector from '@/components/auth/AccountTypeSelector';
 import UnconfirmedEmailAlert from '@/components/auth/UnconfirmedEmailAlert';
 import GoogleAuthButton from '@/components/GoogleAuthButton';
-import FacebookAuthButton from '@/components/FacebookAuthButton';
+// TODO: Réactiver FacebookAuthButton lorsque le provider Facebook sera configuré dans Supabase
+// import FacebookAuthButton from '@/components/FacebookAuthButton';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -220,40 +221,40 @@ const Auth = () => {
     }
   }, [toast]);
 
-  // Facebook OAuth handler
-  const handleFacebookSignIn = useCallback(async () => {
-    setLoading(true);
-    setFormError('');
-    
-    try {
-      const redirectUrl = `${window.location.origin}/`;
-      
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'facebook',
-        options: {
-          redirectTo: redirectUrl,
-          scopes: 'email,public_profile',
-        },
-      });
-      
-      if (error) {
-        throw error;
-      }
-      
-      // Redirect will happen automatically
-    } catch (error) {
-      console.error('Facebook auth error:', error);
-      setFormError('Impossible de se connecter avec Facebook. Veuillez réessayer.');
-      toast({
-        title: "❌ Erreur de connexion",
-        description: "Impossible de se connecter avec Facebook. Veuillez réessayer.",
-        variant: "destructive",
-        duration: 4000,
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [toast]);
+  // TODO: Réactiver Facebook OAuth lorsque le provider sera configuré dans Supabase
+  // const handleFacebookSignIn = useCallback(async () => {
+  //   setLoading(true);
+  //   setFormError('');
+  //   
+  //   try {
+  //     const redirectUrl = `${window.location.origin}/`;
+  //     
+  //     const { error } = await supabase.auth.signInWithOAuth({
+  //       provider: 'facebook',
+  //       options: {
+  //         redirectTo: redirectUrl,
+  //         scopes: 'email,public_profile',
+  //       },
+  //     });
+  //     
+  //     if (error) {
+  //       throw error;
+  //     }
+  //     
+  //     // Redirect will happen automatically
+  //   } catch (error) {
+  //     console.error('Facebook auth error:', error);
+  //     setFormError('Impossible de se connecter avec Facebook. Veuillez réessayer.');
+  //     toast({
+  //       title: "❌ Erreur de connexion",
+  //       description: "Impossible de se connecter avec Facebook. Veuillez réessayer.",
+  //       variant: "destructive",
+  //       duration: 4000,
+  //     });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, [toast]);
 
   // Phone auth handlers
   const handlePhoneNumberChange = useCallback((value: string) => {
@@ -1023,11 +1024,13 @@ const Auth = () => {
                   mode="signup"
                 />
 
+                {/* TODO: Réactiver lorsque Facebook sera configuré
                 <FacebookAuthButton 
                   onClick={handleFacebookSignIn} 
                   disabled={loading}
                   mode="signup"
                 />
+                */}
 
                 <p className="text-center text-sm text-muted-foreground pt-2">
                   Déjà un compte ?{' '}
@@ -1245,11 +1248,13 @@ const Auth = () => {
                   mode="signin"
                 />
 
+                {/* TODO: Réactiver lorsque Facebook sera configuré
                 <FacebookAuthButton 
                   onClick={handleFacebookSignIn} 
                   disabled={loading}
                   mode="signin"
                 />
+                */}
 
                 <Button
                   type="button"

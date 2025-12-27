@@ -4,7 +4,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { TextInput } from '@/components/ui/validated-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CitySelect } from '@/components/CitySelect';
 
 interface StepProductInfoProps {
   formData: {
@@ -102,7 +101,7 @@ export const StepProductInfo = ({ formData, onInputChange, categories, userCount
         </Select>
       </motion.div>
 
-      {/* City */}
+      {/* City - Read only from seller profile */}
       <motion.div 
         custom={2}
         variants={itemVariants}
@@ -110,18 +109,15 @@ export const StepProductInfo = ({ formData, onInputChange, categories, userCount
         animate="visible"
         className="space-y-2"
       >
-        <Label htmlFor="city" className="flex items-center gap-2 text-sm font-medium">
+        <Label className="flex items-center gap-2 text-sm font-medium">
           <MapPin className="w-4 h-4 text-primary" />
           Ville de publication
         </Label>
-        <CitySelect
-          countryCode={userCountry}
-          value={formData.city}
-          onValueChange={(value) => onInputChange('city', value)}
-          placeholder="Sélectionnez la ville"
-        />
+        <div className="h-14 rounded-2xl text-base px-4 bg-muted/50 border-0 flex items-center text-muted-foreground">
+          {formData.city || 'Non définie dans votre profil'}
+        </div>
         <p className="text-xs text-muted-foreground">
-          Les acheteurs proches verront votre produit en priorité
+          Cette ville provient de votre profil vendeur
         </p>
       </motion.div>
 

@@ -5,10 +5,12 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { MessageSquare, User, MessageCircle, Package } from 'lucide-react';
+import { MessageSquare, User, MessageCircle, Package, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { ChatDialog } from './ChatDialog';
+import { getProductImage, handleImageError } from '@/utils/productImageHelper';
+import { motion } from 'framer-motion';
 
 interface MessageThread {
   thread_id: string;
@@ -209,68 +211,84 @@ export const SellerMessages = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-3">
-          {threads.map((thread) => (
-            <Card
-              key={thread.thread_id}
-              className={`cursor-pointer transition-all duration-200 border hover:shadow-md hover:border-primary/30 ${
-                thread.unread_count > 0
-                  ? 'border-primary bg-primary/5 shadow-sm' 
-                  : 'border-border/50 hover:bg-muted/30'
-              }`}
-              onClick={() => handleThreadClick(thread)}
-            >
-              <CardHeader className="pb-3">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      thread.unread_count > 0 ? 'bg-primary/20' : 'bg-muted'
-                    }`}>
-                      <User className="h-4 w-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <span className="font-medium text-sm break-words">
+        <div className="space-y-2">
+          {threads.map((thread, index) => {
+            const productImageUrl = thread.product?.images 
+              ? getProductImage(thread.product.images, 0)
+              : null;
+            
+            return (
+              <motion.div
+                key={thread.thread_id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                onClick={() => handleThreadClick(thread)}
+                className={`bg-card rounded-2xl border overflow-hidden cursor-pointer active:scale-[0.98] transition-all ${
+                  thread.unread_count > 0
+                    ? 'border-primary/40 ring-1 ring-primary/20 shadow-sm' 
+                    : 'border-border/50 hover:border-border'
+                }`}
+              >
+                <div className="p-3 flex gap-3">
+                  {/* Product Image or User Avatar */}
+                  <div className="relative flex-shrink-0">
+                    {productImageUrl ? (
+                      <img 
+                        src={productImageUrl}
+                        alt={thread.product?.title || 'Produit'}
+                        className="w-14 h-14 rounded-xl object-cover border border-border/30"
+                        onError={handleImageError}
+                      />
+                    ) : (
+                      <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
+                        thread.unread_count > 0 ? 'bg-primary/15' : 'bg-muted'
+                      }`}>
+                        <User className="w-6 h-6 text-muted-foreground" />
+                      </div>
+                    )}
+                    {thread.unread_count > 0 && (
+                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center text-[10px] font-bold">
+                        {thread.unread_count}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2 mb-0.5">
+                      <span className="font-semibold text-sm text-foreground truncate">
                         {thread.buyer_profile?.full_name || thread.buyer_profile?.email || 'Client'}
                       </span>
-                      {thread.unread_count > 0 && (
-                        <Badge variant="destructive" className="text-xs ml-2 animate-pulse">
-                          {thread.unread_count} nouveau{thread.unread_count > 1 ? 'x' : ''}
-                        </Badge>
-                      )}
+                      <span className="text-[10px] text-muted-foreground flex-shrink-0">
+                        {format(new Date(thread.latest_message.created_at), 'dd MMM · HH:mm', { locale: fr })}
+                      </span>
                     </div>
+                    
+                    {thread.product && (
+                      <div className="flex items-center gap-1 text-[11px] text-primary font-medium mb-1">
+                        <Package className="h-3 w-3" />
+                        <span className="truncate">{thread.product.title}</span>
+                      </div>
+                    )}
+
+                    <p className={`text-xs line-clamp-1 ${
+                      thread.unread_count > 0 ? 'text-foreground font-medium' : 'text-muted-foreground'
+                    }`}>
+                      {thread.latest_message.content === '[PRODUCT_SHARE]' 
+                        ? '📦 Carte produit partagée' 
+                        : thread.latest_message.content}
+                    </p>
                   </div>
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {format(new Date(thread.latest_message.created_at), 'dd MMM HH:mm', { locale: fr })}
-                  </span>
+
+                  {/* Arrow */}
+                  <div className="self-center flex-shrink-0">
+                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                  </div>
                 </div>
-                {thread.product && (
-                  <div className="flex items-center gap-1.5 text-xs text-primary font-medium mt-2 bg-primary/10 px-2 py-1 rounded w-fit">
-                    <Package className="h-3 w-3" />
-                    {thread.product.title}
-                  </div>
-                )}
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-sm text-muted-foreground line-clamp-2 mb-3 leading-relaxed">
-                  {thread.latest_message.content === '[PRODUCT_SHARE]' 
-                    ? '📦 Carte produit partagée' 
-                    : thread.latest_message.content}
-                </p>
-                <Button 
-                  variant={thread.unread_count > 0 ? "default" : "outline"} 
-                  size="sm" 
-                  className={`w-full transition-all duration-200 ${
-                    thread.unread_count > 0
-                      ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm' 
-                      : 'hover:bg-primary/10 hover:border-primary/30'
-                  }`}
-                >
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  {thread.unread_count > 0 ? 'Répondre maintenant' : 'Ouvrir le chat'}
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
       )}
       

@@ -203,10 +203,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // RÈGLE CLÉE: NE JAMAIS bloquer si `email_confirmed_at === null`
 
       // CAS 1: INSCRIPTION RÉUSSIE (email nouveau)
-      // → identities.length > 0 ET email_confirmed_at === null
-      // → OU data.session existe (auto-confirm activé)
-      if (data?.session || (identities.length > 0 && !emailConfirmedAt)) {
+      // → identities.length > 0 signifie que l'identité a été créée
+      // → email_confirmed_at === null signifie en attente de confirmation
+      if (identities.length > 0 && !emailConfirmedAt) {
         console.log('[signup] final_decision: NEW_USER_SUCCESS');
+        return { error: null, data };
+      }
+
+      // CAS 1 BIS: Auto-confirm activé (session existe)
+      if (data?.session) {
+        console.log('[signup] final_decision: NEW_USER_SUCCESS (auto-confirm)');
         return { error: null, data };
       }
 
@@ -220,12 +226,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         };
       }
 
-      // CAS SPÉCIAL: identities.length === 0
-      // → Cela signifie généralement un email existant non confirmé
-      // → MAIS peut aussi arriver pour un nouvel email avec certains SMTP
-      // → On vérifie via un resend pour être sûr
-      if (identities.length === 0) {
-        console.log('[signup] identities empty → checking via resend...');
+      // CAS 2: identities.length === 0
+      // → Email existant mais non confirmé (Supabase retourne user sans identities)
+      // → On renvoie l'email de confirmation automatiquement
+      if (identities.length === 0 && data?.user) {
+        console.log('[signup] identities empty with user → existing unconfirmed account');
         
         const { error: resendError } = await supabase.auth.resend({
           type: 'signup',
@@ -234,24 +239,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
         
         const resendMsg = (resendError?.message || '').toLowerCase();
-        console.log('[signup] resend check result:', resendMsg || 'success');
+        console.log('[signup] resend result:', resendMsg || 'success');
         
-        // Si resend échoue car confirmé → CAS 3
-        if (resendMsg.includes('already confirmed') || resendMsg.includes('invalid')) {
-          console.log('[signup] final_decision: EMAIL_ALREADY_CONFIRMED (via resend check)');
+        // Si resend échoue car email déjà confirmé → CAS 3
+        if (resendMsg.includes('already confirmed') || resendMsg.includes('email link is invalid')) {
+          console.log('[signup] final_decision: EMAIL_ALREADY_CONFIRMED (via resend)');
           return {
             error: { message: 'EMAIL_ALREADY_CONFIRMED', __isConfirmedEmail: true } as any,
             data: null,
           };
         }
         
-        // Resend réussi ou erreur autre → considérer comme nouveau / non confirmé
-        // On retourne succès pour rediriger vers page confirmation
-        console.log('[signup] final_decision: NEW_OR_UNCONFIRMED → proceed to confirmation');
-        return { error: null, data };
+        // Resend réussi → CAS 2 (compte existant non confirmé)
+        console.log('[signup] final_decision: EMAIL_NOT_CONFIRMED (resend done)');
+        return {
+          error: { message: 'EMAIL_NOT_CONFIRMED', __isUnconfirmedEmail: true } as any,
+          data: { user: data.user, session: null, needsConfirmation: true },
+        };
       }
 
-      // FALLBACK: Cas non couvert → considérer comme succès
+      // FALLBACK: Si on arrive ici sans user → considérer comme succès
       console.log('[signup] final_decision: FALLBACK_SUCCESS');
       return { error: null, data };
 

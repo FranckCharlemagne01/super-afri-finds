@@ -4,7 +4,7 @@
  */
 
 const SUPABASE_STORAGE_PREFIX = 'https://zqskpspbyzptzjcoitwt.supabase.co/storage/v1/object/public/product-images/';
-const PLACEHOLDER_IMAGE = '/placeholder.svg';
+const PLACEHOLDER_IMAGE = 'https://placehold.co/400x400/e2e8f0/94a3b8?text=Image';
 
 /**
  * Check if a URL is a valid Supabase product-images URL

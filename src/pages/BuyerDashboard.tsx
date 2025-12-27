@@ -37,13 +37,16 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
+  Drawer,
+  DrawerContent,
+} from "@/components/ui/drawer";
+import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
 import { useNavigate } from 'react-router-dom';
 import { SellerUpgradeForm } from '@/components/SellerUpgradeForm';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Lazy load heavy components
 const BuyerMessages = lazy(() => import('@/components/BuyerMessages').then(module => ({ default: module.BuyerMessages })));
@@ -91,6 +94,7 @@ const BuyerDashboard = () => {
   const { user, loading: authLoading, signOut } = useStableAuth();
   const { role, loading: roleLoading, isSeller } = useStableRole();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const { profile, orders, loadingProfile, updateProfile, cancelOrder } = useBuyerProfile(user?.id);
   const [editingProfile, setEditingProfile] = useState(false);
   const [updatedProfile, setUpdatedProfile] = useState<UserProfile>({ full_name: '', phone: '', email: '' });
@@ -390,12 +394,26 @@ const BuyerDashboard = () => {
               </div>
             </div>
 
-            {/* Dialog Devenir vendeur */}
-            <Dialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
-              <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto p-0">
-                <SellerUpgradeForm onSuccess={() => setShowUpgradeDialog(false)} />
-              </DialogContent>
-            </Dialog>
+            {/* Modal Devenir vendeur - Drawer sur mobile, Dialog sur desktop */}
+            {isMobile ? (
+              <Drawer open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
+                <DrawerContent className="h-[95vh] max-h-[95vh]">
+                  <SellerUpgradeForm 
+                    onSuccess={() => setShowUpgradeDialog(false)} 
+                    onCancel={() => setShowUpgradeDialog(false)}
+                  />
+                </DrawerContent>
+              </Drawer>
+            ) : (
+              <Dialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
+                <DialogContent className="sm:max-w-md max-h-[90vh] overflow-hidden p-0">
+                  <SellerUpgradeForm 
+                    onSuccess={() => setShowUpgradeDialog(false)} 
+                    onCancel={() => setShowUpgradeDialog(false)}
+                  />
+                </DialogContent>
+              </Dialog>
+            )}
           </>
         )}
 

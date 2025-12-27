@@ -2,20 +2,20 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { TextInput, NumericInput } from '@/components/ui/validated-input';
+import { TextInput } from '@/components/ui/validated-input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useStableAuth } from '@/hooks/useStableAuth';
 import { useStableRole } from '@/hooks/useStableRole';
-import { Store } from 'lucide-react';
+import { Store, Sparkles, Phone, User, Gift, Check, X } from 'lucide-react';
 
 interface SellerUpgradeFormProps {
   onSuccess: () => void;
+  onCancel?: () => void;
 }
 
-export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
+export const SellerUpgradeForm = ({ onSuccess, onCancel }: SellerUpgradeFormProps) => {
   const { user } = useStableAuth();
   const { role, refreshRole } = useStableRole();
   const { toast } = useToast();
@@ -30,9 +30,7 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
   // Surveiller le changement de rôle après l'upgrade
   useEffect(() => {
     if (upgradeSuccess && role === 'seller') {
-      // Le rôle a été confirmé comme 'seller', navigation sûre
       onSuccess();
-      // Utiliser un petit délai pour garantir la stabilité de la session
       setTimeout(() => {
         navigate('/seller-dashboard', { replace: true });
       }, 100);
@@ -46,7 +44,6 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
     setLoading(true);
 
     try {
-      // Utiliser la fonction sécurisée pour l'upgrade vendeur
       const { data, error } = await supabase.rpc('upgrade_to_seller', {
         _first_name: firstName.trim(),
         _last_name: lastName.trim(),
@@ -63,7 +60,6 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
         return;
       }
 
-      // Vérifier le résultat de la fonction
       const result = data as { success: boolean; error?: string; message?: string };
       if (!result?.success) {
         console.error('Erreur retournée par la fonction:', result?.error);
@@ -77,11 +73,10 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
 
       toast({
         title: "✅ Profil vendeur activé !",
-        description: "Vous pouvez maintenant commencer à vendre vos produits. Vous bénéficiez de 28 jours d'essai gratuit.",
+        description: "Vous pouvez maintenant commencer à vendre vos produits.",
         duration: 3000,
       });
 
-      // Marquer l'upgrade comme réussi et rafraîchir le rôle
       setUpgradeSuccess(true);
       refreshRole();
     } catch (error) {
@@ -97,117 +92,176 @@ export const SellerUpgradeForm = ({ onSuccess }: SellerUpgradeFormProps) => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[60vh] p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex items-center justify-center mb-4">
-            <div className="w-12 h-12 gradient-primary rounded-full flex items-center justify-center">
-              <Store className="w-6 h-6 text-white" />
+    <div className="flex flex-col h-full bg-background">
+      {/* Header mobile-app style */}
+      <div className="sticky top-0 z-10 bg-background border-b border-border/50 px-4 py-3 flex items-center justify-between">
+        {onCancel && (
+          <button 
+            onClick={onCancel}
+            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-muted/50 active:bg-muted transition-colors -ml-2"
+          >
+            <X className="w-5 h-5 text-muted-foreground" />
+          </button>
+        )}
+        <div className="flex-1 text-center">
+          <h2 className="text-lg font-semibold text-foreground">Devenir vendeur</h2>
+        </div>
+        {onCancel && <div className="w-10" />}
+      </div>
+
+      {/* Content scrollable */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="px-5 py-6 space-y-6">
+          {/* Hero section */}
+          <div className="text-center space-y-3">
+            <div className="w-16 h-16 mx-auto bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
+              <Store className="w-8 h-8 text-primary-foreground" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-xl font-bold text-foreground">Lancez votre boutique</h3>
+              <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                Vendez vos produits et touchez des milliers de clients
+              </p>
             </div>
           </div>
-          <CardTitle className="text-xl gradient-text-primary">Devenir vendeur</CardTitle>
-          <CardDescription>
-            Complétez vos informations pour activer votre profil vendeur et profiter de 28 jours d'essai gratuit
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+
+          {/* Trial badge */}
+          <div className="flex items-center justify-center gap-2 py-2 px-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-full mx-auto w-fit">
+            <Gift className="w-4 h-4 text-green-600" />
+            <span className="text-sm font-medium text-green-700 dark:text-green-400">28 jours d'essai gratuit</span>
+            <Sparkles className="w-4 h-4 text-green-600" />
+          </div>
+
+          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Prénom */}
             <div className="space-y-2">
-              <Label htmlFor="firstName">Prénom *</Label>
+              <Label htmlFor="firstName" className="text-sm font-medium flex items-center gap-2">
+                <User className="w-4 h-4 text-muted-foreground" />
+                Prénom
+              </Label>
               <TextInput
                 id="firstName"
                 placeholder="Votre prénom"
                 value={firstName}
                 onChange={setFirstName}
-                className="w-full"
+                className="w-full h-12 rounded-xl text-base px-4 bg-muted/30 border-border/50 focus:border-primary focus:ring-2 focus:ring-primary/20"
                 required
               />
             </div>
 
+            {/* Nom */}
             <div className="space-y-2">
-              <Label htmlFor="lastName">Nom *</Label>
+              <Label htmlFor="lastName" className="text-sm font-medium flex items-center gap-2">
+                <User className="w-4 h-4 text-muted-foreground" />
+                Nom
+              </Label>
               <TextInput
                 id="lastName"
                 placeholder="Votre nom de famille"
                 value={lastName}
                 onChange={setLastName}
-                className="w-full"
+                className="w-full h-12 rounded-xl text-base px-4 bg-muted/30 border-border/50 focus:border-primary focus:ring-2 focus:ring-primary/20"
                 required
               />
             </div>
 
+            {/* Téléphone */}
             <div className="space-y-2">
-              <Label htmlFor="phone">Numéro de téléphone *</Label>
+              <Label htmlFor="phone" className="text-sm font-medium flex items-center gap-2">
+                <Phone className="w-4 h-4 text-muted-foreground" />
+                Numéro de téléphone
+              </Label>
               <Input
                 id="phone"
-                type="text"
-                placeholder="+225 0707070707"
+                type="tel"
+                inputMode="tel"
+                placeholder="+225 07 07 07 07 07"
                 value={phone}
                 onChange={(e) => {
                   const value = e.target.value;
-                  // Accepter +, 00, chiffres et espaces
                   if (value === '' || /^(\+|0{0,2})[0-9\s]*$/.test(value)) {
                     setPhone(value);
                   }
                 }}
-                className="w-full"
+                className="w-full h-12 rounded-xl text-base px-4 bg-muted/30 border-border/50 focus:border-primary focus:ring-2 focus:ring-primary/20"
                 required
                 maxLength={20}
               />
-              <p className="text-xs text-muted-foreground mt-1.5">Format: +225 0707070707, 00225 0707070707 ou 0707070707</p>
             </div>
 
-            <div className="space-y-2 bg-primary/5 p-4 rounded-xl border-2 border-primary/20 shadow-sm">
-              <Label htmlFor="shopName" className="flex items-center gap-2">
-                <Store className="w-4 h-4" />
-                Nom de votre boutique (optionnel)
+            {/* Nom boutique */}
+            <div className="space-y-2">
+              <Label htmlFor="shopName" className="text-sm font-medium flex items-center gap-2">
+                <Store className="w-4 h-4 text-muted-foreground" />
+                Nom de la boutique
+                <span className="text-xs text-muted-foreground/70">(optionnel)</span>
               </Label>
               <Input
                 id="shopName"
                 type="text"
-                placeholder="Ex: Ma Boutique Mode, Électronique Pro..."
+                placeholder="Ma Super Boutique"
                 value={shopName}
                 onChange={(e) => setShopName(e.target.value)}
-                className="w-full"
+                className="w-full h-12 rounded-xl text-base px-4 bg-muted/30 border-border/50 focus:border-primary focus:ring-2 focus:ring-primary/20"
                 maxLength={100}
               />
-              <p className="text-xs text-muted-foreground mt-1.5">
-                Si vide, votre boutique s'appellera "Boutique {firstName} {lastName}" ou "Djassa Boutique" par défaut.
+              <p className="text-xs text-muted-foreground">
+                Par défaut : "Boutique {firstName || 'Prénom'} {lastName || 'Nom'}"
               </p>
             </div>
 
-            <div className="bg-muted/50 p-4 rounded-xl border">
-              <p className="text-sm font-medium text-foreground">
-                <strong>Email :</strong> {user?.email}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1.5">
-                Votre email actuel sera conservé
-              </p>
-            </div>
-
-            <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950 dark:to-blue-950 p-4 rounded-xl border-2 border-green-200 dark:border-green-800 shadow-sm">
-              <h4 className="text-sm font-semibold text-green-800 dark:text-green-200 mb-2">
-                🎁 Avantages inclus :
+            {/* Avantages */}
+            <div className="bg-muted/30 rounded-2xl p-4 space-y-3">
+              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Gift className="w-4 h-4 text-primary" />
+                Avantages inclus
               </h4>
-              <ul className="text-xs text-green-700 dark:text-green-300 space-y-1.5">
-                <li>• 28 jours d'essai gratuit</li>
-                <li>• Publication illimitée de produits</li>
-                <li>• Gestion des commandes</li>
-                <li>• Messagerie avec les clients</li>
-                <li>• Conservez vos droits d'acheteur</li>
-              </ul>
+              <div className="grid grid-cols-1 gap-2">
+                {[
+                  'Publication illimitée de produits',
+                  'Gestion des commandes',
+                  'Messagerie avec les clients',
+                  'Tableau de bord vendeur',
+                  'Conservez vos droits d\'acheteur'
+                ].map((benefit, i) => (
+                  <div key={i} className="flex items-center gap-2.5">
+                    <div className="w-5 h-5 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 text-green-600" />
+                    </div>
+                    <span className="text-sm text-muted-foreground">{benefit}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-
-            <Button 
-              type="submit" 
-              className="w-full min-h-[48px] rounded-xl font-semibold shadow-md transition-all hover:scale-[1.02]" 
-              disabled={loading}
-            >
-              {loading ? "Activation en cours..." : "Activer mon profil vendeur"}
-            </Button>
           </form>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+
+      {/* Footer fixe avec bouton */}
+      <div className="sticky bottom-0 bg-background border-t border-border/50 px-5 py-4 pb-safe">
+        <Button 
+          type="submit"
+          onClick={handleSubmit}
+          className="w-full h-14 rounded-2xl text-base font-semibold shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform"
+          disabled={loading || !firstName || !lastName || !phone}
+        >
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+              Activation en cours...
+            </span>
+          ) : (
+            <span className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5" />
+              Activer mon profil vendeur
+            </span>
+          )}
+        </Button>
+        <p className="text-xs text-center text-muted-foreground mt-3">
+          En continuant, vous acceptez nos conditions de vente
+        </p>
+      </div>
     </div>
   );
 };

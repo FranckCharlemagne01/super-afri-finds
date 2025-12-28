@@ -6,6 +6,7 @@ import { ArrowLeft, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { ProductCard } from "@/components/ProductCard";
 import { CategoryProductCard } from "@/components/CategoryProductCard";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -35,6 +36,7 @@ interface Product {
 const CategoriesPage = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { isVisible: isHeaderVisible } = useScrollDirection();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,8 +115,14 @@ const CategoriesPage = () => {
   if (isMobile) {
     return (
       <div className="min-h-screen bg-gray-50/80 pb-20 flex flex-col">
-        {/* Header mobile - Clean native style */}
-        <div className="sticky top-0 z-40 bg-white border-b border-gray-100/80 shadow-sm">
+        {/* Header mobile - Clean native style with dynamic hide/show */}
+        <div 
+          className={`
+            sticky top-0 z-40 bg-white border-b border-gray-100/80 shadow-sm
+            transition-transform duration-300 ease-out
+            ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}
+          `}
+        >
           <div className="px-3 py-2.5">
             {/* Titre et bouton retour */}
             <div className="flex items-center gap-2.5 mb-2.5">

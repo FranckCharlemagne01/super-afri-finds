@@ -7,6 +7,7 @@ import { SearchBar } from '@/components/SearchBar';
 import { ArrowLeft, Search } from 'lucide-react';
 import { useSearch } from '@/hooks/useSearch';
 import { getProductImage } from '@/utils/productImageHelper';
+import { useScrollDirection } from '@/hooks/useScrollDirection';
 
 interface Product {
   id: string;
@@ -30,6 +31,7 @@ const SearchResults = () => {
   const navigate = useNavigate();
   const query = searchParams.get('q') || '';
   const { searchResults, loading, setSearchTerm } = useSearch();
+  const { isVisible: isHeaderVisible } = useScrollDirection();
 
   useEffect(() => {
     if (query) {
@@ -65,8 +67,15 @@ const SearchResults = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header avec navigation */}
-      <header className="bg-background border-b border-border sticky top-0 z-40">
+      {/* Header avec navigation - Desktop: always visible, Mobile: hide on scroll down */}
+      <header 
+        className={`
+          bg-background border-b border-border sticky top-0 z-40
+          transition-transform duration-300 ease-out
+          md:translate-y-0
+          ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full md:translate-y-0'}
+        `}
+      >
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Button

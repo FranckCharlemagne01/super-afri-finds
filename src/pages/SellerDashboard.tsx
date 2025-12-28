@@ -20,6 +20,7 @@ import { TrialBanner } from '@/components/TrialBanner';
 import { SubscriptionExpiredBanner } from '@/components/SubscriptionExpiredBanner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Store, Package, MessageSquare, Coins, Settings } from 'lucide-react';
 
 interface Product {
@@ -64,6 +65,8 @@ const SellerDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [openProductForm, setOpenProductForm] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [initError, setInitError] = useState<string | null>(null);
 
   // Fetch seller shop
   const { data: shop, loading: shopLoading, refetch: refetchShop } = useStableData(
@@ -114,22 +117,55 @@ const SellerDashboard = () => {
     navigate('/');
   };
 
+  // Initialisation et vérification du rôle
   useEffect(() => {
-    if (roleLoading || !userId) return;
+    const initDashboard = async () => {
+      console.log('[SellerDashboard] Init - roleLoading:', roleLoading, 'userId:', userId, 'isSeller:', isSeller);
+      
+      if (roleLoading) {
+        return; // Attendre que le rôle soit chargé
+      }
+      
+      if (!userId) {
+        console.log('[SellerDashboard] No userId, redirecting to auth');
+        navigate('/auth', { replace: true });
+        return;
+      }
+      
+      // Superadmin check
+      if (isSuperAdmin) {
+        console.log('[SellerDashboard] User is superadmin, redirecting');
+        navigate('/superadmin', { replace: true });
+        return;
+      }
+      
+      // Si pas vendeur, on laisse un peu de temps et on re-check
+      if (!isSeller) {
+        console.log('[SellerDashboard] Not seller, refreshing role...');
+        await refreshRole();
+        
+        // Re-vérifier après refresh
+        const { data: roleData } = await supabase.rpc('get_user_role', { _user_id: userId });
+        console.log('[SellerDashboard] Role after refresh:', roleData);
+        
+        if (roleData !== 'seller' && roleData !== 'admin' && roleData !== 'superadmin') {
+          console.log('[SellerDashboard] Confirmed not seller, redirecting to buyer');
+          navigate('/buyer-dashboard', { replace: true });
+          return;
+        }
+      }
+      
+      setIsInitializing(false);
+      setInitError(null);
+    };
     
-    const currentPath = window.location.pathname;
+    initDashboard();
+  }, [userId, isSeller, isSuperAdmin, roleLoading, navigate, refreshRole]);
+
+  // Gestion des paramètres URL pour paiement
+  useEffect(() => {
+    if (isInitializing || !userId) return;
     
-    if (isSuperAdmin && currentPath !== '/superadmin') {
-      navigate('/superadmin', { replace: true });
-      return;
-    }
-    
-    if (!isSeller && !roleLoading) {
-      navigate('/buyer-dashboard', { replace: true });
-      return;
-    }
-    
-    // Check for payment success (token purchase)
     const urlParams = new URLSearchParams(window.location.search);
     const paymentStatus = urlParams.get('payment');
     const reference = urlParams.get('reference');
@@ -139,7 +175,6 @@ const SellerDashboard = () => {
       window.history.replaceState({}, document.title, '/seller-dashboard');
     }
 
-    // Check for subscription payment
     const subscriptionPayment = urlParams.get('subscription_payment');
     const subscriptionRef = urlParams.get('reference');
     
@@ -147,7 +182,7 @@ const SellerDashboard = () => {
       verifySubscription(subscriptionRef);
       window.history.replaceState({}, document.title, '/seller-dashboard');
     }
-  }, [userId, isSeller, isSuperAdmin, roleLoading, navigate]);
+  }, [userId, isInitializing]);
 
   const verifySubscription = async (reference: string) => {
     try {
@@ -261,9 +296,29 @@ const SellerDashboard = () => {
     setOpenProductForm(true);
   }, []);
 
-  // Show loading state
-  if (roleLoading || !userId || shopLoading || sellerAccess.loading) {
+  // Show loading state pendant l'initialisation
+  if (isInitializing || roleLoading || !userId || shopLoading || sellerAccess.loading) {
     return <SellerDashboardSkeleton />;
+  }
+
+  // Afficher erreur si problème d'initialisation
+  if (initError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6 md:p-8 text-center">
+            <Store className="h-12 w-12 md:h-16 md:w-16 text-destructive mx-auto mb-4" />
+            <h2 className="text-xl md:text-2xl font-semibold mb-2">Erreur de chargement</h2>
+            <p className="text-muted-foreground mb-6 text-sm md:text-base">
+              {initError}
+            </p>
+            <Button onClick={() => window.location.reload()}>
+              Réessayer
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   // Redirect superadmin
@@ -274,14 +329,17 @@ const SellerDashboard = () => {
   // Non-seller access
   if (!isSeller && !roleLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background flex items-center justify-center">
-        <Card>
-          <CardContent className="p-8 text-center">
-            <Store className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-2xl font-semibold mb-2">Accès vendeur requis</h2>
-            <p className="text-muted-foreground mb-6">
+      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6 md:p-8 text-center">
+            <Store className="h-12 w-12 md:h-16 md:w-16 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-xl md:text-2xl font-semibold mb-2">Accès vendeur requis</h2>
+            <p className="text-muted-foreground mb-6 text-sm md:text-base">
               Vous devez activer votre profil vendeur pour accéder à cet espace.
             </p>
+            <Button onClick={() => navigate('/buyer-dashboard')}>
+              Retour
+            </Button>
           </CardContent>
         </Card>
       </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useStableAuth } from '@/hooks/useStableAuth';
 import { useStableRole } from '@/hooks/useStableRole';
-import { Store, Sparkles, Phone, User, Gift, Check, X } from 'lucide-react';
+import { Store, Sparkles, Phone, User, Gift, Check, X, Loader2 } from 'lucide-react';
 
 interface SellerUpgradeFormProps {
   onSuccess: () => void;
@@ -22,28 +22,74 @@ export const SellerUpgradeForm = ({ onSuccess, onCancel }: SellerUpgradeFormProp
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [upgradeSuccess, setUpgradeSuccess] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [shopName, setShopName] = useState('');
+  const maxRetries = useRef(10);
+  const retryCount = useRef(0);
+
+  // Fonction pour vérifier le rôle avec retry
+  const waitForRoleUpdate = useCallback(async (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const checkRole = async () => {
+        retryCount.current++;
+        console.log(`[SellerUpgrade] Checking role update... attempt ${retryCount.current}`);
+        
+        await refreshRole();
+        
+        // Petit délai pour laisser le state se mettre à jour
+        await new Promise(r => setTimeout(r, 300));
+        
+        // Vérifier directement en DB si le rôle a été mis à jour
+        const { data, error } = await supabase.rpc('get_user_role', { 
+          _user_id: user?.id 
+        });
+        
+        if (!error && data === 'seller') {
+          console.log('[SellerUpgrade] Role confirmed as seller');
+          resolve(true);
+          return;
+        }
+        
+        if (retryCount.current < maxRetries.current) {
+          console.log(`[SellerUpgrade] Role not yet seller, retrying in 500ms...`);
+          setTimeout(checkRole, 500);
+        } else {
+          console.log('[SellerUpgrade] Max retries reached');
+          resolve(false);
+        }
+      };
+      
+      checkRole();
+    });
+  }, [refreshRole, user?.id]);
 
   // Surveiller le changement de rôle après l'upgrade
   useEffect(() => {
-    if (upgradeSuccess && role === 'seller') {
+    if (upgradeSuccess && role === 'seller' && !isRedirecting) {
+      console.log('[SellerUpgrade] Role updated, proceeding with redirect');
+      setIsRedirecting(true);
       onSuccess();
+      
+      // Délai pour s'assurer que tous les states sont synchronisés
       setTimeout(() => {
         navigate('/seller-dashboard', { replace: true });
-      }, 100);
+      }, 300);
     }
-  }, [upgradeSuccess, role, navigate, onSuccess]);
+  }, [upgradeSuccess, role, navigate, onSuccess, isRedirecting]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
     setLoading(true);
+    retryCount.current = 0;
 
     try {
+      console.log('[SellerUpgrade] Starting upgrade process...');
+      
       const { data, error } = await supabase.rpc('upgrade_to_seller', {
         _first_name: firstName.trim(),
         _last_name: lastName.trim(),
@@ -51,36 +97,51 @@ export const SellerUpgradeForm = ({ onSuccess, onCancel }: SellerUpgradeFormProp
       });
 
       if (error) {
-        console.error('Erreur lors de l\'upgrade vendeur:', error);
+        console.error('[SellerUpgrade] RPC error:', error);
         toast({
           title: "❌ Erreur",
           description: "Impossible d'activer votre profil vendeur. Veuillez réessayer.",
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
 
       const result = data as { success: boolean; error?: string; message?: string };
       if (!result?.success) {
-        console.error('Erreur retournée par la fonction:', result?.error);
+        console.error('[SellerUpgrade] Function error:', result?.error);
         toast({
           title: "❌ Erreur",
           description: result?.error || "Une erreur s'est produite lors de l'activation.",
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
 
+      console.log('[SellerUpgrade] RPC success, waiting for role update...');
+      
       toast({
         title: "✅ Profil vendeur activé !",
-        description: "Vous pouvez maintenant commencer à vendre vos produits.",
+        description: "Préparation de votre tableau de bord...",
         duration: 3000,
       });
 
-      setUpgradeSuccess(true);
-      refreshRole();
+      // Attendre que le rôle soit mis à jour
+      const roleUpdated = await waitForRoleUpdate();
+      
+      if (roleUpdated) {
+        setUpgradeSuccess(true);
+      } else {
+        // Forcer quand même la redirection après les retries
+        console.log('[SellerUpgrade] Forcing redirect after max retries');
+        setUpgradeSuccess(true);
+        setIsRedirecting(true);
+        onSuccess();
+        navigate('/seller-dashboard', { replace: true });
+      }
     } catch (error) {
-      console.error('Erreur:', error);
+      console.error('[SellerUpgrade] Unexpected error:', error);
       toast({
         title: "❌ Erreur",
         description: "Une erreur inattendue s'est produite. Veuillez réessayer.",
@@ -90,6 +151,22 @@ export const SellerUpgradeForm = ({ onSuccess, onCancel }: SellerUpgradeFormProp
       setLoading(false);
     }
   };
+
+  // Afficher un écran de transition pendant la redirection
+  if (isRedirecting) {
+    return (
+      <div className="flex flex-col h-full bg-background items-center justify-center p-6">
+        <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary/80 rounded-3xl flex items-center justify-center shadow-xl shadow-primary/30 mb-6">
+          <Store className="w-10 h-10 text-primary-foreground" />
+        </div>
+        <h2 className="text-xl font-bold text-foreground mb-2">Préparation de votre boutique</h2>
+        <p className="text-sm text-muted-foreground text-center mb-6">
+          Veuillez patienter...
+        </p>
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full bg-background">

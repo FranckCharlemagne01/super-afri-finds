@@ -1,4 +1,4 @@
-// Djassa Marketplace - Index Page
+// Djassa Marketplace - Index Page (v2)
 import { ProductCard } from "@/components/ProductCard";
 import SEOHead from "@/components/SEOHead";
 import { CategoryCard } from "@/components/CategoryCard";

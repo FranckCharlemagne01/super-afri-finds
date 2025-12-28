@@ -16,13 +16,15 @@ export const SubscriptionExpiredBanner = ({
   userEmail, 
   userId, 
   onSubscriptionSuccess,
-  dismissable = false
-}: SubscriptionExpiredBannerProps) => {
+  dismissable = false,
+  isInTrial = false
+}: SubscriptionExpiredBannerProps & { isInTrial?: boolean }) => {
   const [loading, setLoading] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const { toast } = useToast();
 
-  if (dismissed) return null;
+  // Ne pas afficher pendant la période d'essai
+  if (dismissed || isInTrial) return null;
 
   const handleSubscribe = async () => {
     setLoading(true);

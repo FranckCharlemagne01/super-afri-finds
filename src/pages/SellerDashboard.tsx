@@ -305,11 +305,12 @@ const SellerDashboard = () => {
       
       <div className="container mx-auto px-2.5 py-3 max-w-md md:max-w-3xl lg:max-w-7xl md:px-4 lg:px-6 md:py-4 lg:py-5">
         {/* ⚠️ Subscription Expired Banner - Show when trial ended and no active subscription */}
-        {sellerAccess.subscriptionExpired && (
+        {sellerAccess.subscriptionExpired && !sellerAccess.isInTrial && (
           <SubscriptionExpiredBanner 
             userEmail={user?.email || ''} 
             userId={userId}
             onSubscriptionSuccess={() => sellerAccess.refresh()}
+            isInTrial={sellerAccess.isInTrial}
           />
         )}
         

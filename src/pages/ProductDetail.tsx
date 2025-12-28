@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import SEOHead from "@/components/SEOHead";
+import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -72,6 +73,7 @@ const ProductDetail = (): JSX.Element | null => {
   const { toast } = useToast();
   const { location: userLocation } = useUserLocation();
   const { trackCategoryVisit, trackShopVisit, getSimilarProducts, getShopProducts } = useRecommendations();
+  const { isVisible: isHeaderVisible } = useScrollDirection();
 
   const handleBackNavigation = () => {
     // Utiliser l'historique du navigateur pour revenir en arrière
@@ -281,8 +283,15 @@ const ProductDetail = (): JSX.Element | null => {
         }}
       />
       
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white shadow-sm border-b">
+      {/* Header - Desktop: always visible, Mobile: hide on scroll down */}
+      <header 
+        className={`
+          sticky top-0 z-50 bg-white shadow-sm border-b
+          transition-transform duration-300 ease-out
+          md:translate-y-0
+          ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full md:translate-y-0'}
+        `}
+      >
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">

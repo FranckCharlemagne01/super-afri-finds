@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft } from 'lucide-react';
 import { ProductCard } from '@/components/ProductCard';
+import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { useToast } from '@/hooks/use-toast';
 import { useUserLocation } from '@/hooks/useUserLocation';
 import { getProductImage } from '@/utils/productImageHelper';
@@ -48,7 +49,7 @@ const CategoryPage = () => {
   const [loading, setLoading] = useState(true);
 
   const categoryInfo = slug ? getCategoryBySlug(slug) : null;
-
+  const { isVisible: isHeaderVisible } = useScrollDirection();
   useEffect(() => {
     const fetchProducts = async () => {
       if (!slug || !categoryInfo) return;
@@ -123,8 +124,15 @@ const CategoryPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b">
+      {/* Header - Desktop: always visible, Mobile: hide on scroll down */}
+      <header 
+        className={`
+          sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b
+          transition-transform duration-300 ease-out
+          md:translate-y-0
+          ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full md:translate-y-0'}
+        `}
+      >
         <div className="container mx-auto px-4 py-3 flex items-center gap-4">
           <Button
             variant="ghost"

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Store, Calendar, Grid3x3, ChevronDown, ChevronUp } from 'lucide-react';
+import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { useToast } from '@/hooks/use-toast';
 import { ProductCard } from '@/components/ProductCard';
 import { useAuth } from '@/hooks/useAuth';
@@ -57,6 +58,7 @@ const ShopPage = () => {
   const { user } = useAuth();
   const { location: userLocation } = useUserLocation();
   const { trackShopVisit, trackCategoryVisit, getSimilarShops } = useRecommendations();
+  const { isVisible: isHeaderVisible } = useScrollDirection();
 
   const [shop, setShop] = useState<Shop | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -159,8 +161,15 @@ const ShopPage = () => {
   if (isOwner) {
     return (
       <div className="min-h-screen bg-background">
-        {/* Header with back button */}
-      <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b">
+        {/* Header with back button - Desktop: always visible, Mobile: hide on scroll */}
+        <header 
+          className={`
+            sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b
+            transition-transform duration-300 ease-out
+            md:translate-y-0
+            ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full md:translate-y-0'}
+          `}
+        >
         <div className="container mx-auto px-4 py-3 flex items-center gap-4">
           <Button
             variant="ghost"
@@ -209,11 +218,16 @@ const ShopPage = () => {
         }}
       />
       
-      {/* Header with back button - Mobile optimized */}
+      {/* Header with back button - Desktop: always visible, Mobile: hide on scroll */}
       <motion.header
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="sticky top-0 z-50 bg-card/98 backdrop-blur-md border-b shadow-sm"
+        className={`
+          sticky top-0 z-50 bg-card/98 backdrop-blur-md border-b shadow-sm
+          transition-transform duration-300 ease-out
+          md:translate-y-0
+          ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full md:translate-y-0'}
+        `}
       >
         <div className="container mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
           <Button

@@ -110,14 +110,17 @@ export const TokensSubscriptionTab = ({
                 </div>
               </div>
 
-              <Button 
-                onClick={() => setShowPurchaseDialog(true)}
-                size="lg"
-                className="w-full bg-gradient-to-r from-primary via-primary to-primary/80 hover:shadow-lg transition-all hover:scale-105 active:scale-95 touch-manipulation"
-              >
-                <ShoppingCart className="h-5 w-5 mr-2" />
-                <span className="break-words">Acheter des jetons</span>
-              </Button>
+              {/* Masquer le bouton d'achat pendant la période d'essai */}
+              {!trialStatus.isInTrial && (
+                <Button 
+                  onClick={() => setShowPurchaseDialog(true)}
+                  size="lg"
+                  className="w-full bg-gradient-to-r from-primary via-primary to-primary/80 hover:shadow-lg transition-all hover:scale-105 active:scale-95 touch-manipulation"
+                >
+                  <ShoppingCart className="h-5 w-5 mr-2" />
+                  <span className="break-words">Acheter des jetons</span>
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -206,12 +209,14 @@ export const TokensSubscriptionTab = ({
         </CardContent>
       </Card>
 
-      {/* Purchase Dialog */}
-      <TokenPurchaseDialog
-        open={showPurchaseDialog}
-        onOpenChange={setShowPurchaseDialog}
-        onPurchaseComplete={onRefresh}
-      />
+      {/* Purchase Dialog - Masqué pendant la période d'essai */}
+      {!trialStatus.isInTrial && (
+        <TokenPurchaseDialog
+          open={showPurchaseDialog}
+          onOpenChange={setShowPurchaseDialog}
+          onPurchaseComplete={onRefresh}
+        />
+      )}
     </div>
   );
 };

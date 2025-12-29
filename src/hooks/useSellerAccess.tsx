@@ -53,6 +53,33 @@ export const useSellerAccess = () => {
     error: null,
   });
 
+  // Fonction pour assurer l'attribution des jetons d'essai
+  const ensureTrialTokens = useCallback(async () => {
+    if (!userId) return;
+    
+    try {
+      const { data, error } = await supabase.rpc('ensure_seller_trial_tokens', {
+        _user_id: userId
+      });
+      
+      if (error) {
+        // Log silencieux pour debug, pas de crash
+        console.log('[TrialTokens] Error ensuring tokens:', error.message);
+        return;
+      }
+      
+      if (data && typeof data === 'object') {
+        const result = data as { success: boolean; reason: string; tokens_amount?: number };
+        if (result.success && result.reason === 'tokens_allocated') {
+          console.log('[TrialTokens] Allocated 100 free tokens to seller:', userId);
+        }
+      }
+    } catch (err) {
+      // Erreur silencieuse pour éviter les crashs
+      console.log('[TrialTokens] Silent error:', err);
+    }
+  }, [userId]);
+
   const fetchAccessStatus = useCallback(async () => {
     if (!userId) {
       setStatus(prev => ({ ...prev, loading: false }));
@@ -60,6 +87,9 @@ export const useSellerAccess = () => {
     }
 
     try {
+      // D'abord, s'assurer que les jetons d'essai sont attribués
+      await ensureTrialTokens();
+      
       const { data, error } = await supabase.rpc('can_access_seller_features', {
         _user_id: userId
       });
@@ -110,7 +140,7 @@ export const useSellerAccess = () => {
         canAccessDashboard: true, // Always allow dashboard access
       }));
     }
-  }, [userId]);
+  }, [userId, ensureTrialTokens]);
 
   useEffect(() => {
     fetchAccessStatus();

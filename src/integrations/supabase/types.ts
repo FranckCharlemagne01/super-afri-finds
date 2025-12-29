@@ -877,6 +877,7 @@ export type Database = {
         Returns: boolean
       }
       create_shops_for_existing_sellers: { Args: never; Returns: undefined }
+      ensure_seller_trial_tokens: { Args: { _user_id: string }; Returns: Json }
       expire_free_tokens: { Args: never; Returns: undefined }
       generate_shop_slug: { Args: { shop_name: string }; Returns: string }
       get_2fa_status: { Args: { _user_id: string }; Returns: Json }

@@ -47,15 +47,15 @@ const ProductCardImage = memo(({
   const safeSrc = getProductImage([src], 0);
   
   return (
-    <div className="relative w-full bg-muted/10 overflow-hidden h-[140px] sm:h-[160px] md:h-[180px]">
+    <div className="relative w-full h-[180px] sm:h-[220px] md:h-[260px] overflow-hidden rounded-t-xl bg-[#f5f5f5]">
       {/* Loader */}
       {isLoading && !hasError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-muted/20">
+        <div className="absolute inset-0 flex items-center justify-center bg-[#f5f5f5]">
           <div className="w-5 h-5 rounded-full border-2 border-muted-foreground/20 border-t-primary animate-spin" />
         </div>
       )}
       
-      {/* Image - object-contain centré pour voir le produit entier sans zoom */}
+      {/* Image - object-cover for uniform display */}
       <img
         src={hasError ? '/placeholder.svg' : safeSrc}
         alt={alt}
@@ -67,7 +67,7 @@ const ProductCardImage = memo(({
           handleImageError(e);
         }}
         className={cn(
-          "w-full h-full object-contain p-2 transition-opacity duration-300",
+          "w-full h-full object-cover transition-opacity duration-300",
           isLoading ? "opacity-0" : "opacity-100"
         )}
       />

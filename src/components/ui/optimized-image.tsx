@@ -92,28 +92,24 @@ export const OptimizedImage = ({
   );
 };
 
-// Product card image - clean display only for valid images
+// Product card image - Uniform fixed height display for marketplace consistency
 export const ProductImage = ({
   src,
   alt,
   className,
-  aspectRatio = 'product',
 }: {
   src: string | undefined | null;
   alt: string;
   className?: string;
-  aspectRatio?: 'square' | 'product' | 'portrait';
 }) => {
-  const aspectClass = aspectRatio === 'product' ? 'aspect-[4/5]' : aspectRatio === 'portrait' ? 'aspect-[3/4]' : 'aspect-square';
-  
   return (
     <OptimizedImage
       src={src}
       alt={alt}
       aspectRatio="auto"
-      objectFit="contain"
-      className={cn('rounded-t-2xl bg-white', className)}
-      containerClassName={cn('rounded-t-2xl bg-white', aspectClass)}
+      objectFit="cover"
+      className={cn('rounded-t-xl', className)}
+      containerClassName="h-[200px] sm:h-[240px] md:h-[280px] w-full rounded-t-xl bg-[#f5f5f5]"
     />
   );
 };

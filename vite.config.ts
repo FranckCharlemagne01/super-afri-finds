@@ -16,10 +16,54 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
+    // Optimize chunk size for better caching
+    chunkSizeWarningLimit: 500,
     rollupOptions: {
       output: {
-        manualChunks: undefined,
+        // Split vendor chunks for better caching
+        manualChunks: {
+          // React core - rarely changes
+          'react-vendor': ['react', 'react-dom'],
+          // Router - separate chunk
+          'router': ['react-router-dom'],
+          // UI framework
+          'radix-ui': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-toast',
+            '@radix-ui/react-tooltip',
+            '@radix-ui/react-popover',
+            '@radix-ui/react-select',
+          ],
+          // Animation library
+          'framer': ['framer-motion'],
+          // Supabase client
+          'supabase': ['@supabase/supabase-js'],
+          // Charts
+          'charts': ['recharts'],
+          // Form handling
+          'forms': ['react-hook-form', '@hookform/resolvers', 'zod'],
+          // Date utilities
+          'date-utils': ['date-fns'],
+        },
       },
     },
+    // Enable minification optimizations
+    minify: 'esbuild',
+    target: 'es2020',
+    // Source maps for production debugging (optional)
+    sourcemap: false,
+  },
+  // Optimize deps pre-bundling
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@supabase/supabase-js',
+      'framer-motion',
+      'lucide-react',
+    ],
   },
 }));

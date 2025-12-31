@@ -7,12 +7,13 @@ import { AuthProvider } from "./hooks/useAuth";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { SmoothSkeleton } from "@/components/ui/smooth-skeleton";
-import { lazy, Suspense, useState, useCallback } from "react";
+import { lazy, Suspense, useState, useCallback, useEffect, memo } from "react";
 import { SplashScreen } from "@/components/SplashScreen";
 import { useInactivityDetector } from "@/hooks/useInactivityDetector";
 import { useVisitorTracking } from "@/hooks/useVisitorTracking";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import { NativeAppProvider } from "@/components/NativeAppProvider";
+import { prefetchCriticalRoutes } from "@/hooks/usePrefetch";
 
 const Verify = lazy(() => import("./pages/Verify"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
@@ -40,23 +41,30 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const DemoVideo = lazy(() => import("./pages/DemoVideo"));
 const ConfirmEmail = lazy(() => import("./pages/ConfirmEmail"));
 
+// Optimized QueryClient configuration for better caching
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      gcTime: 1000 * 60 * 30, // 30 minutes
-      refetchOnWindowFocus: false,
+      staleTime: 1000 * 60 * 5, // 5 minutes - data stays fresh
+      gcTime: 1000 * 60 * 30, // 30 minutes - keep in cache
+      refetchOnWindowFocus: false, // Don't refetch on tab focus
+      refetchOnReconnect: 'always', // Refetch on network reconnect
+      retry: 1, // Only 1 retry to fail fast
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
+    },
+    mutations: {
       retry: 1,
     },
   },
 });
 
-// Loading fallback component
-const PageLoadingFallback = () => (
+// Memoized loading fallback component
+const PageLoadingFallback = memo(() => (
   <div className="min-h-screen bg-background flex items-center justify-center">
     <SmoothSkeleton className="w-full max-w-4xl h-96" />
   </div>
-);
+));
+PageLoadingFallback.displayName = 'PageLoadingFallback';
 
 const App = () => {
   const [showSplash, setShowSplash] = useState(true);
@@ -64,6 +72,14 @@ const App = () => {
 
   // Track visitor activity
   useVisitorTracking();
+
+  // Prefetch critical routes after initial load
+  useEffect(() => {
+    if (!showSplash && !isInitialLoad) {
+      // Prefetch common routes in the background
+      prefetchCriticalRoutes();
+    }
+  }, [showSplash, isInitialLoad]);
 
   const handleSplashComplete = useCallback(() => {
     setShowSplash(false);

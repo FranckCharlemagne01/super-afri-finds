@@ -143,9 +143,19 @@ export const ProductCard = ({
           }`} />
         </motion.button>
 
-        {/* Product Image - Clean contained display */}
-        <div className="relative overflow-hidden rounded-t-xl bg-gray-50">
-          <ProductImage src={image} alt={title} />
+        {/* Product Image - Uniform fixed height display */}
+        <div className="relative w-full h-[200px] sm:h-[240px] md:h-[280px] overflow-hidden rounded-t-xl bg-[#f5f5f5]">
+          <img 
+            src={image} 
+            alt={title}
+            loading="lazy"
+            decoding="async"
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = '/placeholder.svg';
+            }}
+          />
           
           {/* Video indicator overlay */}
           {videoUrl && (

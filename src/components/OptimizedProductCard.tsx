@@ -88,13 +88,13 @@ export const OptimizedProductCard = memo(({
       className="group cursor-pointer hover:shadow-lg transition-all duration-300 border-border/50 overflow-hidden h-full flex flex-col"
       onClick={handleCardClick}
     >
-      <div className="relative overflow-hidden bg-muted/10 aspect-[4/5] rounded-t-lg">
+      <div className="relative w-full h-[200px] sm:h-[240px] md:h-[280px] overflow-hidden rounded-t-xl bg-[#f5f5f5]">
         <img 
           src={safeImage} 
           alt={title}
           loading="lazy"
           decoding="async"
-          className="w-full h-full object-contain p-2"
+          className="w-full h-full object-cover"
           onError={handleImageError}
         />
         

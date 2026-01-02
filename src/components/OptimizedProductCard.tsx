@@ -152,16 +152,7 @@ export const OptimizedProductCard = memo(({
           <span>({reviews})</span>
         </div>
 
-        {shop_name && (
-          <button
-            onClick={handleShopClick}
-            className="flex items-center gap-1.5 text-xs text-primary hover:underline mb-3 group/shop"
-          >
-            <Store className="h-3 w-3" />
-            <span className="truncate">{shop_name}</span>
-            <ExternalLink className="h-3 w-3 opacity-0 group-hover/shop:opacity-100 transition-opacity" />
-          </button>
-        )}
+        {/* Boutique du vendeur - Masqué pour les clients */}
 
         <Button
           onClick={handleAddToCart}

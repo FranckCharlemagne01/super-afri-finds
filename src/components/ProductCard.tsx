@@ -218,22 +218,7 @@ export const ProductCard = ({
           {/* Spacer to push buttons to bottom */}
           <div className="flex-1" />
 
-          {/* Boutique du vendeur - Minimal */}
-          {shop_slug && shop_name && (
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/boutique/${shop_slug}`);
-              }}
-              className="w-full text-left py-1 -mx-0.5 px-0.5 rounded transition-colors"
-            >
-              <div className="flex items-center gap-1">
-                <Store className="w-2.5 h-2.5 text-primary flex-shrink-0" />
-                <p className="text-[9px] sm:text-[10px] font-medium text-primary truncate">{shop_name}</p>
-              </div>
-            </motion.button>
-          )}
+          {/* Boutique du vendeur - Masqué pour les clients */}
 
           {/* Action Buttons - Native mobile style */}
           <div className="pt-1.5 mt-auto">

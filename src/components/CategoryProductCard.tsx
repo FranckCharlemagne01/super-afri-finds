@@ -199,12 +199,7 @@ export const CategoryProductCard = memo(({
           </span>
         )}
 
-        {/* Nom de la boutique */}
-        {shop_name && (
-          <p className="text-[9px] text-primary truncate pt-0.5">
-            {shop_name}
-          </p>
-        )}
+        {/* Nom de la boutique - Masqué pour les clients */}
       </div>
     </div>
   );

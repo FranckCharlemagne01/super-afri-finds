@@ -53,7 +53,7 @@ export const useSellerAccess = () => {
     error: null,
   });
 
-  // Fonction pour assurer l'attribution des jetons d'essai
+  // Fonction pour assurer l'attribution des jetons d'essai (100 jetons gratuits si solde = 0)
   const ensureTrialTokens = useCallback(async () => {
     if (!userId) return;
     
@@ -69,9 +69,13 @@ export const useSellerAccess = () => {
       }
       
       if (data && typeof data === 'object') {
-        const result = data as { success: boolean; reason: string; tokens_amount?: number };
+        const result = data as { success: boolean; reason: string; tokens_amount?: number; current_balance?: number };
         if (result.success && result.reason === 'tokens_allocated') {
-          console.log('[TrialTokens] Allocated 100 free tokens to seller:', userId);
+          console.log('[TrialTokens] ✅ Allocated 100 free tokens to new seller:', userId);
+        } else if (result.reason === 'already_has_tokens') {
+          console.log('[TrialTokens] Seller already has tokens:', result.current_balance);
+        } else if (result.reason === 'bonus_already_given') {
+          console.log('[TrialTokens] Bonus already given to seller');
         }
       }
     } catch (err) {

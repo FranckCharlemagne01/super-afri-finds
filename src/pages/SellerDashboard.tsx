@@ -61,6 +61,17 @@ const SellerDashboard = () => {
   const { isSeller, isSuperAdmin, loading: roleLoading, refreshRole } = useStableRole();
   const sellerAccess = useSellerAccess();
   const { tokenBalance, freeTokens, paidTokens, freeTokensExpiresAt, refreshBalance } = useTokens();
+
+  // ✅ Enregistrer le callback pour rafraîchir les jetons immédiatement après attribution
+  useEffect(() => {
+    if (sellerAccess.registerTokenRefreshCallback) {
+      console.log('[SellerDashboard] 📝 Registering token refresh callback');
+      sellerAccess.registerTokenRefreshCallback(() => {
+        console.log('[SellerDashboard] 🔄 Token refresh callback triggered - refreshing balance...');
+        refreshBalance();
+      });
+    }
+  }, [sellerAccess.registerTokenRefreshCallback, refreshBalance]);
   const { toast } = useToast();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');

@@ -53,9 +53,12 @@ export const useSellerAccess = () => {
     error: null,
   });
 
+  // Callback optionnel pour rafraîchir les tokens après attribution
+  const [onTokensAllocated, setOnTokensAllocated] = useState<(() => void) | null>(null);
+
   // Fonction pour assurer l'attribution des jetons d'essai (100 jetons gratuits si solde = 0)
   const ensureTrialTokens = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) return { allocated: false };
     
     try {
       const { data, error } = await supabase.rpc('ensure_seller_trial_tokens', {
@@ -65,24 +68,32 @@ export const useSellerAccess = () => {
       if (error) {
         // Log silencieux pour debug, pas de crash
         console.log('[TrialTokens] Error ensuring tokens:', error.message);
-        return;
+        return { allocated: false };
       }
       
       if (data && typeof data === 'object') {
         const result = data as { success: boolean; reason: string; tokens_amount?: number; current_balance?: number };
         if (result.success && result.reason === 'tokens_allocated') {
           console.log('[TrialTokens] ✅ Allocated 100 free tokens to new seller:', userId);
+          // Déclencher le rafraîchissement immédiat des tokens
+          if (onTokensAllocated) {
+            console.log('[TrialTokens] 🔄 Triggering immediate token refresh...');
+            onTokensAllocated();
+          }
+          return { allocated: true, tokensAmount: result.tokens_amount };
         } else if (result.reason === 'already_has_tokens') {
           console.log('[TrialTokens] Seller already has tokens:', result.current_balance);
         } else if (result.reason === 'bonus_already_given') {
           console.log('[TrialTokens] Bonus already given to seller');
         }
       }
+      return { allocated: false };
     } catch (err) {
       // Erreur silencieuse pour éviter les crashs
       console.log('[TrialTokens] Silent error:', err);
+      return { allocated: false };
     }
-  }, [userId]);
+  }, [userId, onTokensAllocated]);
 
   const fetchAccessStatus = useCallback(async () => {
     if (!userId) {
@@ -155,5 +166,10 @@ export const useSellerAccess = () => {
     fetchAccessStatus();
   }, [fetchAccessStatus]);
 
-  return { ...status, refresh };
+  // Fonction pour enregistrer un callback de rafraîchissement des tokens
+  const registerTokenRefreshCallback = useCallback((callback: () => void) => {
+    setOnTokensAllocated(() => callback);
+  }, []);
+
+  return { ...status, refresh, registerTokenRefreshCallback };
 };

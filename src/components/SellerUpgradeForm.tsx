@@ -23,6 +23,7 @@ export const SellerUpgradeForm = ({ onSuccess, onCancel }: SellerUpgradeFormProp
   const [loading, setLoading] = useState(false);
   const [upgradeSuccess, setUpgradeSuccess] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [sellerDataReady, setSellerDataReady] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
@@ -30,29 +31,63 @@ export const SellerUpgradeForm = ({ onSuccess, onCancel }: SellerUpgradeFormProp
   const maxRetries = useRef(10);
   const retryCount = useRef(0);
 
+  // ✅ Préparer les données vendeur AVANT la redirection (sans changer la logique métier)
+  // Objectif: éviter l'ouverture du dashboard avec des données null/incomplètes.
+  const prepareSellerData = useCallback(async (): Promise<boolean> => {
+    if (!user?.id) return false;
+
+    try {
+      // 1) Exécuter systématiquement l'attribution côté DB (no-op si non éligible)
+      await supabase.rpc('ensure_seller_trial_tokens', { _user_id: user.id });
+
+      // 2) Attendre que la ligne seller_tokens soit lisible (et donc affichable dans le dashboard)
+      //    On n'impose PAS un solde > 0 ici (la DB décide), on garantit juste la cohérence d'affichage.
+      for (let i = 0; i < 10; i++) {
+        const { data, error } = await supabase
+          .from('seller_tokens')
+          .select('token_balance, free_tokens_count, free_tokens_expires_at, paid_tokens_count')
+          .eq('seller_id', user.id)
+          .maybeSingle();
+
+        if (!error && data) {
+          return true;
+        }
+
+        // petit délai puis retry
+        await new Promise((r) => setTimeout(r, 400));
+      }
+
+      // Si on ne voit toujours pas la row, on ne bloque pas indéfiniment la redirection
+      return false;
+    } catch (err) {
+      console.log('[SellerUpgrade] prepareSellerData silent error:', err);
+      return false;
+    }
+  }, [user?.id]);
+
   // Fonction pour vérifier le rôle avec retry
   const waitForRoleUpdate = useCallback(async (): Promise<boolean> => {
     return new Promise((resolve) => {
       const checkRole = async () => {
         retryCount.current++;
         console.log(`[SellerUpgrade] Checking role update... attempt ${retryCount.current}`);
-        
+
         await refreshRole();
-        
+
         // Petit délai pour laisser le state se mettre à jour
         await new Promise(r => setTimeout(r, 300));
-        
+
         // Vérifier directement en DB si le rôle a été mis à jour
-        const { data, error } = await supabase.rpc('get_user_role', { 
-          _user_id: user?.id 
+        const { data, error } = await supabase.rpc('get_user_role', {
+          _user_id: user?.id
         });
-        
+
         if (!error && data === 'seller') {
           console.log('[SellerUpgrade] Role confirmed as seller');
           resolve(true);
           return;
         }
-        
+
         if (retryCount.current < maxRetries.current) {
           console.log(`[SellerUpgrade] Role not yet seller, retrying in 500ms...`);
           setTimeout(checkRole, 500);
@@ -61,24 +96,24 @@ export const SellerUpgradeForm = ({ onSuccess, onCancel }: SellerUpgradeFormProp
           resolve(false);
         }
       };
-      
+
       checkRole();
     });
   }, [refreshRole, user?.id]);
 
   // Surveiller le changement de rôle après l'upgrade
   useEffect(() => {
-    if (upgradeSuccess && role === 'seller' && !isRedirecting) {
-      console.log('[SellerUpgrade] Role updated, proceeding with redirect');
+    if (upgradeSuccess && role === 'seller' && !isRedirecting && sellerDataReady) {
+      console.log('[SellerUpgrade] Role updated + data ready, proceeding with redirect');
       setIsRedirecting(true);
       onSuccess();
-      
+
       // Délai pour s'assurer que tous les states sont synchronisés
       setTimeout(() => {
         navigate('/seller-dashboard', { replace: true });
       }, 300);
     }
-  }, [upgradeSuccess, role, navigate, onSuccess, isRedirecting]);
+  }, [upgradeSuccess, role, navigate, onSuccess, isRedirecting, sellerDataReady]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,7 +155,7 @@ export const SellerUpgradeForm = ({ onSuccess, onCancel }: SellerUpgradeFormProp
       }
 
       console.log('[SellerUpgrade] RPC success, waiting for role update...');
-      
+
       toast({
         title: "✅ Profil vendeur activé !",
         description: "Préparation de votre tableau de bord...",
@@ -129,13 +164,25 @@ export const SellerUpgradeForm = ({ onSuccess, onCancel }: SellerUpgradeFormProp
 
       // Attendre que le rôle soit mis à jour
       const roleUpdated = await waitForRoleUpdate();
-      
+
+      // ✅ Préparer les données vendeur avant toute redirection
+      // (RPC ensure_seller_trial_tokens + lecture seller_tokens)
+      const ready = await prepareSellerData();
+      setSellerDataReady(true);
+
       if (roleUpdated) {
         setUpgradeSuccess(true);
       } else {
-        // Forcer quand même la redirection après les retries
+        // Forcer quand même la redirection après les retries (comportement existant)
+        // mais uniquement après la tentative de préparation des données.
         console.log('[SellerUpgrade] Forcing redirect after max retries');
         setUpgradeSuccess(true);
+
+        // Si, pour une raison quelconque, role state ne se met pas à 'seller',
+        // on garde le fallback de navigation directe (comme avant).
+        if (!ready) {
+          console.log('[SellerUpgrade] Data not fully ready, continuing with fallback redirect');
+        }
         setIsRedirecting(true);
         onSuccess();
         navigate('/seller-dashboard', { replace: true });

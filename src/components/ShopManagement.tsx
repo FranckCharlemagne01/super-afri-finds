@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Store, Upload, Image as ImageIcon, Check, ExternalLink, Edit } from 'lucide-react';
+import { Store, Upload, Image as ImageIcon, Check, ExternalLink, Edit, Sparkles } from 'lucide-react';
+import { SHOP_BRANDING } from '@/constants/shopBranding';
 
 interface Shop {
   id: string;
@@ -233,21 +234,36 @@ export const ShopManagement = () => {
         </div>
 
         <div className="space-y-4">
-          {/* Banner */}
+          {/* Banner with default branding */}
           <div className="relative w-full h-32 rounded-lg overflow-hidden bg-gradient-to-r from-primary/20 to-secondary/20">
-            {shop.banner_url && (
-              <img src={shop.banner_url} alt="Bannière" className="w-full h-full object-cover" />
+            <img 
+              src={SHOP_BRANDING.getBannerUrl(shop.banner_url)} 
+              alt="Bannière" 
+              className="w-full h-full object-cover" 
+            />
+            {SHOP_BRANDING.isDefaultBanner(shop.banner_url) && (
+              <div className="absolute bottom-2 right-2">
+                <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm text-xs gap-1">
+                  <Sparkles className="h-3 w-3" />
+                  Branding Djassa
+                </Badge>
+              </div>
             )}
           </div>
 
-          {/* Logo & Info */}
+          {/* Logo & Info with default branding */}
           <div className="flex gap-4">
-            <div className="w-20 h-20 rounded-lg overflow-hidden bg-card border flex-shrink-0">
-              {shop.logo_url ? (
-                <img src={shop.logo_url} alt="Logo" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-muted">
-                  <Store className="h-8 w-8 text-muted-foreground" />
+            <div className="w-20 h-20 rounded-lg overflow-hidden bg-card border flex-shrink-0 relative">
+              <img 
+                src={SHOP_BRANDING.getLogoUrl(shop.logo_url)} 
+                alt="Logo" 
+                className="w-full h-full object-cover" 
+              />
+              {SHOP_BRANDING.isDefaultLogo(shop.logo_url) && (
+                <div className="absolute -bottom-1 -right-1">
+                  <div className="w-5 h-5 rounded-full bg-primary/90 flex items-center justify-center">
+                    <Sparkles className="h-3 w-3 text-primary-foreground" />
+                  </div>
                 </div>
               )}
             </div>
@@ -331,16 +347,24 @@ export const ShopManagement = () => {
           <p className="text-xs text-muted-foreground">{formData.shop_description.length}/500 caractères</p>
         </div>
 
-        {/* Logo */}
+        {/* Logo with default branding preview */}
         <div className="space-y-2">
           <Label>Logo de la boutique</Label>
+          <p className="text-xs text-muted-foreground mb-2">
+            Personnalisez votre logo ou gardez le branding Djassa par défaut
+          </p>
           <div className="flex flex-col sm:flex-row items-start gap-4 mt-2">
-            <div className="w-24 h-24 rounded-xl overflow-hidden bg-muted border-2 flex-shrink-0 shadow-sm">
-              {logoPreview ? (
-                <img src={logoPreview} alt="Logo" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <ImageIcon className="h-10 w-10 text-muted-foreground/40" />
+            <div className="w-24 h-24 rounded-xl overflow-hidden bg-muted border-2 flex-shrink-0 shadow-sm relative">
+              <img 
+                src={logoPreview || SHOP_BRANDING.DEFAULT_LOGO} 
+                alt="Logo" 
+                className="w-full h-full object-cover" 
+              />
+              {!logoPreview && (
+                <div className="absolute bottom-1 right-1">
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5 bg-background/80">
+                    Par défaut
+                  </Badge>
                 </div>
               )}
             </div>
@@ -356,16 +380,25 @@ export const ShopManagement = () => {
           </div>
         </div>
 
-        {/* Banner */}
+        {/* Banner with default branding preview */}
         <div className="space-y-2">
           <Label>Bannière de la boutique</Label>
+          <p className="text-xs text-muted-foreground mb-2">
+            Personnalisez votre bannière ou gardez la marquette Djassa par défaut
+          </p>
           <div className="mt-2 space-y-3">
-            <div className="w-full h-40 rounded-xl overflow-hidden bg-muted border-2 shadow-sm">
-              {bannerPreview ? (
-                <img src={bannerPreview} alt="Bannière" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <ImageIcon className="h-16 w-16 text-muted-foreground/40" />
+            <div className="w-full h-40 rounded-xl overflow-hidden bg-muted border-2 shadow-sm relative">
+              <img 
+                src={bannerPreview || SHOP_BRANDING.DEFAULT_BANNER} 
+                alt="Bannière" 
+                className="w-full h-full object-cover" 
+              />
+              {!bannerPreview && (
+                <div className="absolute bottom-2 right-2">
+                  <Badge variant="secondary" className="text-xs bg-background/80 backdrop-blur-sm gap-1">
+                    <Sparkles className="h-3 w-3" />
+                    Marquette Djassa
+                  </Badge>
                 </div>
               )}
             </div>

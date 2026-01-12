@@ -63,6 +63,7 @@ const SellerDashboard = () => {
   const { tokenBalance, freeTokens, paidTokens, freeTokensExpiresAt, refreshBalance } = useTokens();
 
   // ✅ Enregistrer le callback pour rafraîchir les jetons immédiatement après attribution
+  // ET relancer la vérification pour les acheteurs devenus vendeurs
   useEffect(() => {
     if (sellerAccess.registerTokenRefreshCallback) {
       console.log('[SellerDashboard] 📝 Registering token refresh callback');
@@ -70,8 +71,13 @@ const SellerDashboard = () => {
         console.log('[SellerDashboard] 🔄 Token refresh callback triggered - refreshing balance...');
         refreshBalance();
       });
+      
+      // ✅ CRUCIAL: Relancer la vérification des jetons APRÈS l'enregistrement du callback
+      // Ceci assure que les acheteurs devenus vendeurs reçoivent leurs jetons
+      console.log('[SellerDashboard] 🔁 Re-checking trial tokens after callback registration...');
+      sellerAccess.refresh();
     }
-  }, [sellerAccess.registerTokenRefreshCallback, refreshBalance]);
+  }, [sellerAccess.registerTokenRefreshCallback, sellerAccess.refresh, refreshBalance]);
   const { toast } = useToast();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');

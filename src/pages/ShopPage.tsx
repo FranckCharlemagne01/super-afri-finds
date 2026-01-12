@@ -16,6 +16,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import { motion } from 'framer-motion';
 import { getProductImage } from '@/utils/productImageHelper';
+import { SHOP_BRANDING } from '@/constants/shopBranding';
 
 interface Shop {
   id: string;
@@ -262,23 +263,25 @@ const ShopPage = () => {
         </div>
       </motion.header>
 
-      {/* Shop Banner - Mobile optimized */}
+      {/* Shop Banner - Mobile optimized with default Djassa branding */}
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
         className="relative w-full h-40 sm:h-48 md:h-64 bg-gradient-to-r from-primary/10 to-secondary/10 overflow-hidden"
       >
-        {shop.banner_url ? (
-          <img
-            src={shop.banner_url}
-            alt={`${shop.shop_name} banner`}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5">
-            <Store className="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 text-muted-foreground/20" />
+        <img
+          src={SHOP_BRANDING.getBannerUrl(shop.banner_url)}
+          alt={`${shop.shop_name} banner`}
+          className="w-full h-full object-cover"
+          loading="lazy"
+        />
+        {/* Badge indicating default branding */}
+        {SHOP_BRANDING.isDefaultBanner(shop.banner_url) && (
+          <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3">
+            <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm text-xs">
+              🎨 Branding Djassa
+            </Badge>
           </div>
         )}
       </motion.div>
@@ -293,21 +296,15 @@ const ShopPage = () => {
         >
           <Card className="w-full p-4 sm:p-5 md:p-6 shadow-lg border-border/50">
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 md:gap-6">
-              {/* Shop Logo - Mobile optimized */}
+              {/* Shop Logo - Mobile optimized with default Djassa branding */}
               <div className="flex-shrink-0 mx-auto sm:mx-0">
                 <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-xl overflow-hidden bg-card border-3 sm:border-4 border-background shadow-xl ring-2 ring-primary/10">
-                  {shop.logo_url ? (
-                    <img
-                      src={shop.logo_url}
-                      alt={`${shop.shop_name} logo`}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5">
-                      <Store className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 text-muted-foreground/40" />
-                    </div>
-                  )}
+                  <img
+                    src={SHOP_BRANDING.getLogoUrl(shop.logo_url)}
+                    alt={`${shop.shop_name} logo`}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
                 </div>
               </div>
 
@@ -517,18 +514,12 @@ const ShopPage = () => {
                     onClick={() => navigate(`/boutique/${similarShop.shop_slug}`)}
                   >
                     <div className="flex items-center gap-2.5 sm:gap-3 mb-2">
-                      {similarShop.logo_url ? (
-                        <img
-                          src={similarShop.logo_url}
-                          alt={similarShop.shop_name}
-                          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-primary/10 shrink-0"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-primary/5 to-secondary/5 flex items-center justify-center shrink-0">
-                          <Store className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground/40" />
-                        </div>
-                      )}
+                      <img
+                        src={SHOP_BRANDING.getLogoUrl(similarShop.logo_url)}
+                        alt={similarShop.shop_name}
+                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-primary/10 shrink-0"
+                        loading="lazy"
+                      />
                       <div className="flex-1 min-w-0">
                         <h4 className="text-sm sm:text-base font-semibold truncate">{similarShop.shop_name}</h4>
                         {similarShop.subscription_active && (

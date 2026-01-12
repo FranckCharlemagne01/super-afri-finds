@@ -204,7 +204,7 @@ const ShopPage = () => {
 
   // Public shop view for visitors
   return (
-    <div className="min-h-screen bg-background pb-6">
+    <div className="min-h-screen bg-background pb-6 overflow-x-hidden">
       {/* SEO Head */}
       <SEOHead 
         title={shop.shop_name}
@@ -230,7 +230,7 @@ const ShopPage = () => {
           ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full md:translate-y-0'}
         `}
       >
-        <div className="container mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
+        <div className="w-full max-w-full px-2 xs:px-3 sm:px-4 py-2 sm:py-3 flex items-center gap-1.5 xs:gap-2 sm:gap-3">
           <Button
             variant="ghost"
             size="icon"
@@ -241,22 +241,22 @@ const ShopPage = () => {
                 navigate('/marketplace');
               }
             }}
-            className="transition-all hover:bg-secondary min-w-[40px] min-h-[40px] shrink-0"
+            className="transition-all hover:bg-secondary w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 shrink-0"
           >
             <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
           <h1 
-            className="text-base sm:text-lg font-bold gradient-text-primary cursor-pointer transition-transform hover:scale-105 shrink-0" 
+            className="text-sm xs:text-base sm:text-lg font-bold gradient-text-primary cursor-pointer transition-transform hover:scale-105 shrink-0" 
             onClick={() => navigate('/marketplace')}
           >
             Djassa
           </h1>
-          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
-            <Store className="h-4 w-4 sm:h-5 sm:w-5 text-primary shrink-0" />
-            <span className="text-sm sm:text-base font-semibold truncate">{shop.shop_name}</span>
+          <div className="flex items-center gap-1 xs:gap-1.5 sm:gap-2 min-w-0 flex-1 overflow-hidden">
+            <Store className="h-3.5 w-3.5 xs:h-4 xs:w-4 sm:h-5 sm:w-5 text-primary shrink-0" />
+            <span className="text-xs xs:text-sm sm:text-base font-semibold truncate max-w-[120px] xs:max-w-[150px] sm:max-w-none">{shop.shop_name}</span>
           </div>
           {shop.subscription_active && (
-            <Badge variant="secondary" className="text-xs shrink-0 hidden sm:inline-flex">
+            <Badge variant="secondary" className="text-[10px] xs:text-xs shrink-0 hidden xs:inline-flex px-1.5 xs:px-2">
               Premium
             </Badge>
           )}
@@ -268,7 +268,7 @@ const ShopPage = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="relative w-full h-40 sm:h-48 md:h-64 bg-gradient-to-r from-primary/10 to-secondary/10 overflow-hidden"
+        className="relative w-full h-32 xs:h-36 sm:h-48 md:h-64 bg-gradient-to-r from-primary/10 to-secondary/10 overflow-hidden"
       >
         <img
           src={SHOP_BRANDING.getBannerUrl(shop.banner_url)}
@@ -278,8 +278,8 @@ const ShopPage = () => {
         />
         {/* Badge indicating default branding */}
         {SHOP_BRANDING.isDefaultBanner(shop.banner_url) && (
-          <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3">
-            <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm text-xs">
+          <div className="absolute bottom-1.5 right-1.5 xs:bottom-2 xs:right-2 sm:bottom-3 sm:right-3">
+            <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm text-[10px] xs:text-xs px-1.5 xs:px-2">
               🎨 Branding Djassa
             </Badge>
           </div>
@@ -287,18 +287,18 @@ const ShopPage = () => {
       </motion.div>
 
       {/* Shop Info - Mobile optimized */}
-      <div className="container mx-auto px-3 sm:px-4 -mt-12 sm:-mt-16 relative z-10">
+      <div className="w-full max-w-full px-2 xs:px-3 sm:px-4 md:container md:mx-auto -mt-10 xs:-mt-12 sm:-mt-16 relative z-10">
         <motion.div 
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="mb-4 sm:mb-6"
+          className="mb-3 xs:mb-4 sm:mb-6"
         >
-          <Card className="w-full p-4 sm:p-5 md:p-6 shadow-lg border-border/50">
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 md:gap-6">
+          <Card className="w-full p-3 xs:p-4 sm:p-5 md:p-6 shadow-lg border-border/50">
+            <div className="flex flex-col sm:flex-row gap-3 xs:gap-4 sm:gap-5 md:gap-6">
               {/* Shop Logo - Mobile optimized with default Djassa branding */}
               <div className="flex-shrink-0 mx-auto sm:mx-0">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-xl overflow-hidden bg-card border-3 sm:border-4 border-background shadow-xl ring-2 ring-primary/10">
+                <div className="w-16 h-16 xs:w-20 xs:h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-xl overflow-hidden bg-card border-2 xs:border-3 sm:border-4 border-background shadow-xl ring-2 ring-primary/10">
                   <img
                     src={SHOP_BRANDING.getLogoUrl(shop.logo_url)}
                     alt={`${shop.shop_name} logo`}
@@ -309,45 +309,45 @@ const ShopPage = () => {
               </div>
 
               {/* Shop Details - Mobile optimized */}
-              <div className="flex-1 min-w-0 text-center sm:text-left">
-                <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
-                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold truncate">{shop.shop_name}</h2>
+              <div className="flex-1 min-w-0 text-center sm:text-left overflow-hidden">
+                <div className="flex items-center justify-center sm:justify-start gap-1.5 xs:gap-2 mb-1.5 xs:mb-2">
+                  <h2 className="text-base xs:text-lg sm:text-2xl md:text-3xl font-bold truncate max-w-full">{shop.shop_name}</h2>
                   {shop.subscription_active && (
-                    <Badge variant="secondary" className="text-xs shrink-0">
+                    <Badge variant="secondary" className="text-[10px] xs:text-xs shrink-0 px-1 xs:px-1.5">
                       ⭐ Premium
                     </Badge>
                   )}
                 </div>
                 
                 {shop.shop_description && (
-                  <div className="mb-3 sm:mb-4">
-                    <p className={`text-sm sm:text-base text-muted-foreground leading-relaxed ${
-                      !showFullDescription && shop.shop_description.length > 120 ? 'line-clamp-2' : ''
+                  <div className="mb-2 xs:mb-3 sm:mb-4">
+                    <p className={`text-xs xs:text-sm sm:text-base text-muted-foreground leading-relaxed ${
+                      !showFullDescription && shop.shop_description.length > 100 ? 'line-clamp-2' : ''
                     }`}>
                       {shop.shop_description}
                     </p>
-                    {shop.shop_description.length > 120 && (
+                    {shop.shop_description.length > 100 && (
                       <button
                         onClick={() => setShowFullDescription(!showFullDescription)}
-                        className="text-xs sm:text-sm text-primary font-medium hover:underline mt-1 flex items-center gap-1 mx-auto sm:mx-0"
+                        className="text-[10px] xs:text-xs sm:text-sm text-primary font-medium hover:underline mt-1 flex items-center gap-0.5 xs:gap-1 mx-auto sm:mx-0"
                       >
                         {showFullDescription ? (
-                          <>Voir moins <ChevronUp className="h-3 w-3" /></>
+                          <>Voir moins <ChevronUp className="h-2.5 w-2.5 xs:h-3 xs:w-3" /></>
                         ) : (
-                          <>Voir plus <ChevronDown className="h-3 w-3" /></>
+                          <>Voir plus <ChevronDown className="h-2.5 w-2.5 xs:h-3 xs:w-3" /></>
                         )}
                       </button>
                     )}
                   </div>
                 )}
 
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary/70" />
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 xs:gap-3 sm:gap-4 text-[10px] xs:text-xs sm:text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1 xs:gap-1.5">
+                    <Calendar className="h-3 w-3 xs:h-3.5 xs:w-3.5 sm:h-4 sm:w-4 text-primary/70" />
                     <span className="whitespace-nowrap">Depuis {new Date(shop.created_at).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })}</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <Store className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary/70" />
+                  <div className="flex items-center gap-1 xs:gap-1.5">
+                    <Store className="h-3 w-3 xs:h-3.5 xs:w-3.5 sm:h-4 sm:w-4 text-primary/70" />
                     <span className="whitespace-nowrap font-medium">{products.length} produit{products.length > 1 ? 's' : ''}</span>
                   </div>
                 </div>
@@ -361,19 +361,19 @@ const ShopPage = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="mb-6 sm:mb-8"
+          className="mb-4 xs:mb-6 sm:mb-8"
         >
-          <div className="flex items-center justify-between mb-3 sm:mb-4 px-1">
-            <h3 className="text-lg sm:text-xl font-bold">Produits de la boutique</h3>
-            <Badge variant="outline" className="text-xs">
+          <div className="flex items-center justify-between mb-2 xs:mb-3 sm:mb-4 px-0.5 xs:px-1">
+            <h3 className="text-sm xs:text-base sm:text-lg md:text-xl font-bold">Produits de la boutique</h3>
+            <Badge variant="outline" className="text-[10px] xs:text-xs px-1.5 xs:px-2">
               {products.length} {products.length > 1 ? 'articles' : 'article'}
             </Badge>
           </div>
           
           {products.length === 0 ? (
-            <Card className="p-8 sm:p-12 text-center">
-              <Store className="h-12 w-12 sm:h-16 sm:w-16 mx-auto text-muted-foreground/20 mb-3 sm:mb-4" />
-              <p className="text-sm sm:text-base text-muted-foreground">Cette boutique n'a pas encore de produits.</p>
+            <Card className="p-6 xs:p-8 sm:p-12 text-center">
+              <Store className="h-10 w-10 xs:h-12 xs:w-12 sm:h-16 sm:w-16 mx-auto text-muted-foreground/20 mb-2 xs:mb-3 sm:mb-4" />
+              <p className="text-xs xs:text-sm sm:text-base text-muted-foreground">Cette boutique n'a pas encore de produits.</p>
             </Card>
           ) : (
             (() => {
@@ -395,29 +395,29 @@ const ShopPage = () => {
                 : products;
 
               return (
-                <div className="space-y-4 sm:space-y-6">
+                <div className="space-y-3 xs:space-y-4 sm:space-y-6">
                   {/* Show category menu only if multiple categories - Mobile optimized */}
                   {hasMultipleCategories && (
                     <motion.div 
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 }}
-                      className="mb-4 sm:mb-6"
+                      className="mb-3 xs:mb-4 sm:mb-6"
                     >
-                      <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground mb-2 sm:mb-3 px-1">
+                      <h3 className="text-[10px] xs:text-xs sm:text-sm font-semibold text-muted-foreground mb-1.5 xs:mb-2 sm:mb-3 px-0.5 xs:px-1">
                         Filtrer par catégorie
                       </h3>
-                      <ScrollArea className="w-full">
-                        <div className="flex gap-2 pb-3 px-1 overflow-x-auto scrollbar-hide">
+                      <ScrollArea className="w-full -mx-2 xs:-mx-3 sm:mx-0">
+                        <div className="flex gap-1.5 xs:gap-2 pb-2 xs:pb-3 px-2 xs:px-3 sm:px-1 overflow-x-auto scrollbar-hide">
                           <Button
                             variant={selectedCategory === null ? "default" : "outline"}
                             onClick={() => setSelectedCategory(null)}
-                            className="flex items-center gap-1.5 sm:gap-2 shrink-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-all hover:scale-105 rounded-full"
+                            className="flex items-center gap-1 xs:gap-1.5 sm:gap-2 shrink-0 px-2 xs:px-3 sm:px-4 py-1.5 xs:py-2 text-[10px] xs:text-xs sm:text-sm font-medium transition-all hover:scale-105 rounded-full h-7 xs:h-8 sm:h-9"
                             size="sm"
                           >
-                            <Grid3x3 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                            <Grid3x3 className="h-2.5 w-2.5 xs:h-3 xs:w-3 sm:h-3.5 sm:w-3.5" />
                             Tout
-                            <Badge variant="secondary" className="ml-1 text-xs px-1.5">
+                            <Badge variant="secondary" className="ml-0.5 xs:ml-1 text-[9px] xs:text-xs px-1 xs:px-1.5">
                               {products.length}
                             </Badge>
                           </Button>
@@ -426,13 +426,13 @@ const ShopPage = () => {
                               key={category}
                               variant={selectedCategory === category ? "default" : "outline"}
                               onClick={() => setSelectedCategory(category)}
-                              className="capitalize shrink-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-all hover:scale-105 rounded-full"
+                              className="capitalize shrink-0 px-2 xs:px-3 sm:px-4 py-1.5 xs:py-2 text-[10px] xs:text-xs sm:text-sm font-medium transition-all hover:scale-105 rounded-full h-7 xs:h-8 sm:h-9"
                               size="sm"
                             >
                               {category.replace(/-/g, ' ')}
                               <Badge 
                                 variant={selectedCategory === category ? "secondary" : "outline"} 
-                                className="ml-1 text-xs px-1.5"
+                                className="ml-0.5 xs:ml-1 text-[9px] xs:text-xs px-1 xs:px-1.5"
                               >
                                 {productsByCategory[category].length}
                               </Badge>
@@ -448,7 +448,7 @@ const ShopPage = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.5 }}
-                    className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-3 md:gap-4"
+                    className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1.5 xs:gap-2 sm:gap-3 md:gap-4"
                   >
                   {displayedProducts.map((product, index) => (
                       <motion.div
@@ -456,6 +456,7 @@ const ShopPage = () => {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.5 + (index * 0.05), duration: 0.3 }}
+                        className="min-w-0"
                       >
                         <ProductCard
                           id={product.id}
@@ -489,19 +490,19 @@ const ShopPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="mb-6 sm:mb-8"
+            className="mb-4 xs:mb-6 sm:mb-8"
           >
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3 sm:mb-4 px-1">
-              <div className="flex items-center gap-2">
-                <Store className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                <h3 className="text-lg sm:text-xl font-bold">Boutiques similaires</h3>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 xs:gap-2 sm:gap-3 mb-2 xs:mb-3 sm:mb-4 px-0.5 xs:px-1">
+              <div className="flex items-center gap-1.5 xs:gap-2">
+                <Store className="h-3.5 w-3.5 xs:h-4 xs:w-4 sm:h-5 sm:w-5 text-primary" />
+                <h3 className="text-sm xs:text-base sm:text-lg md:text-xl font-bold">Boutiques similaires</h3>
               </div>
-              <Badge variant="outline" className="text-xs w-fit">✨ Recommandé</Badge>
+              <Badge variant="outline" className="text-[10px] xs:text-xs w-fit px-1.5 xs:px-2">✨ Recommandé</Badge>
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 px-1">
+            <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground mb-2 xs:mb-3 sm:mb-4 px-0.5 xs:px-1">
               Découvrez d'autres boutiques dans la même catégorie
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 xs:gap-3 sm:gap-4">
               {similarShops.map((similarShop, index) => (
                 <motion.div
                   key={similarShop.id}
@@ -510,25 +511,25 @@ const ShopPage = () => {
                   transition={{ delay: 0.7 + (index * 0.1) }}
                 >
                   <Card
-                    className="p-3 sm:p-4 cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] border-border/50"
+                    className="p-2.5 xs:p-3 sm:p-4 cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] border-border/50"
                     onClick={() => navigate(`/boutique/${similarShop.shop_slug}`)}
                   >
-                    <div className="flex items-center gap-2.5 sm:gap-3 mb-2">
+                    <div className="flex items-center gap-2 xs:gap-2.5 sm:gap-3 mb-1.5 xs:mb-2">
                       <img
                         src={SHOP_BRANDING.getLogoUrl(similarShop.logo_url)}
                         alt={similarShop.shop_name}
-                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-primary/10 shrink-0"
+                        className="w-8 h-8 xs:w-10 xs:h-10 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-primary/10 shrink-0"
                         loading="lazy"
                       />
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-sm sm:text-base font-semibold truncate">{similarShop.shop_name}</h4>
+                      <div className="flex-1 min-w-0 overflow-hidden">
+                        <h4 className="text-xs xs:text-sm sm:text-base font-semibold truncate">{similarShop.shop_name}</h4>
                         {similarShop.subscription_active && (
-                          <Badge variant="secondary" className="text-xs mt-0.5">⭐ Premium</Badge>
+                          <Badge variant="secondary" className="text-[9px] xs:text-xs mt-0.5 px-1 xs:px-1.5">⭐ Premium</Badge>
                         )}
                       </div>
                     </div>
                     {similarShop.shop_description && (
-                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                      <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
                         {similarShop.shop_description}
                       </p>
                     )}

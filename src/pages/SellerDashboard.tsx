@@ -57,33 +57,46 @@ interface Shop {
 }
 
 const SellerDashboard = () => {
-  const { user, signOut, userId } = useStableAuth();
+  const { user, signOut, userId, loading: authLoading } = useStableAuth();
   const { isSeller, isSuperAdmin, loading: roleLoading, refreshRole } = useStableRole();
   const sellerAccess = useSellerAccess();
   const { tokenBalance, freeTokens, paidTokens, freeTokensExpiresAt, refreshBalance } = useTokens();
 
-  // ✅ Enregistrer le callback pour rafraîchir les jetons immédiatement après attribution
-  // ET relancer la vérification pour les acheteurs devenus vendeurs
-  useEffect(() => {
-    if (sellerAccess.registerTokenRefreshCallback) {
-      console.log('[SellerDashboard] 📝 Registering token refresh callback');
-      sellerAccess.registerTokenRefreshCallback(() => {
-        console.log('[SellerDashboard] 🔄 Token refresh callback triggered - refreshing balance...');
-        refreshBalance();
-      });
-      
-      // ✅ CRUCIAL: Relancer la vérification des jetons APRÈS l'enregistrement du callback
-      // Ceci assure que les acheteurs devenus vendeurs reçoivent leurs jetons
-      console.log('[SellerDashboard] 🔁 Re-checking trial tokens after callback registration...');
-      sellerAccess.refresh();
-    }
-  }, [sellerAccess.registerTokenRefreshCallback, sellerAccess.refresh, refreshBalance]);
   const { toast } = useToast();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [openProductForm, setOpenProductForm] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState<string | null>(null);
+  const [initTimeout, setInitTimeout] = useState(false);
+
+  // ✅ Timeout de sécurité pour éviter les écrans de chargement infinis
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (isInitializing) {
+        console.log('[SellerDashboard] ⚠️ Init timeout reached, forcing completion');
+        setInitTimeout(true);
+        setIsInitializing(false);
+      }
+    }, 8000); // 8 secondes max
+
+    return () => clearTimeout(timeout);
+  }, [isInitializing]);
+
+  // ✅ Enregistrer le callback pour rafraîchir les jetons immédiatement après attribution
+  useEffect(() => {
+    if (sellerAccess.registerTokenRefreshCallback && userId) {
+      console.log('[SellerDashboard] 📝 Registering token refresh callback');
+      sellerAccess.registerTokenRefreshCallback(() => {
+        console.log('[SellerDashboard] 🔄 Token refresh callback triggered - refreshing balance...');
+        refreshBalance();
+      });
+      
+      // ✅ Relancer la vérification des jetons APRÈS l'enregistrement du callback
+      console.log('[SellerDashboard] 🔁 Re-checking trial tokens after callback registration...');
+      sellerAccess.refresh();
+    }
+  }, [sellerAccess.registerTokenRefreshCallback, userId]);
 
   // Fetch seller shop
   const { data: shop, loading: shopLoading, refetch: refetchShop } = useStableData(
@@ -137,15 +150,24 @@ const SellerDashboard = () => {
   // Initialisation et vérification du rôle
   useEffect(() => {
     const initDashboard = async () => {
-      console.log('[SellerDashboard] Init - roleLoading:', roleLoading, 'userId:', userId, 'isSeller:', isSeller);
+      console.log('[SellerDashboard] Init - authLoading:', authLoading, 'roleLoading:', roleLoading, 'userId:', userId, 'isSeller:', isSeller);
       
-      if (roleLoading) {
-        return; // Attendre que le rôle soit chargé
+      // Attendre que l'authentification soit chargée
+      if (authLoading) {
+        console.log('[SellerDashboard] Waiting for auth...');
+        return;
       }
       
-      if (!userId) {
-        console.log('[SellerDashboard] No userId, redirecting to auth');
+      // Si pas d'utilisateur après chargement auth, rediriger
+      if (!authLoading && !userId) {
+        console.log('[SellerDashboard] No userId after auth loaded, redirecting to auth');
         navigate('/auth', { replace: true });
+        return;
+      }
+      
+      // Attendre que le rôle soit chargé (avec timeout de sécurité)
+      if (roleLoading) {
+        console.log('[SellerDashboard] Waiting for role...');
         return;
       }
       
@@ -156,28 +178,45 @@ const SellerDashboard = () => {
         return;
       }
       
-      // Si pas vendeur, on laisse un peu de temps et on re-check
+      // Si pas vendeur, on re-vérifie directement en base
       if (!isSeller) {
-        console.log('[SellerDashboard] Not seller, refreshing role...');
-        await refreshRole();
+        console.log('[SellerDashboard] Not seller according to hook, checking database...');
         
-        // Re-vérifier après refresh
-        const { data: roleData } = await supabase.rpc('get_user_role', { _user_id: userId });
-        console.log('[SellerDashboard] Role after refresh:', roleData);
-        
-        if (roleData !== 'seller' && roleData !== 'admin' && roleData !== 'superadmin') {
+        try {
+          const { data: roleData, error: roleError } = await supabase.rpc('get_user_role', { _user_id: userId });
+          console.log('[SellerDashboard] Role from database:', roleData, 'error:', roleError);
+          
+          if (roleError) {
+            console.error('[SellerDashboard] Role check error:', roleError);
+            // Continuer quand même, le hook peut avoir la bonne valeur
+          }
+          
+          if (roleData === 'seller' || roleData === 'admin' || roleData === 'superadmin') {
+            console.log('[SellerDashboard] User is seller in database, refreshing role...');
+            refreshRole();
+            setIsInitializing(false);
+            setInitError(null);
+            return;
+          }
+          
+          // Vraiment pas vendeur, rediriger
           console.log('[SellerDashboard] Confirmed not seller, redirecting to buyer');
           navigate('/buyer-dashboard', { replace: true });
           return;
+        } catch (err) {
+          console.error('[SellerDashboard] Error checking role:', err);
+          // En cas d'erreur, laisser l'utilisateur voir le dashboard si possible
         }
       }
       
+      // Tout est OK, terminer l'initialisation
+      console.log('[SellerDashboard] ✅ Initialization complete');
       setIsInitializing(false);
       setInitError(null);
     };
     
     initDashboard();
-  }, [userId, isSeller, isSuperAdmin, roleLoading, navigate, refreshRole]);
+  }, [userId, authLoading, isSeller, isSuperAdmin, roleLoading, navigate, refreshRole]);
 
   // Gestion des paramètres URL pour paiement
   useEffect(() => {
@@ -313,9 +352,38 @@ const SellerDashboard = () => {
     setOpenProductForm(true);
   }, []);
 
-  // Show loading state pendant l'initialisation
-  if (isInitializing || roleLoading || !userId || shopLoading || sellerAccess.loading) {
+  // Calculer si on doit afficher le skeleton
+  // Le timeout de sécurité permet de forcer l'affichage après 8s
+  const shouldShowSkeleton = !initTimeout && (
+    isInitializing || 
+    authLoading || 
+    roleLoading || 
+    !userId
+  );
+
+  // Show loading state pendant l'initialisation (avec timeout de sécurité)
+  if (shouldShowSkeleton) {
     return <SellerDashboardSkeleton />;
+  }
+
+  // Afficher erreur si timeout atteint sans utilisateur
+  if (initTimeout && !userId) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6 md:p-8 text-center">
+            <Store className="h-12 w-12 md:h-16 md:w-16 text-destructive mx-auto mb-4" />
+            <h2 className="text-xl md:text-2xl font-semibold mb-2">Session expirée</h2>
+            <p className="text-muted-foreground mb-6 text-sm md:text-base">
+              Votre session a expiré. Veuillez vous reconnecter.
+            </p>
+            <Button onClick={() => navigate('/auth', { replace: true })}>
+              Se connecter
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   // Afficher erreur si problème d'initialisation
@@ -343,8 +411,8 @@ const SellerDashboard = () => {
     return null;
   }
 
-  // Non-seller access
-  if (!isSeller && !roleLoading) {
+  // Non-seller access - afficher un message clair
+  if (!isSeller && !roleLoading && !initTimeout) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md">

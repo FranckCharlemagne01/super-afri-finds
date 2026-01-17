@@ -1,16 +1,75 @@
-// Djassa Marketplace - Service Worker for Push Notifications
-const CACHE_NAME = 'djassa-v1';
+// Djassa Marketplace - Service Worker for PWA & Push Notifications
+const CACHE_NAME = 'djassa-pwa-v2';
+const STATIC_ASSETS = [
+  '/',
+  '/index.html',
+  '/manifest.json',
+  '/favicon.png'
+];
 
-// Install event
+// Install event - cache essential assets
 self.addEventListener('install', (event) => {
-  console.log('[SW] Service Worker installed');
-  self.skipWaiting();
+  console.log('[SW] Service Worker installing...');
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        console.log('[SW] Caching static assets');
+        return cache.addAll(STATIC_ASSETS);
+      })
+      .then(() => {
+        console.log('[SW] Service Worker installed');
+        self.skipWaiting();
+      })
+  );
 });
 
-// Activate event
+// Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Service Worker activated');
-  event.waitUntil(clients.claim());
+  console.log('[SW] Service Worker activating...');
+  event.waitUntil(
+    caches.keys()
+      .then((cacheNames) => {
+        return Promise.all(
+          cacheNames
+            .filter((name) => name !== CACHE_NAME)
+            .map((name) => {
+              console.log('[SW] Deleting old cache:', name);
+              return caches.delete(name);
+            })
+        );
+      })
+      .then(() => {
+        console.log('[SW] Service Worker activated');
+        return clients.claim();
+      })
+  );
+});
+
+// Fetch event - network first, fallback to cache
+self.addEventListener('fetch', (event) => {
+  // Skip non-GET requests
+  if (event.request.method !== 'GET') return;
+  
+  // Skip cross-origin requests
+  if (!event.request.url.startsWith(self.location.origin)) return;
+  
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        // Clone and cache successful responses
+        if (response.status === 200) {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone);
+          });
+        }
+        return response;
+      })
+      .catch(() => {
+        // Return cached version if network fails
+        return caches.match(event.request);
+      })
+  );
 });
 
 // Push notification received

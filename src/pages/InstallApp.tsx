@@ -5,6 +5,7 @@ import { Download, Smartphone, Share, Plus, MoreVertical, Check, ArrowLeft, Moni
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePWAInstallStandalone } from '@/hooks/usePWAInstall';
+import IOSInstallOverlay from '@/components/IOSInstallOverlay';
 
 const InstallApp = () => {
   const navigate = useNavigate();
@@ -14,7 +15,10 @@ const InstallApp = () => {
     isStandalone, 
     isIOS, 
     isAndroid, 
-    promptInstall 
+    promptInstall,
+    showIOSOverlay,
+    openIOSOverlay,
+    closeIOSOverlay
   } = usePWAInstallStandalone();
   
   const [isInstalling, setIsInstalling] = useState(false);
@@ -31,18 +35,33 @@ const InstallApp = () => {
   }, [isStandalone]);
 
   const handleInstallClick = async () => {
+    // For iOS, show the overlay with instructions
+    if (isIOS) {
+      openIOSOverlay();
+      return;
+    }
+
+    // For Android/Desktop, use the native prompt
+    if (!isInstallable) {
+      setInstallError("L'installation automatique n'est pas disponible. Utilisez le menu de votre navigateur.");
+      return;
+    }
+
     setIsInstalling(true);
     setInstallError(null);
     
     try {
+      console.log('[InstallApp] Attempting to install...');
       const result = await promptInstall();
+      console.log('[InstallApp] Install result:', result);
+      
       if (result) {
         setShowSuccess(true);
       } else {
         setInstallError("L'installation a été annulée. Vous pouvez réessayer.");
       }
     } catch (error) {
-      console.error('[PWA] Install error:', error);
+      console.error('[InstallApp] Install error:', error);
       setInstallError("Erreur lors de l'installation. Veuillez réessayer.");
     } finally {
       setIsInstalling(false);
@@ -169,8 +188,8 @@ const InstallApp = () => {
           )}
         </AnimatePresence>
 
-        {/* Install Button (Chrome/Edge on Android/Desktop) */}
-        {isInstallable && (
+        {/* Install Button - Always show for Android/Desktop if installable, or for iOS */}
+        {(isInstallable || isIOS) && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -188,6 +207,11 @@ const InstallApp = () => {
                   <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
                   Installation en cours...
                 </>
+              ) : isIOS ? (
+                <>
+                  <Share className="mr-2 h-5 w-5" />
+                  Comment installer sur iPhone
+                </>
               ) : (
                 <>
                   <Download className="mr-2 h-5 w-5" />
@@ -196,12 +220,12 @@ const InstallApp = () => {
               )}
             </Button>
             <p className="text-xs text-muted-foreground text-center mt-2">
-              Installation rapide, moins de 1 Mo
+              {isIOS ? "Suivez les instructions simples" : "Installation rapide, moins de 1 Mo"}
             </p>
           </motion.div>
         )}
 
-        {/* iOS Instructions */}
+        {/* iOS Instructions - Only show inline if button not shown */}
         {isIOS && !isInstallable && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -220,59 +244,15 @@ const InstallApp = () => {
                   Suivez ces 3 étapes simples
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-5">
-                <motion.div 
-                  className="flex items-start gap-4"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 }}
+              <CardContent>
+                <Button 
+                  onClick={openIOSOverlay} 
+                  className="w-full"
+                  size="lg"
                 >
-                  <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shrink-0">
-                    1
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium">Appuyez sur le bouton Partager</p>
-                    <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-muted rounded-lg">
-                      <Share className="w-5 h-5 text-primary" />
-                      <span className="text-sm text-muted-foreground">En bas de Safari</span>
-                    </div>
-                  </div>
-                </motion.div>
-                
-                <motion.div 
-                  className="flex items-start gap-4"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shrink-0">
-                    2
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium">Faites défiler et appuyez sur</p>
-                    <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-muted rounded-lg">
-                      <Plus className="w-5 h-5 text-primary" />
-                      <span className="text-sm font-medium">"Sur l'écran d'accueil"</span>
-                    </div>
-                  </div>
-                </motion.div>
-                
-                <motion.div 
-                  className="flex items-start gap-4"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5 }}
-                >
-                  <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shrink-0">
-                    3
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium">Confirmez en appuyant sur "Ajouter"</p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      L'icône Djassa apparaîtra sur votre écran d'accueil
-                    </p>
-                  </div>
-                </motion.div>
+                  <Share className="mr-2 h-5 w-5" />
+                  Voir les instructions
+                </Button>
               </CardContent>
             </Card>
           </motion.div>
@@ -414,6 +394,9 @@ const InstallApp = () => {
           </Button>
         </motion.div>
       </main>
+
+      {/* iOS Install Overlay */}
+      <IOSInstallOverlay isOpen={showIOSOverlay} onClose={closeIOSOverlay} />
     </div>
   );
 };

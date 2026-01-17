@@ -21,17 +21,60 @@ interface PWAInstallContextType {
 
 const PWAInstallContext = createContext<PWAInstallContextType | null>(null);
 
-// Global variable to capture the event before React mounts
+// Global storage for the deferred prompt - persists across component lifecycles
 let globalDeferredPrompt: BeforeInstallPromptEvent | null = null;
+let promptCapturedAt: number | null = null;
 
-// Capture the event globally as early as possible
+// Capture the event globally BEFORE React even loads
 if (typeof window !== 'undefined') {
-  window.addEventListener('beforeinstallprompt', (e: Event) => {
+  const capturePrompt = (e: Event) => {
     e.preventDefault();
     globalDeferredPrompt = e as BeforeInstallPromptEvent;
-    console.log('[PWA] beforeinstallprompt captured globally');
+    promptCapturedAt = Date.now();
+    console.log('[PWA] 🎯 beforeinstallprompt captured globally at', new Date().toISOString());
+    
+    // Dispatch custom event to notify React components
+    window.dispatchEvent(new CustomEvent('pwa-prompt-available'));
+  };
+  
+  window.addEventListener('beforeinstallprompt', capturePrompt);
+  
+  // Also listen for app installed
+  window.addEventListener('appinstalled', () => {
+    console.log('[PWA] ✅ App installed event fired');
+    globalDeferredPrompt = null;
+    promptCapturedAt = null;
+    window.dispatchEvent(new CustomEvent('pwa-installed'));
   });
 }
+
+// Utility function to check if prompt is available
+export const isPWAPromptAvailable = () => !!globalDeferredPrompt;
+
+// Utility function to trigger install directly (for use outside React)
+export const triggerPWAInstall = async (): Promise<boolean> => {
+  if (!globalDeferredPrompt) {
+    console.log('[PWA] ❌ No prompt available for installation');
+    return false;
+  }
+  
+  try {
+    console.log('[PWA] 🚀 Triggering install prompt...');
+    await globalDeferredPrompt.prompt();
+    const { outcome } = await globalDeferredPrompt.userChoice;
+    console.log('[PWA] User choice:', outcome);
+    
+    if (outcome === 'accepted') {
+      globalDeferredPrompt = null;
+      promptCapturedAt = null;
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('[PWA] Install error:', error);
+    return false;
+  }
+};
 
 export const PWAInstallProvider = ({ children }: { children: ReactNode }) => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(globalDeferredPrompt);
@@ -74,35 +117,51 @@ export const PWAInstallProvider = ({ children }: { children: ReactNode }) => {
     const handleStandaloneChange = () => checkStandalone();
     standaloneQuery.addEventListener('change', handleStandaloneChange);
 
-    // If we captured the prompt globally before React mounted
+    // Sync with global prompt
     if (globalDeferredPrompt && !deferredPrompt) {
       setDeferredPrompt(globalDeferredPrompt);
     }
 
-    // Listen for new install prompts
+    // Listen for prompt availability
+    const handlePromptAvailable = () => {
+      console.log('[PWA] React notified of prompt availability');
+      setDeferredPrompt(globalDeferredPrompt);
+    };
+
+    // Listen for installation
+    const handleInstalled = () => {
+      console.log('[PWA] React notified of installation');
+      setIsInstalled(true);
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener('pwa-prompt-available', handlePromptAvailable);
+    window.addEventListener('pwa-installed', handleInstalled);
+
+    // Also listen for native events
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       const promptEvent = e as BeforeInstallPromptEvent;
       globalDeferredPrompt = promptEvent;
       setDeferredPrompt(promptEvent);
-      console.log('[PWA] beforeinstallprompt event captured in React');
+      console.log('[PWA] beforeinstallprompt captured in React effect');
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    // Listen for successful installation
     const handleAppInstalled = () => {
-      console.log('[PWA] App installed successfully');
+      console.log('[PWA] appinstalled event in React effect');
       setIsInstalled(true);
       setDeferredPrompt(null);
       globalDeferredPrompt = null;
     };
 
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
+      window.removeEventListener('pwa-prompt-available', handlePromptAvailable);
+      window.removeEventListener('pwa-installed', handleInstalled);
       standaloneQuery.removeEventListener('change', handleStandaloneChange);
     };
   }, [deferredPrompt]);
@@ -111,13 +170,16 @@ export const PWAInstallProvider = ({ children }: { children: ReactNode }) => {
     const prompt = deferredPrompt || globalDeferredPrompt;
     
     if (!prompt) {
-      console.log('[PWA] No install prompt available');
+      console.log('[PWA] ❌ No install prompt available');
+      console.log('[PWA] Prompt captured at:', promptCapturedAt ? new Date(promptCapturedAt).toISOString() : 'never');
       return false;
     }
 
     try {
-      console.log('[PWA] Triggering install prompt');
+      console.log('[PWA] 🚀 Calling prompt()...');
       await prompt.prompt();
+      
+      console.log('[PWA] ⏳ Waiting for user choice...');
       const { outcome } = await prompt.userChoice;
       
       console.log('[PWA] User choice:', outcome);
@@ -126,6 +188,7 @@ export const PWAInstallProvider = ({ children }: { children: ReactNode }) => {
         setIsInstalled(true);
         setDeferredPrompt(null);
         globalDeferredPrompt = null;
+        promptCapturedAt = null;
         return true;
       }
       
@@ -139,6 +202,7 @@ export const PWAInstallProvider = ({ children }: { children: ReactNode }) => {
   const clearPrompt = useCallback(() => {
     setDeferredPrompt(null);
     globalDeferredPrompt = null;
+    promptCapturedAt = null;
   }, []);
 
   const value: PWAInstallContextType = {
@@ -172,53 +236,89 @@ export const usePWAInstall = (): PWAInstallContextType => {
   return context;
 };
 
-// Standalone hook for components outside provider
+// Standalone hook for components outside provider - IMPROVED VERSION
 export const usePWAInstallStandalone = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(globalDeferredPrompt);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
+  const [showIOSOverlay, setShowIOSOverlay] = useState(false);
 
   useEffect(() => {
     const userAgent = navigator.userAgent.toLowerCase();
-    setIsIOS(/iphone|ipad|ipod/.test(userAgent));
-    setIsAndroid(/android/.test(userAgent));
+    const iosDevice = /iphone|ipad|ipod/.test(userAgent) && !(window as any).MSStream;
+    const androidDevice = /android/.test(userAgent);
+    
+    setIsIOS(iosDevice);
+    setIsAndroid(androidDevice);
     
     const standaloneMode = window.matchMedia('(display-mode: standalone)').matches 
+      || window.matchMedia('(display-mode: fullscreen)').matches
       || (window.navigator as any).standalone === true;
     setIsStandalone(standaloneMode);
     setIsInstalled(standaloneMode);
 
+    // Sync with global prompt immediately
     if (globalDeferredPrompt) {
+      console.log('[PWA Standalone] Found existing global prompt');
       setDeferredPrompt(globalDeferredPrompt);
     }
 
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      globalDeferredPrompt = e as BeforeInstallPromptEvent;
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    const handlePromptAvailable = () => {
+      console.log('[PWA Standalone] Prompt became available');
+      setDeferredPrompt(globalDeferredPrompt);
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', () => {
+    const handleInstalled = () => {
       setIsInstalled(true);
       setDeferredPrompt(null);
-      globalDeferredPrompt = null;
+    };
+
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      const promptEvent = e as BeforeInstallPromptEvent;
+      globalDeferredPrompt = promptEvent;
+      setDeferredPrompt(promptEvent);
+      console.log('[PWA Standalone] beforeinstallprompt captured');
+    };
+
+    window.addEventListener('pwa-prompt-available', handlePromptAvailable);
+    window.addEventListener('pwa-installed', handleInstalled);
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleInstalled);
+
+    // Listen for display mode changes
+    const standaloneQuery = window.matchMedia('(display-mode: standalone)');
+    standaloneQuery.addEventListener('change', () => {
+      const newStandalone = standaloneQuery.matches;
+      setIsStandalone(newStandalone);
+      setIsInstalled(newStandalone);
     });
 
     return () => {
+      window.removeEventListener('pwa-prompt-available', handlePromptAvailable);
+      window.removeEventListener('pwa-installed', handleInstalled);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleInstalled);
     };
   }, []);
 
-  const promptInstall = async () => {
+  const promptInstall = async (): Promise<boolean> => {
     const prompt = deferredPrompt || globalDeferredPrompt;
-    if (!prompt) return false;
+    
+    if (!prompt) {
+      console.log('[PWA Standalone] ❌ No prompt available');
+      return false;
+    }
 
     try {
+      console.log('[PWA Standalone] 🚀 Triggering prompt...');
       await prompt.prompt();
       const { outcome } = await prompt.userChoice;
+      
+      console.log('[PWA Standalone] User choice:', outcome);
+      
       if (outcome === 'accepted') {
         setIsInstalled(true);
         setDeferredPrompt(null);
@@ -226,10 +326,14 @@ export const usePWAInstallStandalone = () => {
         return true;
       }
       return false;
-    } catch {
+    } catch (error) {
+      console.error('[PWA Standalone] Error:', error);
       return false;
     }
   };
+
+  const openIOSOverlay = () => setShowIOSOverlay(true);
+  const closeIOSOverlay = () => setShowIOSOverlay(false);
 
   return {
     deferredPrompt,
@@ -239,5 +343,8 @@ export const usePWAInstallStandalone = () => {
     isIOS,
     isAndroid,
     promptInstall,
+    showIOSOverlay,
+    openIOSOverlay,
+    closeIOSOverlay,
   };
 };

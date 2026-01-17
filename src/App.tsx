@@ -41,6 +41,7 @@ const CategoriesPage = lazy(() => import("./pages/CategoriesPage"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const DemoVideo = lazy(() => import("./pages/DemoVideo"));
 const ConfirmEmail = lazy(() => import("./pages/ConfirmEmail"));
+const InstallApp = lazy(() => import("./pages/InstallApp"));
 
 // Optimized QueryClient configuration for better caching
 const queryClient = new QueryClient({
@@ -134,6 +135,7 @@ const AnimatedRoutes = () => {
             <Route path="/legal" element={<LegalNotice />} />
             <Route path="/about" element={<About />} />
             <Route path="/demo" element={<DemoVideo />} />
+            <Route path="/install" element={<InstallApp />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

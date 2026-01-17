@@ -1,10 +1,11 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Search, MessageSquare, ShoppingCart, User } from "lucide-react";
+import { Home, Grid3X3, MessageSquare, ShoppingCart, User } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { useNotifications } from "@/hooks/useNotifications";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { motion, AnimatePresence } from "framer-motion";
 
 export const MobileBottomNav = () => {
   const navigate = useNavigate();
@@ -36,66 +37,104 @@ export const MobileBottomNav = () => {
           duration: 2000,
         });
       } else {
-        // Si en bas, remonter en haut
+        // Si en bas, remonter en haut avec animation fluide
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        toast({
-          title: "Retour en haut",
-          description: "Retour au début de la page",
-          duration: 1500,
-        });
       }
     } else {
       // Rediriger vers la page publique
       navigate("/marketplace");
-      toast({
-        title: "Retour à l'accueil",
-        description: "Bienvenue sur la boutique publique",
-        duration: 2000,
-      });
     }
   };
 
   const navItems = [
     { icon: Home, label: "Accueil", path: "/marketplace", onClick: handleHomeClick },
-    { icon: Search, label: "Catégories", path: "/categories" },
+    { icon: Grid3X3, label: "Catégories", path: "/categories" },
     { icon: MessageSquare, label: "Messages", path: "/messages", badge: messageBadgeCount },
     { icon: ShoppingCart, label: "Panier", path: "/cart", badge: cartItems },
-    { icon: User, label: "Mon Djassa", path: "/buyer-dashboard" },
+    { icon: User, label: "Compte", path: "/buyer-dashboard" },
   ];
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => {
+    if (path === "/marketplace") {
+      return location.pathname === "/" || location.pathname === "/marketplace";
+    }
+    return location.pathname === path || location.pathname.startsWith(path + "/");
+  };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border shadow-lg md:hidden">
-      <div className="flex items-center justify-around h-16 px-2">
-        {navItems.map(({ icon: Icon, label, path, badge, onClick }) => (
-          <button
-            key={path}
-            onClick={(e) => onClick ? onClick(e) : navigate(path)}
-            className={cn(
-              "flex flex-col items-center justify-center flex-1 h-full gap-1.5 transition-all duration-200 relative active:scale-95 touch-manipulation",
-              isActive(path)
-                ? "text-primary drop-shadow-md"
-                : "text-foreground/70 hover:text-foreground"
-            )}
-          >
-            <div className="relative">
-              <Icon className={cn(
-                "transition-all duration-200",
-                isActive(path) ? "w-7 h-7" : "w-6 h-6"
-              )} />
-              {badge !== undefined && badge > 0 && (
-                <span className="absolute -top-2 -right-2 bg-promo text-white text-[10px] font-black rounded-full w-5 h-5 flex items-center justify-center shadow-lg animate-pulse-slow">
-                  {badge > 9 ? "9+" : badge}
-                </span>
+    <nav 
+      className="fixed bottom-0 left-0 right-0 z-50 bg-white/98 backdrop-blur-xl border-t border-border/40 shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.08)]"
+      style={{ 
+        paddingBottom: 'max(env(safe-area-inset-bottom), 8px)',
+      }}
+    >
+      <div className="flex items-center justify-around h-16 px-1">
+        {navItems.map(({ icon: Icon, label, path, badge, onClick }) => {
+          const active = isActive(path);
+          
+          return (
+            <motion.button
+              key={path}
+              onClick={(e) => onClick ? onClick(e) : navigate(path)}
+              whileTap={{ scale: 0.92 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              className={cn(
+                "flex flex-col items-center justify-center flex-1 h-full gap-0.5 transition-colors duration-200 relative",
+                "touch-manipulation select-none",
+                active
+                  ? "text-primary"
+                  : "text-muted-foreground active:text-primary"
               )}
-            </div>
-            <span className={cn(
-              "text-[11px] font-extrabold tracking-tight",
-              isActive(path) && "drop-shadow-sm"
-            )}>{label}</span>
-          </button>
-        ))}
+            >
+              <div className="relative">
+                <motion.div
+                  initial={false}
+                  animate={active ? { scale: 1.1, y: -2 } : { scale: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                >
+                  <Icon className={cn(
+                    "transition-all duration-200",
+                    active ? "w-6 h-6 stroke-[2.5px]" : "w-5 h-5 stroke-[1.8px]"
+                  )} />
+                </motion.div>
+                
+                <AnimatePresence>
+                  {badge !== undefined && badge > 0 && (
+                    <motion.span 
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      className="absolute -top-1.5 -right-2 bg-promo text-white text-[9px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shadow-md"
+                    >
+                      {badge > 99 ? "99+" : badge}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </div>
+              
+              <span className={cn(
+                "text-[10px] font-medium tracking-tight transition-all duration-200",
+                active ? "font-semibold" : ""
+              )}>
+                {label}
+              </span>
+              
+              {/* Active indicator */}
+              <AnimatePresence>
+                {active && (
+                  <motion.div
+                    layoutId="activeTab"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    className="absolute -top-0.5 w-8 h-1 bg-primary rounded-full"
+                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                  />
+                )}
+              </AnimatePresence>
+            </motion.button>
+          );
+        })}
       </div>
     </nav>
   );

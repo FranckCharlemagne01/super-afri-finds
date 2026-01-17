@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -14,6 +14,7 @@ import { useVisitorTracking } from "@/hooks/useVisitorTracking";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import { NativeAppProvider } from "@/components/NativeAppProvider";
 import { prefetchCriticalRoutes } from "@/hooks/usePrefetch";
+import { AnimatePresence, motion } from "framer-motion";
 
 const Verify = lazy(() => import("./pages/Verify"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
@@ -60,11 +61,86 @@ const queryClient = new QueryClient({
 
 // Memoized loading fallback component
 const PageLoadingFallback = memo(() => (
-  <div className="min-h-screen bg-background flex items-center justify-center">
+  <div className="min-h-screen bg-background flex items-center justify-center pb-safe-nav">
     <SmoothSkeleton className="w-full max-w-4xl h-96" />
   </div>
 ));
 PageLoadingFallback.displayName = 'PageLoadingFallback';
+
+// Animated routes wrapper for page transitions
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+        transition={{ 
+          type: "spring", 
+          stiffness: 380, 
+          damping: 35,
+          mass: 0.8 
+        }}
+        className="min-h-screen"
+      >
+        <Suspense fallback={<PageLoadingFallback />}>
+          <Routes location={location}>
+            <Route path="/" element={<Index />} />
+            <Route path="/marketplace" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/auth/welcome" element={<AuthWelcome />} />
+            <Route path="/auth/confirm-email" element={<ConfirmEmail />} />
+            <Route path="/welcome" element={<Welcome />} />
+            <Route path="/auth/reset-password" element={<ResetPassword />} />
+            <Route path="/verify" element={<Verify />} />
+            <Route 
+              path="/seller-dashboard" 
+              element={
+                <ProtectedRoute requiredRole="seller">
+                  <SellerDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/buyer-dashboard" 
+              element={
+                <ProtectedRoute requiredRole="buyer">
+                  <BuyerDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/superadmin" 
+              element={
+                <ProtectedRoute requiredRole="superadmin">
+                  <SuperAdmin />
+                </ProtectedRoute>
+              } 
+            />
+            <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/favorites" element={<Favorites />} />
+            <Route path="/flash-sales" element={<FlashSales />} />
+            <Route path="/my-orders" element={<MyOrders />} />
+            <Route path="/search" element={<SearchResults />} />
+            <Route path="/boutique/:slug" element={<ShopPage />} />
+            <Route path="/category/:slug" element={<CategoryPage />} />
+            <Route path="/categories" element={<CategoriesPage />} />
+            <Route path="/messages" element={<MessagesPage />} />
+            <Route path="/legal" element={<LegalNotice />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/demo" element={<DemoVideo />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
 
 const App = () => {
   const [showSplash, setShowSplash] = useState(true);
@@ -107,57 +183,7 @@ const App = () => {
             <Sonner />
             {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
             <BrowserRouter>
-              <Suspense fallback={<PageLoadingFallback />}>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/marketplace" element={<Index />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/auth/callback" element={<AuthCallback />} />
-                  <Route path="/auth/welcome" element={<AuthWelcome />} />
-                  <Route path="/auth/confirm-email" element={<ConfirmEmail />} />
-                  <Route path="/welcome" element={<Welcome />} />
-                  <Route path="/auth/reset-password" element={<ResetPassword />} />
-                  <Route path="/verify" element={<Verify />} />
-                  <Route 
-                    path="/seller-dashboard" 
-                    element={
-                      <ProtectedRoute requiredRole="seller">
-                        <SellerDashboard />
-                      </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/buyer-dashboard" 
-                    element={
-                      <ProtectedRoute requiredRole="buyer">
-                        <BuyerDashboard />
-                      </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/superadmin" 
-                    element={
-                      <ProtectedRoute requiredRole="superadmin">
-                        <SuperAdmin />
-                      </ProtectedRoute>
-                    } 
-                  />
-                  <Route path="/product/:id" element={<ProductDetail />} />
-                  <Route path="/cart" element={<Cart />} />
-                  <Route path="/favorites" element={<Favorites />} />
-                  <Route path="/flash-sales" element={<FlashSales />} />
-                  <Route path="/my-orders" element={<MyOrders />} />
-                  <Route path="/search" element={<SearchResults />} />
-                  <Route path="/boutique/:slug" element={<ShopPage />} />
-                  <Route path="/category/:slug" element={<CategoryPage />} />
-                  <Route path="/categories" element={<CategoriesPage />} />
-                  <Route path="/messages" element={<MessagesPage />} />
-                  <Route path="/legal" element={<LegalNotice />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/demo" element={<DemoVideo />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
+              <AnimatedRoutes />
               <MobileBottomNav />
               <PushNotificationPrompt />
             </BrowserRouter>

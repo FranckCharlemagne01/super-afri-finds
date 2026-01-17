@@ -1191,3 +1191,200 @@ textarea {
     @apply lg:rounded-3xl;
   }
 }
+
+/* ===========================================
+   ENHANCED MOBILE NATIVE APP EXPERIENCE
+   =========================================== */
+
+/* Prevent rubber-banding on iOS */
+@supports (-webkit-touch-callout: none) {
+  html, body {
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  #root {
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: none;
+  }
+}
+
+/* Native-like scrollbar hiding for mobile */
+@media (max-width: 1023px) {
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  
+  * {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Bottom nav safe spacing */
+@layer utilities {
+  .pb-safe-nav {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 16px);
+  }
+  
+  .mb-safe-nav {
+    margin-bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 16px);
+  }
+}
+
+/* Enhanced touch interactions */
+@layer components {
+  .touch-bounce {
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .touch-bounce:active {
+    transform: scale(0.97);
+  }
+  
+  /* iOS-style pressed state */
+  .ios-press {
+    transition: all 0.1s ease;
+  }
+  
+  .ios-press:active {
+    opacity: 0.7;
+    transform: scale(0.98);
+  }
+  
+  /* Native card press effect */
+  .native-press {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.15s ease;
+  }
+  
+  .native-press:active {
+    transform: scale(0.98);
+    background-color: hsl(var(--muted) / 0.5);
+  }
+  
+  /* Smooth list item transitions */
+  .list-item-animated {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .list-item-animated:active {
+    background-color: hsl(var(--muted) / 0.6);
+  }
+}
+
+/* Page content container for mobile */
+@layer components {
+  .mobile-page-container {
+    @apply min-h-screen bg-background;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  }
+  
+  .mobile-scroll-container {
+    @apply overflow-y-auto overflow-x-hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+}
+
+/* Native-style section spacing */
+@layer utilities {
+  .section-mobile {
+    @apply px-4 py-4;
+  }
+  
+  @screen md {
+    .section-mobile {
+      @apply px-6 py-6;
+    }
+  }
+  
+  @screen lg {
+    .section-mobile {
+      @apply px-8 py-8;
+    }
+  }
+}
+
+/* Smooth page transitions */
+@layer utilities {
+  .page-enter {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  
+  .page-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .page-exit {
+    opacity: 1;
+  }
+  
+  .page-exit-active {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+}
+
+/* Tab bar indicator animation */
+@keyframes tab-indicator-slide {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.tab-indicator-animate {
+  animation: tab-indicator-slide 0.2s ease-out forwards;
+}
+
+/* Native skeleton loading */
+@layer components {
+  .native-skeleton {
+    @apply bg-muted rounded-xl overflow-hidden;
+    position: relative;
+  }
+  
+  .native-skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(var(--muted-foreground) / 0.08) 50%,
+      transparent 100%
+    );
+    animation: native-shimmer 1.5s infinite;
+  }
+  
+  @keyframes native-shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+}
+
+/* Improved focus states for accessibility */
+@layer base {
+  :focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+  }
+  
+  @media (pointer: coarse) {
+    :focus-visible {
+      @apply ring-0 ring-offset-0;
+    }
+  }
+}

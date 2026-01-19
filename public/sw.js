@@ -1,15 +1,18 @@
 // Djassa Marketplace - Service Worker for PWA & Push Notifications
-// Version 3 - Improved caching and offline support
-const CACHE_NAME = 'djassa-pwa-v3';
-const DYNAMIC_CACHE = 'djassa-dynamic-v3';
+// Version 4 - Optimized for WebAPK (Android) and iOS
+const CACHE_NAME = 'djassa-pwa-v4';
+const DYNAMIC_CACHE = 'djassa-dynamic-v4';
 
-// Static assets to cache on install
+// Static assets to cache on install - Essential for WebAPK
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/favicon.png',
-  '/favicon.ico'
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/icons/icon-maskable-192.png',
+  '/icons/icon-maskable-512.png'
 ];
 
 // Install event - cache essential assets

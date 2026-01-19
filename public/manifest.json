@@ -2,12 +2,12 @@
   "name": "Djassa Marketplace",
   "short_name": "Djassa",
   "description": "Marketplace e-commerce leader en Côte d'Ivoire. Achetez, vendez et créez votre boutique en ligne.",
-  "start_url": "/?source=pwa",
+  "start_url": "/",
   "scope": "/",
   "id": "/",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
-  "background_color": "#ffffff",
+  "background_color": "#FF6B35",
   "theme_color": "#FF6B35",
   "orientation": "portrait-primary",
   "lang": "fr-CI",
@@ -55,7 +55,7 @@
       "src": "/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
       "src": "/icons/icon-256.png",
@@ -73,7 +73,7 @@
       "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
       "src": "/icons/icon-maskable-192.png",
@@ -86,12 +86,6 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
-    },
-    {
-      "src": "/favicon.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
     }
   ],
   "screenshots": [
@@ -134,9 +128,6 @@
     }
   ],
   "related_applications": [],
-  "edge_side_panel": {
-    "preferred_width": 400
-  },
   "handle_links": "preferred",
   "launch_handler": {
     "client_mode": "navigate-existing"

@@ -15,7 +15,7 @@ import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import { NativeAppProvider } from "@/components/NativeAppProvider";
 import { prefetchCriticalRoutes } from "@/hooks/usePrefetch";
 import { AnimatePresence, motion } from "framer-motion";
-import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import PWABottomInstallBar from "@/components/PWABottomInstallBar";
 
 const Verify = lazy(() => import("./pages/Verify"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
@@ -189,7 +189,7 @@ const App = () => {
               <AnimatedRoutes />
               <MobileBottomNav />
               <PushNotificationPrompt />
-              <PWAInstallPrompt />
+              <PWABottomInstallBar />
             </BrowserRouter>
           </TooltipProvider>
         </NativeAppProvider>

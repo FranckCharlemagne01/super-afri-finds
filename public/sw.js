@@ -1,90 +1,81 @@
 // Djassa Marketplace - Service Worker for PWA & Push Notifications
-// Version 7 - Fixed for custom domains + better iOS/Android install support
-const CACHE_NAME = 'djassa-pwa-v7';
-const DYNAMIC_CACHE = 'djassa-dynamic-v7';
-const IMAGE_CACHE = 'djassa-images-v7';
-const API_CACHE = 'djassa-api-v7';
+// Version 8 - Fixed blank page + better error handling for custom domains
+const CACHE_NAME = 'djassa-pwa-v8';
+const DYNAMIC_CACHE = 'djassa-dynamic-v8';
+const IMAGE_CACHE = 'djassa-images-v8';
+const API_CACHE = 'djassa-api-v8';
 
 // Maximum cache sizes
 const MAX_DYNAMIC_CACHE = 150;
 const MAX_IMAGE_CACHE = 300;
 const MAX_API_CACHE = 100;
 
-// Static assets to cache on install - Essential for WebAPK
+// Static assets to cache on install - Essential files only (others cached on demand)
 const STATIC_ASSETS = [
   '/',
-  '/index.html',
   '/manifest.json',
-  '/favicon.png',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/icons/icon-maskable-192.png',
-  '/icons/icon-maskable-512.png'
+  '/favicon.png'
 ];
 
-// Install event - cache essential assets + prefetch JS chunks (force update)
+// Install event - minimal caching to avoid blank page issues
 self.addEventListener('install', (event) => {
-  console.log('[SW] Service Worker v7 installing - force immediate activation');
-  console.log('[SW] Service Worker v6 installing...');
+  console.log('[SW] Service Worker v8 installing...');
   event.waitUntil(
-    Promise.all([
-      // Cache static assets
-      caches.open(CACHE_NAME).then((cache) => {
-        console.log('[SW] Caching static assets');
-        return cache.addAll(STATIC_ASSETS);
-      }),
-      // Prefetch critical routes in dynamic cache
-      caches.open(DYNAMIC_CACHE).then((cache) => {
-        // Cache common pages HTML for instant navigation
-        return cache.addAll([
-          '/marketplace',
-          '/cart',
-          '/categories'
-        ]).catch(() => {
-          // Ignore errors for SPA routes
-          console.log('[SW] Some routes not available yet');
-        });
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        console.log('[SW] Caching essential assets');
+        // Use addAll with fallback for each file
+        return Promise.allSettled(
+          STATIC_ASSETS.map(asset => 
+            cache.add(asset).catch(err => {
+              console.warn('[SW] Could not cache:', asset, err);
+              return null;
+            })
+          )
+        );
       })
-    ])
-    .then(() => {
-      console.log('[SW] Service Worker installed, skipping waiting');
-      return self.skipWaiting();
-    })
-    .catch((error) => {
-      console.error('[SW] Failed to cache static assets:', error);
-    })
+      .then(() => {
+        console.log('[SW] Install complete, activating immediately');
+        return self.skipWaiting();
+      })
+      .catch((error) => {
+        console.error('[SW] Install failed:', error);
+        // Still skip waiting even on error to not block the app
+        return self.skipWaiting();
+      })
   );
 });
 
 // Activate event - clean up old caches aggressively
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Service Worker v6 activating...');
+  console.log('[SW] Service Worker v8 activating...');
   const currentCaches = [CACHE_NAME, DYNAMIC_CACHE, IMAGE_CACHE, API_CACHE];
   
   event.waitUntil(
-    Promise.all([
-      // Clean old caches
-      caches.keys().then((cacheNames) => {
+    caches.keys()
+      .then((cacheNames) => {
         return Promise.all(
           cacheNames
-            .filter((name) => !currentCaches.includes(name))
+            .filter((name) => name.startsWith('djassa-') && !currentCaches.includes(name))
             .map((name) => {
               console.log('[SW] Deleting old cache:', name);
               return caches.delete(name);
             })
         );
-      }),
-      // Take control of all clients immediately
-      self.clients.claim()
-    ]).then(() => {
-      console.log('[SW] Service Worker activated and controlling');
-      // Notify all clients that SW is ready
-      self.clients.matchAll().then(clients => {
+      })
+      .then(() => self.clients.claim())
+      .then(() => {
+        console.log('[SW] Service Worker v8 activated and controlling');
+        return self.clients.matchAll();
+      })
+      .then(clients => {
         clients.forEach(client => {
-          client.postMessage({ type: 'SW_READY' });
+          client.postMessage({ type: 'SW_READY', version: 8 });
         });
-      });
-    })
+      })
+      .catch(err => {
+        console.error('[SW] Activation error:', err);
+      })
   );
 });
 
@@ -100,150 +91,179 @@ async function trimCache(cacheName, maxItems) {
 
 // Helper function to determine caching strategy and target cache
 function getCacheConfig(request) {
-  const url = new URL(request.url);
-  
-  // Skip non-GET requests
-  if (request.method !== 'GET') {
+  try {
+    const url = new URL(request.url);
+    
+    // Skip non-GET requests
+    if (request.method !== 'GET') {
+      return { strategy: 'network-only', cache: null };
+    }
+    
+    // CRITICAL: Skip all requests during initial page load to avoid blank pages
+    // This includes the main HTML document and essential scripts
+    if (request.mode === 'navigate') {
+      // For navigation requests, always try network first with fast fallback
+      return { strategy: 'network-first-fast', cache: DYNAMIC_CACHE };
+    }
+    
+    // Skip cross-origin requests (except for CDN assets and Supabase storage)
+    const isSupabaseStorage = url.hostname.includes('supabase.co') && url.pathname.includes('/storage/');
+    const isCDN = url.hostname.includes('cdn.');
+    
+    if (!url.origin.includes(self.location.origin) && !isSupabaseStorage && !isCDN) {
+      return { strategy: 'network-only', cache: null };
+    }
+    
+    // Supabase storage images - cache aggressively
+    if (isSupabaseStorage) {
+      return { strategy: 'cache-first', cache: IMAGE_CACHE };
+    }
+    
+    // Skip Supabase API calls - always network (except storage)
+    if (url.hostname.includes('supabase.co')) {
+      return { strategy: 'network-only', cache: null };
+    }
+    
+    // Image files - aggressive caching
+    if (url.pathname.match(/\.(png|jpg|jpeg|gif|svg|webp|avif|ico)$/i)) {
+      return { strategy: 'cache-first', cache: IMAGE_CACHE };
+    }
+    
+    // JS/CSS bundles with hash - cache first (immutable)
+    if (url.pathname.match(/\.(js|css)$/) && url.pathname.includes('assets/')) {
+      return { strategy: 'cache-first', cache: DYNAMIC_CACHE };
+    }
+    
+    // Fonts - cache first
+    if (url.pathname.match(/\.(woff|woff2|ttf|eot)$/)) {
+      return { strategy: 'cache-first', cache: DYNAMIC_CACHE };
+    }
+    
+    // HTML pages - network first with fast fallback
+    if (request.headers.get('accept')?.includes('text/html')) {
+      return { strategy: 'network-first-fast', cache: DYNAMIC_CACHE };
+    }
+    
+    // JSON data - network first
+    if (url.pathname.endsWith('.json')) {
+      return { strategy: 'network-first-fast', cache: API_CACHE };
+    }
+    
+    // Default: network first for reliability
+    return { strategy: 'network-first-fast', cache: DYNAMIC_CACHE };
+  } catch (err) {
+    console.warn('[SW] getCacheConfig error:', err);
     return { strategy: 'network-only', cache: null };
   }
-  
-  // Skip cross-origin requests (except for CDN assets and Supabase storage)
-  const isSupabaseStorage = url.hostname.includes('supabase.co') && url.pathname.includes('/storage/');
-  const isCDN = url.hostname.includes('cdn.');
-  
-  if (!url.origin.includes(self.location.origin) && !isSupabaseStorage && !isCDN) {
-    return { strategy: 'network-only', cache: null };
-  }
-  
-  // Supabase storage images - cache very aggressively
-  if (isSupabaseStorage) {
-    return { strategy: 'cache-first', cache: IMAGE_CACHE };
-  }
-  
-  // Skip Supabase API calls - always network (except storage)
-  if (url.hostname.includes('supabase.co')) {
-    return { strategy: 'network-only', cache: null };
-  }
-  
-  // Image files - aggressive caching with long TTL
-  if (url.pathname.match(/\.(png|jpg|jpeg|gif|svg|webp|avif|ico)$/i)) {
-    return { strategy: 'cache-first', cache: IMAGE_CACHE };
-  }
-  
-  // JS/CSS bundles - cache first (immutable with hash) - CRITICAL for instant nav
-  if (url.pathname.match(/\.(js|css)$/) && (url.pathname.includes('assets/') || url.pathname.includes('chunks/'))) {
-    return { strategy: 'cache-first', cache: DYNAMIC_CACHE };
-  }
-  
-  // Vite deps - cache first for instant loading
-  if (url.pathname.includes('/node_modules/.vite/')) {
-    return { strategy: 'cache-first', cache: DYNAMIC_CACHE };
-  }
-  
-  // Fonts - cache first
-  if (url.pathname.match(/\.(woff|woff2|ttf|eot)$/)) {
-    return { strategy: 'cache-first', cache: DYNAMIC_CACHE };
-  }
-  
-  // HTML pages - stale-while-revalidate for instant loading
-  if (request.headers.get('accept')?.includes('text/html')) {
-    return { strategy: 'stale-while-revalidate', cache: DYNAMIC_CACHE };
-  }
-  
-  // JSON data - network first with cache fallback
-  if (url.pathname.endsWith('.json')) {
-    return { strategy: 'network-first', cache: API_CACHE };
-  }
-  
-  // Default to stale-while-revalidate for faster perceived performance
-  return { strategy: 'stale-while-revalidate', cache: DYNAMIC_CACHE };
 }
 
 // Fetch event handler with optimized caching strategies
 self.addEventListener('fetch', (event) => {
-  const { strategy, cache: targetCache } = getCacheConfig(event.request);
-  
-  if (strategy === 'network-only') {
-    return; // Let the browser handle it
-  }
-  
-  if (strategy === 'cache-first') {
-    event.respondWith(
-      caches.match(event.request)
-        .then((cachedResponse) => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          
-          return fetch(event.request)
-            .then((response) => {
-              if (response.status === 200) {
-                const responseClone = response.clone();
-                caches.open(targetCache).then((cache) => {
-                  cache.put(event.request, responseClone);
-                  // Trim cache in background
-                  if (targetCache === IMAGE_CACHE) {
-                    trimCache(IMAGE_CACHE, MAX_IMAGE_CACHE);
-                  }
-                });
-              }
-              return response;
-            });
-        })
-    );
-    return;
-  }
-  
-  if (strategy === 'stale-while-revalidate') {
-    event.respondWith(
-      caches.match(event.request)
-        .then((cachedResponse) => {
-          const fetchPromise = fetch(event.request)
-            .then((networkResponse) => {
-              if (networkResponse.status === 200) {
-                const responseClone = networkResponse.clone();
-                caches.open(targetCache).then((cache) => {
-                  cache.put(event.request, responseClone);
-                });
-              }
-              return networkResponse;
-            })
-            .catch(() => cachedResponse);
-          
-          // Return cached immediately if available, otherwise wait for network
-          return cachedResponse || fetchPromise;
-        })
-    );
-    return;
-  }
-  
-  // Network first strategy
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        if (response.status === 200 && targetCache) {
-          const responseClone = response.clone();
-          caches.open(targetCache).then((cache) => {
-            cache.put(event.request, responseClone);
-            trimCache(targetCache, MAX_DYNAMIC_CACHE);
-          });
-        }
-        return response;
-      })
-      .catch(() => {
-        return caches.match(event.request)
+  try {
+    const { strategy, cache: targetCache } = getCacheConfig(event.request);
+    
+    if (strategy === 'network-only') {
+      return; // Let the browser handle it
+    }
+    
+    if (strategy === 'cache-first') {
+      event.respondWith(
+        caches.match(event.request)
           .then((cachedResponse) => {
             if (cachedResponse) {
               return cachedResponse;
             }
-            // Return offline page for navigation requests
-            if (event.request.headers.get('accept')?.includes('text/html')) {
-              return caches.match('/');
-            }
-            return new Response('Offline', { status: 503 });
-          });
-      })
-  );
+            
+            return fetch(event.request)
+              .then((response) => {
+                if (response && response.status === 200) {
+                  const responseClone = response.clone();
+                  caches.open(targetCache).then((cache) => {
+                    cache.put(event.request, responseClone);
+                    if (targetCache === IMAGE_CACHE) {
+                      trimCache(IMAGE_CACHE, MAX_IMAGE_CACHE);
+                    }
+                  }).catch(() => {});
+                }
+                return response;
+              })
+              .catch((err) => {
+                console.warn('[SW] Fetch failed for cache-first:', err);
+                return new Response('', { status: 503 });
+              });
+          })
+          .catch(() => fetch(event.request))
+      );
+      return;
+    }
+    
+    // Network first with fast timeout (3s) - CRITICAL for avoiding blank pages
+    if (strategy === 'network-first-fast') {
+      event.respondWith(
+        Promise.race([
+          // Try network with 3s timeout
+          fetch(event.request)
+            .then((response) => {
+              if (response && response.status === 200 && targetCache) {
+                const responseClone = response.clone();
+                caches.open(targetCache)
+                  .then((cache) => cache.put(event.request, responseClone))
+                  .catch(() => {});
+              }
+              return response;
+            }),
+          // Timeout after 3 seconds
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('timeout')), 3000)
+          )
+        ])
+        .catch(() => {
+          // Network failed or timed out, try cache
+          return caches.match(event.request)
+            .then((cachedResponse) => {
+              if (cachedResponse) {
+                return cachedResponse;
+              }
+              // For HTML, return cached index or let browser handle
+              if (event.request.headers.get('accept')?.includes('text/html')) {
+                return caches.match('/').then(r => r || fetch(event.request));
+              }
+              // Last resort: try network again without timeout
+              return fetch(event.request);
+            });
+        })
+      );
+      return;
+    }
+    
+    if (strategy === 'stale-while-revalidate') {
+      event.respondWith(
+        caches.match(event.request)
+          .then((cachedResponse) => {
+            const fetchPromise = fetch(event.request)
+              .then((networkResponse) => {
+                if (networkResponse && networkResponse.status === 200) {
+                  const responseClone = networkResponse.clone();
+                  caches.open(targetCache)
+                    .then((cache) => cache.put(event.request, responseClone))
+                    .catch(() => {});
+                }
+                return networkResponse;
+              })
+              .catch(() => cachedResponse);
+            
+            return cachedResponse || fetchPromise;
+          })
+          .catch(() => fetch(event.request))
+      );
+      return;
+    }
+    
+    // Default: let browser handle
+  } catch (err) {
+    console.error('[SW] Fetch handler error:', err);
+    // Don't intercept on error - let browser handle normally
+  }
 });
 
 // Push notification received

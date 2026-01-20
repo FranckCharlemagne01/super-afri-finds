@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Store, Package, MessageSquare, Coins, Settings } from 'lucide-react';
 import { getCached, setCache, isStale, CACHE_KEYS } from '@/utils/dataCache';
 import { useOptimizedShopQuery, useOptimizedQuery } from '@/hooks/useOptimizedQuery';
+import { isDashboardCached } from '@/hooks/useDashboardPrefetch';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // ✅ Lazy load heavy tab components for faster initial render
@@ -85,6 +86,11 @@ const SellerDashboard = memo(() => {
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState<string | null>(null);
   const [initTimeout, setInitTimeout] = useState(false);
+  
+  // ✅ Check if data was prefetched (instant display)
+  const hasPrefetchedData = useMemo(() => {
+    return userId ? isDashboardCached(userId, true) : false;
+  }, [userId]);
   
   // ✅ Track mounted tabs to avoid re-fetching on tab switch
   const mountedTabs = useRef<Set<string>>(new Set(['overview']));
@@ -376,8 +382,9 @@ const SellerDashboard = memo(() => {
   }, []);
 
   // Calculer si on doit afficher le skeleton
+  // ✅ Skip skeleton if data was prefetched (instant display)
   // Le timeout de sécurité permet de forcer l'affichage après 8s
-  const shouldShowSkeleton = !initTimeout && (
+  const shouldShowSkeleton = !initTimeout && !hasPrefetchedData && (
     isInitializing || 
     authLoading || 
     roleLoading || 
@@ -385,6 +392,7 @@ const SellerDashboard = memo(() => {
   );
 
   // Show loading state pendant l'initialisation (avec timeout de sécurité)
+  // Skip if prefetched data is available
   if (shouldShowSkeleton) {
     return <SellerDashboardSkeleton />;
   }

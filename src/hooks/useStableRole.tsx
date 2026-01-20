@@ -1,17 +1,20 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useStableAuth } from './useStableAuth';
+import { prefetchSellerDashboard, prefetchBuyerDashboard } from './useDashboardPrefetch';
 
 export type UserRole = 'buyer' | 'seller' | 'admin' | 'superadmin';
 
 /**
  * Hook stable pour la gestion des rôles utilisateur
  * Évite les re-renders inutiles et les boucles infinies
+ * Auto-prefetches dashboard data when role is detected
  */
 export const useStableRole = () => {
   const { user, userId } = useStableAuth();
   const [role, setRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
+  const prefetchedRef = useRef(false);
 
   // Fonction pour récupérer le rôle - stable avec userId en dépendance
   const fetchUserRole = useCallback(async () => {
@@ -30,7 +33,20 @@ export const useStableRole = () => {
         console.error('Error fetching user role:', error);
         setRole('buyer');
       } else {
-        setRole(data || 'buyer');
+        const detectedRole = data || 'buyer';
+        setRole(detectedRole);
+        
+        // ✅ Auto-prefetch dashboard data when role is detected
+        if (!prefetchedRef.current) {
+          prefetchedRef.current = true;
+          if (detectedRole === 'seller' || detectedRole === 'admin' || detectedRole === 'superadmin') {
+            // Seller: prefetch seller dashboard data in background
+            setTimeout(() => prefetchSellerDashboard(userId), 100);
+          } else {
+            // Buyer: prefetch buyer dashboard data in background
+            setTimeout(() => prefetchBuyerDashboard(userId), 100);
+          }
+        }
       }
     } catch (error) {
       console.error('Error:', error);

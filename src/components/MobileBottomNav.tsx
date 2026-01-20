@@ -6,6 +6,10 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePrefetch } from "@/hooks/usePrefetch";
+import { prefetchBuyerDashboard } from "@/hooks/useDashboardPrefetch";
+import { useStableAuth } from "@/hooks/useStableAuth";
+import { useCallback, useRef } from "react";
 
 export const MobileBottomNav = () => {
   const navigate = useNavigate();
@@ -13,14 +17,33 @@ export const MobileBottomNav = () => {
   const isMobile = useIsMobile();
   const { cartItems, unreadMessages } = useRealtimeNotifications();
   const { unreadCount: notificationUnreadCount } = useNotifications();
-
-  // Ne s'affiche que sur mobile et tablette
-  if (!isMobile) return null;
+  const { prefetchOnHover } = usePrefetch();
+  const { userId } = useStableAuth();
+  const prefetchedRoutes = useRef(new Set<string>());
 
   // Badge combiné : messages non lus + notifications non lues liées aux commandes
   const messageBadgeCount = unreadMessages + notificationUnreadCount;
 
-  const handleHomeClick = (e: React.MouseEvent) => {
+  // Prefetch dashboard data on hover/touch of account button
+  const handleAccountPrefetch = useCallback(() => {
+    if (!prefetchedRoutes.current.has('/buyer-dashboard')) {
+      prefetchOnHover('/buyer-dashboard');
+      if (userId) {
+        prefetchBuyerDashboard(userId);
+      }
+      prefetchedRoutes.current.add('/buyer-dashboard');
+    }
+  }, [prefetchOnHover, userId]);
+
+  // Generic route prefetch
+  const handleRoutePrefetch = useCallback((path: string) => {
+    if (!prefetchedRoutes.current.has(path)) {
+      prefetchOnHover(path);
+      prefetchedRoutes.current.add(path);
+    }
+  }, [prefetchOnHover]);
+
+  const handleHomeClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -29,7 +52,6 @@ export const MobileBottomNav = () => {
     
     if (isOnMarketplace) {
       if (isAtTop) {
-        // Si déjà en haut, rafraîchir pour afficher les nouveaux produits
         window.location.reload();
         toast({
           title: "✅ Produits actualisés",
@@ -37,21 +59,22 @@ export const MobileBottomNav = () => {
           duration: 2000,
         });
       } else {
-        // Si en bas, remonter en haut avec animation fluide
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } else {
-      // Rediriger vers la page publique
       navigate("/marketplace");
     }
-  };
+  }, [location.pathname, navigate]);
+
+  // Ne s'affiche que sur mobile et tablette
+  if (!isMobile) return null;
 
   const navItems = [
     { icon: Home, label: "Accueil", path: "/marketplace", onClick: handleHomeClick },
     { icon: Grid3X3, label: "Catégories", path: "/categories" },
     { icon: MessageSquare, label: "Messages", path: "/messages", badge: messageBadgeCount },
     { icon: ShoppingCart, label: "Panier", path: "/cart", badge: cartItems },
-    { icon: User, label: "Compte", path: "/buyer-dashboard" },
+    { icon: User, label: "Compte", path: "/buyer-dashboard", onPrefetch: handleAccountPrefetch },
   ];
 
   const isActive = (path: string) => {
@@ -69,13 +92,15 @@ export const MobileBottomNav = () => {
       }}
     >
       <div className="flex items-center justify-around h-16 px-1">
-        {navItems.map(({ icon: Icon, label, path, badge, onClick }) => {
+        {navItems.map(({ icon: Icon, label, path, badge, onClick, onPrefetch }) => {
           const active = isActive(path);
           
           return (
             <motion.button
               key={path}
               onClick={(e) => onClick ? onClick(e) : navigate(path)}
+              onMouseEnter={() => onPrefetch ? onPrefetch() : handleRoutePrefetch(path)}
+              onTouchStart={() => onPrefetch ? onPrefetch() : handleRoutePrefetch(path)}
               whileTap={{ scale: 0.92 }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
               className={cn(

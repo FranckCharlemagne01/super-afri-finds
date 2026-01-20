@@ -23,6 +23,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { supabase } from "@/integrations/supabase/client";
 import { getCached, setCache, isStale, CACHE_KEYS } from "@/utils/dataCache";
+import { usePrefetchVisibleProducts, setCachedProduct } from "@/hooks/useProductCache";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useStableAuth } from "@/hooks/useStableAuth";
@@ -238,6 +239,11 @@ const Index = () => {
       const products = data || [];
       setProducts(products);
       setCache(CACHE_KEYS.PRODUCTS, products, 2 * 60 * 1000); // 2 min cache
+      
+      // ✅ Cache individual products for instant product detail navigation
+      products.slice(0, 24).forEach((product: Product) => {
+        setCachedProduct(product);
+      });
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
@@ -287,6 +293,13 @@ const Index = () => {
   const specialOffersProducts = [...boostedProducts, ...flashSaleProducts.filter(p => !boostedProducts.find(b => b.id === p.id))];
   
   const regularProducts = products.filter(product => !product.is_flash_sale && !boostedProducts.find(b => b.id === product.id));
+
+  // ✅ Prefetch first 12 visible products for instant navigation
+  const visibleProductIds = useMemo(() => 
+    regularProducts.slice(0, 12).map(p => p.id),
+    [regularProducts]
+  );
+  usePrefetchVisibleProducts(visibleProductIds);
 
   // Convert Supabase product to ProductCard props
   const convertToProductCardProps = (product: any) => ({

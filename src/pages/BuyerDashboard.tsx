@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense, useMemo } from 'react';
 import { useStableAuth } from '@/hooks/useStableAuth';
 import { useStableRole } from '@/hooks/useStableRole';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useBuyerProfile } from '@/hooks/useBuyerProfile';
 import { DashboardSkeleton } from '@/components/buyer/DashboardSkeleton';
+import { isDashboardCached } from '@/hooks/useDashboardPrefetch';
 import { 
   User, 
   Package, 
@@ -91,7 +92,7 @@ const MessageNotificationBadge = () => {
 };
 
 const BuyerDashboard = () => {
-  const { user, loading: authLoading, signOut } = useStableAuth();
+  const { user, loading: authLoading, signOut, userId } = useStableAuth();
   const { role, loading: roleLoading, isSeller } = useStableRole();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -102,6 +103,11 @@ const BuyerDashboard = () => {
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
   const [editingSettings, setEditingSettings] = useState(false);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  
+  // ✅ Check if data was prefetched (instant display)
+  const hasPrefetchedData = useMemo(() => {
+    return userId ? isDashboardCached(userId, false) : false;
+  }, [userId]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -164,7 +170,8 @@ const BuyerDashboard = () => {
   }, [user, authLoading, roleLoading, isSeller, navigate]);
 
   // Show skeleton while loading auth or profile
-  if (authLoading || loadingProfile) {
+  // ✅ Skip skeleton if data was prefetched (instant display)
+  if (!hasPrefetchedData && (authLoading || loadingProfile)) {
     return <DashboardSkeleton />;
   }
 

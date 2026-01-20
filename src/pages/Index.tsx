@@ -1,4 +1,4 @@
-// Djassa Marketplace - Index Page (v3)
+// Djassa Marketplace - Index Page (v4 - Performance Optimized)
 import { ProductCard } from "@/components/ProductCard";
 import SEOHead from "@/components/SEOHead";
 import { CategoryCard } from "@/components/CategoryCard";
@@ -18,9 +18,11 @@ import { DynamicPromoBanner } from "@/components/DynamicPromoBanner";
 import { NativeAnnouncementSlider } from "@/components/NativeAnnouncementSlider";
 import { MarketplaceTutorial } from "@/components/MarketplaceTutorial";
 import { NotificationBell } from "@/components/NotificationBell";
-import { useState, useEffect, useMemo } from "react";
+import { ProductSkeleton } from "@/components/ui/ProductSkeleton";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { supabase } from "@/integrations/supabase/client";
+import { getCached, setCache, isStale, CACHE_KEYS } from "@/utils/dataCache";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useStableAuth } from "@/hooks/useStableAuth";
@@ -32,7 +34,7 @@ import { useUserLocation } from "@/hooks/useUserLocation";
 import { RealtimeNotificationBadge } from "@/components/RealtimeNotificationBadge";
 import { useNavigate, useLocation } from "react-router-dom";
 import { SellerUpgradeForm } from "@/components/SellerUpgradeForm";
-import { useRef } from "react";
+
 import { getCountryName } from "@/data/countries";
 import { 
   Smartphone, 
@@ -194,9 +196,30 @@ const Index = () => {
     }
   };
 
-  const fetchProducts = async () => {
+  // Optimized fetch with caching
+  const fetchProducts = useCallback(async (forceRefresh = false) => {
+    const cacheKey = CACHE_KEYS.PRODUCTS;
+    
+    // Check cache first (instant response)
+    if (!forceRefresh) {
+      const cached = getCached<Product[]>(cacheKey);
+      if (cached !== null) {
+        setProducts(cached);
+        setLoading(false);
+        
+        // Background revalidation if stale
+        if (isStale(cacheKey)) {
+          fetchFromServer();
+        }
+        return;
+      }
+    }
+    
+    await fetchFromServer();
+  }, []);
+
+  const fetchFromServer = async () => {
     try {
-      setLoading(true);
       const { data, error } = await supabase
         .from('products')
         .select(`
@@ -204,14 +227,17 @@ const Index = () => {
           shop:seller_shops!shop_id(shop_slug, shop_name)
         `)
         .eq('is_active', true)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(100); // Limit for performance
       
       if (error) {
         console.error('Error fetching products:', error);
         return;
       }
       
-      setProducts(data || []);
+      const products = data || [];
+      setProducts(products);
+      setCache(CACHE_KEYS.PRODUCTS, products, 2 * 60 * 1000); // 2 min cache
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
@@ -219,10 +245,9 @@ const Index = () => {
     }
   };
 
-  const handleRefreshRecommendations = () => {
+  const handleRefreshRecommendations = useCallback(() => {
     setRefreshKey(prev => prev + 1);
-    console.log('Recommandations actualisées');
-  };
+  }, []);
   const categories = [
     { title: "Téléphones & Tablettes", itemCount: 1250, image: categoryPhones, slug: "Téléphones & Tablettes" },
     { title: "Électroménager / TV & Audio", itemCount: 890, image: categoryElectronics, slug: "Électroménager" },
@@ -310,12 +335,12 @@ const Index = () => {
     );
   }
 
-  if (loading) {
+  // Fast skeleton loading state - shows instantly while data loads
+  if (loading && products.length === 0) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Chargement des produits...</p>
+      <div className="min-h-screen bg-background pb-20">
+        <div className="container mx-auto px-3 py-4">
+          <ProductSkeleton count={12} columns={6} />
         </div>
       </div>
     );

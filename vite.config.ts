@@ -20,33 +20,55 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 500,
     rollupOptions: {
       output: {
-        // Split vendor chunks for better caching
-        manualChunks: {
-          // React core - rarely changes
-          'react-vendor': ['react', 'react-dom'],
-          // Router - separate chunk
-          'router': ['react-router-dom'],
-          // UI framework
-          'radix-ui': [
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-tabs',
-            '@radix-ui/react-toast',
-            '@radix-ui/react-tooltip',
-            '@radix-ui/react-popover',
-            '@radix-ui/react-select',
-          ],
+        // Optimized chunk splitting for better caching and loading
+        manualChunks: (id) => {
+          // React core - rarely changes, cache long-term
+          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
+            return 'react-vendor';
+          }
+          // Router - separate chunk for route-based code splitting
+          if (id.includes('node_modules/react-router')) {
+            return 'router';
+          }
+          // Supabase client - separate for auth/data operations
+          if (id.includes('node_modules/@supabase')) {
+            return 'supabase';
+          }
           // Animation library
-          'framer': ['framer-motion'],
-          // Supabase client
-          'supabase': ['@supabase/supabase-js'],
-          // Charts
-          'charts': ['recharts'],
+          if (id.includes('node_modules/framer-motion')) {
+            return 'framer';
+          }
+          // Radix UI components - load on demand
+          if (id.includes('node_modules/@radix-ui')) {
+            return 'radix-ui';
+          }
+          // Charts - heavy, load separately
+          if (id.includes('node_modules/recharts') || id.includes('node_modules/d3')) {
+            return 'charts';
+          }
           // Form handling
-          'forms': ['react-hook-form', '@hookform/resolvers', 'zod'],
+          if (id.includes('node_modules/react-hook-form') || 
+              id.includes('node_modules/@hookform') || 
+              id.includes('node_modules/zod')) {
+            return 'forms';
+          }
           // Date utilities
-          'date-utils': ['date-fns'],
+          if (id.includes('node_modules/date-fns')) {
+            return 'date-utils';
+          }
+          // Lucide icons
+          if (id.includes('node_modules/lucide-react')) {
+            return 'icons';
+          }
+          // Tanstack query
+          if (id.includes('node_modules/@tanstack')) {
+            return 'tanstack';
+          }
         },
+        // Use content hash for long-term caching
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
       },
     },
     // Enable minification optimizations
@@ -54,8 +76,12 @@ export default defineConfig(({ mode }) => ({
     target: 'es2020',
     // Source maps for production debugging (optional)
     sourcemap: false,
+    // CSS code splitting
+    cssCodeSplit: true,
+    // Reduce bundle size
+    reportCompressedSize: false,
   },
-  // Optimize deps pre-bundling
+  // Optimize deps pre-bundling for faster dev and build
   optimizeDeps: {
     include: [
       'react',
@@ -64,6 +90,18 @@ export default defineConfig(({ mode }) => ({
       '@supabase/supabase-js',
       'framer-motion',
       'lucide-react',
+      '@tanstack/react-query',
     ],
+    // Exclude large deps from pre-bundling
+    exclude: ['recharts'],
+  },
+  // Enable esbuild optimizations
+  esbuild: {
+    // Remove console.log in production
+    drop: mode === 'production' ? ['console', 'debugger'] : [],
+    // Minify identifiers
+    minifyIdentifiers: true,
+    minifySyntax: true,
+    minifyWhitespace: true,
   },
 }));

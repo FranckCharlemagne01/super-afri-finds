@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStableRole } from './useStableRole';
 import { useStableAuth } from './useStableAuth';
-import { prefetchSellerDashboard, prefetchBuyerDashboard } from './useDashboardPrefetch';
+import { prefetchSellerDashboard, prefetchBuyerDashboard, isDashboardCached } from './useDashboardPrefetch';
 
 /**
  * Smart navigation hook that routes users to the correct dashboard
@@ -20,6 +20,12 @@ export const useSmartNavigation = () => {
     if (isSeller) return '/seller-dashboard';
     return '/buyer-dashboard';
   }, [isSeller, isSuperAdmin]);
+
+  // Check if dashboard data is cached for instant display
+  const hasCachedDashboard = useMemo(() => {
+    if (!userId) return false;
+    return isDashboardCached(userId, isSeller);
+  }, [userId, isSeller]);
 
   // Navigate to the correct dashboard instantly
   const navigateToDashboard = useCallback(() => {
@@ -47,6 +53,7 @@ export const useSmartNavigation = () => {
     dashboardPath,
     navigateToDashboard,
     prefetchDashboard,
+    hasCachedDashboard,
     role,
     roleLoading,
     isSeller,

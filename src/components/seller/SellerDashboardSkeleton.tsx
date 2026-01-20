@@ -1,12 +1,14 @@
+import { memo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export const SellerDashboardSkeleton = () => {
+// ✅ Memoized to prevent unnecessary re-renders
+export const SellerDashboardSkeleton = memo(() => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background">
       <div className="container mx-auto px-3 py-4 max-w-md md:max-w-3xl lg:max-w-7xl md:px-6 lg:px-8 lg:py-6">
         {/* Header Skeleton */}
-        <Card className="mb-6 border-0 shadow-lg bg-gradient-to-r from-primary/10 via-primary/5 to-background">
+        <Card className="mb-6 border-0 shadow-lg bg-gradient-to-r from-primary/10 via-primary/5 to-background animate-pulse">
           <CardContent className="p-4 md:p-6">
             <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 md:gap-6">
               {/* Logo & Info */}
@@ -94,4 +96,6 @@ export const SellerDashboardSkeleton = () => {
       </div>
     </div>
   );
-};
+});
+
+SellerDashboardSkeleton.displayName = 'SellerDashboardSkeleton';

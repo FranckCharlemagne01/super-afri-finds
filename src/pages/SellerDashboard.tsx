@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, memo } from 'react';
+import { useState, useEffect, useCallback, useMemo, memo, lazy, Suspense, useRef } from 'react';
 import { useStableAuth } from '@/hooks/useStableAuth';
 import { useStableRole } from '@/hooks/useStableRole';
 import { useSellerAccess } from '@/hooks/useSellerAccess';
@@ -7,11 +7,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { ModernSellerHeader } from '@/components/seller/ModernSellerHeader';
-import { ShopOverviewTab } from '@/components/seller/ShopOverviewTab';
-import { ProductsTab } from '@/components/seller/ProductsTab';
-import { MessagesOrdersTab } from '@/components/seller/MessagesOrdersTab';
-import { TokensSubscriptionTab } from '@/components/seller/TokensSubscriptionTab';
-import { ShopSettingsTab } from '@/components/seller/ShopSettingsTab';
 import { SellerDashboardSkeleton } from '@/components/seller/SellerDashboardSkeleton';
 import { RealtimeOrdersNotification } from '@/components/RealtimeOrdersNotification';
 import { RealtimeMessagesNotification } from '@/components/RealtimeMessagesNotification';
@@ -23,6 +18,26 @@ import { Button } from '@/components/ui/button';
 import { Store, Package, MessageSquare, Coins, Settings } from 'lucide-react';
 import { getCached, setCache, isStale, CACHE_KEYS } from '@/utils/dataCache';
 import { useOptimizedShopQuery, useOptimizedQuery } from '@/hooks/useOptimizedQuery';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// ✅ Lazy load heavy tab components for faster initial render
+const ShopOverviewTab = lazy(() => import('@/components/seller/ShopOverviewTab').then(m => ({ default: m.ShopOverviewTab })));
+const ProductsTab = lazy(() => import('@/components/seller/ProductsTab').then(m => ({ default: m.ProductsTab })));
+const MessagesOrdersTab = lazy(() => import('@/components/seller/MessagesOrdersTab').then(m => ({ default: m.MessagesOrdersTab })));
+const TokensSubscriptionTab = lazy(() => import('@/components/seller/TokensSubscriptionTab').then(m => ({ default: m.TokensSubscriptionTab })));
+const ShopSettingsTab = lazy(() => import('@/components/seller/ShopSettingsTab').then(m => ({ default: m.ShopSettingsTab })));
+
+// ✅ Lightweight skeleton for tab content
+const TabSkeleton = memo(() => (
+  <div className="space-y-4 animate-pulse">
+    <Skeleton className="h-32 w-full rounded-xl" />
+    <div className="grid grid-cols-2 gap-3">
+      <Skeleton className="h-24 rounded-xl" />
+      <Skeleton className="h-24 rounded-xl" />
+    </div>
+    <Skeleton className="h-48 w-full rounded-xl" />
+  </div>
+));
 
 interface Product {
   id: string;
@@ -57,7 +72,7 @@ interface Shop {
   is_active: boolean;
 }
 
-const SellerDashboard = () => {
+const SellerDashboard = memo(() => {
   const { user, signOut, userId, loading: authLoading } = useStableAuth();
   const { isSeller, isSuperAdmin, loading: roleLoading, refreshRole } = useStableRole();
   const sellerAccess = useSellerAccess();
@@ -70,6 +85,9 @@ const SellerDashboard = () => {
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState<string | null>(null);
   const [initTimeout, setInitTimeout] = useState(false);
+  
+  // ✅ Track mounted tabs to avoid re-fetching on tab switch
+  const mountedTabs = useRef<Set<string>>(new Set(['overview']));
 
   // ✅ Timeout de sécurité pour éviter les écrans de chargement infinis
   useEffect(() => {
@@ -525,57 +543,69 @@ const SellerDashboard = () => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-3 md:space-y-4 mt-3 md:mt-4">
-            <ShopOverviewTab
-              shop={shop}
-              products={products || []}
-              tokenBalance={tokenBalance}
-              trialStatus={trialStatus}
-              onRefresh={handleRefresh}
-              onPublishProduct={handlePublishProduct}
-            />
+          <TabsContent value="overview" className="space-y-3 md:space-y-4 mt-3 md:mt-4" forceMount={activeTab === 'overview' || mountedTabs.current.has('overview') ? undefined : undefined}>
+            <Suspense fallback={<TabSkeleton />}>
+              <ShopOverviewTab
+                shop={shop}
+                products={products || []}
+                tokenBalance={tokenBalance}
+                trialStatus={trialStatus}
+                onRefresh={handleRefresh}
+                onPublishProduct={handlePublishProduct}
+              />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="products" className="space-y-3 md:space-y-4 mt-3 md:mt-4">
-            <ProductsTab
-              products={products || []}
-              loading={productsLoading}
-              shopId={shop?.id}
-              onRefresh={handleRefresh}
-              openFormTrigger={openProductForm}
-              onFormOpenChange={setOpenProductForm}
-              canPublish={sellerAccess.canPublish}
-              canEdit={sellerAccess.canEdit}
-              canBoost={sellerAccess.canBoost}
-            />
+            <Suspense fallback={<TabSkeleton />}>
+              <ProductsTab
+                products={products || []}
+                loading={productsLoading}
+                shopId={shop?.id}
+                onRefresh={handleRefresh}
+                openFormTrigger={openProductForm}
+                onFormOpenChange={setOpenProductForm}
+                canPublish={sellerAccess.canPublish}
+                canEdit={sellerAccess.canEdit}
+                canBoost={sellerAccess.canBoost}
+              />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="messages-orders" className="space-y-3 md:space-y-4 mt-3 md:mt-4">
-            <MessagesOrdersTab userId={userId} />
+            <Suspense fallback={<TabSkeleton />}>
+              <MessagesOrdersTab userId={userId} />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="tokens" className="space-y-3 md:space-y-4 mt-3 md:mt-4">
-            <TokensSubscriptionTab
-              tokenBalance={tokenBalance}
-              freeTokens={freeTokens}
-              paidTokens={paidTokens}
-              freeTokensExpiresAt={freeTokensExpiresAt}
-              trialStatus={trialStatus}
-              products={products || []}
-              onRefresh={handleRefresh}
-            />
+            <Suspense fallback={<TabSkeleton />}>
+              <TokensSubscriptionTab
+                tokenBalance={tokenBalance}
+                freeTokens={freeTokens}
+                paidTokens={paidTokens}
+                freeTokensExpiresAt={freeTokensExpiresAt}
+                trialStatus={trialStatus}
+                products={products || []}
+                onRefresh={handleRefresh}
+              />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-3 md:space-y-4 mt-3 md:mt-4">
-            <ShopSettingsTab
-              shop={shop}
-              onRefresh={handleRefresh}
-            />
+            <Suspense fallback={<TabSkeleton />}>
+              <ShopSettingsTab
+                shop={shop}
+                onRefresh={handleRefresh}
+              />
+            </Suspense>
           </TabsContent>
         </Tabs>
       </div>
     </div>
   );
-};
+});
+
+SellerDashboard.displayName = 'SellerDashboard';
 
 export default SellerDashboard;

@@ -1,3 +1,4 @@
+import { memo, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -41,7 +42,7 @@ interface ShopOverviewTabProps {
   onPublishProduct?: () => void;
 }
 
-export const ShopOverviewTab = ({
+export const ShopOverviewTab = memo(({
   shop,
   products,
   tokenBalance,
@@ -51,15 +52,21 @@ export const ShopOverviewTab = ({
 }: ShopOverviewTabProps) => {
   const navigate = useNavigate();
 
-  const activeProducts = products.filter(p => p.is_active).length;
-  const totalReviews = products.reduce((sum, p) => sum + (p.reviews_count || 0), 0);
-  const thisMonthProducts = products.filter(p => {
-    const createdAt = new Date(p.created_at);
+  // ✅ Memoize expensive calculations
+  const { activeProducts, totalReviews, thisMonthProducts } = useMemo(() => {
+    const active = products.filter(p => p.is_active).length;
+    const reviews = products.reduce((sum, p) => sum + (p.reviews_count || 0), 0);
     const now = new Date();
-    return createdAt.getMonth() === now.getMonth() && createdAt.getFullYear() === now.getFullYear();
-  }).length;
+    const thisMonth = products.filter(p => {
+      const createdAt = new Date(p.created_at);
+      return createdAt.getMonth() === now.getMonth() && createdAt.getFullYear() === now.getFullYear();
+    }).length;
+    
+    return { activeProducts: active, totalReviews: reviews, thisMonthProducts: thisMonth };
+  }, [products]);
 
-  const stats = [
+  // ✅ Memoize stats array
+  const stats = useMemo(() => [
     {
       title: 'Total Produits',
       value: products.length,
@@ -92,11 +99,12 @@ export const ShopOverviewTab = ({
       bgColor: 'bg-orange-500/10',
       textColor: 'text-orange-600',
     },
-  ];
+  ], [products.length, activeProducts, thisMonthProducts, totalReviews]);
 
   const canPublish = trialStatus.canPublish ?? true;
 
-  const quickActions = [
+  // ✅ Memoize quick actions
+  const quickActions = useMemo(() => [
     {
       label: 'Publier un produit',
       icon: canPublish ? Plus : Lock,
@@ -113,7 +121,7 @@ export const ShopOverviewTab = ({
       description: 'Voir la page publique',
       disabled: false,
     },
-  ];
+  ], [canPublish, onPublishProduct, shop, navigate]);
 
   return (
     <div className="space-y-3 md:space-y-4 animate-in fade-in-0 duration-500">
@@ -251,4 +259,6 @@ export const ShopOverviewTab = ({
       </Card>
     </div>
   );
-};
+});
+
+ShopOverviewTab.displayName = 'ShopOverviewTab';

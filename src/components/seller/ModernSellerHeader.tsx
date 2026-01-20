@@ -1,3 +1,4 @@
+import { memo, useMemo, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -35,7 +36,7 @@ interface ModernSellerHeaderProps {
   onPublishProduct?: () => void;
 }
 
-export const ModernSellerHeader = ({
+export const ModernSellerHeader = memo(({
   shop,
   onSignOut,
   trialStatus,
@@ -47,16 +48,18 @@ export const ModernSellerHeader = ({
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  const getDaysRemaining = () => {
-    if (!trialStatus.trialEndDate) return 0;
+  // ✅ Memoize calculations
+  const { daysRemaining, trialProgress } = useMemo(() => {
+    if (!trialStatus.trialEndDate) return { daysRemaining: 0, trialProgress: 100 };
     const diff = new Date(trialStatus.trialEndDate).getTime() - new Date().getTime();
-    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
-  };
+    const days = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+    return {
+      daysRemaining: days,
+      trialProgress: trialStatus.isInTrial ? ((28 - days) / 28) * 100 : 100
+    };
+  }, [trialStatus.trialEndDate, trialStatus.isInTrial]);
 
-  const daysRemaining = getDaysRemaining();
-  const trialProgress = trialStatus.isInTrial ? ((28 - daysRemaining) / 28) * 100 : 100;
-
-  const handleNavigateToMarketplace = (e: React.MouseEvent) => {
+  const handleNavigateToMarketplace = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     navigate('/marketplace');
@@ -65,7 +68,7 @@ export const ModernSellerHeader = ({
       description: "Vous êtes maintenant sur la page principale.",
       duration: 2000,
     });
-  };
+  }, [navigate]);
 
   return (
     <Card className="mb-3 md:mb-4 border-0 shadow-lg bg-gradient-to-br from-primary/10 via-primary/5 to-background overflow-hidden rounded-2xl">
@@ -179,4 +182,6 @@ export const ModernSellerHeader = ({
       </CardContent>
     </Card>
   );
-};
+});
+
+ModernSellerHeader.displayName = 'ModernSellerHeader';

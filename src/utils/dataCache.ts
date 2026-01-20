@@ -1,12 +1,14 @@
 /**
  * Advanced data caching utilities for ultra-fast data loading
- * Implements stale-while-revalidate pattern with memory cache
+ * Implements stale-while-revalidate pattern with memory cache and LRU eviction
  */
 
 interface CacheEntry<T> {
   data: T;
   timestamp: number;
   staleTime: number;
+  accessCount: number;
+  lastAccess: number;
 }
 
 // Global in-memory cache with configurable stale times
@@ -15,9 +17,30 @@ const memoryCache = new Map<string, CacheEntry<any>>();
 // Default cache configuration
 const DEFAULT_STALE_TIME = 60 * 1000; // 1 minute
 const DEFAULT_MAX_AGE = 5 * 60 * 1000; // 5 minutes
+const MAX_CACHE_ENTRIES = 100; // ✅ Prevent memory bloat
+
+/**
+ * LRU eviction when cache is full
+ */
+function evictLRU(): void {
+  if (memoryCache.size < MAX_CACHE_ENTRIES) return;
+  
+  let oldest: { key: string; time: number } | null = null;
+  
+  memoryCache.forEach((entry, key) => {
+    if (!oldest || entry.lastAccess < oldest.time) {
+      oldest = { key, time: entry.lastAccess };
+    }
+  });
+  
+  if (oldest) {
+    memoryCache.delete(oldest.key);
+  }
+}
 
 /**
  * Get cached data if valid, returns null if stale or missing
+ * ✅ Optimized with access tracking for LRU
  */
 export function getCached<T>(key: string): T | null {
   const entry = memoryCache.get(key);
@@ -25,6 +48,10 @@ export function getCached<T>(key: string): T | null {
   
   const now = Date.now();
   const age = now - entry.timestamp;
+  
+  // ✅ Update access stats for LRU
+  entry.accessCount++;
+  entry.lastAccess = now;
   
   // Data is still fresh
   if (age < entry.staleTime) {
@@ -53,12 +80,18 @@ export function isStale(key: string): boolean {
 
 /**
  * Set data in cache with optional stale time
+ * ✅ Now includes LRU eviction and access tracking
  */
 export function setCache<T>(key: string, data: T, staleTime = DEFAULT_STALE_TIME): void {
+  evictLRU();
+  
+  const now = Date.now();
   memoryCache.set(key, {
     data,
-    timestamp: Date.now(),
+    timestamp: now,
     staleTime,
+    accessCount: 1,
+    lastAccess: now,
   });
 }
 

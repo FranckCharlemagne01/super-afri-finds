@@ -15,9 +15,15 @@
     <meta name="msapplication-TileColor" content="#FF6B35">
     <meta name="format-detection" content="telephone=no">
     
-    <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" href="/favicon.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png">
+    <!-- Apple Touch Icons - Properly sized for iOS -->
+    <link rel="apple-touch-icon" href="/icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192.png">
+    
+    <!-- Preload critical icons for PWA install -->
+    <link rel="preload" href="/icons/icon-192.png" as="image" type="image/png">
+    <link rel="preload" href="/icons/icon-512.png" as="image" type="image/png">
     
     <!-- Disable iOS specific behaviors -->
     <meta name="HandheldFriendly" content="true">

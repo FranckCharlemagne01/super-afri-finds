@@ -1,9 +1,9 @@
 // Djassa Marketplace - Service Worker for PWA & Push Notifications
-// Version 6 - Ultra-fast caching for instant loading
-const CACHE_NAME = 'djassa-pwa-v6';
-const DYNAMIC_CACHE = 'djassa-dynamic-v6';
-const IMAGE_CACHE = 'djassa-images-v6';
-const API_CACHE = 'djassa-api-v6';
+// Version 7 - Fixed for custom domains + better iOS/Android install support
+const CACHE_NAME = 'djassa-pwa-v7';
+const DYNAMIC_CACHE = 'djassa-dynamic-v7';
+const IMAGE_CACHE = 'djassa-images-v7';
+const API_CACHE = 'djassa-api-v7';
 
 // Maximum cache sizes
 const MAX_DYNAMIC_CACHE = 150;
@@ -22,8 +22,9 @@ const STATIC_ASSETS = [
   '/icons/icon-maskable-512.png'
 ];
 
-// Install event - cache essential assets + prefetch JS chunks
+// Install event - cache essential assets + prefetch JS chunks (force update)
 self.addEventListener('install', (event) => {
+  console.log('[SW] Service Worker v7 installing - force immediate activation');
   console.log('[SW] Service Worker v6 installing...');
   event.waitUntil(
     Promise.all([

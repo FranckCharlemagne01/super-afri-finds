@@ -7,9 +7,8 @@ import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePrefetch } from "@/hooks/usePrefetch";
-import { prefetchBuyerDashboard } from "@/hooks/useDashboardPrefetch";
-import { useStableAuth } from "@/hooks/useStableAuth";
-import { useCallback, useRef } from "react";
+import { useSmartNavigation } from "@/hooks/useSmartNavigation";
+import { useCallback, useRef, useMemo } from "react";
 
 export const MobileBottomNav = () => {
   const navigate = useNavigate();
@@ -18,22 +17,30 @@ export const MobileBottomNav = () => {
   const { cartItems, unreadMessages } = useRealtimeNotifications();
   const { unreadCount: notificationUnreadCount } = useNotifications();
   const { prefetchOnHover } = usePrefetch();
-  const { userId } = useStableAuth();
+  
+  // Smart navigation based on user role
+  const { dashboardPath, prefetchDashboard, navigateToDashboard } = useSmartNavigation();
+  
   const prefetchedRoutes = useRef(new Set<string>());
 
   // Badge combiné : messages non lus + notifications non lues liées aux commandes
   const messageBadgeCount = unreadMessages + notificationUnreadCount;
 
-  // Prefetch dashboard data on hover/touch of account button
+  // Prefetch correct dashboard data on hover/touch of account button
   const handleAccountPrefetch = useCallback(() => {
-    if (!prefetchedRoutes.current.has('/buyer-dashboard')) {
-      prefetchOnHover('/buyer-dashboard');
-      if (userId) {
-        prefetchBuyerDashboard(userId);
-      }
-      prefetchedRoutes.current.add('/buyer-dashboard');
+    if (!prefetchedRoutes.current.has(dashboardPath)) {
+      prefetchOnHover(dashboardPath);
+      prefetchDashboard();
+      prefetchedRoutes.current.add(dashboardPath);
     }
-  }, [prefetchOnHover, userId]);
+  }, [prefetchOnHover, dashboardPath, prefetchDashboard]);
+
+  // Navigate to correct dashboard based on role
+  const handleAccountClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigateToDashboard();
+  }, [navigateToDashboard]);
 
   // Generic route prefetch
   const handleRoutePrefetch = useCallback((path: string) => {
@@ -66,20 +73,25 @@ export const MobileBottomNav = () => {
     }
   }, [location.pathname, navigate]);
 
-  // Ne s'affiche que sur mobile et tablette
-  if (!isMobile) return null;
-
-  const navItems = [
+  // Dynamic nav items with smart dashboard routing - MUST be before early return
+  const navItems = useMemo(() => [
     { icon: Home, label: "Accueil", path: "/marketplace", onClick: handleHomeClick },
     { icon: Grid3X3, label: "Catégories", path: "/categories" },
     { icon: MessageSquare, label: "Messages", path: "/messages", badge: messageBadgeCount },
     { icon: ShoppingCart, label: "Panier", path: "/cart", badge: cartItems },
-    { icon: User, label: "Compte", path: "/buyer-dashboard", onPrefetch: handleAccountPrefetch },
-  ];
+    { icon: User, label: "Compte", path: dashboardPath, onClick: handleAccountClick, onPrefetch: handleAccountPrefetch },
+  ], [handleHomeClick, messageBadgeCount, cartItems, dashboardPath, handleAccountClick, handleAccountPrefetch]);
+
+  // Ne s'affiche que sur mobile et tablette
+  if (!isMobile) return null;
 
   const isActive = (path: string) => {
     if (path === "/marketplace") {
       return location.pathname === "/" || location.pathname === "/marketplace";
+    }
+    // Handle dashboard paths - any dashboard should highlight "Compte"
+    if (path.includes('dashboard') || path === '/superadmin') {
+      return location.pathname.includes('dashboard') || location.pathname === '/superadmin';
     }
     return location.pathname === path || location.pathname.startsWith(path + "/");
   };

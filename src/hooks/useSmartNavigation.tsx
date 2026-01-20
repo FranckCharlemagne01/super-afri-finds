@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStableRole } from './useStableRole';
 import { useStableAuth } from './useStableAuth';
@@ -8,11 +8,13 @@ import { prefetchSellerDashboard, prefetchBuyerDashboard, isDashboardCached } fr
  * Smart navigation hook that routes users to the correct dashboard
  * based on their current role (seller vs buyer)
  * Eliminates hesitation/glitches when role changes
+ * Auto-prefetches dashboard on mount for instant access
  */
 export const useSmartNavigation = () => {
   const navigate = useNavigate();
   const { role, isSeller, isSuperAdmin, loading: roleLoading } = useStableRole();
   const { userId, isAuthenticated } = useStableAuth();
+  const hasPrefetched = useRef(false);
 
   // Determine the correct dashboard path based on role
   const dashboardPath = useMemo(() => {
@@ -26,6 +28,29 @@ export const useSmartNavigation = () => {
     if (!userId) return false;
     return isDashboardCached(userId, isSeller);
   }, [userId, isSeller]);
+
+  // ✅ Auto-prefetch dashboard data when role is known (for instant navigation later)
+  useEffect(() => {
+    if (!userId || !isAuthenticated || hasPrefetched.current || roleLoading) return;
+    
+    // Only prefetch once per session
+    hasPrefetched.current = true;
+    
+    // Prefetch in idle time for instant dashboard access
+    const prefetch = () => {
+      if (isSuperAdmin || isSeller) {
+        prefetchSellerDashboard(userId);
+      } else {
+        prefetchBuyerDashboard(userId);
+      }
+    };
+    
+    if ('requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(prefetch, { timeout: 2000 });
+    } else {
+      setTimeout(prefetch, 500);
+    }
+  }, [userId, isAuthenticated, isSeller, isSuperAdmin, roleLoading]);
 
   // Navigate to the correct dashboard instantly
   const navigateToDashboard = useCallback(() => {

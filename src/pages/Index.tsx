@@ -105,8 +105,12 @@ const Index = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [refreshKey, setRefreshKey] = useState(0);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  // ✅ Try to get products from cache IMMEDIATELY for instant display
+  const cachedProducts = useMemo(() => getCached<Product[]>(CACHE_KEYS.PRODUCTS), []);
+  const [products, setProducts] = useState<Product[]>(cachedProducts || []);
+  const [loading, setLoading] = useState(!cachedProducts);
+  
   const [showSellerUpgrade, setShowSellerUpgrade] = useState(false);
   const [userCountry, setUserCountry] = useState<string>("Côte d'Ivoire");
   const { location: userLocation } = useUserLocation();
@@ -166,7 +170,14 @@ const Index = () => {
     }
   };
 
+  // ✅ Fast initial load - fetch in background only if cache is stale
   useEffect(() => {
+    // If we have cached data, just check if it's stale for background refresh
+    if (cachedProducts && !isStale(CACHE_KEYS.PRODUCTS)) {
+      setLoading(false);
+      return;
+    }
+    
     fetchProducts();
     if (user) {
       fetchUserCountry();
@@ -348,12 +359,13 @@ const Index = () => {
     );
   }
 
-  // Fast skeleton loading state - shows instantly while data loads
+  // ✅ Skip skeleton entirely if we have cached products - show content immediately
+  // Only show minimal skeleton if truly no data available
   if (loading && products.length === 0) {
     return (
       <div className="min-h-screen bg-background pb-20">
         <div className="container mx-auto px-3 py-4">
-          <ProductSkeleton count={12} columns={6} />
+          <ProductSkeleton count={8} columns={4} />
         </div>
       </div>
     );

@@ -61,10 +61,10 @@ const queryClient = new QueryClient({
   },
 });
 
-// Memoized loading fallback component
+// Optimized loading fallback - minimal and fast
 const PageLoadingFallback = memo(() => (
   <div className="min-h-screen bg-background flex items-center justify-center pb-safe-nav">
-    <SmoothSkeleton className="w-full max-w-4xl h-96" />
+    <div className="w-16 h-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
   </div>
 ));
 PageLoadingFallback.displayName = 'PageLoadingFallback';
@@ -152,13 +152,14 @@ const App = () => {
   // Track visitor activity
   useVisitorTracking();
 
-  // Prefetch critical routes after initial load
+  // Prefetch critical routes IMMEDIATELY after splash completes
   useEffect(() => {
-    if (!showSplash && !isInitialLoad) {
-      // Prefetch common routes in the background
+    if (!showSplash) {
+      // Prefetch common routes immediately for instant navigation
       prefetchCriticalRoutes();
+      setIsInitialLoad(false);
     }
-  }, [showSplash, isInitialLoad]);
+  }, [showSplash]);
 
   const handleSplashComplete = useCallback(() => {
     setShowSplash(false);

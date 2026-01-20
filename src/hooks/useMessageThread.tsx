@@ -96,17 +96,25 @@ export const useMessageThread = ({ sellerId, buyerId, productId, enabled = true 
         }))
       );
 
-      // Mark unread messages as read in background (don't await)
+      // Mark unread messages as read immediately (don't await but handle result)
       const unreadMessages = (data || []).filter((msg) => msg.recipient_id === user.id && !msg.is_read);
 
       if (unreadMessages.length > 0) {
-        console.log('📨 Marking', unreadMessages.length, 'messages as read');
-        supabase
-          .from('messages')
-          .update({ is_read: true })
-          .in('id', unreadMessages.map((m) => m.id))
-          .eq('recipient_id', user.id)
-          .then(() => console.log('📨 Messages marked as read'));
+        console.log('📨 Marking', unreadMessages.length, 'messages as read immediately');
+        const unreadIds = unreadMessages.map((m) => m.id);
+        
+        // Update each message individually to trigger realtime properly
+        Promise.all(
+          unreadIds.map(id =>
+            supabase
+              .from('messages')
+              .update({ is_read: true })
+              .eq('id', id)
+              .eq('recipient_id', user.id)
+          )
+        ).then(() => {
+          console.log('📨 All messages marked as read - badges should update now');
+        });
       }
     } catch (error) {
       console.error('Error fetching messages:', error);
@@ -171,13 +179,15 @@ export const useMessageThread = ({ sellerId, buyerId, productId, enabled = true 
               return [...prev, formattedMsg];
             });
 
-            // Mark as read if I'm the recipient (in background)
+            // Mark as read if I'm the recipient (immediate update to trigger realtime)
             if (newMsg.recipient_id === user.id && !newMsg.is_read) {
+              console.log('📨 Marking new incoming message as read immediately');
               supabase
                 .from('messages')
                 .update({ is_read: true })
                 .eq('id', newMsg.id)
-                .eq('recipient_id', user.id);
+                .eq('recipient_id', user.id)
+                .then(() => console.log('📨 New message marked as read'));
             }
           }
         }

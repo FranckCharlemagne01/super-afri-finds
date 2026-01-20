@@ -67,17 +67,35 @@ export const useRealtimeNotifications = () => {
     fetchCounts();
 
     // Configuration des abonnements temps réel
+    // Écouter les INSERT ET UPDATE sur messages (pour détecter quand is_read passe à true)
     const messageChannel = supabase
-      .channel('realtime-messages')
+      .channel(`realtime-messages-${userId}`)
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'messages',
           filter: `recipient_id=eq.${userId}`
         },
         () => fetchCounts()
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `recipient_id=eq.${userId}`
+        },
+        (payload) => {
+          // Rafraîchir immédiatement quand un message est marqué comme lu
+          const updated = payload.new as { is_read?: boolean };
+          if (updated.is_read === true) {
+            console.log('📬 Message marked as read, refreshing counts...');
+            fetchCounts();
+          }
+        }
       )
       .subscribe();
 

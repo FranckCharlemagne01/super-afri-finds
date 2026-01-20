@@ -8,6 +8,7 @@ import { useCart } from '@/hooks/useCart';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useStableAuth } from '@/hooks/useStableAuth';
 import { isValidImageUrl, handleImageError } from '@/utils/productImageHelper';
+import { useProductPrefetch } from '@/hooks/useProductCache';
 
 interface OptimizedProductCardProps {
   id: string;
@@ -54,6 +55,7 @@ export const OptimizedProductCard = memo(({
   const { addToCart } = useCart();
   const { favoriteIds, toggleFavorite } = useFavorites();
   const { userId } = useStableAuth();
+  const { prefetchOnHover, cancelPrefetch } = useProductPrefetch();
   
   const isFavorite = favoriteIds.includes(id);
 
@@ -87,6 +89,9 @@ export const OptimizedProductCard = memo(({
     <Card 
       className="group cursor-pointer hover:shadow-lg transition-all duration-300 border-border/50 overflow-hidden h-full flex flex-col"
       onClick={handleCardClick}
+      onMouseEnter={() => prefetchOnHover(id)}
+      onMouseLeave={cancelPrefetch}
+      onTouchStart={() => prefetchOnHover(id)}
     >
       <div className="relative w-full h-[200px] sm:h-[240px] md:h-[280px] overflow-hidden rounded-t-xl bg-[#f5f5f5]">
         <img 

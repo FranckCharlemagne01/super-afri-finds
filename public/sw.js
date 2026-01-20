@@ -1,9 +1,9 @@
 // Djassa Marketplace - Service Worker for PWA & Push Notifications
-// Version 6 - Ultra-fast caching for instant loading
-const CACHE_NAME = 'djassa-pwa-v6';
-const DYNAMIC_CACHE = 'djassa-dynamic-v6';
-const IMAGE_CACHE = 'djassa-images-v6';
-const API_CACHE = 'djassa-api-v6';
+// Version 7 - Fixed PWA icons for iOS & Android
+const CACHE_NAME = 'djassa-pwa-v7';
+const DYNAMIC_CACHE = 'djassa-dynamic-v7';
+const IMAGE_CACHE = 'djassa-images-v7';
+const API_CACHE = 'djassa-api-v7';
 
 // Maximum cache sizes
 const MAX_DYNAMIC_CACHE = 150;
@@ -16,10 +16,20 @@ const STATIC_ASSETS = [
   '/index.html',
   '/manifest.json',
   '/favicon.png',
+  '/favicon.ico',
+  '/icons/icon-48.png',
+  '/icons/icon-72.png',
+  '/icons/icon-96.png',
+  '/icons/icon-128.png',
+  '/icons/icon-144.png',
+  '/icons/icon-152.png',
   '/icons/icon-192.png',
+  '/icons/icon-256.png',
+  '/icons/icon-384.png',
   '/icons/icon-512.png',
   '/icons/icon-maskable-192.png',
-  '/icons/icon-maskable-512.png'
+  '/icons/icon-maskable-512.png',
+  '/icons/apple-touch-icon-180.png'
 ];
 
 // Install event - cache essential assets + prefetch JS chunks

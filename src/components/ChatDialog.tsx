@@ -46,17 +46,35 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Determine seller and buyer IDs
-  const sellerId = userType === 'seller' ? user?.id || '' : initialMessage?.recipient_id || '';
-  const buyerId = userType === 'buyer' ? user?.id || '' : initialMessage?.sender_id || '';
+  // Determine the two participants in the conversation
+  // userType tells us if current user is viewing as seller or buyer
+  // We need to identify the OTHER user correctly
+  const currentUserId = user?.id || '';
+  
+  // Get the other participant from the initial message
+  const otherUserId = initialMessage?.sender_id === currentUserId 
+    ? initialMessage?.recipient_id 
+    : initialMessage?.sender_id;
+
+  // For the thread, we need consistent seller/buyer assignment
+  // Use the product's seller if available, otherwise use the context
+  const sellerId = userType === 'seller' ? currentUserId : otherUserId || '';
+  const buyerId = userType === 'buyer' ? currentUserId : otherUserId || '';
 
   // Use the message thread hook
-  const { messages, loading, sending, sendMessage } = useMessageThread({
+  const { messages, loading, sending, sendMessage, refetch } = useMessageThread({
     sellerId,
     buyerId,
     productId: initialMessage?.product_id,
-    enabled: open && !!initialMessage && !!user,
+    enabled: open && !!initialMessage && !!user && !!otherUserId,
   });
+
+  // Refetch when dialog opens
+  useEffect(() => {
+    if (open && initialMessage && user && otherUserId) {
+      refetch();
+    }
+  }, [open, refetch]);
 
   // Fetch other user info
   useEffect(() => {

@@ -19,8 +19,11 @@ interface UseOptimizedQueryResult<T> {
   isStale: boolean;
 }
 
+// ✅ Global request deduplication to prevent duplicate fetches
+const pendingRequests = new Map<string, Promise<any>>();
+
 /**
- * Optimized query hook with built-in caching and stale-while-revalidate
+ * Optimized query hook with built-in caching, stale-while-revalidate, and request deduplication
  * Much faster than react-query for simple use cases
  */
 export function useOptimizedQuery<T>({
@@ -32,45 +35,65 @@ export function useOptimizedQuery<T>({
   onSuccess,
   onError,
 }: UseOptimizedQueryOptions<T>): UseOptimizedQueryResult<T> {
-  const [data, setData] = useState<T | null>(() => getCached<T>(key));
-  const [loading, setLoading] = useState(!data);
+  // ✅ Initialize from cache synchronously to prevent flicker
+  const initialData = useMemo(() => getCached<T>(key), [key]);
+  const [data, setData] = useState<T | null>(initialData);
+  const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState<Error | null>(null);
   const [stale, setStale] = useState(() => isStale(key));
   
   const mountedRef = useRef(true);
-  const fetchingRef = useRef(false);
+  const keyRef = useRef(key);
+  keyRef.current = key;
 
   const fetchData = useCallback(async (showLoading = true) => {
-    if (fetchingRef.current) return;
-    fetchingRef.current = true;
+    const currentKey = keyRef.current;
+    
+    // ✅ Deduplicate concurrent requests for the same key
+    if (pendingRequests.has(currentKey)) {
+      try {
+        const result = await pendingRequests.get(currentKey);
+        if (mountedRef.current) {
+          setData(result);
+          setLoading(false);
+          setStale(false);
+        }
+        return;
+      } catch {
+        // Fall through to fetch again
+      }
+    }
 
     if (showLoading && !data) {
       setLoading(true);
     }
 
+    const fetchPromise = fetcher();
+    pendingRequests.set(currentKey, fetchPromise);
+
     try {
-      const freshData = await fetcher();
+      const freshData = await fetchPromise;
       
-      if (mountedRef.current) {
+      if (mountedRef.current && keyRef.current === currentKey) {
         setData(freshData);
-        setCache(key, freshData, staleTime);
+        setCache(currentKey, freshData, staleTime);
         setStale(false);
         setError(null);
         onSuccess?.(freshData);
       }
     } catch (err) {
-      if (mountedRef.current) {
+      if (mountedRef.current && keyRef.current === currentKey) {
         const error = err instanceof Error ? err : new Error('Unknown error');
         setError(error);
         onError?.(error);
       }
     } finally {
+      pendingRequests.delete(currentKey);
       if (mountedRef.current) {
         setLoading(false);
       }
-      fetchingRef.current = false;
     }
-  }, [key, fetcher, staleTime, data, onSuccess, onError]);
+  }, [fetcher, staleTime, data, onSuccess, onError]);
 
   // Initial fetch and stale revalidation
   useEffect(() => {

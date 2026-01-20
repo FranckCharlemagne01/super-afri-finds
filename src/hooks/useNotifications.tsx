@@ -166,6 +166,12 @@ export const useNotifications = () => {
           setNotifications(prev =>
             prev.map(n => n.id === updatedNotification.id ? updatedNotification : n)
           );
+          // Recalculer immédiatement le compteur d'après l'état mis à jour
+          setNotifications(prev => {
+            const newCount = prev.filter(n => !n.is_read).length;
+            setUnreadCount(newCount);
+            return prev;
+          });
         }
       )
       .on(

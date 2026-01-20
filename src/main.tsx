@@ -68,6 +68,32 @@ window.addEventListener('appinstalled', () => {
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
     try {
+      // Emergency kill-switch for white-screen / cache issues.
+      // Usage: https://djassa.tech/?disableSW=1 (also works with #disableSW)
+      // This does NOT affect the app design/features; it only disables SW caching.
+      const url = new URL(window.location.href);
+      const disableSW =
+        url.searchParams.get('disableSW') === '1' ||
+        url.hash.includes('disableSW') ||
+        localStorage.getItem('djassa:disable_sw') === '1';
+
+      // Avoid letting a buggy/stale SW break Lovable preview/staging.
+      // Keep SW enabled on your real domains only.
+      const host = window.location.hostname;
+      const isProductionHost = host === 'djassa.tech' || host === 'www.djassa.tech';
+
+      if (disableSW || !isProductionHost) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister()));
+        console.log('[PWA] Service Worker disabled (kill-switch or non-production host)');
+
+        // Persist disable when explicitly requested via URL.
+        if (disableSW) {
+          localStorage.setItem('djassa:disable_sw', '1');
+        }
+        return;
+      }
+
       // Unregister old service workers first for clean update
       const registrations = await navigator.serviceWorker.getRegistrations();
       for (const registration of registrations) {

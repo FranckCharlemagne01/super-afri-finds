@@ -23,7 +23,7 @@ const routeComponentMap: Record<string, () => Promise<any>> = {
  * Improves perceived performance by loading pages before navigation
  */
 export function usePrefetch() {
-  const prefetchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const prefetchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const prefetchRoute = useCallback((route: string) => {
     // Normalize route (remove query params and hash)
@@ -71,7 +71,7 @@ export function usePrefetch() {
     
     prefetchTimeoutRef.current = setTimeout(() => {
       prefetchRoute(route);
-    }, 100);
+    }, 50); // Reduced from 100ms for faster response
   }, [prefetchRoute]);
 
   const cancelPrefetch = useCallback(() => {
@@ -89,15 +89,16 @@ export function usePrefetch() {
 }
 
 /**
- * Prefetch critical routes on app load
+ * Prefetch critical routes immediately on app load
  * Call this once in App.tsx after initial render
  */
 export function prefetchCriticalRoutes() {
-  // Wait for main thread to be free
+  // Prefetch immediately for most common routes
+  const criticalRoutes = ['/marketplace', '/cart', '/auth', '/product', '/categories'];
+  
+  // Use requestIdleCallback with short timeout for quick prefetch
   if ('requestIdleCallback' in window) {
     (window as any).requestIdleCallback(() => {
-      // Prefetch most common routes
-      const criticalRoutes = ['/marketplace', '/cart', '/auth'];
       criticalRoutes.forEach(route => {
         if (!prefetchedRoutes.has(route) && routeComponentMap[route]) {
           prefetchedRoutes.add(route);
@@ -106,6 +107,26 @@ export function prefetchCriticalRoutes() {
           });
         }
       });
-    }, { timeout: 5000 });
+    }, { timeout: 1000 }); // Reduced from 5000ms for faster prefetch
+  } else {
+    // Immediate fallback
+    setTimeout(() => {
+      criticalRoutes.forEach(route => {
+        if (!prefetchedRoutes.has(route) && routeComponentMap[route]) {
+          prefetchedRoutes.add(route);
+          routeComponentMap[route]().catch(() => {
+            prefetchedRoutes.delete(route);
+          });
+        }
+      });
+    }, 200);
   }
+}
+
+/**
+ * Check if a route has been prefetched
+ */
+export function isRoutePrefetched(route: string): boolean {
+  const normalizedRoute = route.split('?')[0].split('#')[0];
+  return prefetchedRoutes.has(normalizedRoute);
 }

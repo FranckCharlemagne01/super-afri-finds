@@ -3,9 +3,10 @@
  * - Prevents ANY loading state during navigation
  * - Caches route components on hover
  * - Prefetches data before navigation
+ * - Auto-prefetches critical routes on app load
  */
 
-import { useCallback, useRef, useMemo } from 'react';
+import { useCallback, useRef, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { prefetchProduct, getCachedProduct } from '@/hooks/useProductCache';
 import { prefetchSellerDashboard, prefetchBuyerDashboard, isDashboardCached } from '@/hooks/useDashboardPrefetch';
@@ -23,7 +24,8 @@ export function useInstantNavigation() {
   const navigate = useNavigate();
   const { userId, isAuthenticated } = useStableAuth();
   const { isSeller, isSuperAdmin } = useStableRole();
-  const touchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const touchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasPrefetchedDashboard = useRef(false);
 
   // Get the correct dashboard path based on role
   const dashboardPath = useMemo(() => {
@@ -31,6 +33,31 @@ export function useInstantNavigation() {
     if (isSeller) return '/seller-dashboard';
     return '/buyer-dashboard';
   }, [isSeller, isSuperAdmin]);
+
+  // ✅ Auto-prefetch dashboard when authenticated (for instant access later)
+  useEffect(() => {
+    if (!userId || !isAuthenticated || hasPrefetchedDashboard.current) return;
+    
+    hasPrefetchedDashboard.current = true;
+    
+    const prefetch = () => {
+      if (!isDashboardCached(userId, isSeller)) {
+        if (isSeller || isSuperAdmin) {
+          prefetchSellerDashboard(userId);
+        } else {
+          prefetchBuyerDashboard(userId);
+        }
+      }
+      prefetchedRoutes.add(dashboardPath);
+    };
+    
+    // Delay prefetch to not block initial render
+    if ('requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(prefetch, { timeout: 3000 });
+    } else {
+      setTimeout(prefetch, 1000);
+    }
+  }, [userId, isAuthenticated, isSeller, isSuperAdmin, dashboardPath]);
 
   // Prefetch product on hover (50ms delay to avoid over-fetching)
   const prefetchProductOnHover = useCallback((productId: string) => {

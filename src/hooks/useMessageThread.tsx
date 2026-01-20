@@ -49,17 +49,18 @@ export const useMessageThread = ({ sellerId, buyerId, productId, enabled = true 
 
   // Fetch messages for this thread
   const fetchMessages = useCallback(async () => {
+    // If we can't fetch yet (auth not ready, ids missing, dialog closed), don't lock the UI into an "empty" state.
     if (!enabled || !user?.id || !sellerId || !buyerId || sellerId === buyerId) {
       console.log('📨 Skipping fetch - invalid params:', { enabled, userId: user?.id, sellerId, buyerId });
-      setLoading(false);
       return;
     }
 
-    // Prevent duplicate fetches
-    if (fetchedRef.current && messages.length > 0) {
-      setLoading(false);
+    // Prevent duplicate fetches per thread
+    if (fetchedRef.current) {
       return;
     }
+
+    setLoading(true);
 
     console.log('📨 Fetching messages for conversation:', {
       currentUser: user.id,
@@ -112,7 +113,7 @@ export const useMessageThread = ({ sellerId, buyerId, productId, enabled = true 
     } finally {
       setLoading(false);
     }
-  }, [threadId, user?.id, enabled, sellerId, buyerId, otherUserId, productId, messages.length]);
+  }, [threadId, user?.id, enabled, sellerId, buyerId, otherUserId, productId]);
 
   // Setup realtime subscription with thread_id filter
   useEffect(() => {

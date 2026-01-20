@@ -11,11 +11,10 @@ const MAX_IMAGE_CACHE = 300;
 const MAX_API_CACHE = 100;
 
 // Static assets to cache on install - Essential files only (others cached on demand)
-const STATIC_ASSETS = [
-  '/',
-  '/manifest.json',
-  '/favicon.png'
-];
+// NOTE: We intentionally do NOT precache '/' because if a stale/incorrect index.html
+// is ever cached (e.g. wrong deployment on a custom host), it can cause persistent
+// "white page" failures until users manually clear site data.
+const STATIC_ASSETS = ['/manifest.json', '/favicon.png'];
 
 // Install event - minimal caching to avoid blank page issues
 self.addEventListener('install', (event) => {
@@ -224,10 +223,11 @@ self.addEventListener('fetch', (event) => {
               if (cachedResponse) {
                 return cachedResponse;
               }
-              // For HTML, return cached index or let browser handle
-              if (event.request.headers.get('accept')?.includes('text/html')) {
-                return caches.match('/').then(r => r || fetch(event.request));
-              }
+               // For HTML, don't force-fallback to '/' (can be stale). Let the browser
+               // retry the original request.
+               if (event.request.headers.get('accept')?.includes('text/html')) {
+                 return fetch(event.request);
+               }
               // Last resort: try network again without timeout
               return fetch(event.request);
             });

@@ -39,17 +39,19 @@ if (isStandalone) {
 }
 
 // Capture beforeinstallprompt as early as possible (before React mounts)
+// Android: NE PAS appeler preventDefault() pour permettre au navigateur d'afficher son popup natif
 window.addEventListener('beforeinstallprompt', (e: BeforeInstallPromptEvent) => {
-  // Prevent the mini-infobar from appearing on mobile
-  e.preventDefault();
-  
-  // Store the event for later use
+  // Store the event for later use (for our custom button)
   window.__PWA_DEFERRED_PROMPT = e;
   
-  console.log('[PWA] beforeinstallprompt captured - platforms:', e.platforms);
+  console.log('[PWA] ✅ beforeinstallprompt captured - platforms:', e.platforms);
+  console.log('[PWA] Install prompt is now available for user interaction');
   
   // Dispatch custom event for components to listen
   window.dispatchEvent(new CustomEvent('pwa-install-available', { detail: e }));
+  
+  // Note: We don't call e.preventDefault() here so the browser can show its native mini-infobar
+  // Our custom button will also work in parallel
 });
 
 // Listen for app installed event

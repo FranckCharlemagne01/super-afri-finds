@@ -1,8 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { useStableAuth } from '@/hooks/useStableAuth';
 import { useStableRole } from '@/hooks/useStableRole';
 import { useSellerAccess } from '@/hooks/useSellerAccess';
-import { useStableData } from '@/hooks/useStableData';
 import { useTokens } from '@/hooks/useTokens';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -22,6 +21,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Store, Package, MessageSquare, Coins, Settings } from 'lucide-react';
+import { getCached, setCache, isStale, CACHE_KEYS } from '@/utils/dataCache';
+import { useOptimizedShopQuery, useOptimizedQuery } from '@/hooks/useOptimizedQuery';
 
 interface Product {
   id: string;
@@ -98,9 +99,16 @@ const SellerDashboard = () => {
     }
   }, [sellerAccess.registerTokenRefreshCallback, userId]);
 
-  // Fetch seller shop
-  const { data: shop, loading: shopLoading, refetch: refetchShop } = useStableData(
-    async () => {
+  // Fetch seller shop - using optimized query with caching
+  const { 
+    data: shop, 
+    loading: shopLoading, 
+    refetch: refetchShop 
+  } = useOptimizedQuery({
+    key: userId ? CACHE_KEYS.SHOP_BY_SELLER(userId) : 'shop:none',
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    fetcher: async () => {
       if (!userId) return null;
       
       const { data, error } = await supabase
@@ -113,16 +121,19 @@ const SellerDashboard = () => {
       if (error) throw error;
       return data;
     },
-    [userId],
-    {
-      keepPreviousData: true,
-      loadingDelay: 200,
-    }
-  );
+  });
 
-  // Fetch seller products
-  const { data: products, loading: productsLoading, error, refetch: refetchProducts } = useStableData(
-    async () => {
+  // Fetch seller products - using optimized query with caching
+  const { 
+    data: products, 
+    loading: productsLoading, 
+    error, 
+    refetch: refetchProducts 
+  } = useOptimizedQuery({
+    key: userId ? CACHE_KEYS.PRODUCTS_BY_SELLER(userId) : 'products:none',
+    enabled: !!userId,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    fetcher: async () => {
       if (!userId) return [];
       
       const { data, error } = await supabase
@@ -134,13 +145,7 @@ const SellerDashboard = () => {
       if (error) throw error;
       return data || [];
     },
-    [userId],
-    {
-      keepPreviousData: true,
-      loadingDelay: 200,
-      debounceMs: 150
-    }
-  );
+  });
 
   const handleSignOut = async () => {
     await signOut();

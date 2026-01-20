@@ -1,7 +1,14 @@
 // Djassa Marketplace - Service Worker for PWA & Push Notifications
-// Version 4 - Optimized for WebAPK (Android) and iOS
-const CACHE_NAME = 'djassa-pwa-v4';
-const DYNAMIC_CACHE = 'djassa-dynamic-v4';
+// Version 5 - Ultra-optimized caching for instant loading
+const CACHE_NAME = 'djassa-pwa-v5';
+const DYNAMIC_CACHE = 'djassa-dynamic-v5';
+const IMAGE_CACHE = 'djassa-images-v5';
+const API_CACHE = 'djassa-api-v5';
+
+// Maximum cache sizes
+const MAX_DYNAMIC_CACHE = 100;
+const MAX_IMAGE_CACHE = 200;
+const MAX_API_CACHE = 50;
 
 // Static assets to cache on install - Essential for WebAPK
 const STATIC_ASSETS = [
@@ -15,9 +22,12 @@ const STATIC_ASSETS = [
   '/icons/icon-maskable-512.png'
 ];
 
+// Precache JS/CSS chunks on install for instant navigation
+const PRECACHE_ON_INSTALL = true;
+
 // Install event - cache essential assets
 self.addEventListener('install', (event) => {
-  console.log('[SW] Service Worker v3 installing...');
+  console.log('[SW] Service Worker v5 installing...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
@@ -36,14 +46,16 @@ self.addEventListener('install', (event) => {
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Service Worker v3 activating...');
+  console.log('[SW] Service Worker v5 activating...');
+  const currentCaches = [CACHE_NAME, DYNAMIC_CACHE, IMAGE_CACHE, API_CACHE];
+  
   event.waitUntil(
     Promise.all([
       // Clean old caches
       caches.keys().then((cacheNames) => {
         return Promise.all(
           cacheNames
-            .filter((name) => name !== CACHE_NAME && name !== DYNAMIC_CACHE)
+            .filter((name) => !currentCaches.includes(name))
             .map((name) => {
               console.log('[SW] Deleting old cache:', name);
               return caches.delete(name);
@@ -58,45 +70,70 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Helper function to determine caching strategy
-function getCacheStrategy(request) {
+// Trim cache to maximum size (LRU-style: remove oldest entries)
+async function trimCache(cacheName, maxItems) {
+  const cache = await caches.open(cacheName);
+  const keys = await cache.keys();
+  if (keys.length > maxItems) {
+    const toDelete = keys.slice(0, keys.length - maxItems);
+    await Promise.all(toDelete.map((key) => cache.delete(key)));
+  }
+}
+
+// Helper function to determine caching strategy and target cache
+function getCacheConfig(request) {
   const url = new URL(request.url);
   
   // Skip non-GET requests
-  if (request.method !== 'GET') return 'network-only';
-  
-  // Skip cross-origin requests (except for CDN assets)
-  if (!url.origin.includes(self.location.origin) && 
-      !url.origin.includes('supabase.co') &&
-      !url.origin.includes('cdn.')) {
-    return 'network-only';
+  if (request.method !== 'GET') {
+    return { strategy: 'network-only', cache: null };
   }
   
-  // Skip Supabase API calls - always network
-  if (url.pathname.includes('/rest/') || 
-      url.pathname.includes('/auth/') ||
-      url.pathname.includes('/realtime/') ||
-      url.pathname.includes('/storage/')) {
-    return 'network-only';
+  // Skip cross-origin requests (except for CDN assets and Supabase storage)
+  const isSupabaseStorage = url.hostname.includes('supabase.co') && url.pathname.includes('/storage/');
+  const isCDN = url.hostname.includes('cdn.');
+  
+  if (!url.origin.includes(self.location.origin) && !isSupabaseStorage && !isCDN) {
+    return { strategy: 'network-only', cache: null };
   }
   
-  // Static assets - cache first
-  if (url.pathname.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/)) {
-    return 'cache-first';
+  // Supabase storage images - cache aggressively
+  if (isSupabaseStorage) {
+    return { strategy: 'cache-first', cache: IMAGE_CACHE };
   }
   
-  // HTML pages - network first with cache fallback
+  // Skip Supabase API calls - always network (except storage)
+  if (url.hostname.includes('supabase.co')) {
+    return { strategy: 'network-only', cache: null };
+  }
+  
+  // Image files - aggressive caching
+  if (url.pathname.match(/\.(png|jpg|jpeg|gif|svg|webp|avif|ico)$/i)) {
+    return { strategy: 'cache-first', cache: IMAGE_CACHE };
+  }
+  
+  // JS/CSS bundles - cache first (immutable with hash)
+  if (url.pathname.match(/\.(js|css)$/) && url.pathname.includes('assets/')) {
+    return { strategy: 'cache-first', cache: DYNAMIC_CACHE };
+  }
+  
+  // Fonts - cache first
+  if (url.pathname.match(/\.(woff|woff2|ttf|eot)$/)) {
+    return { strategy: 'cache-first', cache: DYNAMIC_CACHE };
+  }
+  
+  // HTML pages - stale-while-revalidate for instant loading
   if (request.headers.get('accept')?.includes('text/html')) {
-    return 'network-first';
+    return { strategy: 'stale-while-revalidate', cache: DYNAMIC_CACHE };
   }
   
   // Default to network first
-  return 'network-first';
+  return { strategy: 'network-first', cache: DYNAMIC_CACHE };
 }
 
-// Fetch event handler
+// Fetch event handler with optimized caching strategies
 self.addEventListener('fetch', (event) => {
-  const strategy = getCacheStrategy(event.request);
+  const { strategy, cache: targetCache } = getCacheConfig(event.request);
   
   if (strategy === 'network-only') {
     return; // Let the browser handle it
@@ -107,16 +144,6 @@ self.addEventListener('fetch', (event) => {
       caches.match(event.request)
         .then((cachedResponse) => {
           if (cachedResponse) {
-            // Update cache in background
-            fetch(event.request)
-              .then((response) => {
-                if (response.status === 200) {
-                  caches.open(DYNAMIC_CACHE).then((cache) => {
-                    cache.put(event.request, response);
-                  });
-                }
-              })
-              .catch(() => {});
             return cachedResponse;
           }
           
@@ -124,8 +151,12 @@ self.addEventListener('fetch', (event) => {
             .then((response) => {
               if (response.status === 200) {
                 const responseClone = response.clone();
-                caches.open(DYNAMIC_CACHE).then((cache) => {
+                caches.open(targetCache).then((cache) => {
                   cache.put(event.request, responseClone);
+                  // Trim cache in background
+                  if (targetCache === IMAGE_CACHE) {
+                    trimCache(IMAGE_CACHE, MAX_IMAGE_CACHE);
+                  }
                 });
               }
               return response;
@@ -135,14 +166,38 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
+  if (strategy === 'stale-while-revalidate') {
+    event.respondWith(
+      caches.match(event.request)
+        .then((cachedResponse) => {
+          const fetchPromise = fetch(event.request)
+            .then((networkResponse) => {
+              if (networkResponse.status === 200) {
+                const responseClone = networkResponse.clone();
+                caches.open(targetCache).then((cache) => {
+                  cache.put(event.request, responseClone);
+                });
+              }
+              return networkResponse;
+            })
+            .catch(() => cachedResponse);
+          
+          // Return cached immediately if available, otherwise wait for network
+          return cachedResponse || fetchPromise;
+        })
+    );
+    return;
+  }
+  
   // Network first strategy
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        if (response.status === 200) {
+        if (response.status === 200 && targetCache) {
           const responseClone = response.clone();
-          caches.open(DYNAMIC_CACHE).then((cache) => {
+          caches.open(targetCache).then((cache) => {
             cache.put(event.request, responseClone);
+            trimCache(targetCache, MAX_DYNAMIC_CACHE);
           });
         }
         return response;

@@ -1388,3 +1388,128 @@ textarea {
     }
   }
 }
+
+/* ============================================
+   PERFORMANCE OPTIMIZATIONS
+   Ultra-fast animations and rendering
+   ============================================ */
+
+@layer utilities {
+  /* GPU-accelerated transforms */
+  .gpu-accelerate {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+  
+  /* Instant loading fade-in */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-fade-in-fast {
+    animation: fadeIn 0.15s ease-out forwards;
+  }
+  
+  .animate-fade-in-instant {
+    animation: fadeIn 0.1s ease-out forwards;
+  }
+  
+  /* Skeleton shimmer - CSS-only, zero JS */
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+  
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--muted-foreground) / 0.1) 50%,
+      hsl(var(--muted)) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.2s ease-in-out infinite;
+  }
+  
+  /* Blur placeholder for images */
+  .blur-placeholder {
+    background: hsl(var(--muted));
+    filter: blur(10px);
+    transition: filter 0.2s ease-out;
+  }
+  
+  .blur-placeholder.loaded {
+    filter: blur(0);
+  }
+  
+  /* Optimized touch feedback */
+  .touch-feedback {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  
+  .touch-feedback:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+  
+  /* Content visibility for offscreen elements */
+  .content-visibility-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 300px;
+  }
+  
+  /* Prevent layout shifts */
+  .aspect-product {
+    aspect-ratio: 4/5;
+  }
+  
+  /* Reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-in-fast,
+    .animate-fade-in-instant,
+    .skeleton-shimmer {
+      animation: none;
+    }
+    
+    .touch-feedback:active {
+      transform: none;
+    }
+  }
+}
+
+/* Critical rendering optimizations */
+@layer base {
+  /* Optimize font rendering */
+  html {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Optimize image rendering */
+  img {
+    content-visibility: auto;
+  }
+  
+  /* Prevent FOUC */
+  .hydrating {
+    visibility: hidden;
+  }
+  
+  .hydrated {
+    visibility: visible;
+  }
+}

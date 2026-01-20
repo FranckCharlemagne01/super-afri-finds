@@ -32,7 +32,8 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 function getDeviceId(): string {
   let deviceId = localStorage.getItem('djassa_device_id');
   if (!deviceId) {
-    deviceId = 'device_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+    // Use crypto.randomUUID() for cryptographically secure device ID
+    deviceId = 'device_' + crypto.randomUUID();
     localStorage.setItem('djassa_device_id', deviceId);
   }
   return deviceId;

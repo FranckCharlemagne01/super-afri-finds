@@ -110,7 +110,7 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
     try {
       const uploadPromises = imageFiles.map(async (file) => {
         const fileExt = file.name.split('.').pop()?.toLowerCase();
-        const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const fileName = `${user.id}/${Date.now()}-${crypto.randomUUID()}.${fileExt}`;
         
         const { data, error } = await supabase.storage
           .from('product-images')

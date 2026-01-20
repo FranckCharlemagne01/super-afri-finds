@@ -1,7 +1,8 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 
 // Prefetch cache to avoid duplicate prefetches
 const prefetchedRoutes = new Set<string>();
+let criticalRoutesPrefetched = false;
 
 // Route to lazy component mapping for prefetching
 const routeComponentMap: Record<string, () => Promise<any>> = {
@@ -16,6 +17,7 @@ const routeComponentMap: Record<string, () => Promise<any>> = {
   '/seller-dashboard': () => import('@/pages/SellerDashboard'),
   '/buyer-dashboard': () => import('@/pages/BuyerDashboard'),
   '/search': () => import('@/pages/SearchResults'),
+  '/superadmin': () => import('@/pages/SuperAdminDashboard'),
 };
 
 /**
@@ -44,34 +46,23 @@ export function usePrefetch() {
     if (matchingRoute && routeComponentMap[matchingRoute]) {
       prefetchedRoutes.add(normalizedRoute);
       
-      // Use requestIdleCallback for non-critical prefetching
-      if ('requestIdleCallback' in window) {
-        (window as any).requestIdleCallback(() => {
-          routeComponentMap[matchingRoute]().catch(() => {
-            // Silently ignore prefetch errors
-            prefetchedRoutes.delete(normalizedRoute);
-          });
-        }, { timeout: 2000 });
-      } else {
-        // Fallback for browsers without requestIdleCallback
-        setTimeout(() => {
-          routeComponentMap[matchingRoute]().catch(() => {
-            prefetchedRoutes.delete(normalizedRoute);
-          });
-        }, 100);
-      }
+      // Immediate prefetch for better UX
+      routeComponentMap[matchingRoute]().catch(() => {
+        prefetchedRoutes.delete(normalizedRoute);
+      });
     }
   }, []);
 
   const prefetchOnHover = useCallback((route: string) => {
-    // Debounce prefetch to avoid unnecessary loads on quick mouse movements
+    // Instant prefetch on hover - no debounce for faster response
     if (prefetchTimeoutRef.current) {
       clearTimeout(prefetchTimeoutRef.current);
     }
     
+    // Immediate prefetch for instant navigation
     prefetchTimeoutRef.current = setTimeout(() => {
       prefetchRoute(route);
-    }, 50); // Reduced from 100ms for faster response
+    }, 20); // Ultra-fast 20ms debounce
   }, [prefetchRoute]);
 
   const cancelPrefetch = useCallback(() => {
@@ -93,34 +84,57 @@ export function usePrefetch() {
  * Call this once in App.tsx after initial render
  */
 export function prefetchCriticalRoutes() {
-  // Prefetch immediately for most common routes
-  const criticalRoutes = ['/marketplace', '/cart', '/auth', '/product', '/categories'];
+  // Prevent duplicate prefetch
+  if (criticalRoutesPrefetched) return;
+  criticalRoutesPrefetched = true;
   
-  // Use requestIdleCallback with short timeout for quick prefetch
+  // Most critical routes - prefetch immediately
+  const immediatePrefetch = ['/marketplace', '/cart', '/product'];
+  
+  // Secondary routes - prefetch in idle time
+  const secondaryPrefetch = ['/auth', '/categories', '/seller-dashboard', '/buyer-dashboard'];
+  
+  // Immediate prefetch for critical routes
+  immediatePrefetch.forEach(route => {
+    if (!prefetchedRoutes.has(route) && routeComponentMap[route]) {
+      prefetchedRoutes.add(route);
+      routeComponentMap[route]().catch(() => {
+        prefetchedRoutes.delete(route);
+      });
+    }
+  });
+  
+  // Prefetch secondary routes in idle time
+  const prefetchSecondary = () => {
+    secondaryPrefetch.forEach(route => {
+      if (!prefetchedRoutes.has(route) && routeComponentMap[route]) {
+        prefetchedRoutes.add(route);
+        routeComponentMap[route]().catch(() => {
+          prefetchedRoutes.delete(route);
+        });
+      }
+    });
+  };
+  
   if ('requestIdleCallback' in window) {
-    (window as any).requestIdleCallback(() => {
-      criticalRoutes.forEach(route => {
-        if (!prefetchedRoutes.has(route) && routeComponentMap[route]) {
-          prefetchedRoutes.add(route);
-          routeComponentMap[route]().catch(() => {
-            prefetchedRoutes.delete(route);
-          });
-        }
-      });
-    }, { timeout: 1000 }); // Reduced from 5000ms for faster prefetch
+    (window as any).requestIdleCallback(prefetchSecondary, { timeout: 2000 });
   } else {
-    // Immediate fallback
-    setTimeout(() => {
-      criticalRoutes.forEach(route => {
-        if (!prefetchedRoutes.has(route) && routeComponentMap[route]) {
-          prefetchedRoutes.add(route);
-          routeComponentMap[route]().catch(() => {
-            prefetchedRoutes.delete(route);
-          });
-        }
-      });
-    }, 200);
+    setTimeout(prefetchSecondary, 500);
   }
+}
+
+/**
+ * Hook to auto-prefetch on mount - use in App.tsx
+ */
+export function useAutoPrefetch() {
+  useEffect(() => {
+    // Prefetch after first paint
+    const timer = setTimeout(() => {
+      prefetchCriticalRoutes();
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
 }
 
 /**

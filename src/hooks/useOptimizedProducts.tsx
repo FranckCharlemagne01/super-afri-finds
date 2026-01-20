@@ -51,11 +51,12 @@ interface ProductCardProps {
   isActive?: boolean;
 }
 
-// Global cache for products
+// Global cache for products - Optimized for instant display
 const productsCache = {
   data: null as Product[] | null,
   timestamp: 0,
-  staleTime: 60 * 1000, // 1 minute cache
+  staleTime: 2 * 60 * 1000, // 2 minute cache
+  fetchInProgress: false,
 };
 
 /**
@@ -82,10 +83,18 @@ export function useOptimizedProducts() {
       return;
     }
 
-    // Show cached data immediately while fetching fresh data
+    // Show cached data immediately while fetching fresh data (SWR pattern)
     if (productsCache.data) {
       setProducts(productsCache.data);
+      setLoading(false); // Don't show loading if we have cached data
     }
+
+    // Prevent duplicate fetches
+    if (productsCache.fetchInProgress && !force) {
+      return;
+    }
+    
+    productsCache.fetchInProgress = true;
 
     // Cancel previous request
     if (abortControllerRef.current) {
@@ -94,6 +103,7 @@ export function useOptimizedProducts() {
     abortControllerRef.current = new AbortController();
 
     try {
+      // Only show loading if no cached data
       if (!productsCache.data) {
         setLoading(true);
       }
@@ -109,7 +119,7 @@ export function useOptimizedProducts() {
         `)
         .eq('is_active', true)
         .order('created_at', { ascending: false })
-        .limit(100); // Limit initial load
+        .limit(100);
 
       if (fetchError) throw fetchError;
 
@@ -126,6 +136,7 @@ export function useOptimizedProducts() {
         setError(err);
       }
     } finally {
+      productsCache.fetchInProgress = false;
       if (isMountedRef.current) {
         setLoading(false);
       }

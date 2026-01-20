@@ -13,7 +13,7 @@ import { useInactivityDetector } from "@/hooks/useInactivityDetector";
 import { useVisitorTracking } from "@/hooks/useVisitorTracking";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import { NativeAppProvider } from "@/components/NativeAppProvider";
-import { prefetchCriticalRoutes } from "@/hooks/usePrefetch";
+import { prefetchCriticalRoutes, useAutoPrefetch } from "@/hooks/usePrefetch";
 import { AnimatePresence, motion } from "framer-motion";
 import PWABottomInstallBar from "@/components/PWABottomInstallBar";
 
@@ -151,11 +151,14 @@ const App = () => {
 
   // Track visitor activity
   useVisitorTracking();
+  
+  // Auto-prefetch critical routes on mount
+  useAutoPrefetch();
 
   // Prefetch critical routes IMMEDIATELY after splash completes
   useEffect(() => {
     if (!showSplash) {
-      // Prefetch common routes immediately for instant navigation
+      // Additional prefetch after splash for guaranteed coverage
       prefetchCriticalRoutes();
       setIsInitialLoad(false);
     }

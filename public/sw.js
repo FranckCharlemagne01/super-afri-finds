@@ -1,14 +1,14 @@
 // Djassa Marketplace - Service Worker for PWA & Push Notifications
-// Version 5 - Ultra-optimized caching for instant loading
-const CACHE_NAME = 'djassa-pwa-v5';
-const DYNAMIC_CACHE = 'djassa-dynamic-v5';
-const IMAGE_CACHE = 'djassa-images-v5';
-const API_CACHE = 'djassa-api-v5';
+// Version 6 - Ultra-fast caching for instant loading
+const CACHE_NAME = 'djassa-pwa-v6';
+const DYNAMIC_CACHE = 'djassa-dynamic-v6';
+const IMAGE_CACHE = 'djassa-images-v6';
+const API_CACHE = 'djassa-api-v6';
 
 // Maximum cache sizes
-const MAX_DYNAMIC_CACHE = 100;
-const MAX_IMAGE_CACHE = 200;
-const MAX_API_CACHE = 50;
+const MAX_DYNAMIC_CACHE = 150;
+const MAX_IMAGE_CACHE = 300;
+const MAX_API_CACHE = 100;
 
 // Static assets to cache on install - Essential for WebAPK
 const STATIC_ASSETS = [
@@ -22,31 +22,42 @@ const STATIC_ASSETS = [
   '/icons/icon-maskable-512.png'
 ];
 
-// Precache JS/CSS chunks on install for instant navigation
-const PRECACHE_ON_INSTALL = true;
-
-// Install event - cache essential assets
+// Install event - cache essential assets + prefetch JS chunks
 self.addEventListener('install', (event) => {
-  console.log('[SW] Service Worker v5 installing...');
+  console.log('[SW] Service Worker v6 installing...');
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
+    Promise.all([
+      // Cache static assets
+      caches.open(CACHE_NAME).then((cache) => {
         console.log('[SW] Caching static assets');
         return cache.addAll(STATIC_ASSETS);
+      }),
+      // Prefetch critical routes in dynamic cache
+      caches.open(DYNAMIC_CACHE).then((cache) => {
+        // Cache common pages HTML for instant navigation
+        return cache.addAll([
+          '/marketplace',
+          '/cart',
+          '/categories'
+        ]).catch(() => {
+          // Ignore errors for SPA routes
+          console.log('[SW] Some routes not available yet');
+        });
       })
-      .then(() => {
-        console.log('[SW] Service Worker installed, skipping waiting');
-        return self.skipWaiting();
-      })
-      .catch((error) => {
-        console.error('[SW] Failed to cache static assets:', error);
-      })
+    ])
+    .then(() => {
+      console.log('[SW] Service Worker installed, skipping waiting');
+      return self.skipWaiting();
+    })
+    .catch((error) => {
+      console.error('[SW] Failed to cache static assets:', error);
+    })
   );
 });
 
-// Activate event - clean up old caches
+// Activate event - clean up old caches aggressively
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Service Worker v5 activating...');
+  console.log('[SW] Service Worker v6 activating...');
   const currentCaches = [CACHE_NAME, DYNAMIC_CACHE, IMAGE_CACHE, API_CACHE];
   
   event.waitUntil(
@@ -62,10 +73,16 @@ self.addEventListener('activate', (event) => {
             })
         );
       }),
-      // Take control of all clients
+      // Take control of all clients immediately
       self.clients.claim()
     ]).then(() => {
       console.log('[SW] Service Worker activated and controlling');
+      // Notify all clients that SW is ready
+      self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
+          client.postMessage({ type: 'SW_READY' });
+        });
+      });
     })
   );
 });
@@ -97,7 +114,7 @@ function getCacheConfig(request) {
     return { strategy: 'network-only', cache: null };
   }
   
-  // Supabase storage images - cache aggressively
+  // Supabase storage images - cache very aggressively
   if (isSupabaseStorage) {
     return { strategy: 'cache-first', cache: IMAGE_CACHE };
   }
@@ -107,13 +124,18 @@ function getCacheConfig(request) {
     return { strategy: 'network-only', cache: null };
   }
   
-  // Image files - aggressive caching
+  // Image files - aggressive caching with long TTL
   if (url.pathname.match(/\.(png|jpg|jpeg|gif|svg|webp|avif|ico)$/i)) {
     return { strategy: 'cache-first', cache: IMAGE_CACHE };
   }
   
-  // JS/CSS bundles - cache first (immutable with hash)
-  if (url.pathname.match(/\.(js|css)$/) && url.pathname.includes('assets/')) {
+  // JS/CSS bundles - cache first (immutable with hash) - CRITICAL for instant nav
+  if (url.pathname.match(/\.(js|css)$/) && (url.pathname.includes('assets/') || url.pathname.includes('chunks/'))) {
+    return { strategy: 'cache-first', cache: DYNAMIC_CACHE };
+  }
+  
+  // Vite deps - cache first for instant loading
+  if (url.pathname.includes('/node_modules/.vite/')) {
     return { strategy: 'cache-first', cache: DYNAMIC_CACHE };
   }
   
@@ -127,8 +149,13 @@ function getCacheConfig(request) {
     return { strategy: 'stale-while-revalidate', cache: DYNAMIC_CACHE };
   }
   
-  // Default to network first
-  return { strategy: 'network-first', cache: DYNAMIC_CACHE };
+  // JSON data - network first with cache fallback
+  if (url.pathname.endsWith('.json')) {
+    return { strategy: 'network-first', cache: API_CACHE };
+  }
+  
+  // Default to stale-while-revalidate for faster perceived performance
+  return { strategy: 'stale-while-revalidate', cache: DYNAMIC_CACHE };
 }
 
 // Fetch event handler with optimized caching strategies

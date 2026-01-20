@@ -22,35 +22,39 @@ export const useRealtimeNotifications = () => {
     if (!userId) return;
 
     try {
-      // Batch all queries for efficiency + use count/head to minimize payload
-      const [messagesResult, ordersResult, cartResult, favoritesResult] = await Promise.all([
-        supabase
-          .from('messages')
-          .select('id', { count: 'exact', head: true })
-          .eq('recipient_id', userId)
-          .eq('is_read', false),
-        supabase
-          .from('orders')
-          .select('id', { count: 'exact', head: true })
-          .eq('seller_id', userId)
-          .eq('status', 'pending'),
-        supabase
-          .from('cart_items')
-          .select('quantity')
-          .eq('user_id', userId),
-        supabase
-          .from('favorites')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', userId)
-      ]);
+      // Messages non lus
+      const { data: messagesData } = await supabase
+        .from('messages')
+        .select('id')
+        .eq('recipient_id', userId)
+        .eq('is_read', false);
 
-      const cartTotal = cartResult.data?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+      // Nouvelles commandes pour les vendeurs
+      const { data: ordersData } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('seller_id', userId)
+        .eq('status', 'pending');
+
+      // Items dans le panier
+      const { data: cartData } = await supabase
+        .from('cart_items')
+        .select('quantity')
+        .eq('user_id', userId);
+
+      // Items favoris
+      const { data: favoritesData } = await supabase
+        .from('favorites')
+        .select('id')
+        .eq('user_id', userId);
+
+      const cartTotal = cartData?.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
       setCounts({
-        unreadMessages: messagesResult.count || 0,
-        newOrders: ordersResult.count || 0,
+        unreadMessages: messagesData?.length || 0,
+        newOrders: ordersData?.length || 0,
         cartItems: cartTotal,
-        favoriteItems: favoritesResult.count || 0
+        favoriteItems: favoritesData?.length || 0
       });
     } catch (error) {
       console.error('Error fetching notification counts:', error);
@@ -63,7 +67,7 @@ export const useRealtimeNotifications = () => {
     fetchCounts();
 
     // Configuration des abonnements temps réel
-    // 🔹 Messages: INSERT (nouveau) + UPDATE (lecture)
+    // Écouter les INSERT ET UPDATE sur messages (pour détecter quand is_read passe à true)
     const messageChannel = supabase
       .channel(`realtime-messages-${userId}`)
       .on(
@@ -85,31 +89,22 @@ export const useRealtimeNotifications = () => {
           filter: `recipient_id=eq.${userId}`
         },
         (payload) => {
+          // Rafraîchir immédiatement quand un message est marqué comme lu
           const updated = payload.new as { is_read?: boolean };
           if (updated.is_read === true) {
+            console.log('📬 Message marked as read, refreshing counts...');
             fetchCounts();
           }
         }
       )
       .subscribe();
 
-    // 🔹 Orders: INSERT (nouvelle commande) + UPDATE (statut change -> plus "pending")
     const orderChannel = supabase
-      .channel(`realtime-orders-${userId}`)
+      .channel('realtime-orders')
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'orders',
-          filter: `seller_id=eq.${userId}`
-        },
-        () => fetchCounts()
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
+          event: '*',
           schema: 'public',
           table: 'orders',
           filter: `seller_id=eq.${userId}`
@@ -119,7 +114,7 @@ export const useRealtimeNotifications = () => {
       .subscribe();
 
     const cartChannel = supabase
-      .channel(`realtime-cart-${userId}`)
+      .channel('realtime-cart')
       .on(
         'postgres_changes',
         {
@@ -133,7 +128,7 @@ export const useRealtimeNotifications = () => {
       .subscribe();
 
     const favoritesChannel = supabase
-      .channel(`realtime-favorites-${userId}`)
+      .channel('realtime-favorites')
       .on(
         'postgres_changes',
         {
@@ -153,7 +148,6 @@ export const useRealtimeNotifications = () => {
       supabase.removeChannel(favoritesChannel);
     };
   }, [userId, fetchCounts]);
-
 
   return {
     ...counts,

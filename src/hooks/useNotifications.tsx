@@ -163,12 +163,14 @@ export const useNotifications = () => {
         },
         (payload) => {
           const updatedNotification = payload.new as Notification;
-
-          // Single atomic state update (prevents stale unreadCount + double renders)
+          setNotifications(prev =>
+            prev.map(n => n.id === updatedNotification.id ? updatedNotification : n)
+          );
+          // Recalculer immédiatement le compteur d'après l'état mis à jour
           setNotifications(prev => {
-            const next = prev.map(n => (n.id === updatedNotification.id ? updatedNotification : n));
-            setUnreadCount(next.filter(n => !n.is_read).length);
-            return next;
+            const newCount = prev.filter(n => !n.is_read).length;
+            setUnreadCount(newCount);
+            return prev;
           });
         }
       )
@@ -182,14 +184,7 @@ export const useNotifications = () => {
         },
         (payload) => {
           const deletedId = (payload.old as { id: string }).id;
-          setNotifications(prev => {
-            const deleted = prev.find(n => n.id === deletedId);
-            const next = prev.filter(n => n.id !== deletedId);
-            if (deleted && !deleted.is_read) {
-              setUnreadCount(next.filter(n => !n.is_read).length);
-            }
-            return next;
-          });
+          setNotifications(prev => prev.filter(n => n.id !== deletedId));
         }
       )
       .subscribe();

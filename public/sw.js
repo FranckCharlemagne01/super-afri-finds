@@ -98,11 +98,12 @@ function getCacheConfig(request) {
       return { strategy: 'network-only', cache: null };
     }
     
-    // CRITICAL: Skip all requests during initial page load to avoid blank pages
-    // This includes the main HTML document and essential scripts
+    // CRITICAL: avoid caching HTML/navigation responses.
+    // A stale index.html on a custom host can cause persistent white pages.
     if (request.mode === 'navigate') {
       // For navigation requests, always try network first with fast fallback
-      return { strategy: 'network-first-fast', cache: DYNAMIC_CACHE };
+      // but DO NOT store HTML in cache.
+      return { strategy: 'network-first-fast', cache: null };
     }
     
     // Skip cross-origin requests (except for CDN assets and Supabase storage)
@@ -138,9 +139,9 @@ function getCacheConfig(request) {
       return { strategy: 'cache-first', cache: DYNAMIC_CACHE };
     }
     
-    // HTML pages - network first with fast fallback
+    // HTML pages - network first with fast fallback, but DO NOT cache
     if (request.headers.get('accept')?.includes('text/html')) {
-      return { strategy: 'network-first-fast', cache: DYNAMIC_CACHE };
+      return { strategy: 'network-first-fast', cache: null };
     }
     
     // JSON data - network first

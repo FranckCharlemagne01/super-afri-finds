@@ -47,6 +47,13 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "cart_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       favorites: {
@@ -74,6 +81,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorites_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_public"
             referencedColumns: ["id"]
           },
         ]
@@ -127,6 +141,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_public"
             referencedColumns: ["id"]
           },
         ]
@@ -453,6 +474,13 @@ export type Database = {
             columns: ["shop_id"]
             isOneToOne: false
             referencedRelation: "seller_shops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops_public"
             referencedColumns: ["id"]
           },
         ]
@@ -831,7 +859,126 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      products_public: {
+        Row: {
+          badge: string | null
+          boosted_at: string | null
+          boosted_until: string | null
+          category: string | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          description: string | null
+          discount_percentage: number | null
+          id: string | null
+          images: string[] | null
+          in_stock: boolean | null
+          is_boosted: boolean | null
+          is_flash_sale: boolean | null
+          price: number | null
+          rating: number | null
+          reviews_count: number | null
+          shop_id: string | null
+          title: string | null
+          updated_at: string | null
+          video_url: string | null
+        }
+        Insert: {
+          badge?: string | null
+          boosted_at?: string | null
+          boosted_until?: string | null
+          category?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          description?: string | null
+          discount_percentage?: never
+          id?: string | null
+          images?: string[] | null
+          in_stock?: never
+          is_boosted?: boolean | null
+          is_flash_sale?: boolean | null
+          price?: number | null
+          rating?: number | null
+          reviews_count?: number | null
+          shop_id?: string | null
+          title?: string | null
+          updated_at?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          badge?: string | null
+          boosted_at?: string | null
+          boosted_until?: string | null
+          category?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          description?: string | null
+          discount_percentage?: never
+          id?: string | null
+          images?: string[] | null
+          in_stock?: never
+          is_boosted?: boolean | null
+          is_flash_sale?: boolean | null
+          price?: number | null
+          rating?: number | null
+          reviews_count?: number | null
+          shop_id?: string | null
+          title?: string | null
+          updated_at?: string | null
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "seller_shops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shops_public: {
+        Row: {
+          banner_url: string | null
+          created_at: string | null
+          id: string | null
+          logo_url: string | null
+          shop_description: string | null
+          shop_name: string | null
+          shop_slug: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          banner_url?: string | null
+          created_at?: string | null
+          id?: string | null
+          logo_url?: string | null
+          shop_description?: string | null
+          shop_name?: string | null
+          shop_slug?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          banner_url?: string | null
+          created_at?: string | null
+          id?: string | null
+          logo_url?: string | null
+          shop_description?: string | null
+          shop_name?: string | null
+          shop_slug?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       activate_subscription: {

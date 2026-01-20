@@ -78,5 +78,6 @@ function setCookie(name: string, value: string, days: number) {
 }
 
 function generateVisitorId(): string {
-  return `anon_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+  // Use crypto.randomUUID() for cryptographically secure visitor ID
+  return `anon_${crypto.randomUUID()}`;
 }

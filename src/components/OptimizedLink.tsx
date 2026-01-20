@@ -11,9 +11,9 @@ import { prefetchSellerDashboard, prefetchBuyerDashboard } from '@/hooks/useDash
 import { prefetchProduct } from '@/hooks/useProductCache';
 import { cn } from '@/lib/utils';
 
-interface OptimizedLinkProps extends Omit<LinkProps, 'to'> {
+interface OptimizedLinkProps extends Omit<LinkProps, 'to' | 'prefetch'> {
   to: string;
-  prefetch?: boolean;
+  prefetch?: boolean; // Our custom prefetch prop (not react-router's)
   prefetchData?: boolean;
   userId?: string | null;
   isSeller?: boolean;

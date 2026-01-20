@@ -1,9 +1,10 @@
 // Djassa Marketplace - Service Worker for PWA & Push Notifications
-// Version 9 - NEVER cache HTML to prevent white page on custom domains
-const CACHE_NAME = 'djassa-pwa-v9';
-const DYNAMIC_CACHE = 'djassa-dynamic-v9';
-const IMAGE_CACHE = 'djassa-images-v9';
-const API_CACHE = 'djassa-api-v9';
+// Version 10 - NEVER cache HTML to prevent white page on custom domains
+// Bump version to force clients to refresh caches after deployment changes.
+const CACHE_NAME = 'djassa-pwa-v10';
+const DYNAMIC_CACHE = 'djassa-dynamic-v10';
+const IMAGE_CACHE = 'djassa-images-v10';
+const API_CACHE = 'djassa-api-v10';
 
 // Maximum cache sizes
 const MAX_DYNAMIC_CACHE = 150;
@@ -18,7 +19,7 @@ const STATIC_ASSETS = ['/manifest.json', '/favicon.png'];
 
 // Install event - minimal caching to avoid blank page issues
 self.addEventListener('install', (event) => {
-  console.log('[SW] Service Worker v9 installing...');
+  console.log('[SW] Service Worker v10 installing...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
@@ -47,7 +48,7 @@ self.addEventListener('install', (event) => {
 
 // Activate event - clean up old caches aggressively
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Service Worker v9 activating...');
+   console.log('[SW] Service Worker v10 activating...');
   const currentCaches = [CACHE_NAME, DYNAMIC_CACHE, IMAGE_CACHE, API_CACHE];
   
   event.waitUntil(
@@ -64,12 +65,12 @@ self.addEventListener('activate', (event) => {
       })
       .then(() => self.clients.claim())
       .then(() => {
-        console.log('[SW] Service Worker v9 activated and controlling');
+        console.log('[SW] Service Worker v10 activated and controlling');
         return self.clients.matchAll();
       })
       .then(clients => {
         clients.forEach(client => {
-          client.postMessage({ type: 'SW_READY', version: 9 });
+          client.postMessage({ type: 'SW_READY', version: 10 });
         });
       })
       .catch(err => {

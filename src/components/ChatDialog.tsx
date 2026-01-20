@@ -221,11 +221,17 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
     onOpenChange(false);
   };
 
-  if (!initialMessage) return null;
+  // Compute derived values safely (no early return before hooks)
+  const otherUserName = initialMessage 
+    ? (userType === 'seller' 
+        ? (initialMessage.sender_profile?.full_name || initialMessage.sender_profile?.email || 'Client')
+        : (otherUserInfo?.full_name || otherUserInfo?.email || 'Vendeur'))
+    : '';
 
-  const otherUserName = userType === 'seller' 
-    ? (initialMessage.sender_profile?.full_name || initialMessage.sender_profile?.email || 'Client')
-    : (otherUserInfo?.full_name || otherUserInfo?.email || 'Vendeur');
+  // Don't render dialog content if no message, but keep hooks stable
+  if (!initialMessage) {
+    return <Dialog open={false} onOpenChange={onOpenChange}><DialogContent className="hidden" /></Dialog>;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

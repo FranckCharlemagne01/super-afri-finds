@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, memo, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { getProductImage, handleImageError } from "@/utils/productImageHelper";
+import { useProductPrefetch } from "@/hooks/useProductCache";
 
 interface CategoryProductCardProps {
   id: string;
@@ -94,6 +95,7 @@ export const CategoryProductCard = memo(({
 }: CategoryProductCardProps) => {
   const { toggleFavorite, isFavorite } = useFavorites();
   const navigate = useNavigate();
+  const { prefetchOnHover, cancelPrefetch } = useProductPrefetch();
 
   const isActiveBoosted = isBoosted && boostedUntil && new Date(boostedUntil) > new Date();
   const isFav = isFavorite(id);
@@ -110,6 +112,9 @@ export const CategoryProductCard = memo(({
   return (
     <div
       onClick={handleClick}
+      onMouseEnter={() => prefetchOnHover(id)}
+      onMouseLeave={cancelPrefetch}
+      onTouchStart={() => prefetchOnHover(id)}
       className={cn(
         "relative bg-card rounded-xl overflow-hidden cursor-pointer transition-all duration-200 active:scale-[0.98]",
         "border border-border/50 shadow-sm hover:shadow-md",

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import SEOHead from "@/components/SEOHead";
 import { useScrollDirection } from '@/hooks/useScrollDirection';
@@ -14,10 +14,12 @@ import { QuickOrderDialog } from "@/components/QuickOrderDialog";
 import { BoostCountdown } from "@/components/BoostCountdown";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import ImageLightbox from "@/components/ImageLightbox";
+import ProductDetailSkeleton from "@/components/ProductDetailSkeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { useRecommendations } from "@/hooks/useRecommendations";
 import { getProductImage, getProductImages, handleImageError } from "@/utils/productImageHelper";
+import { getCachedProduct, setCachedProduct, getCachedShop, setCachedShop } from "@/hooks/useProductCache";
 import { 
   ArrowLeft, 
   Heart, 
@@ -85,15 +87,20 @@ const ProductDetail = (): JSX.Element | null => {
     }
   };
 
+  // ✅ Initialize from cache for instant display
+  const cachedProduct = useMemo(() => id ? getCachedProduct(id) : null, [id]);
+  const cachedShop = useMemo(() => cachedProduct?.shop_id ? getCachedShop(cachedProduct.shop_id) : null, [cachedProduct?.shop_id]);
+
   const [quantity, setQuantity] = useState(1);
   const [personalMessage, setPersonalMessage] = useState('');
   const [showVideo, setShowVideo] = useState(false);
-  const [product, setProduct] = useState<Product | null>(null);
-  const [shop, setShop] = useState<Shop | null>(null);
+  const [product, setProduct] = useState<Product | null>(cachedProduct as Product | null);
+  const [shop, setShop] = useState<Shop | null>(cachedShop as Shop | null);
   const [shopProducts, setShopProducts] = useState<Product[]>([]);
   const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
   const [similarShops, setSimilarShops] = useState<Shop[]>([]);
-  const [loading, setLoading] = useState(true);
+  // ✅ If we have cache, no loading state needed
+  const [loading, setLoading] = useState(!cachedProduct);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [offerExpired, setOfferExpired] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -114,7 +121,11 @@ const ProductDetail = (): JSX.Element | null => {
 
   const fetchProduct = async (productId: string) => {
     try {
-      setLoading(true);
+      // ✅ Only show loading if no cached data
+      if (!product) {
+        setLoading(true);
+      }
+      
       const { data, error } = await supabase
         .from('products')
         .select('*')
@@ -134,6 +145,8 @@ const ProductDetail = (): JSX.Element | null => {
         return;
       }
       
+      // ✅ Cache the product for instant future access
+      setCachedProduct(data);
       setProduct(data);
       
       // Track category visit
@@ -148,6 +161,8 @@ const ProductDetail = (): JSX.Element | null => {
           .single();
         
         if (shopData) {
+          // ✅ Cache shop for instant future access
+          setCachedShop(shopData);
           setShop(shopData);
           
           // Track shop visit
@@ -196,15 +211,9 @@ const ProductDetail = (): JSX.Element | null => {
     }
   };
 
+  // ✅ Show skeleton instead of "Chargement du produit..."
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Chargement du produit...</p>
-        </div>
-      </div>
-    );
+    return <ProductDetailSkeleton />;
   }
 
   if (!product) {

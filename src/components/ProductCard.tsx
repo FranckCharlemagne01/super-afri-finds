@@ -11,6 +11,7 @@ import { QuickOrderDialog } from "@/components/QuickOrderDialog";
 import { BoostCountdown } from "@/components/BoostCountdown";
 import { ProductImage } from "@/components/ui/optimized-image";
 import { motion } from "framer-motion";
+import { useProductPrefetch } from "@/hooks/useProductCache";
 
 interface ProductCardProps {
   id?: string;
@@ -60,6 +61,7 @@ export const ProductCard = ({
   const { toggleFavorite, isFavorite } = useFavorites();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { prefetchOnHover, cancelPrefetch } = useProductPrefetch();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -87,6 +89,9 @@ export const ProductCard = ({
       whileHover={{ y: -4 }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
       className="h-full"
+      onMouseEnter={() => prefetchOnHover(id)}
+      onMouseLeave={cancelPrefetch}
+      onTouchStart={() => prefetchOnHover(id)}
     >
       <Card 
         className={`relative overflow-hidden cursor-pointer border border-border/40 shadow-sm rounded-xl bg-card transition-all duration-200 h-full flex flex-col ${

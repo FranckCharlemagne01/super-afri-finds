@@ -10,22 +10,33 @@ import { setCache, getCached, CACHE_KEYS } from '@/utils/dataCache';
 
 // Track prefetch status globally to avoid duplicate fetches
 const prefetchStatus = {
-  seller: false,
-  buyer: false,
+  seller: new Map<string, boolean>(),
+  buyer: new Map<string, boolean>(),
   inProgress: new Set<string>(),
+  lastPrefetch: 0,
 };
+
+// Minimum interval between prefetches (prevent rapid re-fetching)
+const MIN_PREFETCH_INTERVAL = 5000; // 5 seconds
 
 /**
  * Prefetch seller dashboard data in background
  * Call this immediately after detecting seller role
  */
 export async function prefetchSellerDashboard(userId: string): Promise<void> {
-  if (!userId || prefetchStatus.seller) return;
+  if (!userId) return;
+  
+  // Check if recently prefetched
+  const now = Date.now();
+  if (prefetchStatus.seller.get(userId) && now - prefetchStatus.lastPrefetch < MIN_PREFETCH_INTERVAL) {
+    return;
+  }
   
   const prefetchKey = `seller:${userId}`;
   if (prefetchStatus.inProgress.has(prefetchKey)) return;
   
   prefetchStatus.inProgress.add(prefetchKey);
+  prefetchStatus.lastPrefetch = now;
   
   try {
     console.log('[DashboardPrefetch] 🚀 Prefetching seller dashboard data...');
@@ -69,7 +80,7 @@ export async function prefetchSellerDashboard(userId: string): Promise<void> {
       setCache(CACHE_KEYS.USER_TOKENS(userId), tokensResult.data, 60 * 1000);
     }
 
-    prefetchStatus.seller = true;
+    prefetchStatus.seller.set(userId, true);
     console.log('[DashboardPrefetch] ✅ Seller dashboard data prefetched');
   } catch (error) {
     console.error('[DashboardPrefetch] ❌ Prefetch error:', error);
@@ -82,12 +93,19 @@ export async function prefetchSellerDashboard(userId: string): Promise<void> {
  * Prefetch buyer dashboard data
  */
 export async function prefetchBuyerDashboard(userId: string): Promise<void> {
-  if (!userId || prefetchStatus.buyer) return;
+  if (!userId) return;
+  
+  // Check if recently prefetched
+  const now = Date.now();
+  if (prefetchStatus.buyer.get(userId) && now - prefetchStatus.lastPrefetch < MIN_PREFETCH_INTERVAL) {
+    return;
+  }
   
   const prefetchKey = `buyer:${userId}`;
   if (prefetchStatus.inProgress.has(prefetchKey)) return;
   
   prefetchStatus.inProgress.add(prefetchKey);
+  prefetchStatus.lastPrefetch = now;
   
   try {
     console.log('[DashboardPrefetch] 🚀 Prefetching buyer dashboard data...');
@@ -124,7 +142,7 @@ export async function prefetchBuyerDashboard(userId: string): Promise<void> {
       setCache(`orders:${userId}`, ordersResult.data, 2 * 60 * 1000);
     }
 
-    prefetchStatus.buyer = true;
+    prefetchStatus.buyer.set(userId, true);
     console.log('[DashboardPrefetch] ✅ Buyer dashboard data prefetched');
   } catch (error) {
     console.error('[DashboardPrefetch] ❌ Prefetch error:', error);
@@ -136,10 +154,16 @@ export async function prefetchBuyerDashboard(userId: string): Promise<void> {
 /**
  * Reset prefetch status (call on logout)
  */
-export function resetPrefetchStatus(): void {
-  prefetchStatus.seller = false;
-  prefetchStatus.buyer = false;
+export function resetPrefetchStatus(userId?: string): void {
+  if (userId) {
+    prefetchStatus.seller.delete(userId);
+    prefetchStatus.buyer.delete(userId);
+  } else {
+    prefetchStatus.seller.clear();
+    prefetchStatus.buyer.clear();
+  }
   prefetchStatus.inProgress.clear();
+  prefetchStatus.lastPrefetch = 0;
 }
 
 /**

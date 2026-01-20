@@ -85,7 +85,7 @@ const SellerDashboard = memo(() => {
   const [openProductForm, setOpenProductForm] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState<string | null>(null);
-  const [initTimeout, setInitTimeout] = useState(false);
+  const initStartTime = useRef(Date.now());
   
   // ✅ Check if data was prefetched (instant display)
   const hasPrefetchedData = useMemo(() => {
@@ -95,15 +95,15 @@ const SellerDashboard = memo(() => {
   // ✅ Track mounted tabs to avoid re-fetching on tab switch
   const mountedTabs = useRef<Set<string>>(new Set(['overview']));
 
-  // ✅ Timeout de sécurité pour éviter les écrans de chargement infinis
+  // ✅ Fast timeout - reduced to 3 seconds for snappier experience
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (isInitializing) {
-        console.log('[SellerDashboard] ⚠️ Init timeout reached, forcing completion');
-        setInitTimeout(true);
+        const elapsed = Date.now() - initStartTime.current;
+        console.log(`[SellerDashboard] ⚠️ Init timeout reached after ${elapsed}ms, forcing completion`);
         setIsInitializing(false);
       }
-    }, 8000); // 8 secondes max
+    }, 3000); // Reduced from 8s to 3s
 
     return () => clearTimeout(timeout);
   }, [isInitializing]);
@@ -176,76 +176,63 @@ const SellerDashboard = memo(() => {
     navigate('/');
   };
 
-  // Initialisation et vérification du rôle
+  // ✅ Fast initialization - prioritize cached data and quick role checks
   useEffect(() => {
     const initDashboard = async () => {
-      console.log('[SellerDashboard] Init - authLoading:', authLoading, 'roleLoading:', roleLoading, 'userId:', userId, 'isSeller:', isSeller);
-      
-      // Attendre que l'authentification soit chargée
-      if (authLoading) {
-        console.log('[SellerDashboard] Waiting for auth...');
+      // If we have cached data, show content immediately
+      if (hasPrefetchedData && isSeller) {
+        console.log('[SellerDashboard] ✅ Instant display from cache');
+        setIsInitializing(false);
         return;
       }
       
-      // Si pas d'utilisateur après chargement auth, rediriger
-      if (!authLoading && !userId) {
-        console.log('[SellerDashboard] No userId after auth loaded, redirecting to auth');
+      // Wait for auth only if not loaded
+      if (authLoading) return;
+      
+      // No user = redirect to auth
+      if (!userId) {
         navigate('/auth', { replace: true });
         return;
       }
       
-      // Attendre que le rôle soit chargé (avec timeout de sécurité)
-      if (roleLoading) {
-        console.log('[SellerDashboard] Waiting for role...');
-        return;
-      }
-      
-      // Superadmin check
+      // Superadmin redirect
       if (isSuperAdmin) {
-        console.log('[SellerDashboard] User is superadmin, redirecting');
         navigate('/superadmin', { replace: true });
         return;
       }
       
-      // Si pas vendeur, on re-vérifie directement en base
-      if (!isSeller) {
-        console.log('[SellerDashboard] Not seller according to hook, checking database...');
-        
-        try {
-          const { data: roleData, error: roleError } = await supabase.rpc('get_user_role', { _user_id: userId });
-          console.log('[SellerDashboard] Role from database:', roleData, 'error:', roleError);
-          
-          if (roleError) {
-            console.error('[SellerDashboard] Role check error:', roleError);
-            // Continuer quand même, le hook peut avoir la bonne valeur
-          }
-          
-          if (roleData === 'seller' || roleData === 'admin' || roleData === 'superadmin') {
-            console.log('[SellerDashboard] User is seller in database, refreshing role...');
-            refreshRole();
-            setIsInitializing(false);
-            setInitError(null);
-            return;
-          }
-          
-          // Vraiment pas vendeur, rediriger
-          console.log('[SellerDashboard] Confirmed not seller, redirecting to buyer');
-          navigate('/buyer-dashboard', { replace: true });
-          return;
-        } catch (err) {
-          console.error('[SellerDashboard] Error checking role:', err);
-          // En cas d'erreur, laisser l'utilisateur voir le dashboard si possible
-        }
+      // Wait for role loading to complete (but with short timeout)
+      if (roleLoading) return;
+      
+      // If seller, we're good
+      if (isSeller) {
+        console.log('[SellerDashboard] ✅ Seller confirmed');
+        setIsInitializing(false);
+        return;
       }
       
-      // Tout est OK, terminer l'initialisation
-      console.log('[SellerDashboard] ✅ Initialization complete');
-      setIsInitializing(false);
-      setInitError(null);
+      // Quick database check for role (fallback)
+      try {
+        const { data: roleData } = await supabase.rpc('get_user_role', { _user_id: userId });
+        
+        if (roleData === 'seller' || roleData === 'admin' || roleData === 'superadmin') {
+          console.log('[SellerDashboard] ✅ Seller confirmed from DB');
+          refreshRole();
+          setIsInitializing(false);
+          return;
+        }
+        
+        // Not a seller, redirect
+        navigate('/buyer-dashboard', { replace: true });
+      } catch (err) {
+        console.error('[SellerDashboard] Role check error:', err);
+        // On error, complete init anyway to avoid stuck state
+        setIsInitializing(false);
+      }
     };
     
     initDashboard();
-  }, [userId, authLoading, isSeller, isSuperAdmin, roleLoading, navigate, refreshRole]);
+  }, [userId, authLoading, isSeller, isSuperAdmin, roleLoading, hasPrefetchedData, navigate, refreshRole]);
 
   // Gestion des paramètres URL pour paiement
   useEffect(() => {
@@ -381,40 +368,23 @@ const SellerDashboard = memo(() => {
     setOpenProductForm(true);
   }, []);
 
-  // Calculer si on doit afficher le skeleton
-  // ✅ Skip skeleton if data was prefetched (instant display)
-  // Le timeout de sécurité permet de forcer l'affichage après 8s
-  const shouldShowSkeleton = !initTimeout && !hasPrefetchedData && (
+  // ✅ Fast skeleton decision - prioritize cached data for instant display
+  const shouldShowSkeleton = !hasPrefetchedData && (
     isInitializing || 
     authLoading || 
-    roleLoading || 
+    (roleLoading && !isSeller) || 
     !userId
   );
 
-  // Show loading state pendant l'initialisation (avec timeout de sécurité)
+  // Show loading state during initialization
   // Skip if prefetched data is available
   if (shouldShowSkeleton) {
     return <SellerDashboardSkeleton />;
   }
 
-  // Afficher erreur si timeout atteint sans utilisateur
-  if (initTimeout && !userId) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-6 md:p-8 text-center">
-            <Store className="h-12 w-12 md:h-16 md:w-16 text-destructive mx-auto mb-4" />
-            <h2 className="text-xl md:text-2xl font-semibold mb-2">Session expirée</h2>
-            <p className="text-muted-foreground mb-6 text-sm md:text-base">
-              Votre session a expiré. Veuillez vous reconnecter.
-            </p>
-            <Button onClick={() => navigate('/auth', { replace: true })}>
-              Se connecter
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+  // Handle no user state (redirect to auth)
+  if (!userId) {
+    return null;
   }
 
   // Afficher erreur si problème d'initialisation
@@ -442,8 +412,8 @@ const SellerDashboard = memo(() => {
     return null;
   }
 
-  // Non-seller access - afficher un message clair
-  if (!isSeller && !roleLoading && !initTimeout) {
+  // Non-seller access - show clear message (skip if still initializing)
+  if (!isSeller && !roleLoading && !isInitializing) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md">

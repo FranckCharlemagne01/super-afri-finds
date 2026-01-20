@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, X, Share } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,9 +7,10 @@ import IOSInstallOverlay from './IOSInstallOverlay';
 
 /**
  * Barre d'installation PWA discrète en bas de l'écran
- * - Android : déclenche beforeinstallprompt
+ * - Android : déclenche beforeinstallprompt automatiquement
  * - iOS : affiche l'overlay d'instructions
- * - Disparaît si l'app est installée ou si l'utilisateur ferme
+ * - Disparaît si l'app est installée
+ * - Réapparaît à chaque session si l'utilisateur ferme (pas de blocage 7 jours)
  */
 const PWABottomInstallBar = () => {
   const { 
@@ -17,6 +18,7 @@ const PWABottomInstallBar = () => {
     isInstalled, 
     isStandalone, 
     isIOS,
+    isAndroid,
     promptInstall,
     showIOSOverlay,
     openIOSOverlay,
@@ -27,57 +29,94 @@ const PWABottomInstallBar = () => {
   const [dismissed, setDismissed] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
 
+  // Réinitialiser dismissed à chaque nouvelle session (pour reproposer)
   useEffect(() => {
-    // Vérifier si l'utilisateur a fermé la barre récemment (7 jours)
-    const dismissedAt = localStorage.getItem('pwa-bottom-bar-dismissed');
-    if (dismissedAt) {
-      const dismissedTime = parseInt(dismissedAt, 10);
-      const daysSinceDismissed = (Date.now() - dismissedTime) / (1000 * 60 * 60 * 24);
-      if (daysSinceDismissed < 7) {
-        setDismissed(true);
-        return;
-      }
+    // Pour Android: on ne persiste PAS le dismiss entre sessions
+    // L'utilisateur verra le prompt à chaque visite jusqu'à installation
+    const sessionDismissed = sessionStorage.getItem('pwa-bar-dismissed-session');
+    if (sessionDismissed === 'true') {
+      setDismissed(true);
+    }
+  }, []);
+
+  // Afficher automatiquement après un court délai
+  useEffect(() => {
+    // Ne pas afficher si déjà installé ou en standalone
+    if (isInstalled || isStandalone) {
+      console.log('[PWA Bar] Already installed or standalone, hiding bar');
+      return;
     }
 
-    // Afficher après 3 secondes de navigation
-    const timer = setTimeout(() => {
-      const shouldShow = (isInstallable || isIOS) && !isInstalled && !isStandalone && !dismissed;
+    // Attendre que le prompt soit disponible (Android) ou détecter iOS
+    const checkAndShow = () => {
+      const shouldShow = (isInstallable || isIOS) && !dismissed;
+      console.log('[PWA Bar] Check:', { isInstallable, isIOS, isAndroid, dismissed, shouldShow });
+      
       if (shouldShow) {
         setShowBar(true);
+        console.log('[PWA Bar] Showing install bar');
       }
-    }, 3000);
+    };
 
-    return () => clearTimeout(timer);
-  }, [isInstallable, isInstalled, isStandalone, dismissed, isIOS]);
+    // Délai court pour Android (2s), plus long pour iOS (3s)
+    const delay = isAndroid ? 2000 : 3000;
+    const timer = setTimeout(checkAndShow, delay);
 
-  const handleInstall = async () => {
+    // Écouter si le prompt devient disponible après le premier check
+    const handlePromptAvailable = () => {
+      console.log('[PWA Bar] Prompt became available');
+      if (!dismissed && !isInstalled && !isStandalone) {
+        setShowBar(true);
+      }
+    };
+
+    window.addEventListener('pwa-install-available', handlePromptAvailable);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('pwa-install-available', handlePromptAvailable);
+    };
+  }, [isInstallable, isInstalled, isStandalone, dismissed, isIOS, isAndroid]);
+
+  const handleInstall = useCallback(async () => {
     if (isIOS) {
       openIOSOverlay();
       return;
     }
 
     setIsInstalling(true);
+    console.log('[PWA Bar] User clicked install button');
+    
     const success = await promptInstall();
     setIsInstalling(false);
     
     if (success) {
+      console.log('[PWA Bar] Installation successful');
       setShowBar(false);
+      setDismissed(true);
+    } else {
+      console.log('[PWA Bar] User dismissed or installation failed');
+      // Ne pas cacher la barre si l'utilisateur refuse, mais pour cette session
     }
-  };
+  }, [isIOS, openIOSOverlay, promptInstall]);
 
-  const handleDismiss = () => {
+  const handleDismiss = useCallback(() => {
     setShowBar(false);
     setDismissed(true);
-    localStorage.setItem('pwa-bottom-bar-dismissed', Date.now().toString());
-  };
+    // Sauvegarder seulement pour cette session (pas 7 jours)
+    // Le prompt réapparaîtra à la prochaine visite
+    sessionStorage.setItem('pwa-bar-dismissed-session', 'true');
+    console.log('[PWA Bar] User dismissed for this session');
+  }, []);
 
-  // Ne pas afficher si déjà installé ou fermé
-  if (isInstalled || isStandalone || dismissed) {
+  // Ne pas afficher si déjà installé ou en mode standalone
+  if (isInstalled || isStandalone) {
     return <IOSInstallOverlay isOpen={showIOSOverlay} onClose={closeIOSOverlay} />;
   }
 
-  // Ne pas afficher si ni installable ni iOS
-  if (!isInstallable && !isIOS) {
+  // Sur Android, toujours afficher même si isInstallable est false au début
+  // (le prompt peut arriver plus tard)
+  if (!isInstallable && !isIOS && !isAndroid) {
     return null;
   }
 
@@ -95,7 +134,7 @@ const PWABottomInstallBar = () => {
             <div className="mx-auto max-w-lg">
               <div className="bg-card border shadow-xl rounded-xl p-3 flex items-center gap-3 relative overflow-hidden">
                 {/* Gradient décoratif */}
-                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary via-orange-500 to-primary" />
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary to-primary" />
                 
                 {/* Icône app */}
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -120,7 +159,7 @@ const PWABottomInstallBar = () => {
                 <Button
                   onClick={handleInstall}
                   size="sm"
-                  disabled={isInstalling}
+                  disabled={isInstalling || (!isInstallable && !isIOS)}
                   className="h-8 px-3 shrink-0"
                 >
                   {isInstalling ? (

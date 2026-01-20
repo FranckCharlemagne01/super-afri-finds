@@ -3,6 +3,15 @@ import App from "./App.tsx";
 import "./index.css";
 import { initResponsiveOptimizations } from "./utils/responsiveOptimization";
 
+// Surface runtime crashes in console (helps diagnose white screens)
+window.addEventListener('error', (e) => {
+  console.error('[Runtime] window.error', e.error || e.message, e);
+});
+
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('[Runtime] unhandledrejection', e.reason, e);
+});
+
 // Initialize responsive optimizations for mobile and tablet
 initResponsiveOptimizations();
 
@@ -66,7 +75,7 @@ window.addEventListener('appinstalled', () => {
 
 // Register Service Worker for PWA with better error handling
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', async () => {
+  const runServiceWorkerBootstrap = async () => {
     try {
       // Emergency kill-switch for white-screen / cache issues.
       // Usage: https://djassa.tech/?disableSW=1 (also works with #disableSW)
@@ -85,7 +94,14 @@ if ('serviceWorker' in navigator) {
       if (disableSW || !isProductionHost) {
         const regs = await navigator.serviceWorker.getRegistrations();
         await Promise.all(regs.map((r) => r.unregister()));
-        console.log('[PWA] Service Worker disabled (kill-switch or non-production host)');
+
+        // Also clear Cache Storage on preview/staging to avoid stale chunks causing blank screens.
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map((k) => caches.delete(k)));
+        }
+
+        console.log('[PWA] Service Worker disabled + caches cleared (kill-switch or non-production host)');
 
         // Persist disable when explicitly requested via URL.
         if (disableSW) {
@@ -103,14 +119,14 @@ if ('serviceWorker' in navigator) {
           console.log('[PWA] Unregistered old service worker');
         }
       }
-      
+
       const registration = await navigator.serviceWorker.register('/sw.js', {
         scope: '/',
-        updateViaCache: 'none'
+        updateViaCache: 'none',
       });
-      
+
       console.log('[PWA] Service Worker registered successfully:', registration.scope);
-      
+
       // Check for updates
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing;
@@ -122,14 +138,18 @@ if ('serviceWorker' in navigator) {
           });
         }
       });
-      
+
       // Force update check
       registration.update();
-      
     } catch (error) {
       console.error('[PWA] Service Worker registration failed:', error);
     }
-  });
+  };
+
+  // Run ASAP (helps recover when a stale SW cached bad chunks)
+  void runServiceWorkerBootstrap();
+  // Also run after load for browsers that delay SW APIs until full load
+  window.addEventListener('load', () => void runServiceWorkerBootstrap());
 }
 
 createRoot(document.getElementById("root")!).render(<App />);

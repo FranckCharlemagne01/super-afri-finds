@@ -15,6 +15,59 @@ window.addEventListener('unhandledrejection', (e) => {
   console.error('[Runtime] unhandledrejection', e.reason, e);
 });
 
+// =============================================================
+// Boot watchdog: recover from "white screen" caused by stale chunks
+// (common after rollback / CDN cache mixing hashed bundles)
+// =============================================================
+const runWhiteScreenRecovery = async (reason: string) => {
+  try {
+    const key = 'djassa:recovered_white_screen';
+    if (sessionStorage.getItem(key) === '1') return;
+    sessionStorage.setItem(key, '1');
+
+    console.warn('[Recovery] Attempting white-screen recovery:', reason);
+
+    // 1) Unregister any SW (even if normally disabled on preview)
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+    }
+
+    // 2) Clear Cache Storage (where old chunks may be kept)
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+    }
+
+    // 3) Force a cache-busting reload + disableSW flag
+    const url = new URL(window.location.href);
+    url.searchParams.set('disableSW', '1');
+    url.searchParams.set('v', String(Date.now()));
+    window.location.replace(url.toString());
+  } catch (err) {
+    console.error('[Recovery] Failed white-screen recovery', err);
+  }
+};
+
+// Detect classic chunk/preload failures (Vite + dynamic imports)
+window.addEventListener('error', (e: ErrorEvent) => {
+  const msg = String(e.message || '');
+  if (
+    msg.includes('Loading chunk') ||
+    msg.includes('Failed to fetch dynamically imported module') ||
+    msg.includes('Cannot access')
+  ) {
+    void runWhiteScreenRecovery(`window.error: ${msg}`);
+  }
+});
+
+window.addEventListener('unhandledrejection', (e: PromiseRejectionEvent) => {
+  const msg = String((e as any).reason?.message || e.reason || '');
+  if (msg.includes('Loading chunk') || msg.includes('Failed to fetch dynamically imported module')) {
+    void runWhiteScreenRecovery(`unhandledrejection: ${msg}`);
+  }
+});
+
 // Initialize responsive optimizations for mobile and tablet
 initResponsiveOptimizations();
 
@@ -154,6 +207,18 @@ if ('serviceWorker' in navigator) {
   // Also run after load for browsers that delay SW APIs until full load
   window.addEventListener('load', () => void runServiceWorkerBootstrap());
 }
+
+// If React never mounts (root stays empty), trigger recovery.
+// This catches cases where the error happens before our console hooks surface anything.
+window.addEventListener('load', () => {
+  window.setTimeout(() => {
+    const root = document.getElementById('root');
+    const hasContent = !!root && root.childNodes && root.childNodes.length > 0;
+    if (!hasContent) {
+      void runWhiteScreenRecovery('root is empty after load');
+    }
+  }, 4000);
+});
 
 createRoot(document.getElementById("root")!).render(
   <RuntimeErrorBoundary>

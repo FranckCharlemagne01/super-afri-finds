@@ -123,6 +123,18 @@ async function sendWebPush(
   }
 }
 
+// Check if user has superadmin role
+async function isSuperAdmin(supabase: ReturnType<typeof createClient>, userId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', userId)
+    .eq('role', 'superadmin')
+    .maybeSingle();
+  
+  return !error && data !== null;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -145,15 +157,52 @@ serve(async (req) => {
       );
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Create admin client for operations
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+    
+    // ====== SECURITY: Authenticate the caller ======
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error('[Push] Missing or invalid authorization header');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized - missing token' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+
+    if (authError || !user) {
+      console.error('[Push] Invalid token:', authError?.message);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized - invalid token' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      );
+    }
+
+    const authenticatedUserId = user.id;
+    console.log('[Push] Authenticated user:', authenticatedUserId);
+
     const payload: NotificationPayload = await req.json();
+
+    // Validate required fields
+    if (!payload.title || !payload.body) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Title and body are required' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+
+    // Sanitize title and body to prevent XSS
+    const sanitizedTitle = payload.title.slice(0, 100).replace(/<[^>]*>/g, '');
+    const sanitizedBody = payload.body.slice(0, 500).replace(/<[^>]*>/g, '');
 
     console.log('[Push] Received notification request:', {
       user_id: payload.user_id,
       user_ids: payload.user_ids?.length,
-      title: payload.title,
+      title: sanitizedTitle.substring(0, 30) + '...',
       tag: payload.tag,
-      url: payload.url,
     });
 
     // Get target user IDs
@@ -172,8 +221,30 @@ serve(async (req) => {
       );
     }
 
+    // ====== SECURITY: Authorization check ======
+    // Regular users can only send to themselves
+    // Superadmins can send to anyone
+    const isAdmin = await isSuperAdmin(supabaseAdmin, authenticatedUserId);
+    
+    if (!isAdmin) {
+      // Regular user: can only notify themselves
+      const unauthorizedTargets = targetUserIds.filter(id => id !== authenticatedUserId);
+      if (unauthorizedTargets.length > 0) {
+        console.error('[Push] User attempted to send to other users:', unauthorizedTargets);
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'Forbidden - you can only send notifications to yourself' 
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
+        );
+      }
+    }
+
+    console.log(`[Push] Authorization passed. isAdmin=${isAdmin}, targets=${targetUserIds.length}`);
+
     // Get push subscriptions for target users
-    const { data: subscriptions, error: subError } = await supabase
+    const { data: subscriptions, error: subError } = await supabaseAdmin
       .from('push_subscriptions')
       .select('*')
       .in('user_id', targetUserIds);
@@ -208,8 +279,8 @@ serve(async (req) => {
           auth: sub.auth
         },
         {
-          title: payload.title,
-          body: payload.body,
+          title: sanitizedTitle,
+          body: sanitizedBody,
           url: payload.url,
           tag: payload.tag
         },
@@ -220,7 +291,7 @@ serve(async (req) => {
       if (success) {
         successCount++;
         // Update last_used_at
-        await supabase
+        await supabaseAdmin
           .from('push_subscriptions')
           .update({ last_used_at: new Date().toISOString() })
           .eq('id', sub.id);
@@ -232,7 +303,7 @@ serve(async (req) => {
     // Clean up failed subscriptions (likely expired)
     if (failedEndpoints.length > 0) {
       console.log(`[Push] Cleaning up ${failedEndpoints.length} failed subscriptions`);
-      await supabase
+      await supabaseAdmin
         .from('push_subscriptions')
         .delete()
         .in('endpoint', failedEndpoints);

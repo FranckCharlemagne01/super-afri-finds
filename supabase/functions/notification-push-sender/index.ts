@@ -70,6 +70,18 @@ async function sendWebPushNotification(
   }
 }
 
+// Check if user has superadmin role
+async function isSuperAdmin(supabase: ReturnType<typeof createClient>, userId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', userId)
+    .eq('role', 'superadmin')
+    .maybeSingle();
+  
+  return !error && data !== null;
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -90,15 +102,51 @@ serve(async (req) => {
       );
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+    
+    // ====== SECURITY: Authenticate the caller ======
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error('[PushSender] Missing or invalid authorization header');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized - missing token' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+
+    if (authError || !user) {
+      console.error('[PushSender] Invalid token:', authError?.message);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized - invalid token' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      );
+    }
+
+    const authenticatedUserId = user.id;
+    console.log('[PushSender] Authenticated user:', authenticatedUserId);
     
     // Parse the notification data from request
     const payload: NotificationPayload = await req.json();
     
+    // Validate required fields
+    if (!payload.title || !payload.body) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Title and body are required' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+
+    // Sanitize inputs to prevent XSS
+    const sanitizedTitle = payload.title.slice(0, 100).replace(/<[^>]*>/g, '');
+    const sanitizedBody = payload.body.slice(0, 500).replace(/<[^>]*>/g, '');
+    
     console.log('[PushSender] Received notification request:', {
       notification_id: payload.notification_id,
       user_id: payload.user_id,
-      title: payload.title
+      title: sanitizedTitle.substring(0, 30) + '...'
     });
 
     if (!payload.user_id) {
@@ -108,8 +156,26 @@ serve(async (req) => {
       );
     }
 
+    // ====== SECURITY: Authorization check ======
+    // Regular users can only send notifications to themselves
+    // Superadmins can send to anyone
+    const isAdmin = await isSuperAdmin(supabaseAdmin, authenticatedUserId);
+
+    if (!isAdmin && payload.user_id !== authenticatedUserId) {
+      console.error('[PushSender] User attempted to send to another user:', payload.user_id);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Forbidden - you can only send notifications to yourself' 
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
+      );
+    }
+
+    console.log(`[PushSender] Authorization passed. isAdmin=${isAdmin}`);
+
     // Get all push subscriptions for this user
-    const { data: subscriptions, error: subError } = await supabase
+    const { data: subscriptions, error: subError } = await supabaseAdmin
       .from('push_subscriptions')
       .select('*')
       .eq('user_id', payload.user_id);
@@ -144,8 +210,8 @@ serve(async (req) => {
           auth: sub.auth
         },
         {
-          title: payload.title,
-          body: payload.body,
+          title: sanitizedTitle,
+          body: sanitizedBody,
           url: payload.url,
           tag: payload.type || 'notification'
         },
@@ -156,7 +222,7 @@ serve(async (req) => {
       if (result.success) {
         successCount++;
         // Update last_used_at
-        await supabase
+        await supabaseAdmin
           .from('push_subscriptions')
           .update({ last_used_at: new Date().toISOString() })
           .eq('id', sub.id);
@@ -168,7 +234,7 @@ serve(async (req) => {
     // Clean up expired subscriptions
     if (expiredEndpoints.length > 0) {
       console.log(`[PushSender] Removing ${expiredEndpoints.length} expired subscriptions`);
-      await supabase
+      await supabaseAdmin
         .from('push_subscriptions')
         .delete()
         .in('endpoint', expiredEndpoints);

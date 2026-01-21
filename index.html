@@ -349,7 +349,84 @@
 
   <body class="antialiased overscroll-none">
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+
+    <!-- Boot diagnostics (only visible on failure). Helps identify missing/HTML chunks that cause white screens. -->
+    <script>
+      (function () {
+        var hasShown = false;
+        function safeText(v) {
+          try { return String(v); } catch (_) { return ""; }
+        }
+        function showCrash(title, details) {
+          if (hasShown) return;
+          hasShown = true;
+          var el = document.createElement('div');
+          el.setAttribute('data-djassa-boot-error', '1');
+          el.style.cssText = [
+            'position:fixed',
+            'inset:0',
+            'background:#0b0b0b',
+            'color:#f2f2f2',
+            'z-index:2147483647',
+            'padding:16px',
+            'font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+            'overflow:auto'
+          ].join(';');
+          el.innerHTML =
+            '<div style="max-width:900px;margin:0 auto;">' +
+            '<div style="font-size:16px;font-weight:700;">' + safeText(title) + '</div>' +
+            '<div style="opacity:.85;margin-top:8px;font-size:12px;line-height:1.4;white-space:pre-wrap;">' + safeText(details) + '</div>' +
+            '<div style="opacity:.75;margin-top:12px;font-size:12px;">Ouvrez DevTools → Console/Network et cherchez un asset <code>/assets/*.js</code> qui renvoie du HTML ou une 404.</div>' +
+            '</div>';
+          document.body.appendChild(el);
+        }
+
+        // Capture resource/script failures (e.g. missing chunks)
+        window.addEventListener('error', function (e) {
+          // Resource loading errors bubble here with capture=true
+          var target = e && e.target;
+          if (target && (target.tagName === 'SCRIPT' || target.tagName === 'LINK')) {
+            var url = target.src || target.href || '';
+            if (url) {
+              // Attempt to detect "HTML served instead of JS" via a lightweight fetch.
+              fetch(url, { cache: 'no-store' })
+                .then(function (r) { return r.text().then(function (t) {
+                  var ct = r.headers.get('content-type') || 'unknown';
+                  var head = (t || '').slice(0, 200).replace(/\s+/g, ' ');
+                  var looksHtml = /^\s*</.test(t) && /<(!doctype|html|head|body)\b/i.test(t);
+                  showCrash(
+                    'Erreur de chargement des assets',
+                    'URL: ' + url + '\n' +
+                    'HTTP: ' + r.status + ' ' + r.statusText + '\n' +
+                    'Content-Type: ' + ct + '\n' +
+                    'HTML au lieu de JS: ' + (looksHtml ? 'OUI' : 'non') + '\n' +
+                    'Début de réponse: ' + head
+                  );
+                }); })
+                .catch(function () {
+                  showCrash('Erreur de chargement des assets', 'URL: ' + url + '\nImpossible de récupérer la réponse (network error).');
+                });
+            }
+          } else {
+            // JS runtime errors (syntax errors from "<" often show here)
+            var msg = e && (e.message || e.error && e.error.message);
+            if (msg && /Unexpected token\s*<|Failed to fetch dynamically imported module/i.test(msg)) {
+              showCrash('Erreur JS au démarrage', safeText(msg));
+            }
+          }
+        }, true);
+
+        window.addEventListener('unhandledrejection', function (e) {
+          var reason = e && e.reason;
+          var msg = safeText(reason && (reason.message || reason)) || 'unhandledrejection';
+          if (/Failed to fetch dynamically imported module/i.test(msg)) {
+            showCrash('Erreur de chunk dynamique', msg);
+          }
+        });
+      })();
+    </script>
+
+    <script id="djassa-entry" type="module" src="/src/main.tsx"></script>
     
     <!-- Prevent pull-to-refresh on mobile browsers -->
     <style>

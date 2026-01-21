@@ -85,18 +85,35 @@
             }).catch(function () {});
           }
 
-          // 2) Ensure there is ALWAYS a module entry script.
-          // If hosting serves a stale/stripped HTML variant, this forces a request.
-          // - In preview/dev, /src/main.tsx exists.
-          // - In production build, Vite injects /assets/...; if not present, we still try /src/main.tsx.
+          // 2) Check if module entry script exists.
+          // Vite build injects /assets/index-[hash].js; dev uses /src/main.tsx.
           var hasAnyModuleScript = !!document.querySelector('script[type="module"][src]');
+          var isLocalhost = host === 'localhost' || host === '127.0.0.1';
+          
           if (!hasAnyModuleScript) {
-            var s = document.createElement('script');
-            s.type = 'module';
-            s.src = '/src/main.tsx?v=' + Date.now();
-            s.setAttribute('data-recovery', 'module-entry');
-            document.head.appendChild(s);
-            console.warn('[Recovery] Injected missing module entry:', s.src);
+            if (isLocalhost) {
+              // Dev mode: inject dev entry
+              var s = document.createElement('script');
+              s.type = 'module';
+              s.src = '/src/main.tsx?v=' + Date.now();
+              s.setAttribute('data-recovery', 'module-entry');
+              document.head.appendChild(s);
+              console.warn('[Recovery] Injected dev module entry:', s.src);
+            } else {
+              // Production/Preview: HTML served without Vite build scripts - cannot recover client-side
+              console.error('[Recovery] CRITICAL: No module script found in HTML. The build output may be corrupted or CDN is serving stale HTML. Try hard refresh (Ctrl+Shift+R) or append ?reset=1 to URL.');
+              // Show visible error to user
+              document.addEventListener('DOMContentLoaded', function() {
+                var overlay = document.createElement('div');
+                overlay.id = 'recovery-error-overlay';
+                overlay.style.cssText = 'position:fixed;inset:0;background:#1a1a2e;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999999;font-family:system-ui,sans-serif;padding:2rem;text-align:center;';
+                overlay.innerHTML = '<h1 style="font-size:1.5rem;margin-bottom:1rem;color:#ff6b6b;">⚠️ Erreur de chargement</h1>' +
+                  '<p style="max-width:400px;line-height:1.6;margin-bottom:1.5rem;">Le fichier HTML servi ne contient pas les scripts de l\'application. Cela peut être dû à un cache CDN obsolète.</p>' +
+                  '<button onclick="location.reload(true)" style="padding:0.75rem 1.5rem;background:#3b82f6;color:#fff;border:none;border-radius:0.5rem;cursor:pointer;font-size:1rem;">🔄 Recharger (hard refresh)</button>' +
+                  '<p style="margin-top:1rem;font-size:0.85rem;opacity:0.7;">Si le problème persiste, contactez le support.</p>';
+                document.body.appendChild(overlay);
+              });
+            }
           }
         } catch (e) {
           // no-op

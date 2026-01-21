@@ -350,6 +350,73 @@
   <body class="antialiased overscroll-none">
     <div id="root"></div>
 
+    <!-- Preview runtime stabilizer: if a stale Service Worker or CacheStorage is serving HTML for /assets/*.js,
+         React can't boot (Unexpected token '<').
+         We hard-disable SW + purge caches ONLY on Lovable preview/staging hosts, never on djassa.tech. -->
+    <script>
+      (function () {
+        try {
+          var host = location.hostname;
+          var isProd = host === 'djassa.tech' || host === 'www.djassa.tech';
+          if (isProd) return;
+
+          // Heuristic: Lovable preview/published domains. Safe because we still gate by !isProd.
+          var isLovableHost = /\.lovable\.app$/i.test(host);
+          if (!isLovableHost) return;
+
+          // Prevent reload loops.
+          var key = 'djassa:preview_purged_v1';
+          var already = false;
+          try { already = sessionStorage.getItem(key) === '1'; } catch (_) {}
+          if (already) return;
+          try { sessionStorage.setItem(key, '1'); } catch (_) {}
+
+          var tasks = [];
+          if ('serviceWorker' in navigator) {
+            tasks.push(
+              navigator.serviceWorker.getRegistrations()
+                .then(function (regs) {
+                  return Promise.all(regs.map(function (r) { return r.unregister(); }));
+                })
+                .catch(function () {})
+            );
+
+            // Also block any attempted registrations during this bootstrap.
+            try {
+              var sw = navigator.serviceWorker;
+              if (sw && typeof sw.register === 'function') {
+                var originalRegister = sw.register.bind(sw);
+                sw.register = function () {
+                  return Promise.resolve({ scope: '/', update: function () {} });
+                };
+                // Keep reference just in case future code expects it.
+                window.__DJASSA_SW_REGISTER_ORIGINAL__ = originalRegister;
+              }
+            } catch (_) {}
+          }
+
+          if ('caches' in window) {
+            tasks.push(
+              caches.keys()
+                .then(function (keys) {
+                  return Promise.all(keys.map(function (k) { return caches.delete(k); }));
+                })
+                .catch(function () {})
+            );
+          }
+
+          if (!tasks.length) return;
+
+          Promise.all(tasks).then(function () {
+            // Hard reload without cache to fetch fresh Vite chunks.
+            var url = new URL(location.href);
+            url.searchParams.set('__preview_rebuild', String(Date.now()));
+            location.replace(url.toString());
+          });
+        } catch (_) {}
+      })();
+    </script>
+
     <!-- Boot diagnostics (only visible on failure). Helps identify missing/HTML chunks that cause white screens. -->
     <script>
       (function () {

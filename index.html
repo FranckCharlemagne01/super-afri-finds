@@ -435,8 +435,24 @@
 
               var scripts = Array.prototype.slice.call(document.querySelectorAll('script[type="module"]'));
               var scriptSrcs = scripts.map(function (s) { return s.getAttribute('src') || '[inline module]'; });
+
+              // In production builds, Vite replaces /src/main.tsx with a hashed /assets/*.js entry
+              // and may drop custom attributes like id. So we infer the entry module reliably.
               var entry = document.getElementById('djassa-entry');
               var entrySrc = entry && entry.getAttribute('src');
+              if (!entrySrc) {
+                var firstLocalModule = scripts
+                  .map(function (s) { return s.getAttribute('src') || ''; })
+                  .filter(function (src) { return !!src; })
+                  .filter(function (src) { return src.indexOf('http://') !== 0 && src.indexOf('https://') !== 0; })
+                  // Prefer built assets entry over anything else
+                  .sort(function (a, b) {
+                    var aScore = a.indexOf('/assets/') === 0 ? 0 : 1;
+                    var bScore = b.indexOf('/assets/') === 0 ? 0 : 1;
+                    return aScore - bScore;
+                  })[0];
+                entrySrc = firstLocalModule || '';
+              }
 
               var details =
                 'React non initialisé après 2.5s.\n' +
@@ -449,6 +465,7 @@
 
               // Try to probe the entry script if we can.
               if (entrySrc) {
+                // Probe the inferred entry to confirm: status, content-type, and whether HTML is served instead of JS.
                 fetch(entrySrc, { cache: 'no-store' })
                   .then(function (r) { return r.text().then(function (t) {
                     var ct = r.headers.get('content-type') || 'unknown';

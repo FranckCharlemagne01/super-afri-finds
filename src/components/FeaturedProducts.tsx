@@ -18,21 +18,23 @@ import { useStableRole } from "@/hooks/useStableRole";
 import { Button } from "@/components/ui/button";
 import { getProductImage } from "@/utils/productImageHelper";
 
+// Product interface (seller_id optional for public views)
 interface Product {
   id: string;
   title: string;
   price: number;
-  original_price: number | null;
-  discount_percentage: number | null;
-  images: string[];
-  rating: number;
-  reviews_count: number;
-  badge: string | null;
-  is_flash_sale: boolean;
-  seller_id: string;
-  video_url: string | null;
-  is_boosted: boolean;
-  boosted_until: string | null;
+  original_price?: number | null;
+  discount_percentage?: number | null;
+  images?: string[];
+  rating?: number;
+  reviews_count?: number;
+  badge?: string | null;
+  is_flash_sale?: boolean;
+  seller_id?: string; // Hidden in products_public view for privacy
+  video_url?: string | null;
+  is_boosted?: boolean;
+  boosted_until?: string | null;
+  in_stock?: boolean; // From products_public view
 }
 
 export const FeaturedProducts = () => {
@@ -62,10 +64,10 @@ export const FeaturedProducts = () => {
       setLoading(true);
       
       const now = new Date().toISOString();
+      // Use products_public view to hide sensitive seller data
       let query = supabase
-        .from("products")
+        .from("products_public")
         .select("*")
-        .eq("is_active", true)
         .eq("is_boosted", true)
         .gte("boosted_until", now);
       

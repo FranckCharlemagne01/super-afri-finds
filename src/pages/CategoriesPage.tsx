@@ -17,18 +17,19 @@ interface Product {
   id: string;
   title: string;
   price: number;
-  original_price: number;
-  discount_percentage: number;
+  original_price?: number;
+  discount_percentage?: number;
   images: string[];
   category: string;
-  rating: number;
-  reviews_count: number;
+  rating?: number;
+  reviews_count?: number;
   badge?: string;
-  is_flash_sale: boolean;
-  seller_id: string;
+  is_flash_sale?: boolean;
+  seller_id?: string; // Hidden in products_public view
   video_url?: string;
-  is_boosted: boolean;
+  is_boosted?: boolean;
   boosted_until?: string;
+  in_stock?: boolean;
   shop_slug?: string;
   shop_name?: string;
 }
@@ -45,16 +46,11 @@ const CategoriesPage = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
+      // Use products_public view to hide sensitive seller data
+      // Note: View doesn't have FK relationship, so we can't join with seller_shops
       const { data, error } = await supabase
-        .from('products')
-        .select(`
-          *,
-          seller_shops!products_shop_id_fkey (
-            shop_slug,
-            shop_name
-          )
-        `)
-        .eq('is_active', true)
+        .from('products_public')
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (!error && data) {
@@ -62,7 +58,7 @@ const CategoriesPage = () => {
           id: product.id,
           title: product.title,
           price: product.price,
-          original_price: product.original_price || product.price,
+          original_price: product.price, // products_public doesn't include original_price
           discount_percentage: product.discount_percentage || 0,
           images: product.images || [],
           category: product.category,
@@ -70,12 +66,11 @@ const CategoriesPage = () => {
           reviews_count: product.reviews_count || 0,
           badge: product.badge,
           is_flash_sale: product.is_flash_sale || false,
-          seller_id: product.seller_id,
+          // seller_id is hidden in products_public for privacy
           video_url: product.video_url,
           is_boosted: product.is_boosted || false,
           boosted_until: product.boosted_until,
-          shop_slug: product.seller_shops?.shop_slug,
-          shop_name: product.seller_shops?.shop_name,
+          in_stock: product.in_stock,
         }));
         setProducts(formattedProducts);
       }

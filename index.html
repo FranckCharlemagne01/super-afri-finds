@@ -29,7 +29,33 @@
     <meta name="HandheldFriendly" content="true">
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/manifest.json" id="pwa-manifest">
+    <script>
+      // Preview hardening: on Lovable preview hosts, the platform runtime may attempt
+      // to fetch/bridge the manifest cross-origin which can trigger CORS errors.
+      // The manifest is not required for React to boot in preview, so we disable it
+      // ONLY on preview hosts to avoid blocking/interrupting the runtime.
+      (function () {
+        try {
+          var host = window.location.hostname;
+          var isPreview =
+            host.includes('lovable.app') ||
+            host.includes('lovableproject.com') ||
+            host.includes('preview--') ||
+            host.startsWith('id-preview--');
+
+          if (!isPreview) return;
+
+          var link = document.getElementById('pwa-manifest');
+          if (link && link.parentNode) {
+            link.parentNode.removeChild(link);
+            console.warn('[PWA] Manifest disabled on preview host to avoid CORS/runtime bridge issues');
+          }
+        } catch (e) {
+          // no-op
+        }
+      })();
+    </script>
     
     <!-- Primary SEO Meta Tags -->
     <title>Djassa Marketplace – Achat et Vente en Ligne en Côte d'Ivoire | Créez votre Boutique</title>

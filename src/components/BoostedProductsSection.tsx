@@ -13,24 +13,22 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Star } from "lucide-react";
 import { getProductImage } from "@/utils/productImageHelper";
 
-// Product interface (seller_id optional for public views)
 interface Product {
   id: string;
   title: string;
   price: number;
-  original_price?: number | null;
-  discount_percentage?: number | null;
-  images?: string[];
-  rating?: number;
-  reviews_count?: number;
-  badge?: string | null;
-  is_flash_sale?: boolean;
-  seller_id?: string; // Hidden in products_public view for privacy
-  video_url?: string | null;
-  is_boosted?: boolean;
-  boosted_until?: string | null;
-  boosted_at?: string | null;
-  in_stock?: boolean; // From products_public view
+  original_price: number | null;
+  discount_percentage: number | null;
+  images: string[];
+  rating: number;
+  reviews_count: number;
+  badge: string | null;
+  is_flash_sale: boolean;
+  seller_id: string;
+  video_url: string | null;
+  is_boosted: boolean;
+  boosted_until: string | null;
+  boosted_at: string | null;
   seller_shops?: {
     shop_slug: string;
     shop_name: string;
@@ -54,11 +52,16 @@ export const BoostedProductsSection = () => {
 
   const fetchBoostedProducts = async () => {
     try {
-      // Use products_public view to hide sensitive seller data
-      // Note: Can't use foreign key join on view, so we fetch without shop data
       const { data, error } = await supabase
-        .from("products_public")
-        .select("*")
+        .from("products")
+        .select(`
+          *,
+          seller_shops!products_shop_id_fkey (
+            shop_slug,
+            shop_name
+          )
+        `)
+        .eq("is_active", true)
         .eq("is_boosted", true)
         .gte("boosted_until", new Date().toISOString())
         .order("boosted_until", { ascending: true })

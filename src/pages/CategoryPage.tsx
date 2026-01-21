@@ -12,23 +12,21 @@ import { useToast } from '@/hooks/use-toast';
 import { useUserLocation } from '@/hooks/useUserLocation';
 import { getProductImage } from '@/utils/productImageHelper';
 
-// Product interface (seller_id optional for public views)
 interface Product {
   id: string;
   title: string;
   price: number;
-  original_price?: number | null;
-  discount_percentage?: number | null;
+  original_price: number | null;
+  discount_percentage: number | null;
   images: string[];
   rating: number;
   reviews_count: number;
   category: string;
   is_flash_sale: boolean;
   badge: string | null;
-  seller_id?: string; // Hidden in products_public view for privacy
+  seller_id: string;
   shop_id: string | null;
   stock_quantity?: number;
-  in_stock?: boolean; // From products_public view
   is_sold?: boolean;
   is_active?: boolean;
 }
@@ -63,11 +61,11 @@ const CategoryPage = () => {
         const subcategorySlugs = categoryInfo.subcategories.map(sub => sub.slug);
 
         // Fetch products
-        // Use products_public view to hide sensitive seller data
         const { data: productsData, error: productsError } = await supabase
-          .from('products_public')
+          .from('products')
           .select('*')
           .in('category', subcategorySlugs)
+          .eq('is_active', true)
           .order('created_at', { ascending: false });
 
         if (productsError) throw productsError;

@@ -37,7 +37,6 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
-// Product interface (seller_id optional for public views)
 interface Product {
   id: string;
   title: string;
@@ -47,7 +46,7 @@ interface Product {
   discount_percentage?: number;
   category: string;
   images?: string[];
-  seller_id?: string; // Hidden in products_public view for privacy
+  seller_id: string;
   shop_id?: string;
   rating?: number;
   reviews_count?: number;
@@ -56,7 +55,6 @@ interface Product {
   is_boosted?: boolean;
   boosted_until?: string;
   stock_quantity?: number;
-  in_stock?: boolean; // From products_public view
   video_url?: string;
 }
 
@@ -128,11 +126,11 @@ const ProductDetail = (): JSX.Element | null => {
         setLoading(true);
       }
       
-      // Use products_public view to hide sensitive seller data
       const { data, error } = await supabase
-        .from('products_public')
+        .from('products')
         .select('*')
         .eq('id', productId)
+        .eq('is_active', true)
         .single();
       
       if (error || !data) {

@@ -11,17 +11,15 @@ import watchImg from "@/assets/product-watch.jpg";
 import sunglassesImg from "@/assets/product-sunglasses.jpg";
 import { getProductImage, handleImageError } from "@/utils/productImageHelper";
 
-// BoostedProduct interface (seller_id optional for public views)
 interface BoostedProduct {
   id: string;
   title: string;
   price: number;
-  original_price?: number | null;
-  discount_percentage?: number | null;
-  images?: string[];
-  description?: string;
-  seller_id?: string; // Hidden in products_public view for privacy
-  in_stock?: boolean; // From products_public view
+  original_price: number | null;
+  discount_percentage: number | null;
+  images: string[];
+  description: string;
+  seller_id: string;
 }
 
 export const HeroCarousel = () => {
@@ -46,10 +44,10 @@ export const HeroCarousel = () => {
 
   const fetchBoostedProducts = async () => {
     try {
-      // Use products_public view to hide sensitive seller data
       const { data, error } = await supabase
-        .from("products_public")
+        .from("products")
         .select("*")
+        .eq("is_active", true)
         .eq("is_boosted", true)
         .gte("boosted_until", new Date().toISOString())
         .order("boosted_at", { ascending: false })

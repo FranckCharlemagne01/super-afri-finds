@@ -71,7 +71,6 @@ import categoryBeauty from "@/assets/category-beauty.jpg";
 import categoryGrocery from "@/assets/category-grocery.jpg";
 import categoryAuto from "@/assets/category-auto.jpg";
 
-// Product interface for type safety (seller_id optional for public views)
 interface Product {
   id: string;
   title: string;
@@ -81,22 +80,17 @@ interface Product {
   discount_percentage?: number;
   category: string;
   images?: string[];
-  seller_id?: string; // Hidden in products_public view for privacy
+  seller_id: string;
   rating?: number;
   reviews_count?: number;
   badge?: string;
   is_flash_sale?: boolean;
   stock_quantity?: number;
-  in_stock?: boolean; // From products_public view
   video_url?: string;
   is_boosted?: boolean;
   boosted_until?: string;
   shop_id?: string;
   seller_shops?: {
-    shop_slug: string;
-    shop_name: string;
-  };
-  shop?: {
     shop_slug: string;
     shop_name: string;
   };
@@ -238,11 +232,13 @@ const Index = () => {
 
   const fetchFromServer = async () => {
     try {
-      // Use products_public view to hide sensitive seller data
-      // Note: View doesn't have FK relationship, so we can't join with seller_shops
       const { data, error } = await supabase
-        .from('products_public')
-        .select('*')
+        .from('products')
+        .select(`
+          *,
+          shop:seller_shops!shop_id(shop_slug, shop_name)
+        `)
+        .eq('is_active', true)
         .order('created_at', { ascending: false })
         .limit(100); // Limit for performance
       

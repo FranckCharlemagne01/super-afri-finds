@@ -64,9 +64,9 @@ async function sendWebPushNotification(
     console.error('[PushSender] Push failed:', response.status, errorText);
     return { success: false, error: `HTTP ${response.status}: ${errorText}` };
     
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('[PushSender] Error sending push:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
 
@@ -186,10 +186,10 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('[PushSender] Error:', error);
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ success: false, error: error instanceof Error ? error.message : 'Unknown error' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }

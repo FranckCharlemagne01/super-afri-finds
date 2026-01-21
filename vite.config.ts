@@ -5,8 +5,11 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  // Relative base path - critical for asset resolution on all hosts
-  base: './',
+  // IMPORTANT: Use an absolute base so Vite emits /assets/* URLs.
+  // This prevents nested routes like /boutique/... from trying to load
+  // assets from /boutique/assets/* (which can be caught by SPA fallbacks
+  // on some hosts/CDNs and returned as index.html -> wrong MIME type).
+  base: '/',
   server: {
     host: "::",
     port: 8080,

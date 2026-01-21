@@ -511,7 +511,17 @@
                 var firstLocalModule = scripts
                   .map(function (s) { return s.getAttribute('src') || ''; })
                   .filter(function (src) { return !!src; })
-                  .filter(function (src) { return src.indexOf('http://') !== 0 && src.indexOf('https://') !== 0; })
+                  // Keep relative paths and same-origin absolute URLs (some hosts emit absolute script src)
+                  .filter(function (src) {
+                    try {
+                      if (src.indexOf('http://') === 0 || src.indexOf('https://') === 0) {
+                        return new URL(src).origin === location.origin;
+                      }
+                      return true;
+                    } catch (_) {
+                      return false;
+                    }
+                  })
                   // Prefer built assets entry over anything else
                   .sort(function (a, b) {
                     var aScore = a.indexOf('/assets/') === 0 ? 0 : 1;
@@ -530,25 +540,55 @@
 
               showCrash('Page blanche (boot bloqué)', details);
 
-              // Try to probe the entry script if we can.
-              if (entrySrc) {
-                // Probe the inferred entry to confirm: status, content-type, and whether HTML is served instead of JS.
-                fetch(entrySrc, { cache: 'no-store' })
-                  .then(function (r) { return r.text().then(function (t) {
-                    var ct = r.headers.get('content-type') || 'unknown';
-                    var head = (t || '').slice(0, 200).replace(/\s+/g, ' ');
-                    var looksHtml = /^\s*</.test(t) && /<(!doctype|html|head|body)\b/i.test(t);
-                    showCrash(
-                      'Page blanche (boot bloqué)',
-                      details + '\n\n' +
-                      '--- Probe entry ---\n' +
-                      'HTTP: ' + r.status + ' ' + r.statusText + '\n' +
-                      'Content-Type: ' + ct + '\n' +
-                      'HTML au lieu de JS: ' + (looksHtml ? 'OUI' : 'non') + '\n' +
-                      'Début de réponse: ' + head
+              // Probe the most likely modules (entry + first /assets module) to identify which one returns HTML/404.
+              var candidates = [];
+              if (entrySrc) candidates.push(entrySrc);
+              for (var i = 0; i < scriptSrcs.length; i++) {
+                var u = scriptSrcs[i];
+                if (!u || u === '[inline module]') continue;
+                if (u.indexOf('/assets/') === 0 || /\/assets\//.test(u)) {
+                  if (candidates.indexOf(u) === -1) candidates.push(u);
+                }
+                if (candidates.length >= 2) break;
+              }
+
+              if (candidates.length) {
+                Promise.all(
+                  candidates.map(function (url) {
+                    return fetch(url, { cache: 'no-store', redirect: 'manual' })
+                      .then(function (r) {
+                        return r.text().then(function (t) {
+                          var ct = r.headers.get('content-type') || 'unknown';
+                          var head = (t || '').slice(0, 200).replace(/\s+/g, ' ');
+                          var looksHtml = /^\s*</.test(t) && /<(!doctype|html|head|body)\b/i.test(t);
+                          return {
+                            url: url,
+                            status: r.status,
+                            statusText: r.statusText,
+                            contentType: ct,
+                            looksHtml: looksHtml,
+                            head: head
+                          };
+                        });
+                      })
+                      .catch(function () {
+                        return { url: url, status: -1, statusText: 'network error', contentType: 'unknown', looksHtml: false, head: '' };
+                      });
+                  })
+                ).then(function (results) {
+                  var block = results.map(function (x, idx) {
+                    return (
+                      '--- Probe #' + (idx + 1) + ' ---\n' +
+                      'URL: ' + x.url + '\n' +
+                      'HTTP: ' + x.status + ' ' + x.statusText + '\n' +
+                      'Content-Type: ' + x.contentType + '\n' +
+                      'HTML au lieu de JS: ' + (x.looksHtml ? 'OUI' : 'non') + '\n' +
+                      'Début de réponse: ' + x.head
                     );
-                  }); })
-                  .catch(function () {});
+                  }).join('\n\n');
+
+                  showCrash('Page blanche (boot bloqué)', details + '\n\n' + block);
+                });
               }
             } catch (_) {}
           }, 2500);

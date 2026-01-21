@@ -15,13 +15,6 @@ interface NotificationPayload {
   type?: string;
 }
 
-// UUID validation regex
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-function isValidUUID(id: string): boolean {
-  return UUID_REGEX.test(id);
-}
-
 // Simple Web Push implementation using fetch
 async function sendWebPushNotification(
   subscription: { endpoint: string; p256dh: string; auth: string },
@@ -84,50 +77,10 @@ serve(async (req) => {
   }
 
   try {
-    // ===== JWT AUTHENTICATION =====
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      console.error('[PushSender] Missing or invalid Authorization header');
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized: Missing authentication' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
-      );
-    }
-
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const vapidPublicKey = Deno.env.get('VAPID_PUBLIC_KEY');
     const vapidPrivateKey = Deno.env.get('VAPID_PRIVATE_KEY');
-
-    // Create client with user's auth to verify JWT
-    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
-    });
-
-    // Verify JWT and get claims
-    const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
-    
-    if (claimsError || !claimsData?.claims) {
-      console.error('[PushSender] JWT verification failed:', claimsError);
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized: Invalid token' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
-      );
-    }
-
-    const authenticatedUserId = claimsData.claims.sub;
-    console.log('[PushSender] Authenticated user:', authenticatedUserId);
-
-    // Check if user has superadmin role (can send to any user)
-    const { data: roleData } = await supabaseAuth
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', authenticatedUserId)
-      .single();
-
-    const isSuperAdmin = roleData?.role === 'superadmin';
 
     if (!vapidPublicKey || !vapidPrivateKey) {
       console.error('[PushSender] VAPID keys not configured');
@@ -137,58 +90,23 @@ serve(async (req) => {
       );
     }
 
-    // Use service role for database operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
     // Parse the notification data from request
     const payload: NotificationPayload = await req.json();
+    
+    console.log('[PushSender] Received notification request:', {
+      notification_id: payload.notification_id,
+      user_id: payload.user_id,
+      title: payload.title
+    });
 
-    // ===== INPUT VALIDATION =====
     if (!payload.user_id) {
       return new Response(
         JSON.stringify({ success: false, error: 'user_id is required' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
-
-    if (!isValidUUID(payload.user_id)) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid user_id format' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
-    }
-
-    if (!payload.title || typeof payload.title !== 'string' || payload.title.length > 200) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid title: must be a string up to 200 characters' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
-    }
-
-    if (!payload.body || typeof payload.body !== 'string' || payload.body.length > 1000) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid body: must be a string up to 1000 characters' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
-    }
-
-    // ===== AUTHORIZATION CHECK =====
-    // Only superadmins can send to other users, regular users can only send to themselves
-    if (!isSuperAdmin && payload.user_id !== authenticatedUserId) {
-      console.error('[PushSender] Unauthorized: non-admin trying to send to other user');
-      return new Response(
-        JSON.stringify({ error: 'Forbidden: Cannot send notifications to other users' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
-      );
-    }
-    
-    console.log('[PushSender] Received notification request:', {
-      notification_id: payload.notification_id,
-      user_id: payload.user_id,
-      title: payload.title.substring(0, 50),
-      authenticatedBy: authenticatedUserId,
-      isSuperAdmin
-    });
 
     // Get all push subscriptions for this user
     const { data: subscriptions, error: subError } = await supabase
@@ -271,7 +189,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('[PushSender] Error:', error);
     return new Response(
-      JSON.stringify({ success: false, error: 'Internal server error' }),
+      JSON.stringify({ success: false, error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }

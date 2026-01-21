@@ -56,6 +56,53 @@
         }
       })();
     </script>
+
+    <!-- Runtime hardening (preview + hosted): mitigate stale SW/CDN HTML that can prevent module script loading -->
+    <script>
+      (function () {
+        try {
+          var host = window.location.hostname;
+          var isLovableHost =
+            host.includes('lovable.app') ||
+            host.includes('lovableproject.com') ||
+            host.includes('preview--') ||
+            host.startsWith('id-preview--');
+
+          var url = new URL(window.location.href);
+          var forceReset = url.searchParams.get('reset') === '1' || url.searchParams.get('disableSW') === '1';
+
+          // 1) If we're on Lovable hosts (preview/published) OR user forces reset,
+          // unregister SW + clear CacheStorage as early as possible.
+          // This helps when an OLD SW cached an old index.html without module scripts.
+          if ((isLovableHost || forceReset) && 'serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function (regs) {
+              return Promise.all(regs.map(function (r) { return r.unregister(); }));
+            }).catch(function () {});
+          }
+          if ((isLovableHost || forceReset) && 'caches' in window) {
+            caches.keys().then(function (keys) {
+              return Promise.all(keys.map(function (k) { return caches.delete(k); }));
+            }).catch(function () {});
+          }
+
+          // 2) Ensure there is ALWAYS a module entry script.
+          // If hosting serves a stale/stripped HTML variant, this forces a request.
+          // - In preview/dev, /src/main.tsx exists.
+          // - In production build, Vite injects /assets/...; if not present, we still try /src/main.tsx.
+          var hasAnyModuleScript = !!document.querySelector('script[type="module"][src]');
+          if (!hasAnyModuleScript) {
+            var s = document.createElement('script');
+            s.type = 'module';
+            s.src = '/src/main.tsx?v=' + Date.now();
+            s.setAttribute('data-recovery', 'module-entry');
+            document.head.appendChild(s);
+            console.warn('[Recovery] Injected missing module entry:', s.src);
+          }
+        } catch (e) {
+          // no-op
+        }
+      })();
+    </script>
     
     <!-- Primary SEO Meta Tags -->
     <title>Djassa Marketplace – Achat et Vente en Ligne en Côte d'Ivoire | Créez votre Boutique</title>

@@ -1,6 +1,19 @@
-# SPA fallback (keep client-side routing)
-# Critical: NEVER fallback /assets/* to index.html (otherwise Vite chunks receive HTML → "Unexpected token '<'").
-/assets/* /assets/:splat 200
+# =============================================================
+# CRITICAL: Asset protection rules MUST come BEFORE SPA fallback
+# =============================================================
 
-# Everything else falls back to the SPA entry
-/* /index.html 200
+# Serve all static assets directly (JS, CSS, images, fonts, etc.)
+# These rules prevent /assets/* from being caught by SPA fallback
+/assets/*  /assets/:splat  200
+/favicon.ico  /favicon.ico  200
+/favicon.png  /favicon.png  200
+/manifest.json  /manifest.json  200
+/sw.js  /sw.js  200
+/robots.txt  /robots.txt  200
+/sitemap.xml  /sitemap.xml  200
+/icons/*  /icons/:splat  200
+/images/*  /images/:splat  200
+/lovable-uploads/*  /lovable-uploads/:splat  200
+
+# SPA fallback for client-side routing (MUST be LAST)
+/*  /index.html  200

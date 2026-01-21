@@ -2,6 +2,9 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import { initResponsiveOptimizations } from "./utils/responsiveOptimization";
+import { RuntimeErrorBoundary } from "@/components/RuntimeErrorBoundary";
+
+console.log('[Boot] main.tsx loaded');
 
 // Surface runtime crashes in console (helps diagnose white screens)
 window.addEventListener('error', (e) => {
@@ -152,4 +155,11 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => void runServiceWorkerBootstrap());
 }
 
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  <RuntimeErrorBoundary>
+    <App />
+  </RuntimeErrorBoundary>
+);
+
+// Note: render is invoked above; additional logs help diagnose blank screens.
+console.log('[Boot] React render invoked');

@@ -485,6 +485,36 @@ export type Database = {
           },
         ]
       }
+      profile_access_logs: {
+        Row: {
+          access_type: string
+          accessed_at: string
+          accessed_by: string
+          id: string
+          ip_address: string | null
+          profile_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          access_type: string
+          accessed_at?: string
+          accessed_by: string
+          id?: string
+          ip_address?: string | null
+          profile_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          access_type?: string
+          accessed_at?: string
+          accessed_by?: string
+          id?: string
+          ip_address?: string | null
+          profile_id?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address: string | null
@@ -859,6 +889,60 @@ export type Database = {
       }
     }
     Views: {
+      orders_seller_view: {
+        Row: {
+          created_at: string | null
+          customer_id: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          delivery_location: string | null
+          id: string | null
+          is_confirmed_by_seller: boolean | null
+          product_id: string | null
+          product_price: number | null
+          product_title: string | null
+          quantity: number | null
+          seller_id: string | null
+          status: string | null
+          total_amount: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          customer_id?: string | null
+          customer_name?: never
+          customer_phone?: never
+          delivery_location?: never
+          id?: string | null
+          is_confirmed_by_seller?: boolean | null
+          product_id?: string | null
+          product_price?: number | null
+          product_title?: string | null
+          quantity?: number | null
+          seller_id?: string | null
+          status?: string | null
+          total_amount?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          customer_id?: string | null
+          customer_name?: never
+          customer_phone?: never
+          delivery_location?: never
+          id?: string | null
+          is_confirmed_by_seller?: boolean | null
+          product_id?: string | null
+          product_price?: number | null
+          product_title?: string | null
+          quantity?: number | null
+          seller_id?: string | null
+          status?: string | null
+          total_amount?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       products_public: {
         Row: {
           badge: string | null
@@ -1041,6 +1125,19 @@ export type Database = {
           total_users: number
         }[]
       }
+      get_confirmed_order_details: {
+        Args: { order_id: string }
+        Returns: {
+          customer_name: string
+          customer_phone: string
+          delivery_location: string
+          id: string
+          product_title: string
+          quantity: number
+          status: string
+          total_amount: number
+        }[]
+      }
       get_current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
@@ -1063,6 +1160,39 @@ export type Database = {
           total_amount: number
           updated_at: string
         }[]
+      }
+      get_profile_with_audit: {
+        Args: { target_user_id: string }
+        Returns: {
+          address: string | null
+          avatar_url: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          email: string | null
+          email_verification_expires_at: string | null
+          email_verification_token: string | null
+          email_verified: boolean | null
+          full_name: string | null
+          id: string
+          is_premium: boolean | null
+          paystack_reference: string | null
+          phone: string | null
+          premium_expires_at: string | null
+          push_token: string | null
+          trial_bonus_tokens_given: boolean | null
+          trial_end_date: string | null
+          trial_start_date: string | null
+          trial_used: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       get_seller_orders: {
         Args: never

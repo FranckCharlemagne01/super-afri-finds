@@ -892,7 +892,7 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           description?: string | null
-          discount_percentage?: never
+          discount_percentage?: number | null
           id?: string | null
           images?: string[] | null
           in_stock?: never
@@ -915,7 +915,7 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           description?: string | null
-          discount_percentage?: never
+          discount_percentage?: number | null
           id?: string | null
           images?: string[] | null
           in_stock?: never

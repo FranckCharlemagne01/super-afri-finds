@@ -6,6 +6,29 @@ import { RuntimeErrorBoundary } from "@/components/RuntimeErrorBoundary";
 
 console.log('[Boot] main.tsx loaded');
 
+// Optional visual debugging: force root to be visibly painted.
+// Usage: add ?debugLayout=1 to the URL.
+// This does not change any business logic and is safe to remove later.
+(() => {
+  try {
+    const url = new URL(window.location.href);
+    const enabled = url.searchParams.get('debugLayout') === '1' || url.hash.includes('debugLayout');
+    if (!enabled) return;
+
+    const style = document.createElement('style');
+    style.setAttribute('data-debug', 'debugLayout');
+    style.textContent = `
+      html, body { min-height: 100%; }
+      #root { min-height: 100vh !important; background: red !important; }
+      #root * { outline: 1px solid rgba(0,0,0,.12); }
+    `;
+    document.head.appendChild(style);
+    console.warn('[DebugLayout] Enabled: forced #root min-height + red background');
+  } catch (e) {
+    console.warn('[DebugLayout] Failed to enable', e);
+  }
+})();
+
 // Surface runtime crashes in console (helps diagnose white screens)
 window.addEventListener('error', (e) => {
   console.error('[Runtime] window.error', e.error || e.message, e);
@@ -163,3 +186,22 @@ createRoot(document.getElementById("root")!).render(
 
 // Note: render is invoked above; additional logs help diagnose blank screens.
 console.log('[Boot] React render invoked');
+
+// Post-mount probe (helps detect "rendered but invisible" issues)
+setTimeout(() => {
+  const root = document.getElementById('root');
+  if (!root) {
+    console.error('[BootProbe] #root not found');
+    return;
+  }
+  const htmlLen = (root.innerHTML || '').length;
+  const cs = window.getComputedStyle(root);
+  console.log('[BootProbe] #root', {
+    htmlLen,
+    display: cs.display,
+    visibility: cs.visibility,
+    opacity: cs.opacity,
+    height: root.getBoundingClientRect().height,
+    width: root.getBoundingClientRect().width,
+  });
+}, 800);

@@ -423,6 +423,52 @@
             showCrash('Erreur de chunk dynamique', msg);
           }
         });
+
+        // If NOTHING happens (no error event, but React never mounts), show a guided screen.
+        // This covers cases like: entry JS served as HTML with 200, CSP blocks module, or silent failures.
+        window.addEventListener('DOMContentLoaded', function () {
+          setTimeout(function () {
+            try {
+              var root = document.getElementById('root');
+              var hasReact = !!(root && root.childNodes && root.childNodes.length);
+              if (hasReact) return;
+
+              var scripts = Array.prototype.slice.call(document.querySelectorAll('script[type="module"]'));
+              var scriptSrcs = scripts.map(function (s) { return s.getAttribute('src') || '[inline module]'; });
+              var entry = document.getElementById('djassa-entry');
+              var entrySrc = entry && entry.getAttribute('src');
+
+              var details =
+                'React non initialisé après 2.5s.\n' +
+                'Host: ' + location.host + '\n' +
+                'Entry module: ' + (entrySrc || '(inconnu)') + '\n' +
+                'Modules trouvés: ' + scriptSrcs.join(', ') + '\n\n' +
+                'Cause la plus fréquente: /assets/*.js renvoie index.html (fallback) ou 404.';
+
+              showCrash('Page blanche (boot bloqué)', details);
+
+              // Try to probe the entry script if we can.
+              if (entrySrc) {
+                fetch(entrySrc, { cache: 'no-store' })
+                  .then(function (r) { return r.text().then(function (t) {
+                    var ct = r.headers.get('content-type') || 'unknown';
+                    var head = (t || '').slice(0, 200).replace(/\s+/g, ' ');
+                    var looksHtml = /^\s*</.test(t) && /<(!doctype|html|head|body)\b/i.test(t);
+                    showCrash(
+                      'Page blanche (boot bloqué)',
+                      details + '\n\n' +
+                      '--- Probe entry ---\n' +
+                      'HTTP: ' + r.status + ' ' + r.statusText + '\n' +
+                      'Content-Type: ' + ct + '\n' +
+                      'HTML au lieu de JS: ' + (looksHtml ? 'OUI' : 'non') + '\n' +
+                      'Début de réponse: ' + head
+                    );
+                  }); })
+                  .catch(function () {});
+              }
+            } catch (_) {}
+          }, 2500);
+        });
       })();
     </script>
 

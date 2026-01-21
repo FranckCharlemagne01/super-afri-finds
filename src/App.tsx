@@ -155,15 +155,15 @@ const App = () => {
   // Auto-prefetch critical routes on mount
   useAutoPrefetch();
 
-  // SAFETY FALLBACK: Force hide splash after max 5 seconds to prevent white screen
+  // SAFETY FALLBACK: Force hide splash after max 4 seconds to prevent white screen
   useEffect(() => {
+    if (!showSplash) return;
+    
     const safetyTimeout = setTimeout(() => {
-      if (showSplash) {
-        console.warn('[App] Safety fallback: forcing splash to hide after timeout');
-        setShowSplash(false);
-        setIsInitialLoad(false);
-      }
-    }, 5000);
+      console.warn('[App] Safety fallback: forcing splash to hide');
+      setShowSplash(false);
+      setIsInitialLoad(false);
+    }, 4000);
     
     return () => clearTimeout(safetyTimeout);
   }, [showSplash]);

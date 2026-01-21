@@ -522,7 +522,6 @@ serve(async (req) => {
       return new Response(JSON.stringify({
         status: 'success',
         test_mode: false,
-        message: '✅ Paiement réel réussi. Vos crédits ont été ajoutés.',
         message: paymentRecord.payment_type === 'tokens'
           ? 'Jetons ajoutés avec succès'
           : (paymentRecord.payment_type === 'article_publication' 
@@ -539,9 +538,9 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in paystack-payment function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

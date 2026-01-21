@@ -185,10 +185,10 @@ serve(async (req) => {
       );
     }
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Erreur verify-otp:', error);
     return new Response(
-      JSON.stringify({ error: error.message || 'Erreur serveur' }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Erreur serveur' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

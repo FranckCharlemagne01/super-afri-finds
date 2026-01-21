@@ -30,21 +30,23 @@ interface Shop {
   subscription_active: boolean;
 }
 
+// Product interface (seller_id optional for public views)
 interface Product {
   id: string;
   title: string;
   description?: string;
   price: number;
-  original_price: number | null;
-  discount_percentage: number | null;
+  original_price?: number | null;
+  discount_percentage?: number | null;
   images: string[];
-  rating: number;
-  reviews_count: number;
+  rating?: number;
+  reviews_count?: number;
   category: string;
-  is_flash_sale: boolean;
-  badge: string | null;
-  seller_id: string;
+  is_flash_sale?: boolean;
+  badge?: string | null;
+  seller_id?: string; // Hidden in products_public view for privacy
   stock_quantity?: number;
+  in_stock?: boolean; // From products_public view
   is_active?: boolean;
   is_boosted?: boolean;
   boosted_until?: string;
@@ -98,11 +100,11 @@ const ShopPage = () => {
         setShop(shopData);
 
         // Fetch shop products
+        // Use products_public view to hide sensitive seller data
         const { data: productsData, error: productsError } = await supabase
-          .from('products')
+          .from('products_public')
           .select('*')
           .eq('shop_id', shopData.id)
-          .eq('is_active', true)
           .order('created_at', { ascending: false });
 
         if (!productsError && productsData) {

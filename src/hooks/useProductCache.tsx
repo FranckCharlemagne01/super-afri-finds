@@ -9,6 +9,7 @@ import { useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { getCached, setCache, CACHE_KEYS } from '@/utils/dataCache';
 
+// CachedProduct interface (seller_id optional for public views)
 interface CachedProduct {
   id: string;
   title: string;
@@ -18,7 +19,7 @@ interface CachedProduct {
   discount_percentage?: number;
   category: string;
   images?: string[];
-  seller_id: string;
+  seller_id?: string; // Hidden in products_public view for privacy
   shop_id?: string;
   rating?: number;
   reviews_count?: number;
@@ -27,6 +28,7 @@ interface CachedProduct {
   is_boosted?: boolean;
   boosted_until?: string;
   stock_quantity?: number;
+  in_stock?: boolean; // From products_public view
   video_url?: string;
 }
 

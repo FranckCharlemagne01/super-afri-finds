@@ -150,23 +150,33 @@ export function useOptimizedProductsQuery(sellerId?: string) {
     fetcher: async () => {
       const { supabase } = await import('@/integrations/supabase/client');
       
-      let query = supabase
-        .from('products')
-        .select(`
-          *,
-          shop:seller_shops!shop_id(shop_slug, shop_name)
-        `)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
-      
+      // Use products table for seller-specific queries (seller needs their own data)
+      // Use products_public view for public queries to hide sensitive data
       if (sellerId) {
-        query = query.eq('seller_id', sellerId);
+        const { data, error } = await supabase
+          .from('products')
+          .select(`
+            *,
+            shop:seller_shops!shop_id(shop_slug, shop_name)
+          `)
+          .eq('seller_id', sellerId)
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(100);
+        
+        if (error) throw error;
+        return data || [];
+      } else {
+        // Public query - use products_public view (no join, view doesn't have FK)
+        const { data, error } = await supabase
+          .from('products_public')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(100);
+        
+        if (error) throw error;
+        return data || [];
       }
-      
-      const { data, error } = await query.limit(100);
-      
-      if (error) throw error;
-      return data || [];
     },
     staleTime: 2 * 60 * 1000, // 2 minutes for products
   });

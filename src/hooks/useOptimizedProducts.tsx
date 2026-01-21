@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { getProductImage } from '@/utils/productImageHelper';
 
+// Product interface (seller_id optional for public views)
 interface Product {
   id: string;
   title: string;
@@ -11,12 +12,13 @@ interface Product {
   discount_percentage?: number;
   category: string;
   images?: string[];
-  seller_id: string;
+  seller_id?: string; // Hidden in products_public view for privacy
   rating?: number;
   reviews_count?: number;
   badge?: string;
   is_flash_sale?: boolean;
   stock_quantity?: number;
+  in_stock?: boolean; // From products_public view
   video_url?: string;
   is_boosted?: boolean;
   boosted_until?: string;
@@ -108,16 +110,16 @@ export function useOptimizedProducts() {
         setLoading(true);
       }
 
+      // Use products_public view to hide sensitive seller data
       const { data, error: fetchError } = await supabase
-        .from('products')
+        .from('products_public')
         .select(`
-          id, title, description, price, original_price, discount_percentage,
-          category, images, seller_id, rating, reviews_count, badge,
-          is_flash_sale, stock_quantity, video_url, is_boosted, boosted_until,
-          shop_id, is_sold, is_active,
+          id, title, description, price, discount_percentage,
+          category, images, rating, reviews_count, badge,
+          is_flash_sale, video_url, is_boosted, boosted_until,
+          shop_id, in_stock, created_at, updated_at,
           shop:seller_shops!shop_id(shop_slug, shop_name)
         `)
-        .eq('is_active', true)
         .order('created_at', { ascending: false })
         .limit(100);
 

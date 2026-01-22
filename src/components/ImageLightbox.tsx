@@ -165,35 +165,46 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
       // Draw the original image
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       
-      // === ADD VISIBLE DJASSA WATERMARK ===
+      // === ADD CLEARLY VISIBLE DJASSA WATERMARK ===
       const watermarkText = 'Djassa';
-      const fontSize = Math.max(Math.min(canvas.width * 0.04, 48), 16); // 4% of width, 16-48px range
+      const fontSize = Math.max(Math.min(canvas.width * 0.06, 64), 24); // 6% of width, 24-64px range
       
-      // Main watermark - bottom right
+      // Main watermark - bottom right corner
       ctx.save();
-      ctx.globalAlpha = 0.08; // 8% opacity - visible but subtle
+      
+      // Draw watermark with solid color first for visibility
+      ctx.globalAlpha = 0.12; // 12% opacity - clearly visible but elegant
       ctx.fillStyle = '#E65100'; // Dark orange (Djassa brand)
-      ctx.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+      ctx.font = `bold ${fontSize}px "Segoe UI", Arial, sans-serif`;
       ctx.textAlign = 'right';
       ctx.textBaseline = 'bottom';
       
-      // Add subtle text shadow for visibility on all backgrounds
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
-      ctx.shadowBlur = 3;
-      ctx.shadowOffsetX = 1;
-      ctx.shadowOffsetY = 1;
+      // Add text shadow for better visibility on light and dark backgrounds
+      ctx.shadowColor = 'rgba(255, 255, 255, 0.3)';
+      ctx.shadowBlur = 4;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
       
       // Position: bottom-right with proper padding
-      const paddingX = Math.max(canvas.width * 0.03, 20);
-      const paddingY = Math.max(canvas.height * 0.03, 20);
+      const paddingX = Math.max(canvas.width * 0.04, 30);
+      const paddingY = Math.max(canvas.height * 0.04, 30);
       
+      // Draw main text
       ctx.fillText(watermarkText, canvas.width - paddingX, canvas.height - paddingY);
       
-      // Secondary smaller watermark - subtle domain
-      ctx.globalAlpha = 0.05;
-      ctx.font = `${fontSize * 0.5}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+      // Add a second layer for extra visibility (slightly offset)
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+      ctx.shadowBlur = 2;
+      ctx.shadowOffsetX = 1;
+      ctx.shadowOffsetY = 1;
+      ctx.globalAlpha = 0.10;
+      ctx.fillText(watermarkText, canvas.width - paddingX, canvas.height - paddingY);
+      
+      // Secondary smaller watermark - domain
+      ctx.globalAlpha = 0.08;
+      ctx.font = `${Math.max(fontSize * 0.45, 14)}px "Segoe UI", Arial, sans-serif`;
       ctx.shadowBlur = 1;
-      ctx.fillText('djassa.com', canvas.width - paddingX, canvas.height - paddingY - fontSize * 0.8);
+      ctx.fillText('djassa.com', canvas.width - paddingX, canvas.height - paddingY - fontSize * 0.9);
       
       ctx.restore();
       

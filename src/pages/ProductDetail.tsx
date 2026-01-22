@@ -4,7 +4,7 @@ import SEOHead from "@/components/SEOHead";
 import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
+
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
@@ -92,7 +92,7 @@ const ProductDetail = (): JSX.Element | null => {
   const cachedShop = useMemo(() => cachedProduct?.shop_id ? getCachedShop(cachedProduct.shop_id) : null, [cachedProduct?.shop_id]);
 
   const [quantity, setQuantity] = useState(1);
-  const [personalMessage, setPersonalMessage] = useState('');
+  
   const [showVideo, setShowVideo] = useState(false);
   const [product, setProduct] = useState<Product | null>(cachedProduct as Product | null);
   const [shop, setShop] = useState<Shop | null>(cachedShop as Shop | null);
@@ -697,56 +697,23 @@ const ProductDetail = (): JSX.Element | null => {
                 <Badge variant="secondary" className="text-xs sm:text-sm">{product.category}</Badge>
               </div>
 
-              {/* Personal Message */}
-              <div className="mb-4 sm:mb-6">
-                <label className="block text-xs sm:text-sm font-medium mb-2">
-                  Message personnalisé (optionnel)
-                </label>
-                <Textarea
-                  placeholder="Ajoutez un message pour le vendeur..."
-                  value={personalMessage}
-                  onChange={(e) => setPersonalMessage(e.target.value)}
-                  rows={3}
-                  className="text-sm sm:text-base resize-none"
-                />
-              </div>
+              {/* Link to Shop */}
+              {shop && (
+                <div className="mb-4 sm:mb-6">
+                  <Button
+                    onClick={() => navigate(`/boutique/${shop.shop_slug}`)}
+                    variant="outline"
+                    className="w-full h-12 text-sm sm:text-base font-medium border-primary/30 hover:bg-primary/5 hover:border-primary transition-colors"
+                  >
+                    <Store className="w-4 h-4 mr-2 flex-shrink-0" />
+                    Voir la boutique
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </main>
-
-
-      {/* Shop Info Section */}
-      {shop && (
-        <section className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 border-t">
-          <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-6">
-            {shop.logo_url ? (
-              <img
-                src={shop.logo_url}
-                alt={shop.shop_name}
-                className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-primary flex-shrink-0"
-              />
-            ) : (
-              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <span className="text-xl sm:text-2xl">🏪</span>
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <h3 className="text-base sm:text-xl font-bold text-foreground truncate">{shop.shop_name}</h3>
-              {shop.shop_description && (
-                <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 break-words mt-1">{shop.shop_description}</p>
-              )}
-            </div>
-            <Button
-              onClick={() => navigate(`/boutique/${shop.shop_slug}`)}
-              className="bg-primary hover:bg-primary/90 text-xs sm:text-sm px-3 sm:px-4 min-h-[44px] flex-shrink-0"
-            >
-              <span className="hidden sm:inline">Voir la boutique</span>
-              <span className="sm:hidden">Voir</span>
-            </Button>
-          </div>
-        </section>
-      )}
 
       {/* Products from the Same Shop */}
       {shopProducts.length > 0 && (

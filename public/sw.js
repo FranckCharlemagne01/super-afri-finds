@@ -1,10 +1,11 @@
 // Djassa Marketplace - Service Worker for PWA & Push Notifications
-// Version 10 - NEVER cache HTML to prevent white page on custom domains
+// Version 11 - Prefer network for JS/CSS to avoid stale bundle desync
 // Bump version to force clients to refresh caches after deployment changes.
-const CACHE_NAME = 'djassa-pwa-v10';
-const DYNAMIC_CACHE = 'djassa-dynamic-v10';
-const IMAGE_CACHE = 'djassa-images-v10';
-const API_CACHE = 'djassa-api-v10';
+const SW_VERSION = 11;
+const CACHE_NAME = 'djassa-pwa-v11';
+const DYNAMIC_CACHE = 'djassa-dynamic-v11';
+const IMAGE_CACHE = 'djassa-images-v11';
+const API_CACHE = 'djassa-api-v11';
 
 // Maximum cache sizes
 const MAX_DYNAMIC_CACHE = 150;
@@ -19,7 +20,7 @@ const STATIC_ASSETS = ['/manifest.json', '/favicon.png'];
 
 // Install event - minimal caching to avoid blank page issues
 self.addEventListener('install', (event) => {
-  console.log('[SW] Service Worker v10 installing...');
+  console.log('[SW] Service Worker v11 installing...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
@@ -48,7 +49,7 @@ self.addEventListener('install', (event) => {
 
 // Activate event - clean up old caches aggressively
 self.addEventListener('activate', (event) => {
-   console.log('[SW] Service Worker v10 activating...');
+   console.log('[SW] Service Worker v11 activating...');
   const currentCaches = [CACHE_NAME, DYNAMIC_CACHE, IMAGE_CACHE, API_CACHE];
   
   event.waitUntil(
@@ -65,12 +66,12 @@ self.addEventListener('activate', (event) => {
       })
       .then(() => self.clients.claim())
       .then(() => {
-        console.log('[SW] Service Worker v10 activated and controlling');
+        console.log('[SW] Service Worker v11 activated and controlling');
         return self.clients.matchAll();
       })
       .then(clients => {
         clients.forEach(client => {
-          client.postMessage({ type: 'SW_READY', version: 10 });
+          client.postMessage({ type: 'SW_READY', version: SW_VERSION });
         });
       })
       .catch(err => {
@@ -102,9 +103,9 @@ function getCacheConfig(request) {
     // CRITICAL: avoid caching HTML/navigation responses.
     // A stale index.html on a custom host can cause persistent white pages.
     if (request.mode === 'navigate') {
-      // For navigation requests, always try network first with fast fallback
-      // but DO NOT store HTML in cache.
-      return { strategy: 'network-first-fast', cache: null };
+      // Navigation requests: NEVER read/write from cache.
+      // Old SWs might have cached HTML historically; serving it causes blank screens.
+      return { strategy: 'network-only', cache: null };
     }
     
     // Skip cross-origin requests (except for CDN assets and Supabase storage)
@@ -130,9 +131,10 @@ function getCacheConfig(request) {
       return { strategy: 'cache-first', cache: IMAGE_CACHE };
     }
     
-    // JS/CSS bundles with hash - cache first (immutable)
+    // JS/CSS bundles (hashed) - NETWORK FIRST to avoid stale SW cache serving old bundles.
+    // Still writes the fresh response into cache for offline/perf.
     if (url.pathname.match(/\.(js|css)$/) && url.pathname.includes('assets/')) {
-      return { strategy: 'cache-first', cache: DYNAMIC_CACHE };
+      return { strategy: 'network-first-fast', cache: DYNAMIC_CACHE };
     }
     
     // Fonts - cache first
@@ -164,7 +166,7 @@ self.addEventListener('fetch', (event) => {
     const { strategy, cache: targetCache } = getCacheConfig(event.request);
     
     if (strategy === 'network-only') {
-      return; // Let the browser handle it
+      return; // Let the browser handle it (no SW interference)
     }
     
     if (strategy === 'cache-first') {
@@ -198,7 +200,7 @@ self.addEventListener('fetch', (event) => {
       return;
     }
     
-    // Network first with fast timeout (3s) - CRITICAL for avoiding blank pages
+    // Network first with fast timeout (3s)
     if (strategy === 'network-first-fast') {
       event.respondWith(
         Promise.race([
@@ -219,20 +221,10 @@ self.addEventListener('fetch', (event) => {
           )
         ])
         .catch(() => {
-          // Network failed or timed out, try cache
+          // Network failed or timed out, try cache.
+          // NOTE: Since navigations are 'network-only', this won't serve cached HTML.
           return caches.match(event.request)
-            .then((cachedResponse) => {
-              if (cachedResponse) {
-                return cachedResponse;
-              }
-               // For HTML, don't force-fallback to '/' (can be stale). Let the browser
-               // retry the original request.
-               if (event.request.headers.get('accept')?.includes('text/html')) {
-                 return fetch(event.request);
-               }
-              // Last resort: try network again without timeout
-              return fetch(event.request);
-            });
+            .then((cachedResponse) => cachedResponse || fetch(event.request));
         })
       );
       return;

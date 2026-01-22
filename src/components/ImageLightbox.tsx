@@ -165,32 +165,32 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
       // Draw the original image
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       
-      // === BOTTOM-RIGHT WATERMARK - ELEGANT SIGNATURE ===
+      // === BOTTOM-RIGHT WATERMARK - PROFESSIONAL SIGNATURE ===
       const watermarkText = 'Djassa';
-      // Size: slightly larger, proportional (8% of smallest dimension)
+      // Size: larger, proportional (10% of smallest dimension)
       const minDimension = Math.min(canvas.width, canvas.height);
-      const fontSize = Math.max(Math.min(minDimension * 0.08, 80), 28);
+      const fontSize = Math.max(Math.min(minDimension * 0.10, 100), 32);
       
       ctx.save();
       
-      // Safe padding from edges (5% of dimensions, min 20px)
-      const paddingX = Math.max(canvas.width * 0.05, 20);
-      const paddingY = Math.max(canvas.height * 0.05, 20);
+      // Safe padding from edges (6% of dimensions, min 25px) - ensures never cut off
+      const paddingX = Math.max(canvas.width * 0.06, 25);
+      const paddingY = Math.max(canvas.height * 0.06, 25);
       
-      // Position: bottom-right, inside the image bounds
+      // Position: bottom-right, safely inside the image bounds
       const posX = canvas.width - paddingX;
       const posY = canvas.height - paddingY;
       
-      // Main watermark - elegant signature style
-      ctx.globalAlpha = 0.09; // 9% opacity - visible but elegant
-      ctx.fillStyle = '#E65100'; // Dark orange (Djassa brand)
+      // Main watermark - darker orange, more visible
+      ctx.globalAlpha = 0.11; // 11% opacity - clearly visible but elegant
+      ctx.fillStyle = '#BF360C'; // Darker burnt orange - more contrast
       ctx.font = `bold ${fontSize}px "Segoe UI", Arial, sans-serif`;
       ctx.textAlign = 'right';
       ctx.textBaseline = 'bottom';
       
-      // Light shadow for visibility on dark backgrounds
-      ctx.shadowColor = 'rgba(255, 255, 255, 0.25)';
-      ctx.shadowBlur = 3;
+      // White outline for visibility on dark backgrounds
+      ctx.shadowColor = 'rgba(255, 255, 255, 0.35)';
+      ctx.shadowBlur = 4;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
       
@@ -198,16 +198,16 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
       ctx.fillText(watermarkText, posX, posY);
       
       // Second layer with dark shadow for contrast on light backgrounds
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
-      ctx.shadowBlur = 2;
-      ctx.globalAlpha = 0.07;
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
+      ctx.shadowBlur = 3;
+      ctx.globalAlpha = 0.09;
       ctx.fillText(watermarkText, posX, posY);
       
       // Smaller domain text above main watermark
-      ctx.globalAlpha = 0.06;
-      ctx.font = `${Math.max(fontSize * 0.4, 14)}px "Segoe UI", Arial, sans-serif`;
-      ctx.shadowBlur = 1;
-      ctx.fillText('djassa.com', posX, posY - fontSize * 0.85);
+      ctx.globalAlpha = 0.08;
+      ctx.font = `${Math.max(fontSize * 0.4, 16)}px "Segoe UI", Arial, sans-serif`;
+      ctx.shadowBlur = 2;
+      ctx.fillText('djassa.com', posX, posY - fontSize * 0.9);
       
       ctx.restore();
       

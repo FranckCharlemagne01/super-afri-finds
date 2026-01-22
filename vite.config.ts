@@ -47,9 +47,10 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/@radix-ui')) {
             return 'radix-ui';
           }
-          // Charts - heavy, load separately
-          if (id.includes('node_modules/recharts') || id.includes('node_modules/d3')) {
-            return 'charts';
+          // Charts - include d3 only, let recharts bundle with its consumers
+          // to avoid circular dependency issues with 'S' initialization
+          if (id.includes('node_modules/d3-')) {
+            return 'd3-utils';
           }
           // Form handling
           if (id.includes('node_modules/react-hook-form') || 
@@ -97,8 +98,8 @@ export default defineConfig(({ mode }) => ({
       'lucide-react',
       '@tanstack/react-query',
     ],
-    // Exclude large deps from pre-bundling
-    exclude: ['recharts'],
+    // Include recharts in pre-bundling to avoid initialization errors
+    // exclude: [], // No exclusions needed
   },
   // Enable esbuild optimizations
   esbuild: {

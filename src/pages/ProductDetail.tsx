@@ -473,13 +473,14 @@ const ProductDetail = (): JSX.Element | null => {
             </div>
           </div>
 
-          {/* Image Lightbox */}
+          {/* Image Lightbox - Premium viewer with download + watermark */}
           <ImageLightbox
             images={productImages}
             initialIndex={selectedImageIndex}
             isOpen={lightboxOpen}
             onClose={() => setLightboxOpen(false)}
             alt={product.title}
+            productTitle={product.title}
           />
 
           {/* Product Info */}

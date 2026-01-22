@@ -165,45 +165,49 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
       // Draw the original image
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       
-      // === CENTERED WATERMARK - BACKGROUND SIGNATURE STYLE ===
+      // === BOTTOM-RIGHT WATERMARK - ELEGANT SIGNATURE ===
       const watermarkText = 'Djassa';
-      // Size: proportional to image, medium size (12% of smallest dimension)
+      // Size: slightly larger, proportional (8% of smallest dimension)
       const minDimension = Math.min(canvas.width, canvas.height);
-      const fontSize = Math.max(Math.min(minDimension * 0.12, 120), 40);
+      const fontSize = Math.max(Math.min(minDimension * 0.08, 80), 28);
       
       ctx.save();
       
-      // Center position
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
+      // Safe padding from edges (5% of dimensions, min 20px)
+      const paddingX = Math.max(canvas.width * 0.05, 20);
+      const paddingY = Math.max(canvas.height * 0.05, 20);
       
-      // Main centered watermark - elegant background signature
-      ctx.globalAlpha = 0.08; // 8% opacity - visible but doesn't obscure product
+      // Position: bottom-right, inside the image bounds
+      const posX = canvas.width - paddingX;
+      const posY = canvas.height - paddingY;
+      
+      // Main watermark - elegant signature style
+      ctx.globalAlpha = 0.09; // 9% opacity - visible but elegant
       ctx.fillStyle = '#E65100'; // Dark orange (Djassa brand)
       ctx.font = `bold ${fontSize}px "Segoe UI", Arial, sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'bottom';
       
-      // Subtle shadow for visibility on any background
-      ctx.shadowColor = 'rgba(255, 255, 255, 0.2)';
+      // Light shadow for visibility on dark backgrounds
+      ctx.shadowColor = 'rgba(255, 255, 255, 0.25)';
       ctx.shadowBlur = 3;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
       
-      // Draw main centered text
-      ctx.fillText(watermarkText, centerX, centerY);
+      // Draw main text
+      ctx.fillText(watermarkText, posX, posY);
       
       // Second layer with dark shadow for contrast on light backgrounds
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
       ctx.shadowBlur = 2;
-      ctx.globalAlpha = 0.06;
-      ctx.fillText(watermarkText, centerX, centerY);
+      ctx.globalAlpha = 0.07;
+      ctx.fillText(watermarkText, posX, posY);
       
-      // Smaller domain text below main watermark
-      ctx.globalAlpha = 0.05;
-      ctx.font = `${Math.max(fontSize * 0.35, 16)}px "Segoe UI", Arial, sans-serif`;
+      // Smaller domain text above main watermark
+      ctx.globalAlpha = 0.06;
+      ctx.font = `${Math.max(fontSize * 0.4, 14)}px "Segoe UI", Arial, sans-serif`;
       ctx.shadowBlur = 1;
-      ctx.fillText('djassa.com', centerX, centerY + fontSize * 0.7);
+      ctx.fillText('djassa.com', posX, posY - fontSize * 0.85);
       
       ctx.restore();
       

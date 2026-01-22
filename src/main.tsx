@@ -176,27 +176,47 @@ if ('serviceWorker' in navigator) {
         }
       }
 
-      const registration = await navigator.serviceWorker.register('/sw.js', {
+      // IMPORTANT: version the SW URL so browsers/CDNs don't serve an old script.
+      // This forces an update even when HTTP caches behave unexpectedly.
+      const SW_SCRIPT_URL = `/sw.js?v=11`;
+
+      const registration = await navigator.serviceWorker.register(SW_SCRIPT_URL, {
         scope: '/',
         updateViaCache: 'none',
       });
 
       console.log('[PWA] Service Worker registered successfully:', registration.scope);
 
-      // Check for updates
-      registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing;
-        if (newWorker) {
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              console.log('[PWA] New content available, refresh to update');
-            }
-          });
+      // If a new SW is waiting, activate it immediately.
+      const tryActivateWaiting = () => {
+        if (registration.waiting && navigator.serviceWorker.controller) {
+          console.log('[PWA] Activating waiting Service Worker (SKIP_WAITING)');
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
         }
+      };
+
+      // Reload exactly once when the controller changes (new SW took control)
+      const reloadKey = 'djassa:sw_reloaded_after_update';
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (sessionStorage.getItem(reloadKey) === '1') return;
+        sessionStorage.setItem(reloadKey, '1');
+        console.log('[PWA] Service Worker controller changed -> reloading');
+        window.location.reload();
       });
 
-      // Force update check
-      registration.update();
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed') {
+            tryActivateWaiting();
+          }
+        });
+      });
+
+      // Force an update check and activate if needed.
+      await registration.update();
+      tryActivateWaiting();
     } catch (error) {
       console.error('[PWA] Service Worker registration failed:', error);
     }

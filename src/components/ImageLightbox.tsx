@@ -165,46 +165,45 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
       // Draw the original image
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       
-      // === ADD CLEARLY VISIBLE DJASSA WATERMARK ===
+      // === CENTERED WATERMARK - BACKGROUND SIGNATURE STYLE ===
       const watermarkText = 'Djassa';
-      const fontSize = Math.max(Math.min(canvas.width * 0.06, 64), 24); // 6% of width, 24-64px range
+      // Size: proportional to image, medium size (12% of smallest dimension)
+      const minDimension = Math.min(canvas.width, canvas.height);
+      const fontSize = Math.max(Math.min(minDimension * 0.12, 120), 40);
       
-      // Main watermark - bottom right corner
       ctx.save();
       
-      // Draw watermark with solid color first for visibility
-      ctx.globalAlpha = 0.12; // 12% opacity - clearly visible but elegant
+      // Center position
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      
+      // Main centered watermark - elegant background signature
+      ctx.globalAlpha = 0.08; // 8% opacity - visible but doesn't obscure product
       ctx.fillStyle = '#E65100'; // Dark orange (Djassa brand)
       ctx.font = `bold ${fontSize}px "Segoe UI", Arial, sans-serif`;
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'bottom';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
       
-      // Add text shadow for better visibility on light and dark backgrounds
-      ctx.shadowColor = 'rgba(255, 255, 255, 0.3)';
-      ctx.shadowBlur = 4;
+      // Subtle shadow for visibility on any background
+      ctx.shadowColor = 'rgba(255, 255, 255, 0.2)';
+      ctx.shadowBlur = 3;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
       
-      // Position: bottom-right with proper padding
-      const paddingX = Math.max(canvas.width * 0.04, 30);
-      const paddingY = Math.max(canvas.height * 0.04, 30);
+      // Draw main centered text
+      ctx.fillText(watermarkText, centerX, centerY);
       
-      // Draw main text
-      ctx.fillText(watermarkText, canvas.width - paddingX, canvas.height - paddingY);
-      
-      // Add a second layer for extra visibility (slightly offset)
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+      // Second layer with dark shadow for contrast on light backgrounds
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
       ctx.shadowBlur = 2;
-      ctx.shadowOffsetX = 1;
-      ctx.shadowOffsetY = 1;
-      ctx.globalAlpha = 0.10;
-      ctx.fillText(watermarkText, canvas.width - paddingX, canvas.height - paddingY);
+      ctx.globalAlpha = 0.06;
+      ctx.fillText(watermarkText, centerX, centerY);
       
-      // Secondary smaller watermark - domain
-      ctx.globalAlpha = 0.08;
-      ctx.font = `${Math.max(fontSize * 0.45, 14)}px "Segoe UI", Arial, sans-serif`;
+      // Smaller domain text below main watermark
+      ctx.globalAlpha = 0.05;
+      ctx.font = `${Math.max(fontSize * 0.35, 16)}px "Segoe UI", Arial, sans-serif`;
       ctx.shadowBlur = 1;
-      ctx.fillText('djassa.com', canvas.width - paddingX, canvas.height - paddingY - fontSize * 0.9);
+      ctx.fillText('djassa.com', centerX, centerY + fontSize * 0.7);
       
       ctx.restore();
       

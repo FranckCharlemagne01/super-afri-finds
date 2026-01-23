@@ -16,6 +16,7 @@ import AuthSubmitButton from '@/components/auth/AuthSubmitButton';
 import AccountTypeSelector from '@/components/auth/AccountTypeSelector';
 import UnconfirmedEmailAlert from '@/components/auth/UnconfirmedEmailAlert';
 import GoogleAuthButton from '@/components/GoogleAuthButton';
+import SignupWizard from '@/components/auth/SignupWizard';
 // TODO: Réactiver FacebookAuthButton lorsque le provider Facebook sera configuré dans Supabase
 // import FacebookAuthButton from '@/components/FacebookAuthButton';
 
@@ -888,161 +889,33 @@ const Auth = () => {
                 )}
               </form>
             ) : authMode === 'signup' ? (
-              /* Sign Up Form */
-              <form onSubmit={handleSignUp} className="space-y-4">
-                {formError && !formError.toLowerCase().includes('email') && <AuthErrorAlert message={formError} />}
-
-                <div className="grid grid-cols-2 gap-3">
-                  <OptimizedInput
-                    id="lastName"
-                    label="Nom"
-                    icon={User}
-                    placeholder="Ex : Koné"
-                    value={lastName}
-                    onChange={handleLastNameChange}
-                    required
-                    maxLength={50}
-                    autoComplete="family-name"
-                  />
-                  <OptimizedInput
-                    id="firstName"
-                    label="Prénom"
-                    placeholder="Ex : Aminata"
-                    value={firstName}
-                    onChange={handleFirstNameChange}
-                    required
-                    maxLength={50}
-                    autoComplete="given-name"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <OptimizedInput
-                    id="signupEmail"
-                    label="Adresse email"
-                    icon={Mail}
-                    type="email"
-                    placeholder="exemple : nom@email.com"
-                    value={email}
-                    onChange={handleEmailChange}
-                    required
-                    maxLength={255}
-                    error={formError.toLowerCase().includes('email')}
-                    autoComplete="email"
-                  />
-                  {formError && formError.toLowerCase().includes('email') && (
-                    <div className="flex items-start gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-xl animate-fade-in">
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-destructive">Cet email est déjà utilisé</p>
-                        <button
-                          type="button"
-                          className="text-xs text-primary font-medium mt-1 hover:underline"
-                          onClick={handleSwitchToSignin}
-                        >
-                          Se connecter →
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-muted-foreground" />
-                    Pays
-                  </Label>
-                  <CountrySelect value={country} onValueChange={handleCountryChange} />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-muted-foreground" />
-                    Ville
-                  </Label>
-                  <CitySelect countryCode={country} value={city} onValueChange={handleCityChange} placeholder="Sélectionnez votre ville" />
-                </div>
-
-                <OptimizedInput
-                  id="phone"
-                  label="Téléphone"
-                  icon={Phone}
-                  placeholder={`${dialCode} 07 07 07 07 07`}
-                  value={phone}
-                  onChange={handlePhoneChange}
-                  required
-                  maxLength={20}
-                  hint={`Format : ${dialCode} 0707070707`}
-                  autoComplete="tel"
-                />
-
-                <AccountTypeSelector value={userRole} onChange={handleUserRoleChange} />
-
-                {userRole === 'seller' && (
-                  <div className="animate-fade-in">
-                    <OptimizedInput
-                      id="shopName"
-                      label="Nom de votre boutique"
-                      icon={Building2}
-                      placeholder="Ex : Boutique Mode, Tech Shop..."
-                      value={shopName}
-                      onChange={handleShopNameChange}
-                      required
-                      maxLength={100}
-                      hint="Sera visible par vos clients"
-                      autoComplete="organization"
-                    />
-                  </div>
-                )}
-
-                <OptimizedInput
-                  id="signupPassword"
-                  label="Mot de passe"
-                  icon={Lock}
-                  placeholder="12+ caractères, sécurisé"
-                  value={signupPassword}
-                  onChange={handleSignupPasswordChange}
-                  required
-                  showPasswordToggle
-                  hint="Min. 12 caractères, majuscules, minuscules, chiffres, @$!%*?&"
-                  autoComplete="new-password"
-                />
-
-                <AuthSubmitButton loading={loading} text="Créer mon compte" loadingText="Création..." />
-
-                <div className="relative py-4">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-border" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-3 text-muted-foreground">ou</span>
-                  </div>
-                </div>
-
-                <GoogleAuthButton 
-                  onClick={handleGoogleSignIn} 
-                  disabled={loading}
-                  mode="signup"
-                />
-
-                {/* TODO: Réactiver lorsque Facebook sera configuré
-                <FacebookAuthButton 
-                  onClick={handleFacebookSignIn} 
-                  disabled={loading}
-                  mode="signup"
-                />
-                */}
-
-                <p className="text-center text-sm text-muted-foreground pt-2">
-                  Déjà un compte ?{' '}
-                  <button
-                    type="button"
-                    onClick={handleSwitchToSignin}
-                    className="text-primary font-semibold hover:underline"
-                  >
-                    Se connecter
-                  </button>
-                </p>
-              </form>
+              /* Sign Up Form - Wizard */
+              <SignupWizard
+                lastName={lastName}
+                firstName={firstName}
+                email={email}
+                country={country}
+                city={city}
+                phone={phone}
+                dialCode={dialCode}
+                userRole={userRole}
+                shopName={shopName}
+                signupPassword={signupPassword}
+                onLastNameChange={handleLastNameChange}
+                onFirstNameChange={handleFirstNameChange}
+                onEmailChange={handleEmailChange}
+                onCountryChange={handleCountryChange}
+                onCityChange={handleCityChange}
+                onPhoneChange={handlePhoneChange}
+                onUserRoleChange={handleUserRoleChange}
+                onShopNameChange={handleShopNameChange}
+                onPasswordChange={handleSignupPasswordChange}
+                onSubmit={handleSignUp}
+                onGoogleSignIn={handleGoogleSignIn}
+                onSwitchToSignin={handleSwitchToSignin}
+                loading={loading}
+                formError={formError}
+              />
             ) : (
               /* Sign In Form */
               <div className="space-y-5">

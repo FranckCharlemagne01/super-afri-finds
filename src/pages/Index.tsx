@@ -385,14 +385,9 @@ const Index = () => {
       <MarketplaceTutorial />
       
       <div className="min-h-screen bg-background pb-20 md:pb-8 overflow-x-hidden">
-      {/* Header - Desktop: always visible sticky, Mobile: hide on scroll down, show on scroll up */}
+      {/* Header - Always visible sticky on both mobile and desktop */}
       <header 
-        className={`
-          sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-border/50
-          transition-transform duration-300 ease-out
-          md:translate-y-0
-          ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full md:translate-y-0'}
-        `}
+        className="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-border/50"
       >
         <div className="container mx-auto px-3 sm:px-4 lg:px-8 xl:px-12 py-2.5 sm:py-3 lg:py-4 max-w-[1600px]">
           <div className="flex items-center gap-3 sm:gap-4 lg:gap-6">

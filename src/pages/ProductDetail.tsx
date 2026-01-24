@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import SEOHead from "@/components/SEOHead";
 import { useScrollDirection } from '@/hooks/useScrollDirection';
@@ -20,6 +20,8 @@ import { useUserLocation } from "@/hooks/useUserLocation";
 import { useRecommendations } from "@/hooks/useRecommendations";
 import { getProductImage, getProductImages, handleImageError } from "@/utils/productImageHelper";
 import { getCachedProduct, setCachedProduct, getCachedShop, setCachedShop } from "@/hooks/useProductCache";
+import { useShopPrefetch } from "@/hooks/useShopPrefetch";
+import { usePrefetch } from "@/hooks/usePrefetch";
 import { 
   ArrowLeft, 
   Heart, 
@@ -76,6 +78,8 @@ const ProductDetail = (): JSX.Element | null => {
   const { location: userLocation } = useUserLocation();
   const { trackCategoryVisit, trackShopVisit, getSimilarProducts, getShopProducts } = useRecommendations();
   const { isVisible: isHeaderVisible } = useScrollDirection();
+  const { prefetchOnHover: prefetchShopOnHover } = useShopPrefetch();
+  const { prefetchOnHover: prefetchRouteOnHover } = usePrefetch();
 
   const handleBackNavigation = () => {
     // Utiliser l'historique du navigateur pour revenir en arrière
@@ -702,6 +706,14 @@ const ProductDetail = (): JSX.Element | null => {
                 <div className="mb-4 sm:mb-6">
                   <Button
                     onClick={() => navigate(`/boutique/${shop.shop_slug}`)}
+                    onMouseEnter={() => {
+                      prefetchRouteOnHover('/boutique');
+                      prefetchShopOnHover(shop.shop_slug);
+                    }}
+                    onTouchStart={() => {
+                      prefetchRouteOnHover('/boutique');
+                      prefetchShopOnHover(shop.shop_slug);
+                    }}
                     variant="outline"
                     className="w-full h-12 text-sm sm:text-base font-medium border-primary/30 hover:bg-primary/5 hover:border-primary transition-colors"
                   >
@@ -724,6 +736,8 @@ const ProductDetail = (): JSX.Element | null => {
               <Button
                 variant="outline"
                 onClick={() => navigate(`/boutique/${shop.shop_slug}`)}
+                onMouseEnter={() => prefetchShopOnHover(shop.shop_slug)}
+                onTouchStart={() => prefetchShopOnHover(shop.shop_slug)}
                 className="text-xs sm:text-sm w-full sm:w-auto min-h-[44px] flex-shrink-0"
               >
                 <span className="truncate">Voir tous</span>

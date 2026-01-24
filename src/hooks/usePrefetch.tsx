@@ -12,8 +12,10 @@ const routeComponentMap: Record<string, () => Promise<any>> = {
   '/cart': () => import('@/pages/Cart'),
   '/favorites': () => import('@/pages/Favorites'),
   '/categories': () => import('@/pages/CategoriesPage'),
+  '/category': () => import('@/pages/CategoryPage'),
   '/flash-sales': () => import('@/pages/FlashSales'),
   '/product': () => import('@/pages/ProductDetail'),
+  '/boutique': () => import('@/pages/ShopPage'),
   '/seller-dashboard': () => import('@/pages/SellerDashboard'),
   '/buyer-dashboard': () => import('@/pages/BuyerDashboard'),
   '/search': () => import('@/pages/SearchResults'),
@@ -89,10 +91,10 @@ export function prefetchCriticalRoutes() {
   criticalRoutesPrefetched = true;
   
   // Most critical routes - prefetch immediately
-  const immediatePrefetch = ['/marketplace', '/cart', '/product'];
+  const immediatePrefetch = ['/marketplace', '/cart', '/product', '/boutique'];
   
   // Secondary routes - prefetch in idle time
-  const secondaryPrefetch = ['/auth', '/categories', '/seller-dashboard', '/buyer-dashboard'];
+  const secondaryPrefetch = ['/auth', '/categories', '/category', '/seller-dashboard', '/buyer-dashboard'];
   
   // Immediate prefetch for critical routes
   immediatePrefetch.forEach(route => {

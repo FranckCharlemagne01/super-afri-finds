@@ -19,7 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { useRecommendations } from "@/hooks/useRecommendations";
 import { getProductImage, getProductImages, handleImageError } from "@/utils/productImageHelper";
-import { getCachedProduct, setCachedProduct, getCachedShop, setCachedShop } from "@/hooks/useProductCache";
+import { getCachedProduct, setCachedProduct, getCachedShop, setCachedShop, prefetchShopBySlug } from "@/hooks/useProductCache";
 import { 
   ArrowLeft, 
   Heart, 
@@ -697,11 +697,14 @@ const ProductDetail = (): JSX.Element | null => {
                 <Badge variant="secondary" className="text-xs sm:text-sm">{product.category}</Badge>
               </div>
 
-              {/* Link to Shop */}
+              {/* Link to Shop - with prefetch on hover/touch */}
               {shop && (
                 <div className="mb-4 sm:mb-6">
                   <Button
                     onClick={() => navigate(`/boutique/${shop.shop_slug}`)}
+                    onMouseEnter={() => prefetchShopBySlug(shop.shop_slug)}
+                    onTouchStart={() => prefetchShopBySlug(shop.shop_slug)}
+                    onFocus={() => prefetchShopBySlug(shop.shop_slug)}
                     variant="outline"
                     className="w-full h-12 text-sm sm:text-base font-medium border-primary/30 hover:bg-primary/5 hover:border-primary transition-colors"
                   >

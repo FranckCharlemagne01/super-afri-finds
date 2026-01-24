@@ -70,6 +70,7 @@ const ShopPage = () => {
   const [similarShops, setSimilarShops] = useState<Shop[]>([]);
   // ✅ If we have cache, no loading state needed
   const [loading, setLoading] = useState(!cachedShop);
+  const [loadingProducts, setLoadingProducts] = useState(true); // ✅ Track products loading separately
   const [isOwner, setIsOwner] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -117,6 +118,7 @@ const ShopPage = () => {
 
         if (!productsError && productsData) {
           setProducts(productsData);
+          setLoadingProducts(false); // ✅ Products loaded
           
           // Track shop visit and categories
           trackShopVisit(shopData.id);
@@ -128,6 +130,8 @@ const ShopPage = () => {
             const intelligentSimilarShops = await getSimilarShops(shopData.id, mainCategory, 6);
             setSimilarShops(intelligentSimilarShops);
           }
+        } else {
+          setLoadingProducts(false); // ✅ No products or error
         }
       } catch (error) {
         console.error('Error fetching shop:', error);
@@ -380,7 +384,20 @@ const ShopPage = () => {
             </Badge>
           </div>
           
-          {products.length === 0 ? (
+          {loadingProducts ? (
+            // ✅ Show skeleton while products are loading - no "aucun produit" flash
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 xs:gap-3 sm:gap-4">
+              {[...Array(6)].map((_, i) => (
+                <Card key={i} className="overflow-hidden animate-pulse">
+                  <div className="aspect-square bg-muted" />
+                  <div className="p-2 xs:p-3 space-y-2">
+                    <div className="h-3 xs:h-4 bg-muted rounded w-3/4" />
+                    <div className="h-3 xs:h-4 bg-muted rounded w-1/2" />
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : products.length === 0 ? (
             <Card className="p-6 xs:p-8 sm:p-12 text-center">
               <Store className="h-10 w-10 xs:h-12 xs:w-12 sm:h-16 sm:w-16 mx-auto text-muted-foreground/20 mb-2 xs:mb-3 sm:mb-4" />
               <p className="text-xs xs:text-sm sm:text-base text-muted-foreground">Cette boutique n'a pas encore de produits.</p>

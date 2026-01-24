@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import SEOHead from "@/components/SEOHead";
 import { supabase } from '@/integrations/supabase/client';
@@ -17,6 +17,7 @@ import { useRecommendations } from '@/hooks/useRecommendations';
 import { motion } from 'framer-motion';
 import { getProductImage } from '@/utils/productImageHelper';
 import { SHOP_BRANDING } from '@/constants/shopBranding';
+import { getCachedShopBySlug, getCachedShopProducts, useShopPrefetch } from '@/hooks/useShopPrefetch';
 
 interface Shop {
   id: string;
@@ -60,11 +61,17 @@ const ShopPage = () => {
   const { location: userLocation } = useUserLocation();
   const { trackShopVisit, trackCategoryVisit, getSimilarShops } = useRecommendations();
   const { isVisible: isHeaderVisible } = useScrollDirection();
+  const { prefetchOnHover: prefetchShopOnHover } = useShopPrefetch();
 
-  const [shop, setShop] = useState<Shop | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
+  // ✅ Initialize from cache for instant display
+  const cachedShop = useMemo(() => slug ? getCachedShopBySlug(slug) : null, [slug]);
+  const cachedProducts = useMemo(() => cachedShop?.id ? getCachedShopProducts(cachedShop.id) : null, [cachedShop?.id]);
+
+  const [shop, setShop] = useState<Shop | null>(cachedShop as Shop | null);
+  const [products, setProducts] = useState<Product[]>(cachedProducts || []);
   const [similarShops, setSimilarShops] = useState<Shop[]>([]);
-  const [loading, setLoading] = useState(true);
+  // ✅ If we have cache, skip loading state
+  const [loading, setLoading] = useState(!cachedShop);
   const [isOwner, setIsOwner] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -75,7 +82,8 @@ const ShopPage = () => {
       if (!slug) return;
 
       try {
-        setLoading(true);
+        // Only show loading if no cache
+        if (!cachedShop) setLoading(true);
 
         // Fetch shop details
         const { data: shopData, error: shopError } = await supabase
@@ -132,7 +140,7 @@ const ShopPage = () => {
     };
 
     fetchShopData();
-  }, [slug, navigate, toast, refreshKey]);
+  }, [slug, navigate, toast, refreshKey, cachedShop]);
 
   // Separate effect to check ownership when user or shop changes
   useEffect(() => {
@@ -144,14 +152,9 @@ const ShopPage = () => {
   }, [user, shop]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Chargement de la boutique...</p>
-        </div>
-      </div>
-    );
+    // ✅ Use lightweight skeleton for instant visual feedback
+    const ShopPageSkeleton = require('@/components/ShopPageSkeleton').default;
+    return <ShopPageSkeleton />;
   }
 
   if (!shop) {
@@ -513,6 +516,8 @@ const ShopPage = () => {
                   <Card
                     className="p-2.5 xs:p-3 sm:p-4 cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] border-border/50"
                     onClick={() => navigate(`/boutique/${similarShop.shop_slug}`)}
+                    onMouseEnter={() => prefetchShopOnHover(similarShop.shop_slug)}
+                    onTouchStart={() => prefetchShopOnHover(similarShop.shop_slug)}
                   >
                     <div className="flex items-center gap-2 xs:gap-2.5 sm:gap-3 mb-1.5 xs:mb-2">
                       <img

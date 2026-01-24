@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { getCategoryBySlug } from '@/data/categories';
@@ -11,6 +11,8 @@ import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { useToast } from '@/hooks/use-toast';
 import { useUserLocation } from '@/hooks/useUserLocation';
 import { getProductImage } from '@/utils/productImageHelper';
+import { getCached, setCache } from '@/utils/dataCache';
+import CategoryPageSkeleton from '@/components/CategoryPageSkeleton';
 
 interface Product {
   id: string;
@@ -42,20 +44,26 @@ const CategoryPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { location: userLocation } = useUserLocation();
-
-  const [products, setProducts] = useState<Product[]>([]);
-  const [shops, setShops] = useState<Shop[]>([]);
-  const [selectedShop, setSelectedShop] = useState<string>('all');
-  const [loading, setLoading] = useState(true);
-
   const categoryInfo = slug ? getCategoryBySlug(slug) : null;
   const { isVisible: isHeaderVisible } = useScrollDirection();
+
+  // ✅ Initialize from cache for instant display
+  const cacheKey = `category_products_${slug}`;
+  const cachedData = useMemo(() => getCached<{ products: Product[]; shops: Shop[] }>(cacheKey), [cacheKey]);
+
+  const [products, setProducts] = useState<Product[]>(cachedData?.products || []);
+  const [shops, setShops] = useState<Shop[]>(cachedData?.shops || []);
+  const [selectedShop, setSelectedShop] = useState<string>('all');
+  // ✅ If we have cache, skip loading state
+  const [loading, setLoading] = useState(!cachedData);
+
   useEffect(() => {
     const fetchProducts = async () => {
       if (!slug || !categoryInfo) return;
 
       try {
-        setLoading(true);
+        // Only show loading if no cache
+        if (!cachedData) setLoading(true);
 
         // Get all subcategory slugs for this main category
         const subcategorySlugs = categoryInfo.subcategories.map(sub => sub.slug);
@@ -73,6 +81,7 @@ const CategoryPage = () => {
         setProducts(productsData || []);
 
         // Fetch unique shops that have products in this category
+        let fetchedShops: Shop[] = [];
         if (productsData && productsData.length > 0) {
           const shopIds = Array.from(new Set(productsData.map(p => p.shop_id).filter(Boolean)));
           
@@ -85,9 +94,13 @@ const CategoryPage = () => {
 
             if (!shopsError && shopsData) {
               setShops(shopsData);
+              fetchedShops = shopsData;
             }
           }
         }
+        
+        // ✅ Cache the results for instant display on revisit
+        setCache(cacheKey, { products: productsData || [], shops: fetchedShops }, 120000); // 2 min
       } catch (error) {
         console.error('Error fetching category products:', error);
         toast({
@@ -101,7 +114,7 @@ const CategoryPage = () => {
     };
 
     fetchProducts();
-  }, [slug, categoryInfo, toast]);
+  }, [slug, categoryInfo, toast, cachedData, cacheKey]);
 
   if (!categoryInfo) {
     return (
@@ -114,6 +127,11 @@ const CategoryPage = () => {
         </Card>
       </div>
     );
+  }
+
+  // ✅ Show skeleton while loading (only if no cached data)
+  if (loading && products.length === 0) {
+    return <CategoryPageSkeleton />;
   }
 
   const filteredProducts = selectedShop === 'all' 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import SEOHead from "@/components/SEOHead";
 import { supabase } from '@/integrations/supabase/client';
@@ -17,6 +17,7 @@ import { useRecommendations } from '@/hooks/useRecommendations';
 import { motion } from 'framer-motion';
 import { getProductImage } from '@/utils/productImageHelper';
 import { SHOP_BRANDING } from '@/constants/shopBranding';
+import { getCachedShopBySlug, setCachedShop } from '@/hooks/useProductCache';
 
 interface Shop {
   id: string;
@@ -61,10 +62,14 @@ const ShopPage = () => {
   const { trackShopVisit, trackCategoryVisit, getSimilarShops } = useRecommendations();
   const { isVisible: isHeaderVisible } = useScrollDirection();
 
-  const [shop, setShop] = useState<Shop | null>(null);
+  // ✅ Initialize from cache for instant display
+  const cachedShop = useMemo(() => slug ? getCachedShopBySlug(slug) : null, [slug]);
+
+  const [shop, setShop] = useState<Shop | null>(cachedShop as Shop | null);
   const [products, setProducts] = useState<Product[]>([]);
   const [similarShops, setSimilarShops] = useState<Shop[]>([]);
-  const [loading, setLoading] = useState(true);
+  // ✅ If we have cache, no loading state needed
+  const [loading, setLoading] = useState(!cachedShop);
   const [isOwner, setIsOwner] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -75,7 +80,10 @@ const ShopPage = () => {
       if (!slug) return;
 
       try {
-        setLoading(true);
+        // ✅ Only show loading if we don't have cached data
+        if (!shop) {
+          setLoading(true);
+        }
 
         // Fetch shop details
         const { data: shopData, error: shopError } = await supabase
@@ -96,6 +104,8 @@ const ShopPage = () => {
         }
 
         setShop(shopData);
+        // ✅ Cache the shop for future instant loads
+        setCachedShop(shopData);
 
         // Fetch shop products
         const { data: productsData, error: productsError } = await supabase

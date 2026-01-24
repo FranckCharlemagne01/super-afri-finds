@@ -68,10 +68,58 @@ export function getCachedShop(shopId: string): CachedShop | null {
 }
 
 /**
- * Set shop in cache
+ * Get cached shop by slug
+ */
+export function getCachedShopBySlug(slug: string): CachedShop | null {
+  return getCached<CachedShop>(`${SHOP_CACHE_PREFIX}slug:${slug}`);
+}
+
+/**
+ * Set shop in cache (by ID and by slug)
  */
 export function setCachedShop(shop: CachedShop): void {
   setCache(`${SHOP_CACHE_PREFIX}${shop.id}`, shop, PRODUCT_STALE_TIME);
+  setCache(`${SHOP_CACHE_PREFIX}slug:${shop.shop_slug}`, shop, PRODUCT_STALE_TIME);
+}
+
+/**
+ * Prefetch shop by slug for instant ShopPage navigation
+ */
+export async function prefetchShopBySlug(slug: string): Promise<CachedShop | null> {
+  // Check cache first
+  const cached = getCachedShopBySlug(slug);
+  if (cached) return cached;
+
+  // Check if already fetching
+  const pendingKey = `shop:slug:${slug}`;
+  if (pendingFetches.has(pendingKey)) {
+    return pendingFetches.get(pendingKey);
+  }
+
+  // Fetch shop
+  const fetchPromise = (async () => {
+    try {
+      const { data: shop, error } = await supabase
+        .from('seller_shops')
+        .select('*')
+        .eq('shop_slug', slug)
+        .eq('is_active', true)
+        .single();
+
+      if (error || !shop) return null;
+
+      // Cache the shop
+      setCachedShop(shop);
+      return shop;
+    } catch {
+      return null;
+    } finally {
+      pendingFetches.delete(pendingKey);
+    }
+  })();
+
+  pendingFetches.set(pendingKey, fetchPromise);
+  return fetchPromise;
 }
 
 /**

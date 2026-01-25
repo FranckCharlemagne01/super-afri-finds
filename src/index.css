@@ -121,7 +121,6 @@ All colors MUST be HSL.
 /* Performance optimizations */
 * {
   -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
 }
 
 /* Smooth scrolling with performance */
@@ -129,11 +128,26 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Ensure proper height calculation */
+  height: 100%;
 }
 
 body {
-  overflow-x: hidden;
+  /* Use clip instead of hidden to allow proper scroll while preventing horizontal overflow */
+  overflow-x: clip;
   overflow-y: auto;
+  min-height: 100%;
+  min-height: 100dvh; /* Dynamic viewport height for mobile browsers */
+  /* Prevent pull-to-refresh interference */
+  overscroll-behavior-y: contain;
+}
+
+/* Root container sizing */
+#root {
+  min-height: 100%;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -177,14 +191,17 @@ img {
   display: block;
 }
 
-/* Better touch targets for mobile */
-button,
-a,
+/* Better touch targets for mobile - only apply to interactive elements without explicit sizing */
+button:not([class*="h-"]):not([class*="w-"]),
+a:not([class*="h-"]):not([class*="w-"]) {
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+/* Ensure inputs don't get oversized */
 input,
 textarea,
 select {
-  min-height: 44px;
-  min-width: 44px;
   touch-action: manipulation;
 }
 
@@ -196,7 +213,7 @@ body {
 }
 
 /* Smooth native scrolling on iOS */
-* {
+.scroll-container {
   -webkit-overflow-scrolling: touch;
 }
 

@@ -86,7 +86,8 @@ const AnimatedRoutes = () => {
           damping: 35,
           mass: 0.8 
         }}
-        className="min-h-screen"
+        className="flex-1 flex flex-col min-h-0"
+        style={{ minHeight: '100dvh' }}
       >
         <Suspense fallback={<PageLoadingFallback />}>
           <Routes location={location}>

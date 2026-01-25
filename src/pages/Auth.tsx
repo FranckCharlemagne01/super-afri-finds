@@ -919,7 +919,10 @@ const Auth = () => {
             ) : (
               /* Sign In Form */
               <div className="space-y-5">
-                {/* Auth method toggle */}
+                {/* TODO: Réactiver l'onglet Téléphone/OTP SMS lorsque le backend sera configuré
+                    Pour réactiver: décommenter le bloc ci-dessous et changer la condition authMethod === 'email' en ternaire
+                */}
+                {/* Auth method toggle - TEMPORAIREMENT MASQUÉ
                 <div className="flex rounded-xl bg-muted/50 p-1 gap-1">
                   <button
                     type="button"
@@ -946,10 +949,10 @@ const Auth = () => {
                     Téléphone
                   </button>
                 </div>
+                */}
 
-                {authMethod === 'email' ? (
-                  /* Email Sign In */
-                  <form onSubmit={handleSignIn} className="space-y-5 animate-fade-in">
+                {/* Email Sign In - Affiché par défaut (OTP téléphone temporairement désactivé) */}
+                <form onSubmit={handleSignIn} className="space-y-5 animate-fade-in">
                     {formError && <AuthErrorAlert message={formError} />}
                     
                     {/* Unconfirmed email alert with resend option */}
@@ -996,115 +999,123 @@ const Auth = () => {
                     </div>
 
                     <AuthSubmitButton loading={loading} text="Se connecter" loadingText="Connexion..." />
-                  </form>
-                ) : phoneOtpSent ? (
-                  /* Phone OTP Verification */
-                  <div className="space-y-6 animate-fade-in">
-                    <div className="text-center space-y-2">
-                      <div className="mx-auto w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center">
-                        <Smartphone className="w-7 h-7 text-primary" />
+                </form>
+
+                {/* TODO: Réactiver l'authentification par téléphone OTP lorsque le backend Termii sera configuré
+                    Pour réactiver: 
+                    1. Décommenter le toggle Email/Téléphone ci-dessus
+                    2. Décommenter le bloc ci-dessous et rétablir la logique conditionnelle authMethod === 'phone'
+                */}
+                {/* AUTHENTIFICATION TÉLÉPHONE TEMPORAIREMENT DÉSACTIVÉE
+                {authMethod === 'phone' && (
+                  phoneOtpSent ? (
+                    <div className="space-y-6 animate-fade-in">
+                      <div className="text-center space-y-2">
+                        <div className="mx-auto w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center">
+                          <Smartphone className="w-7 h-7 text-primary" />
+                        </div>
+                        <h3 className="text-lg font-semibold">Vérifiez votre téléphone</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Code envoyé au <strong className="text-foreground">{phoneNumber}</strong>
+                        </p>
                       </div>
-                      <h3 className="text-lg font-semibold">Vérifiez votre téléphone</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Code envoyé au <strong className="text-foreground">{phoneNumber}</strong>
-                      </p>
-                    </div>
 
-                    {phoneOtpError && <AuthErrorAlert message={phoneOtpError} />}
+                      {phoneOtpError && <AuthErrorAlert message={phoneOtpError} />}
 
-                    <div className="flex flex-col items-center space-y-4">
-                      <InputOTP
-                        maxLength={6}
-                        value={phoneOtpCode}
-                        onChange={handlePhoneOtpChange}
+                      <div className="flex flex-col items-center space-y-4">
+                        <InputOTP
+                          maxLength={6}
+                          value={phoneOtpCode}
+                          onChange={handlePhoneOtpChange}
+                        >
+                          <InputOTPGroup className="gap-2">
+                            {[0, 1, 2, 3, 4, 5].map((i) => (
+                              <InputOTPSlot 
+                                key={i} 
+                                index={i} 
+                                className="w-12 h-14 text-lg rounded-xl border-2" 
+                              />
+                            ))}
+                          </InputOTPGroup>
+                        </InputOTP>
+                        <p className="text-xs text-muted-foreground">Expire dans 5 minutes</p>
+                      </div>
+
+                      <Button
+                        onClick={() => handleVerifyPhoneOtp()}
+                        disabled={verifyingPhoneOtp || phoneOtpCode.length !== 6}
+                        className="w-full h-14 rounded-xl font-semibold text-base"
                       >
-                        <InputOTPGroup className="gap-2">
-                          {[0, 1, 2, 3, 4, 5].map((i) => (
-                            <InputOTPSlot 
-                              key={i} 
-                              index={i} 
-                              className="w-12 h-14 text-lg rounded-xl border-2" 
-                            />
-                          ))}
-                        </InputOTPGroup>
-                      </InputOTP>
-                      <p className="text-xs text-muted-foreground">Expire dans 5 minutes</p>
-                    </div>
-
-                    <Button
-                      onClick={() => handleVerifyPhoneOtp()}
-                      disabled={verifyingPhoneOtp || phoneOtpCode.length !== 6}
-                      className="w-full h-14 rounded-xl font-semibold text-base"
-                    >
-                      {verifyingPhoneOtp ? (
-                        <><Loader2 className="h-5 w-5 animate-spin mr-2" />Vérification...</>
-                      ) : (
-                        'Confirmer'
-                      )}
-                    </Button>
-
-                    <div className="text-center space-y-3">
-                      <Button 
-                        variant="outline" 
-                        onClick={handleSendPhoneOtp} 
-                        disabled={sendingPhoneOtp}
-                        className="w-full h-12 rounded-xl"
-                      >
-                        {sendingPhoneOtp ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Envoi...</> : "Renvoyer le code"}
+                        {verifyingPhoneOtp ? (
+                          <><Loader2 className="h-5 w-5 animate-spin mr-2" />Vérification...</>
+                        ) : (
+                          'Confirmer'
+                        )}
                       </Button>
-                      <button
-                        type="button"
-                        onClick={handleBackFromPhoneOtp}
-                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                      >
-                        Modifier le numéro
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  /* Phone Number Input */
-                  <div className="space-y-5 animate-fade-in">
-                    {phoneOtpError && <AuthErrorAlert message={phoneOtpError} />}
 
-                    <div className="space-y-2">
-                      <Label className="text-sm font-semibold flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-muted-foreground" />
-                        Numéro de téléphone
-                      </Label>
-                      <input
-                        type="tel"
-                        inputMode="tel"
-                        placeholder="+225 07 07 07 07 07"
-                        value={phoneNumber}
-                        onChange={(e) => handlePhoneNumberChange(e.target.value)}
-                        className="w-full h-14 px-4 rounded-xl border-2 border-border bg-background text-lg font-medium placeholder:text-muted-foreground/50 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                        autoComplete="tel"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Avec indicatif pays (+225 pour Côte d'Ivoire)
+                      <div className="text-center space-y-3">
+                        <Button 
+                          variant="outline" 
+                          onClick={handleSendPhoneOtp} 
+                          disabled={sendingPhoneOtp}
+                          className="w-full h-12 rounded-xl"
+                        >
+                          {sendingPhoneOtp ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Envoi...</> : "Renvoyer le code"}
+                        </Button>
+                        <button
+                          type="button"
+                          onClick={handleBackFromPhoneOtp}
+                          className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                        >
+                          Modifier le numéro
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-5 animate-fade-in">
+                      {phoneOtpError && <AuthErrorAlert message={phoneOtpError} />}
+
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold flex items-center gap-2">
+                          <Phone className="w-4 h-4 text-muted-foreground" />
+                          Numéro de téléphone
+                        </Label>
+                        <input
+                          type="tel"
+                          inputMode="tel"
+                          placeholder="+225 07 07 07 07 07"
+                          value={phoneNumber}
+                          onChange={(e) => handlePhoneNumberChange(e.target.value)}
+                          className="w-full h-14 px-4 rounded-xl border-2 border-border bg-background text-lg font-medium placeholder:text-muted-foreground/50 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                          autoComplete="tel"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Avec indicatif pays (+225 pour Côte d'Ivoire)
+                        </p>
+                      </div>
+
+                      <Button
+                        onClick={handleSendPhoneOtp}
+                        disabled={sendingPhoneOtp || !phoneNumber || phoneNumber.length < 8}
+                        className="w-full h-14 rounded-xl font-semibold text-base"
+                      >
+                        {sendingPhoneOtp ? (
+                          <><Loader2 className="h-5 w-5 animate-spin mr-2" />Envoi du code...</>
+                        ) : (
+                          <>
+                            <Smartphone className="w-5 h-5 mr-2" />
+                            Recevoir un code SMS
+                          </>
+                        )}
+                      </Button>
+
+                      <p className="text-center text-xs text-muted-foreground">
+                        Connexion rapide sans mot de passe
                       </p>
                     </div>
-
-                    <Button
-                      onClick={handleSendPhoneOtp}
-                      disabled={sendingPhoneOtp || !phoneNumber || phoneNumber.length < 8}
-                      className="w-full h-14 rounded-xl font-semibold text-base"
-                    >
-                      {sendingPhoneOtp ? (
-                        <><Loader2 className="h-5 w-5 animate-spin mr-2" />Envoi du code...</>
-                      ) : (
-                        <>
-                          <Smartphone className="w-5 h-5 mr-2" />
-                          Recevoir un code SMS
-                        </>
-                      )}
-                    </Button>
-
-                    <p className="text-center text-xs text-muted-foreground">
-                      Connexion rapide sans mot de passe
-                    </p>
-                  </div>
+                  )
                 )}
+                */}
 
                 <div className="relative py-4">
                   <div className="absolute inset-0 flex items-center">

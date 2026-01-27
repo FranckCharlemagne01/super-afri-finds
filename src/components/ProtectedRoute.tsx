@@ -1,7 +1,8 @@
 import { useEffect, ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useStableAuth } from '@/hooks/useStableAuth';
 import { useStableRole } from '@/hooks/useStableRole';
+import { useProfileCompletion } from '@/hooks/useProfileCompletion';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -11,15 +12,25 @@ interface ProtectedRouteProps {
 export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const { user, loading: authLoading } = useStableAuth();
   const { role, loading: roleLoading } = useStableRole();
+  const profileStatus = useProfileCompletion(user);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     // Wait for auth and role to load
-    if (authLoading || roleLoading) return;
+    if (authLoading || roleLoading || profileStatus.isLoading) return;
 
     // If no user, redirect to auth
     if (!user) {
       navigate('/auth', { replace: true });
+      return;
+    }
+
+    // If Google user needs onboarding, redirect to complete-profile
+    // (except if already on that page)
+    if (profileStatus.needsOnboarding && location.pathname !== '/auth/complete-profile') {
+      console.log('[ProtectedRoute] Google user needs profile completion, redirecting...');
+      navigate('/auth/complete-profile', { replace: true });
       return;
     }
 
@@ -43,15 +54,20 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
         return;
       }
     }
-  }, [user, role, authLoading, roleLoading, requiredRole, navigate]);
+  }, [user, role, authLoading, roleLoading, requiredRole, navigate, profileStatus.isLoading, profileStatus.needsOnboarding, location.pathname]);
 
   // Show nothing while loading
-  if (authLoading || roleLoading) {
+  if (authLoading || roleLoading || profileStatus.isLoading) {
     return null;
   }
 
   // Don't render if no user
   if (!user) {
+    return null;
+  }
+
+  // Don't render if Google user needs onboarding
+  if (profileStatus.needsOnboarding) {
     return null;
   }
 

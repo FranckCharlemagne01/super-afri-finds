@@ -28,12 +28,18 @@ const AuthWelcome = () => {
           console.log('[AuthWelcome] Valid session found for user:', session.user.id);
           setIsAuthenticated(true);
           
-          // Afficher le toast de bienvenue
-          toast({
-            title: "Bienvenue à nouveau sur Djassa 👋",
-            description: "Nous sommes ravis de vous revoir !",
-            duration: 4000,
-          });
+          // Vérifier si c'est un utilisateur Google
+          const isGoogleUser = session.user.app_metadata?.provider === 'google' ||
+            session.user.identities?.some(id => id.provider === 'google') || false;
+          
+          console.log('[AuthWelcome] Is Google user:', isGoogleUser);
+
+          // Récupérer le profil pour vérifier la complétion
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('country, city')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
           
           // Récupérer le rôle de l'utilisateur
           const { data: roleData, error: roleError } = await supabase
@@ -48,8 +54,40 @@ const AuthWelcome = () => {
             console.error('[AuthWelcome] Role fetch error:', roleError);
           }
 
-          const role = roleData?.role || 'buyer';
-          setUserRole(role);
+          const role = roleData?.role || null;
+          const hasCompleteProfile = Boolean(profile?.country && profile?.city && role);
+
+          console.log('[AuthWelcome] Profile completion check:', {
+            country: profile?.country,
+            city: profile?.city,
+            role,
+            hasCompleteProfile,
+            isGoogleUser
+          });
+
+          // Si utilisateur Google avec profil incomplet, rediriger vers complete-profile
+          if (isGoogleUser && !hasCompleteProfile) {
+            console.log('[AuthWelcome] Google user needs profile completion, redirecting...');
+            toast({
+              title: "Bienvenue sur Djassa ! 👋",
+              description: "Complétez votre profil pour commencer",
+              duration: 4000,
+            });
+            
+            setTimeout(() => {
+              navigate('/auth/complete-profile', { replace: true });
+            }, 1000);
+            return;
+          }
+
+          // Afficher le toast de bienvenue
+          toast({
+            title: "Bienvenue à nouveau sur Djassa 👋",
+            description: "Nous sommes ravis de vous revoir !",
+            duration: 4000,
+          });
+          
+          setUserRole(role || 'buyer');
           setRedirecting(true);
 
           console.log('[AuthWelcome] Redirecting user with role:', role);

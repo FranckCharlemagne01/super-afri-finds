@@ -20,6 +20,7 @@ import PWABottomInstallBar from "@/components/PWABottomInstallBar";
 const Verify = lazy(() => import("./pages/Verify"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const AuthWelcome = lazy(() => import("./pages/AuthWelcome"));
+const CompleteProfile = lazy(() => import("./pages/CompleteProfile"));
 const Welcome = lazy(() => import("./pages/Welcome"));
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
@@ -96,6 +97,7 @@ const AnimatedRoutes = () => {
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/auth/welcome" element={<AuthWelcome />} />
+            <Route path="/auth/complete-profile" element={<CompleteProfile />} />
             <Route path="/auth/confirm-email" element={<ConfirmEmail />} />
             <Route path="/welcome" element={<Welcome />} />
             <Route path="/auth/reset-password" element={<ResetPassword />} />

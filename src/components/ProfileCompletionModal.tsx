@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { CountrySelect } from '@/components/CountrySelect';
+import { CitySelect } from '@/components/CitySelect';
 import { MapPin, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useStableAuth } from '@/hooks/useStableAuth';
@@ -16,6 +16,14 @@ export const ProfileCompletionModal = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [country, setCountry] = useState('');
   const [city, setCity] = useState('');
+
+  // Reset city when country changes
+  const handleCountryChange = (newCountry: string) => {
+    if (newCountry !== country) {
+      setCity(''); // Reset city when country changes
+    }
+    setCountry(newCountry);
+  };
 
   // Check profile completion on mount and when user changes
   useEffect(() => {
@@ -67,7 +75,7 @@ export const ProfileCompletionModal = () => {
   }, [user, authLoading]);
 
   const handleSave = async () => {
-    if (!country || !city.trim()) {
+    if (!country || !city) {
       toast.error('Veuillez remplir tous les champs');
       return;
     }
@@ -80,7 +88,7 @@ export const ProfileCompletionModal = () => {
         .from('profiles')
         .update({
           country,
-          city: city.trim(),
+          city,
           updated_at: new Date().toISOString(),
         })
         .eq('user_id', user.id);
@@ -130,25 +138,24 @@ export const ProfileCompletionModal = () => {
             <Label htmlFor="country">Pays *</Label>
             <CountrySelect
               value={country}
-              onValueChange={setCountry}
+              onValueChange={handleCountryChange}
               placeholder="Sélectionnez votre pays"
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="city">Ville *</Label>
-            <Input
-              id="city"
+            <CitySelect
+              countryCode={country}
               value={city}
-              onChange={(e) => setCity(e.target.value)}
-              placeholder="Ex: Abidjan, Dakar, Lagos..."
-              className="h-11"
+              onValueChange={setCity}
+              placeholder="Sélectionnez votre ville"
             />
           </div>
 
           <Button
             onClick={handleSave}
-            disabled={!country || !city.trim() || isSaving}
+            disabled={!country || !city || isSaving}
             className="w-full h-11 mt-6"
           >
             {isSaving ? (

@@ -1108,6 +1108,10 @@ export type Database = {
         Returns: boolean
       }
       create_shops_for_existing_sellers: { Args: never; Returns: undefined }
+      delete_user_profile_and_roles: {
+        Args: { target_user_id: string }
+        Returns: boolean
+      }
       ensure_seller_trial_tokens: { Args: { _user_id: string }; Returns: Json }
       expire_free_tokens: { Args: never; Returns: undefined }
       generate_shop_slug: { Args: { shop_name: string }; Returns: string }
@@ -1161,6 +1165,22 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_order_for_superadmin: {
+        Args: { _order_id: string }
+        Returns: {
+          created_at: string
+          customer_id: string
+          customer_name: string
+          customer_phone: string
+          delivery_location: string
+          id: string
+          product_title: string
+          quantity: number
+          seller_id: string
+          status: string
+          total_amount: number
+        }[]
+      }
       get_profile_with_audit: {
         Args: { target_user_id: string }
         Returns: {
@@ -1194,6 +1214,22 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      get_recent_orders_superadmin: {
+        Args: { _limit?: number }
+        Returns: {
+          created_at: string
+          customer_id: string
+          customer_name: string
+          customer_phone: string
+          delivery_location: string
+          id: string
+          product_title: string
+          quantity: number
+          seller_id: string
+          status: string
+          total_amount: number
+        }[]
+      }
       get_seller_orders: {
         Args: never
         Returns: {
@@ -1222,6 +1258,25 @@ export type Database = {
           first_access: string
           last_access: string
           unique_orders_accessed: number
+        }[]
+      }
+      get_top_sellers_superadmin: {
+        Args: { _limit?: number }
+        Returns: {
+          email: string
+          full_name: string
+          seller_id: string
+          total_orders: number
+          total_products: number
+          total_sales: number
+        }[]
+      }
+      get_user_order_stats_superadmin: {
+        Args: { target_user_id: string }
+        Returns: {
+          completed_orders: number
+          total_orders: number
+          total_revenue: number
         }[]
       }
       get_user_role: {

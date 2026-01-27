@@ -60,26 +60,25 @@ export const UsersManagement = ({ users }: UsersManagementProps) => {
   const fetchUserDetails = async (userId: string) => {
     setLoadingDetail(true);
     try {
-      // Fetch user profile
+      // SECURITY: Use secure RPC with audit logging for profile access
       const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
+        .rpc('get_profile_with_audit', { target_user_id: userId });
 
-      // Fetch statistics
-      const [productsResult, ordersResult, messagesResult] = await Promise.all([
+      // SECURITY: Use secure RPC for order stats instead of direct table access
+      const [productsResult, orderStatsResult, messagesResult] = await Promise.all([
         supabase.from('products').select('id, is_active').eq('seller_id', userId),
-        supabase.from('orders').select('total_amount, status').or(`seller_id.eq.${userId},customer_id.eq.${userId}`),
+        supabase.rpc('get_user_order_stats_superadmin', { target_user_id: userId }),
         supabase.from('messages').select('id').or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
       ]);
+
+      const orderStats = orderStatsResult.data?.[0] || { total_orders: 0, completed_orders: 0, total_revenue: 0 };
 
       const stats = {
         total_products: productsResult.data?.length || 0,
         active_products: productsResult.data?.filter(p => p.is_active).length || 0,
-        total_orders: ordersResult.data?.length || 0,
-        completed_orders: ordersResult.data?.filter(o => o.status === 'completed' || o.status === 'delivered').length || 0,
-        total_revenue: ordersResult.data?.reduce((sum, o) => sum + Number(o.total_amount), 0) || 0,
+        total_orders: Number(orderStats.total_orders) || 0,
+        completed_orders: Number(orderStats.completed_orders) || 0,
+        total_revenue: Number(orderStats.total_revenue) || 0,
         total_messages: messagesResult.data?.length || 0,
       };
 

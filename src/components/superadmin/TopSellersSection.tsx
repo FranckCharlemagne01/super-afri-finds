@@ -26,68 +26,23 @@ export const TopSellersSection = () => {
 
   const fetchTopSellers = async () => {
     try {
-      // Fetch orders grouped by seller
-      const { data: ordersData, error: ordersError } = await supabase
-        .from('orders')
-        .select('seller_id, total_amount')
-        .in('status', ['completed', 'delivered']);
+      // SECURITY: Use secure RPC for top sellers instead of direct table access
+      const { data: sellersData, error } = await supabase
+        .rpc('get_top_sellers_superadmin', { _limit: 10 });
 
-      if (ordersError) throw ordersError;
+      if (error) throw error;
 
-      // Group by seller
-      const sellerStats: Record<string, { total_sales: number; total_orders: number }> = {};
-      ordersData?.forEach(order => {
-        if (!sellerStats[order.seller_id]) {
-          sellerStats[order.seller_id] = { total_sales: 0, total_orders: 0 };
-        }
-        sellerStats[order.seller_id].total_sales += Number(order.total_amount);
-        sellerStats[order.seller_id].total_orders += 1;
-      });
-
-      // Get top 10 sellers by sales
-      const topSellerIds = Object.entries(sellerStats)
-        .sort((a, b) => b[1].total_sales - a[1].total_sales)
-        .slice(0, 10)
-        .map(([id]) => id);
-
-      if (topSellerIds.length === 0) {
-        setTopSellers([]);
-        setLoading(false);
-        return;
-      }
-
-      // Fetch profiles
-      const { data: profilesData } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, email')
-        .in('user_id', topSellerIds);
-
-      // Fetch products count
-      const { data: productsData } = await supabase
-        .from('products')
-        .select('seller_id, is_active')
-        .in('seller_id', topSellerIds);
-
-      const productCounts: Record<string, number> = {};
-      productsData?.forEach(p => {
-        productCounts[p.seller_id] = (productCounts[p.seller_id] || 0) + 1;
-      });
-
-      // Build top sellers list
-      const sellers: TopSeller[] = topSellerIds.map((sellerId, index) => {
-        const profile = profilesData?.find(p => p.user_id === sellerId);
-        const stats = sellerStats[sellerId];
-        return {
-          seller_id: sellerId,
-          full_name: profile?.full_name || 'Vendeur',
-          email: profile?.email || '',
-          total_sales: stats.total_sales,
-          total_orders: stats.total_orders,
-          total_products: productCounts[sellerId] || 0,
-          avg_response_time: Math.random() * 60 + 10, // Simulated for now
-          rating: 4 + Math.random(),
-        };
-      });
+      // Build top sellers list from RPC result
+      const sellers: TopSeller[] = (sellersData || []).map((seller: any) => ({
+        seller_id: seller.seller_id,
+        full_name: seller.full_name || 'Vendeur',
+        email: seller.email || '',
+        total_sales: Number(seller.total_sales) || 0,
+        total_orders: Number(seller.total_orders) || 0,
+        total_products: Number(seller.total_products) || 0,
+        avg_response_time: Math.random() * 60 + 10, // Simulated for now
+        rating: 4 + Math.random(),
+      }));
 
       setTopSellers(sellers);
     } catch (error) {

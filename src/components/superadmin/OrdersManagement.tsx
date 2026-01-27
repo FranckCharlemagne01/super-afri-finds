@@ -60,13 +60,12 @@ export const OrdersManagement = ({ orders, onRefresh }: OrdersManagementProps) =
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     try {
-      const { data: orderRow, error: orderFetchError } = await supabase
-        .from('orders')
-        .select('customer_id, product_title')
-        .eq('id', orderId)
-        .single();
+      // SECURITY: Use secure RPC with audit logging instead of direct table access
+      const { data: orderData, error: orderFetchError } = await supabase
+        .rpc('get_order_for_superadmin', { _order_id: orderId });
 
       if (orderFetchError) throw orderFetchError;
+      const orderRow = orderData?.[0];
 
       const { error } = await supabase.rpc('update_order_status', {
         order_id: orderId,

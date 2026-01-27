@@ -47,12 +47,9 @@ export const UserDetailDialog = ({ userId, open, onOpenChange }: UserDetailDialo
 
     setLoading(true);
     try {
-      // Fetch user profile
+      // SECURITY: Use secure RPC with audit logging for profile access
       const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
+        .rpc('get_profile_with_audit', { target_user_id: userId });
 
       if (profileError) throw profileError;
 
@@ -63,16 +60,18 @@ export const UserDetailDialog = ({ userId, open, onOpenChange }: UserDetailDialo
         .eq('user_id', userId)
         .single();
 
-      // Fetch user statistics
-      const [productsResult, ordersResult] = await Promise.all([
+      // SECURITY: Use secure RPC for order stats instead of direct table access
+      const [productsResult, orderStatsResult] = await Promise.all([
         supabase.from('products').select('id').eq('seller_id', userId),
-        supabase.from('orders').select('total_amount').eq('seller_id', userId)
+        supabase.rpc('get_user_order_stats_superadmin', { target_user_id: userId })
       ]);
+
+      const orderStats = orderStatsResult.data?.[0] || { total_orders: 0, total_revenue: 0 };
 
       const userStats: UserStats = {
         total_products: productsResult.data?.length || 0,
-        total_orders: ordersResult.data?.length || 0,
-        total_revenue: ordersResult.data?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0
+        total_orders: Number(orderStats.total_orders) || 0,
+        total_revenue: Number(orderStats.total_revenue) || 0
       };
 
       setUser({

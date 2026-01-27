@@ -16,6 +16,7 @@ import { NativeAppProvider } from "@/components/NativeAppProvider";
 import { prefetchCriticalRoutes, useAutoPrefetch } from "@/hooks/usePrefetch";
 import { AnimatePresence, motion } from "framer-motion";
 import PWABottomInstallBar from "@/components/PWABottomInstallBar";
+import { ProfileCompletionModal } from "@/components/ProfileCompletionModal";
 
 const Verify = lazy(() => import("./pages/Verify"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
@@ -197,6 +198,7 @@ const App = () => {
               <MobileBottomNav />
               <PushNotificationPrompt />
               <PWABottomInstallBar />
+              <ProfileCompletionModal />
             </BrowserRouter>
           </TooltipProvider>
         </NativeAppProvider>

@@ -139,6 +139,7 @@ const SuperAdmin = () => {
       setLoading(true);
       
       // Fetch statistics using the secure function and other data
+      // SECURITY: Use secure RPC for orders instead of direct table access
       const [
         statisticsResult,
         productsData,
@@ -146,7 +147,7 @@ const SuperAdmin = () => {
       ] = await Promise.all([
         supabase.rpc('get_admin_statistics'),
         supabase.from('products').select('*').order('created_at', { ascending: false }).limit(50),
-        supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(100)
+        supabase.rpc('get_recent_orders_superadmin', { _limit: 100 })
       ]);
 
       // Handle statistics result
@@ -239,13 +240,12 @@ const SuperAdmin = () => {
 
   const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
-      const { data: orderRow, error: orderFetchError } = await supabase
-        .from('orders')
-        .select('customer_id, product_title')
-        .eq('id', orderId)
-        .single();
+      // SECURITY: Use secure RPC with audit logging instead of direct table access
+      const { data: orderData, error: orderFetchError } = await supabase
+        .rpc('get_order_for_superadmin', { _order_id: orderId });
 
       if (orderFetchError) throw orderFetchError;
+      const orderRow = orderData?.[0];
 
       // Utiliser la fonction sécurisée pour mettre à jour le statut
       const { error } = await supabase
@@ -284,11 +284,9 @@ const SuperAdmin = () => {
 
   const handleDeleteUser = async (userId: string) => {
     try {
-      // First delete user roles
-      await supabase.from('user_roles').delete().eq('user_id', userId);
-      
-      // Then delete profile
-      await supabase.from('profiles').delete().eq('user_id', userId);
+      // SECURITY: Use secure RPC for user deletion (superadmin only)
+      const { error } = await supabase.rpc('delete_user_profile_and_roles', { target_user_id: userId });
+      if (error) throw error;
       
       // Remove from local state
       setUsers(users.filter(u => u.user_id !== userId));

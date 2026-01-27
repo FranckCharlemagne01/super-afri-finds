@@ -34,9 +34,10 @@ const SuperAdminDashboard = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
+      // SECURITY: Use secure RPC for orders instead of direct table access
       const [usersRes, ordersRes, tokensRes, visitorRes] = await Promise.all([
         supabase.rpc('get_users_with_profiles'),
-        supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(200),
+        supabase.rpc('get_recent_orders_superadmin', { _limit: 200 }),
         supabase.from('token_transactions').select('*').eq('transaction_type', 'purchase').eq('status', 'completed'),
         supabase.rpc('get_visitor_statistics').single(),
       ]);

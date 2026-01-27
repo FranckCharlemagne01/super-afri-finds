@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { CitySelect } from '@/components/CitySelect';
+import { CountrySelect } from '@/components/CountrySelect';
 import { getCountryByCode } from '@/data/countries';
-import { MapPin, Loader2 } from 'lucide-react';
+import { MapPin, Loader2, Lock } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -26,31 +27,69 @@ export const LocationSelector = () => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [newCity, setNewCity] = useState('');
+  const [newCountry, setNewCountry] = useState('');
+  
+  // Determine if country is locked (already set in profile)
+  const isCountryLocked = Boolean(location.country);
 
-  const handleUpdateCity = async () => {
-    if (!user || !newCity) return;
+  // Sync local state with location data when sheet opens
+  useEffect(() => {
+    if (open) {
+      setNewCity(location.city || '');
+      setNewCountry(location.country || '');
+    }
+  }, [open, location.city, location.country]);
+
+  const handleCountryChange = (value: string) => {
+    if (isCountryLocked) return; // Don't allow change if locked
+    if (value !== newCountry) {
+      setNewCity(''); // Reset city when country changes
+    }
+    setNewCountry(value);
+  };
+
+  const handleUpdateLocation = async () => {
+    if (!user) return;
     
-    if (newCity === location.city) {
+    // For locked country, only city is required
+    const effectiveCountry = isCountryLocked ? location.country : newCountry;
+    
+    if (!effectiveCountry || !newCity) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez sélectionner une ville",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // If nothing changed, just close
+    if (newCity === location.city && effectiveCountry === location.country) {
       setOpen(false);
       return;
     }
 
     setLoading(true);
     try {
+      const updateData: { city: string; country?: string; updated_at: string } = {
+        city: newCity,
+        updated_at: new Date().toISOString()
+      };
+      
+      // Only update country if it wasn't locked
+      if (!isCountryLocked && newCountry) {
+        updateData.country = newCountry;
+      }
+
       const { error } = await supabase
         .from('profiles')
-        .update({
-          city: newCity,
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('user_id', user.id);
 
       if (error) throw error;
 
-      // Invalider le cache de localisation utilisateur en premier
+      // Invalidate all relevant caches
       await queryClient.invalidateQueries({ queryKey: ['user-location', user.id] });
-      
-      // Invalider tous les caches de produits pour forcer le rechargement
       await queryClient.invalidateQueries({ queryKey: ['products'] });
       await queryClient.invalidateQueries({ queryKey: ['featured-products'] });
       await queryClient.invalidateQueries({ queryKey: ['boosted-products'] });
@@ -58,18 +97,17 @@ export const LocationSelector = () => {
       await queryClient.invalidateQueries({ queryKey: ['categories'] });
       await queryClient.invalidateQueries({ queryKey: ['search'] });
       
-      setNewCity('');
       setOpen(false);
 
       toast({
-        title: "Ville mise à jour",
+        title: "Localisation mise à jour",
         description: "Les produits sont maintenant filtrés selon votre nouvelle ville.",
       });
     } catch (error: any) {
-      console.error('Error updating city:', error);
+      console.error('Error updating location:', error);
       toast({
         title: "Erreur",
-        description: error.message || "Impossible de mettre à jour la ville",
+        description: error.message || "Impossible de mettre à jour la localisation",
         variant: "destructive",
       });
     } finally {
@@ -78,7 +116,7 @@ export const LocationSelector = () => {
   };
 
   const countryName = location.country ? getCountryByCode(location.country)?.name || location.country : 'Non défini';
-  const currentCity = newCity || location.city || '';
+  const effectiveCountryCode = isCountryLocked ? location.country : newCountry;
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -109,24 +147,38 @@ export const LocationSelector = () => {
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-primary" />
-                Modifier ma ville
+                Modifier ma localisation
               </SheetTitle>
               <SheetDescription>
-                Changez de ville pour voir les produits disponibles dans votre région
+                {isCountryLocked 
+                  ? "Changez de ville pour voir les produits disponibles dans votre région"
+                  : "Définissez votre pays et votre ville pour voir les produits locaux"
+                }
               </SheetDescription>
             </SheetHeader>
             <div className="space-y-6 mt-6">
               <div className="space-y-2">
                 <Label htmlFor="country" className="text-sm font-medium flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
-                  Pays (fixe)
+                  Pays
+                  {isCountryLocked && <Lock className="w-3 h-3 text-muted-foreground" />}
                 </Label>
-                <div className="min-h-[48px] px-4 py-3 bg-muted/50 rounded-xl border border-border/50 flex items-center text-muted-foreground">
-                  {countryName}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Le pays ne peut pas être modifié après l'inscription
-                </p>
+                {isCountryLocked ? (
+                  <>
+                    <div className="min-h-[48px] px-4 py-3 bg-muted/50 rounded-xl border border-border/50 flex items-center text-muted-foreground">
+                      {countryName}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Le pays ne peut pas être modifié après sa première définition
+                    </p>
+                  </>
+                ) : (
+                  <CountrySelect
+                    value={newCountry}
+                    onValueChange={handleCountryChange}
+                    placeholder="Sélectionnez votre pays"
+                  />
+                )}
               </div>
 
               <div className="space-y-2">
@@ -135,13 +187,13 @@ export const LocationSelector = () => {
                   Ville
                 </Label>
                 <CitySelect
-                  countryCode={location.country || ''}
-                  value={currentCity}
+                  countryCode={effectiveCountryCode || ''}
+                  value={newCity}
                   onValueChange={setNewCity}
                   placeholder="Sélectionnez votre ville"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Choisissez une ville pour voir les produits disponibles
+                  Vous pouvez changer de ville à tout moment
                 </p>
               </div>
 
@@ -155,9 +207,9 @@ export const LocationSelector = () => {
                   Annuler
                 </Button>
                 <Button
-                  onClick={handleUpdateCity}
+                  onClick={handleUpdateLocation}
                   className="flex-1 h-12 rounded-xl"
-                  disabled={loading || !newCity || newCity === location.city}
+                  disabled={loading || !newCity || (!isCountryLocked && !newCountry)}
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Confirmer

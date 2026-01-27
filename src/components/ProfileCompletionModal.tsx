@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { CountrySelect } from '@/components/CountrySelect';
 import { CitySelect } from '@/components/CitySelect';
-import { MapPin, Loader2 } from 'lucide-react';
+import { MapPin, Loader2, Lock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useStableAuth } from '@/hooks/useStableAuth';
 import { toast } from 'sonner';
@@ -16,9 +16,11 @@ export const ProfileCompletionModal = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [country, setCountry] = useState('');
   const [city, setCity] = useState('');
+  const [isCountryLocked, setIsCountryLocked] = useState(false);
 
-  // Reset city when country changes
+  // Reset city when country changes (only if country is not locked)
   const handleCountryChange = (newCountry: string) => {
+    if (isCountryLocked) return; // Don't allow changes if locked
     if (newCountry !== country) {
       setCity(''); // Reset city when country changes
     }
@@ -49,20 +51,30 @@ export const ProfileCompletionModal = () => {
           return;
         }
 
-        // Check if country or city are missing
-        const needsCompletion = !profile?.country || !profile?.city;
-        
+        const hasCountry = Boolean(profile?.country);
+        const hasCity = Boolean(profile?.city);
+
         console.log('[ProfileCompletionModal] Profile check:', {
           userId: user.id,
           country: profile?.country,
           city: profile?.city,
-          needsCompletion
+          hasCountry,
+          hasCity
         });
 
-        // Pre-fill existing values if any
-        if (profile?.country) setCountry(profile.country);
-        if (profile?.city) setCity(profile.city);
+        // Pre-fill and lock country if already set
+        if (hasCountry) {
+          setCountry(profile.country);
+          setIsCountryLocked(true);
+        }
 
+        // Pre-fill city if exists
+        if (hasCity) {
+          setCity(profile.city);
+        }
+
+        // Show modal if country OR city is missing
+        const needsCompletion = !hasCountry || !hasCity;
         setIsOpen(needsCompletion);
         setIsChecking(false);
       } catch (error) {
@@ -99,7 +111,7 @@ export const ProfileCompletionModal = () => {
         return;
       }
 
-      toast.success('Profil complété avec succès !');
+      toast.success('Localisation enregistrée avec succès !');
       setIsOpen(false);
     } catch (error) {
       console.error('[ProfileCompletionModal] Error:', error);
@@ -126,25 +138,42 @@ export const ProfileCompletionModal = () => {
             <MapPin className="w-6 h-6 text-primary" />
           </div>
           <DialogTitle className="text-center text-xl">
-            Complétez votre profil
+            Complétez votre localisation
           </DialogTitle>
           <DialogDescription className="text-center">
-            Pour une meilleure expérience sur Djassa, nous avons besoin de connaître votre localisation.
+            {isCountryLocked 
+              ? "Confirmez votre ville pour continuer sur Djassa."
+              : "Pour une meilleure expérience sur Djassa, nous avons besoin de connaître votre localisation."
+            }
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 mt-4">
           <div className="space-y-2">
-            <Label htmlFor="country">Pays *</Label>
-            <CountrySelect
-              value={country}
-              onValueChange={handleCountryChange}
-              placeholder="Sélectionnez votre pays"
-            />
+            <Label htmlFor="country" className="flex items-center gap-2">
+              Pays {isCountryLocked && <Lock className="w-3 h-3 text-muted-foreground" />}
+              {!isCountryLocked && <span className="text-destructive">*</span>}
+            </Label>
+            {isCountryLocked ? (
+              <div className="h-10 px-3 py-2 rounded-md border border-input bg-muted/50 text-muted-foreground flex items-center">
+                {country}
+              </div>
+            ) : (
+              <CountrySelect
+                value={country}
+                onValueChange={handleCountryChange}
+                placeholder="Sélectionnez votre pays"
+              />
+            )}
+            {isCountryLocked && (
+              <p className="text-xs text-muted-foreground">
+                Le pays ne peut plus être modifié après validation.
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="city">Ville *</Label>
+            <Label htmlFor="city">Ville <span className="text-destructive">*</span></Label>
             <CitySelect
               countryCode={country}
               value={city}

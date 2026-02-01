@@ -1381,7 +1381,15 @@ export type Database = {
       verify_email_with_token: { Args: { _token: string }; Returns: Json }
     }
     Enums: {
-      user_role: "buyer" | "seller" | "admin" | "superadmin"
+      user_role:
+        | "buyer"
+        | "seller"
+        | "admin"
+        | "superadmin"
+        | "super_admin_business"
+        | "admin_finance"
+        | "admin_vendeurs"
+        | "admin_marketing"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1509,7 +1517,16 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      user_role: ["buyer", "seller", "admin", "superadmin"],
+      user_role: [
+        "buyer",
+        "seller",
+        "admin",
+        "superadmin",
+        "super_admin_business",
+        "admin_finance",
+        "admin_vendeurs",
+        "admin_marketing",
+      ],
     },
   },
 } as const

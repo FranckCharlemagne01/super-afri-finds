@@ -14,6 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
+      business_commissions: {
+        Row: {
+          commission_amount: number
+          commission_rate: number
+          created_at: string
+          id: string
+          order_amount: number
+          order_id: string | null
+          paid_at: string | null
+          seller_id: string
+          status: string
+        }
+        Insert: {
+          commission_amount?: number
+          commission_rate?: number
+          created_at?: string
+          id?: string
+          order_amount?: number
+          order_id?: string | null
+          paid_at?: string | null
+          seller_id: string
+          status?: string
+        }
+        Update: {
+          commission_amount?: number
+          commission_rate?: number
+          created_at?: string
+          id?: string
+          order_amount?: number
+          order_id?: string | null
+          paid_at?: string | null
+          seller_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_commissions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_commissions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_seller_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_config: {
+        Row: {
+          config_key: string
+          config_value: Json
+          created_at: string
+          description: string | null
+          id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          config_key: string
+          config_value?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          config_key?: string
+          config_value?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       cart_items: {
         Row: {
           created_at: string
@@ -1129,6 +1210,9 @@ export type Database = {
           total_users: number
         }[]
       }
+      get_business_dashboard_stats: { Args: never; Returns: Json }
+      get_business_revenue_chart: { Args: { _days?: number }; Returns: Json }
+      get_category_performance: { Args: never; Returns: Json }
       get_confirmed_order_details: {
         Args: { order_id: string }
         Returns: {
@@ -1260,6 +1344,7 @@ export type Database = {
           unique_orders_accessed: number
         }[]
       }
+      get_top_performing_shops: { Args: { _limit?: number }; Returns: Json }
       get_top_sellers_superadmin: {
         Args: { _limit?: number }
         Returns: {
@@ -1271,6 +1356,7 @@ export type Database = {
           total_sales: number
         }[]
       }
+      get_top_selling_products: { Args: { _limit?: number }; Returns: Json }
       get_user_order_stats_superadmin: {
         Args: { target_user_id: string }
         Returns: {
@@ -1320,6 +1406,10 @@ export type Database = {
       }
       handle_premium_payment_success: {
         Args: { _amount: number; _paystack_reference: string; _user_id: string }
+        Returns: boolean
+      }
+      has_business_admin_access: {
+        Args: { _user_id: string }
         Returns: boolean
       }
       has_role: {

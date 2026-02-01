@@ -23,7 +23,9 @@ import {
   UserCheck,
   UserX,
   MoreHorizontal,
-  LogOut
+  LogOut,
+  Building2,
+  ArrowRightLeft
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -84,7 +86,7 @@ interface Order {
 }
 
 const SuperAdmin = () => {
-  const { isSuperAdmin, loading: roleLoading } = useStableRole();
+  const { isSuperAdmin, isSuperAdminBusiness, loading: roleLoading } = useStableRole();
   const { user, signOut } = useStableAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -400,6 +402,19 @@ const SuperAdmin = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {/* Business Dashboard Navigation - visible only for super_admin_business role holders */}
+              {isSuperAdminBusiness && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate('/business-dashboard')}
+                  className="gap-2 border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-700"
+                >
+                  <Building2 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Dashboard Business</span>
+                  <ArrowRightLeft className="w-3 h-3" />
+                </Button>
+              )}
               <Badge variant="destructive" className="text-xs">
                 SuperAdmin
               </Badge>

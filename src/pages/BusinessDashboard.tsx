@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useBusinessDashboard } from '@/hooks/useBusinessDashboard';
-import { ArrowLeft, RefreshCw, LayoutDashboard, Building2 } from 'lucide-react';
+import { useStableRole } from '@/hooks/useStableRole';
+import { ArrowLeft, RefreshCw, LayoutDashboard, Building2, ArrowRightLeft, Wrench } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -15,6 +16,7 @@ import { BusinessCategoryPerformance } from '@/components/business/BusinessCateg
 
 const BusinessDashboard = () => {
   const navigate = useNavigate();
+  const { isSuperAdmin } = useStableRole();
   const {
     stats,
     revenueChart,
@@ -114,10 +116,19 @@ const BusinessDashboard = () => {
                 <RefreshCw className="w-4 h-4" />
                 <span className="hidden sm:inline">Actualiser</span>
               </Button>
-              <Button onClick={() => navigate('/super-admin-dashboard')} size="sm" variant="secondary" className="rounded-full gap-2">
-                <LayoutDashboard className="w-4 h-4" />
-                <span className="hidden sm:inline">Dashboard Technique</span>
-              </Button>
+              {/* Return to SuperAdmin Technical - visible only for superadmin role holders */}
+              {isSuperAdmin && (
+                <Button 
+                  onClick={() => navigate('/superadmin')} 
+                  size="sm" 
+                  variant="outline" 
+                  className="rounded-full gap-2 border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700"
+                >
+                  <Wrench className="w-4 h-4" />
+                  <span className="hidden sm:inline">Superadmin Technique</span>
+                  <ArrowRightLeft className="w-3 h-3" />
+                </Button>
+              )}
             </div>
           </div>
         </div>

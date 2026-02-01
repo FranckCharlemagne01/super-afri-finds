@@ -136,6 +136,7 @@ export const useStableRole = () => {
       loading,
       hasRole,
       isSuperAdmin: role === 'superadmin',
+      isSuperAdminBusiness: role === 'super_admin_business' || role === 'superadmin',
       isAdmin: role === 'admin' || role === 'superadmin',
       isSeller: role === 'seller' || role === 'admin' || role === 'superadmin',
       isBuyer: !!role, // Tous les rôles incluent buyer

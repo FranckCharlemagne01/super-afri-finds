@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useStableAuth } from './useStableAuth';
 import { prefetchSellerDashboard, prefetchBuyerDashboard } from './useDashboardPrefetch';
 
-export type UserRole = 'buyer' | 'seller' | 'admin' | 'superadmin';
+export type UserRole = 'buyer' | 'seller' | 'admin' | 'superadmin' | 'super_admin_business' | 'admin_finance' | 'admin_vendeurs' | 'admin_marketing';
 
 /**
  * Hook stable pour la gestion des rôles utilisateur
@@ -33,7 +33,7 @@ export const useStableRole = () => {
         console.error('Error fetching user role:', error);
         setRole('buyer');
       } else {
-        const detectedRole = data || 'buyer';
+        const detectedRole = (data || 'buyer') as UserRole;
         setRole(detectedRole);
         
         // ✅ Auto-prefetch dashboard data when role is detected
@@ -121,7 +121,11 @@ export const useStableRole = () => {
         buyer: 1,
         seller: 2,
         admin: 3,
-        superadmin: 4,
+        admin_vendeurs: 3,
+        admin_marketing: 3,
+        admin_finance: 3,
+        super_admin_business: 4,
+        superadmin: 5,
       };
       
       return roleHierarchy[role] >= roleHierarchy[requiredRole];

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
-export type UserRole = 'buyer' | 'seller' | 'admin' | 'superadmin';
+export type UserRole = 'buyer' | 'seller' | 'admin' | 'superadmin' | 'super_admin_business' | 'admin_finance' | 'admin_vendeurs' | 'admin_marketing';
 
 export const useUserRole = () => {
   const { user } = useAuth();
@@ -30,7 +30,7 @@ export const useUserRole = () => {
           console.error('Error fetching user role:', error);
           setRole('buyer'); // Default fallback
         } else {
-          setRole(data?.role || 'buyer');
+          setRole((data?.role || 'buyer') as UserRole);
         }
       } catch (error) {
         console.error('Error fetching user role:', error);

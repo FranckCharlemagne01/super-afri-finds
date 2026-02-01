@@ -28,6 +28,8 @@ const Auth = lazy(() => import("./pages/Auth"));
 const SellerDashboard = lazy(() => import("./pages/SellerDashboard"));
 const BuyerDashboard = lazy(() => import("./pages/BuyerDashboard"));
 const SuperAdmin = lazy(() => import("./pages/SuperAdmin"));
+const SuperAdminDashboard = lazy(() => import("./pages/SuperAdminDashboard"));
+const BusinessDashboard = lazy(() => import("./pages/BusinessDashboard"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 const Cart = lazy(() => import("./pages/Cart"));
 const Favorites = lazy(() => import("./pages/Favorites"));
@@ -124,6 +126,22 @@ const AnimatedRoutes = () => {
               element={
                 <ProtectedRoute requiredRole="superadmin">
                   <SuperAdmin />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/super-admin-dashboard" 
+              element={
+                <ProtectedRoute requiredRole="superadmin">
+                  <SuperAdminDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/business-dashboard" 
+              element={
+                <ProtectedRoute requiredRole="superadmin">
+                  <BusinessDashboard />
                 </ProtectedRoute>
               } 
             />

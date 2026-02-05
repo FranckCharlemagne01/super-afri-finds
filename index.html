@@ -399,6 +399,32 @@
         // Expose for manual debugging.
         window.__DJASSA_BOOT_FALLBACK_TIMEOUT__ = TIMEOUT_MS;
 
+        // -----------------------------------------------------------------
+        // Safety net: if the entry module tag is missing in the served HTML
+        // (rare, but can happen with broken/incomplete preview artifacts),
+        // inject it so the app can still boot.
+        // -----------------------------------------------------------------
+        try {
+          var hasEntryScript = !!document.querySelector('script[type="module"][src]');
+          var hasDjassaEntry = !!document.querySelector('script[type="module"][src="/src/main.tsx"]');
+
+          if (!hasDjassaEntry) {
+            // Log whether *any* module exists; helps diagnose broken HTML injection.
+            console.warn('[Boot] Entry script missing in HTML -> injecting /src/main.tsx', {
+              hasAnyModuleScript: hasEntryScript,
+            });
+
+            var s = document.createElement('script');
+            s.type = 'module';
+            s.src = '/src/main.tsx';
+            document.body.appendChild(s);
+          } else {
+            console.info('[Boot] Entry script present: /src/main.tsx');
+          }
+        } catch (e) {
+          console.warn('[Boot] Entry injection check failed', e);
+        }
+
         setTimeout(function () {
           try {
             var root = document.getElementById('root');

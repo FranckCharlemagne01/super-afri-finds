@@ -346,11 +346,82 @@
     }
     </script>
   </head>
-
   <body class="antialiased">
+    <!--
+      Boot fallback (anti "page blanche + favicon"):
+      If the Vite entry bundle never executes (blocked by extension / bad cache / MIME),
+      we show a clear message instead of a blank screen.
+    -->
+    <div
+      id="boot-fallback"
+      style="
+        position: fixed;
+        inset: 0;
+        z-index: 2147483647;
+        display: none;
+        padding: 24px;
+        background: #0b0f19;
+        color: #ffffff;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+      "
+      role="alert"
+      aria-live="polite"
+    >
+      <div style="max-width: 720px; margin: 0 auto;">
+        <h1 style="font-size: 20px; line-height: 1.2; margin: 0; font-weight: 700;">
+          Chargement bloqué
+        </h1>
+        <p style="margin: 12px 0 0; opacity: 0.9;">
+          Djassa n’a pas pu démarrer. Une extension (AdBlock/Privacy/Antivirus), un cache ou un mauvais type MIME
+          peut bloquer les scripts de l’application.
+        </p>
+        <ol style="margin: 12px 0 0; padding-left: 18px; opacity: 0.9;">
+          <li>Essayez un rechargement forcé (Ctrl+Shift+R / Cmd+Shift+R)</li>
+          <li>Essayez une fenêtre privée</li>
+          <li>Désactivez temporairement les extensions pour <strong>lovable.app</strong></li>
+        </ol>
+        <p style="margin: 12px 0 0; opacity: 0.75; font-size: 12px;">
+          Diagnostic: si vous voyez ce message, le bundle principal n’a probablement pas été exécuté.
+        </p>
+      </div>
+    </div>
+
     <div id="root"></div>
+
+    <script>
+      (function () {
+        // Time before showing fallback when main bundle never runs.
+        var TIMEOUT_MS = 4500;
+
+        // If main.tsx runs it sets window.__DJASSA_MAIN_LOADED__.
+        window.__DJASSA_MAIN_LOADED__ = window.__DJASSA_MAIN_LOADED__ || false;
+
+        // Expose for manual debugging.
+        window.__DJASSA_BOOT_FALLBACK_TIMEOUT__ = TIMEOUT_MS;
+
+        setTimeout(function () {
+          try {
+            var root = document.getElementById('root');
+            var hasRootContent = !!(root && root.childNodes && root.childNodes.length > 0);
+            var mainLoaded = !!window.__DJASSA_MAIN_LOADED__;
+
+            // Show only if bundle didn't run AND root stayed empty.
+            if (!mainLoaded && !hasRootContent) {
+              var fb = document.getElementById('boot-fallback');
+              if (fb) fb.style.display = 'block';
+              console.error('[Boot] main did not execute within timeout -> showing fallback');
+            }
+          } catch (e) {
+            // If something goes wrong, keep page minimal; still log.
+            console.error('[Boot] fallback check failed', e);
+          }
+        }, TIMEOUT_MS);
+      })();
+    </script>
+
     <script type="module" src="/src/main.tsx"></script>
     
+    <!-- Mobile optimizations - Critical inline styles for immediate render -->
     <!-- Mobile optimizations - Critical inline styles for immediate render -->
     <style>
       /* Viewport and scroll fundamentals */

@@ -3,9 +3,16 @@ import App from "./App.tsx";
 import "./index.css";
 import { initResponsiveOptimizations } from "./utils/responsiveOptimization";
 import { RuntimeErrorBoundary } from "@/components/RuntimeErrorBoundary";
+console.info('[Boot] main loaded');
 
-console.log('[Boot] main.tsx loaded');
-
+// Signal for index.html fallback: proves Vite bundle executed.
+(window as any).__DJASSA_MAIN_LOADED__ = true;
+try {
+  const el = document.getElementById('boot-fallback');
+  if (el) el.style.display = 'none';
+} catch {
+  // no-op
+}
 // Surface runtime crashes in console (helps diagnose white screens)
 window.addEventListener('error', (e) => {
   console.error('[Runtime] window.error', e.error || e.message, e);

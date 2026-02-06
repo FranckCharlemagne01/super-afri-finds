@@ -400,29 +400,35 @@
         window.__DJASSA_BOOT_FALLBACK_TIMEOUT__ = TIMEOUT_MS;
 
         // -----------------------------------------------------------------
-        // Safety net: if the entry module tag is missing in the served HTML
-        // (rare, but can happen with broken/incomplete preview artifacts),
-        // inject it so the app can still boot.
+        // Entrypoint loader (works for BOTH environments):
+        // - Static preview/prod build: /assets/app.js
+        // - Dev server: /src/main.tsx
+        // If the first fails (404 / blocked), we try the second.
         // -----------------------------------------------------------------
+        function injectModule(src) {
+          var s = document.createElement('script');
+          s.type = 'module';
+          s.src = src;
+          s.setAttribute('data-djassa-entry', src);
+          document.body.appendChild(s);
+          return s;
+        }
+
         try {
-          var hasEntryScript = !!document.querySelector('script[type="module"][src]');
-          var hasDjassaEntry = !!document.querySelector('script[type="module"][src="/src/main.tsx"]');
+          // Prefer built entry (fixes preview environments that do NOT serve /src/*)
+          var primary = injectModule('/assets/app.js');
 
-          if (!hasDjassaEntry) {
-            // Log whether *any* module exists; helps diagnose broken HTML injection.
-            console.warn('[Boot] Entry script missing in HTML -> injecting /src/main.tsx', {
-              hasAnyModuleScript: hasEntryScript,
-            });
+          primary.addEventListener('error', function () {
+            console.warn('[Boot] Failed to load /assets/app.js -> falling back to /src/main.tsx');
+            injectModule('/src/main.tsx');
+          });
 
-            var s = document.createElement('script');
-            s.type = 'module';
-            s.src = '/src/main.tsx';
-            document.body.appendChild(s);
-          } else {
-            console.info('[Boot] Entry script present: /src/main.tsx');
-          }
+          primary.addEventListener('load', function () {
+            console.info('[Boot] Loaded entry: /assets/app.js');
+          });
         } catch (e) {
-          console.warn('[Boot] Entry injection check failed', e);
+          console.warn('[Boot] entry loader failed -> injecting /src/main.tsx', e);
+          try { injectModule('/src/main.tsx'); } catch (_) {}
         }
 
         setTimeout(function () {
@@ -445,7 +451,7 @@
       })();
     </script>
 
-    <script type="module" src="/src/main.tsx"></script>
+    <!-- Entrypoint is injected by the Boot script above (assets/app.js -> src/main.tsx fallback) -->
     
     <!-- Mobile optimizations - Critical inline styles for immediate render -->
     <!-- Mobile optimizations - Critical inline styles for immediate render -->

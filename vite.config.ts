@@ -71,8 +71,10 @@ export default defineConfig(({ mode }) => ({
             return 'tanstack';
           }
         },
-        // Use content hash for long-term caching
-        entryFileNames: 'assets/[name]-[hash].js',
+        // Use a stable entry filename so static previews can always load the app
+        // without needing the Vite HTML transform (hashed /assets/index-*.js).
+        // Chunks/assets keep hashes for caching.
+        entryFileNames: 'assets/app.js',
         chunkFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]',
       },

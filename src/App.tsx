@@ -17,6 +17,7 @@ import { prefetchCriticalRoutes, useAutoPrefetch } from "@/hooks/usePrefetch";
 import { AnimatePresence, motion } from "framer-motion";
 import PWABottomInstallBar from "@/components/PWABottomInstallBar";
 import { ProfileCompletionModal } from "@/components/ProfileCompletionModal";
+import { PreviewBrokenBanner } from "@/components/PreviewBrokenBanner";
 
 const Verify = lazy(() => import("./pages/Verify"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
@@ -47,6 +48,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const DemoVideo = lazy(() => import("./pages/DemoVideo"));
 const ConfirmEmail = lazy(() => import("./pages/ConfirmEmail"));
 const InstallApp = lazy(() => import("./pages/InstallApp"));
+const Diagnostic = lazy(() => import("./pages/Diagnostic"));
 
 // Optimized QueryClient configuration for better caching
 const queryClient = new QueryClient({
@@ -159,6 +161,7 @@ const AnimatedRoutes = () => {
             <Route path="/about" element={<About />} />
             <Route path="/demo" element={<DemoVideo />} />
             <Route path="/install" element={<InstallApp />} />
+            <Route path="/diagnostic" element={<Diagnostic />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
@@ -210,6 +213,7 @@ const App = () => {
           <TooltipProvider>
             <Toaster />
             <Sonner />
+            <PreviewBrokenBanner />
             {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
             <BrowserRouter>
               <AnimatedRoutes />

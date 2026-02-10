@@ -39,6 +39,7 @@ import { PasswordUpdateForm } from '@/components/PasswordUpdateForm';
 import { ProductEditDialog } from '@/components/ProductEditDialog';
 import { UserDetailDialog } from '@/components/UserDetailDialog';
 import { SuperAdminSettingsDialog } from '@/components/SuperAdminSettingsDialog';
+import { AdminTokenManagement } from '@/components/superadmin/AdminTokenManagement';
 
 interface AdminStats {
   total_users: number;
@@ -508,10 +509,11 @@ const SuperAdmin = () => {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="users" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="users">Utilisateurs</TabsTrigger>
             <TabsTrigger value="products">Produits</TabsTrigger>
             <TabsTrigger value="orders">Commandes</TabsTrigger>
+            <TabsTrigger value="tokens">Jetons</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="settings">Paramètres</TabsTrigger>
           </TabsList>
@@ -834,6 +836,19 @@ const SuperAdmin = () => {
                     </TableBody>
                   </Table>
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tokens Tab */}
+          <TabsContent value="tokens">
+            <Card>
+              <CardHeader>
+                <CardTitle>Gestion des Jetons</CardTitle>
+                <CardDescription>Ajuster manuellement les jetons des vendeurs</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AdminTokenManagement />
               </CardContent>
             </Card>
           </TabsContent>

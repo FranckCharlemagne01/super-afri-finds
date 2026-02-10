@@ -39,6 +39,15 @@ export const ProfileCompletionModal = () => {
 
     const checkProfile = async () => {
       try {
+        // Skip for Google users — they use /auth/complete-profile instead
+        const isGoogleUser = user.app_metadata?.provider === 'google' ||
+          user.identities?.some(id => id.provider === 'google');
+        if (isGoogleUser) {
+          setIsChecking(false);
+          setIsOpen(false);
+          return;
+        }
+
         const { data: profile, error } = await supabase
           .from('profiles')
           .select('country, city')

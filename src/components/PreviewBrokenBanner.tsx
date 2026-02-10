@@ -11,29 +11,26 @@ export function PreviewBrokenBanner() {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    // Only run check in preview-like environments
     const isPreview = window.location.hostname.includes('preview--') ||
                       window.location.hostname.includes('-preview--');
     
     if (!isPreview) return;
 
-    // Check if /assets/app.js returns HTML instead of JS
     const controller = new AbortController();
-    fetch('/assets/app.js', { 
-      method: 'HEAD', 
-      signal: controller.signal,
-      cache: 'no-store'
-    })
-      .then((res) => {
-        const contentType = res.headers.get('content-type') || '';
-        // If it returns HTML instead of JS, preview is broken
-        if (contentType.includes('text/html')) {
-          setShow(true);
-        }
-      })
-      .catch(() => {
-        // Network error or aborted - don't show banner
-      });
+    const signal = controller.signal;
+
+    // Test both entry points — only show banner if one actually fails
+    Promise.all([
+      fetch('/src/main.tsx', { method: 'HEAD', signal, cache: 'no-store' }).catch(() => null),
+      fetch('/assets/index.js', { method: 'HEAD', signal, cache: 'no-store' }).catch(() => null),
+    ]).then(([mainRes, assetsRes]) => {
+      const mainOk = mainRes && mainRes.ok;
+      const assetsOk = assetsRes && assetsRes.ok;
+      // Show banner only if BOTH fail (status != 200)
+      if (!mainOk && !assetsOk) {
+        setShow(true);
+      }
+    });
 
     return () => controller.abort();
   }, []);

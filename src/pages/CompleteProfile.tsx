@@ -94,7 +94,7 @@ const CompleteProfile = () => {
       toast({
         title: "🎉 Profil complété !",
         description: objective === 'seller' 
-          ? "Bienvenue vendeur ! Vous avez 50 jetons gratuits pour démarrer."
+          ? "Bienvenue vendeur ! Vous avez 100 jetons gratuits pour démarrer (28 jours d'essai)."
           : "Bienvenue sur Djassa ! Découvrez nos produits.",
       });
 
@@ -268,7 +268,7 @@ const CompleteProfile = () => {
                         </p>
                         <div className="flex items-center gap-1.5 mt-2">
                           <Sparkles className="w-3.5 h-3.5 text-primary" />
-                          <span className="text-xs font-medium text-primary">50 jetons offerts</span>
+                          <span className="text-xs font-medium text-primary">100 jetons offerts + 28 jours d'essai</span>
                         </div>
                       </div>
                       {objective === 'seller' && (

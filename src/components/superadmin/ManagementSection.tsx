@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, ShoppingBag, Store, Coins } from 'lucide-react';
+import { Users, ShoppingBag, Store, Coins, Settings2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { OrdersManagement } from './OrdersManagement';
 import { UsersManagement } from './UsersManagement';
 import { TopSellersSection } from './TopSellersSection';
 import { TokenStatsSuperAdmin } from '@/components/TokenStatsSuperAdmin';
 import { TokenTransactionsSuperAdmin } from '@/components/TokenTransactionsSuperAdmin';
+import { AdminTokenManagement } from './AdminTokenManagement';
 
 interface ManagementSectionProps {
   orders: any[];
@@ -34,14 +35,15 @@ export const ManagementSection = ({ orders, users, onRefresh }: ManagementSectio
               { value: 'users', icon: Users, label: 'Utilisateurs' },
               { value: 'sellers', icon: Store, label: 'Vendeurs' },
               { value: 'tokens', icon: Coins, label: 'Jetons' },
+              { value: 'admin-tokens', icon: Settings2, label: 'Gérer jetons' },
             ].map(tab => (
               <TabsTrigger 
                 key={tab.value} 
                 value={tab.value} 
-                className="flex-1 min-w-[120px] gap-2 data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg py-2.5 transition-all"
+                className="flex-1 min-w-[100px] gap-2 data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg py-2.5 transition-all"
               >
                 <tab.icon className="w-4 h-4" />
-                <span>{tab.label}</span>
+                <span className="hidden sm:inline">{tab.label}</span>
               </TabsTrigger>
             ))}
           </TabsList>
@@ -61,6 +63,10 @@ export const ManagementSection = ({ orders, users, onRefresh }: ManagementSectio
           <TabsContent value="tokens" className="mt-4 space-y-6">
             <TokenStatsSuperAdmin />
             <TokenTransactionsSuperAdmin />
+          </TabsContent>
+
+          <TabsContent value="admin-tokens" className="mt-4">
+            <AdminTokenManagement />
           </TabsContent>
         </Tabs>
       </motion.div>

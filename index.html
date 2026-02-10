@@ -388,70 +388,8 @@
 
     <div id="root"></div>
 
-    <script>
-      (function () {
-        // Time before showing fallback when main bundle never runs.
-        var TIMEOUT_MS = 4500;
-
-        // If main.tsx runs it sets window.__DJASSA_MAIN_LOADED__.
-        window.__DJASSA_MAIN_LOADED__ = window.__DJASSA_MAIN_LOADED__ || false;
-
-        // Expose for manual debugging.
-        window.__DJASSA_BOOT_FALLBACK_TIMEOUT__ = TIMEOUT_MS;
-
-        // -----------------------------------------------------------------
-        // Entrypoint loader (works for BOTH environments):
-        // - Static preview/prod build: /assets/app.js
-        // - Dev server: /src/main.tsx
-        // If the first fails (404 / blocked), we try the second.
-        // -----------------------------------------------------------------
-        function injectModule(src) {
-          var s = document.createElement('script');
-          s.type = 'module';
-          s.src = src;
-          s.setAttribute('data-djassa-entry', src);
-          document.body.appendChild(s);
-          return s;
-        }
-
-        try {
-          // Prefer built entry (fixes preview environments that do NOT serve /src/*)
-          var primary = injectModule('/assets/app.js');
-
-          primary.addEventListener('error', function () {
-            console.warn('[Boot] Failed to load /assets/app.js -> falling back to /src/main.tsx');
-            injectModule('/src/main.tsx');
-          });
-
-          primary.addEventListener('load', function () {
-            console.info('[Boot] Loaded entry: /assets/app.js');
-          });
-        } catch (e) {
-          console.warn('[Boot] entry loader failed -> injecting /src/main.tsx', e);
-          try { injectModule('/src/main.tsx'); } catch (_) {}
-        }
-
-        setTimeout(function () {
-          try {
-            var root = document.getElementById('root');
-            var hasRootContent = !!(root && root.childNodes && root.childNodes.length > 0);
-            var mainLoaded = !!window.__DJASSA_MAIN_LOADED__;
-
-            // Show only if bundle didn't run AND root stayed empty.
-            if (!mainLoaded && !hasRootContent) {
-              var fb = document.getElementById('boot-fallback');
-              if (fb) fb.style.display = 'block';
-              console.error('[Boot] main did not execute within timeout -> showing fallback');
-            }
-          } catch (e) {
-            // If something goes wrong, keep page minimal; still log.
-            console.error('[Boot] fallback check failed', e);
-          }
-        }, TIMEOUT_MS);
-      })();
-    </script>
-
-    <!-- Entrypoint is injected by the Boot script above (assets/app.js -> src/main.tsx fallback) -->
+    <!-- Standard Vite entry – works in both dev and preview -->
+    <script type="module" src="/src/main.tsx"></script>
     
     <!-- Mobile optimizations - Critical inline styles for immediate render -->
     <!-- Mobile optimizations - Critical inline styles for immediate render -->

@@ -377,40 +377,15 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
         });
         onSave();
       } else {
-        // New product - check tokens
-        const { data: balanceCheck, error: balanceError } = await supabase
-          .rpc('check_token_balance', { _seller_id: user.id });
+        // New product - consume token via official RPC (bonus > free > paid)
+        const { error: tokenError } = await supabase
+          .rpc('consume_token_for_publish', { p_seller: user.id });
 
-        if (balanceError) {
+        if (tokenError) {
+          const isInsufficientTokens = tokenError.message?.includes('insuffisants') || tokenError.message?.includes('paiement requis');
           toast({
-            title: "❌ Erreur",
-            description: "Impossible de vérifier votre solde de jetons",
-            variant: "destructive",
-          });
-          setLoading(false);
-          return;
-        }
-
-        const balance = balanceCheck as { has_tokens: boolean; token_balance: number } | null;
-
-        if (!balance?.has_tokens || balance?.token_balance <= 0) {
-          toast({
-            title: "❌ Jetons insuffisants",
-            description: "Rechargez vos jetons pour publier",
-            variant: "destructive",
-          });
-          setLoading(false);
-          return;
-        }
-
-        // Consume token
-        const { data: tokenConsumed, error: tokenError } = await supabase
-          .rpc('consume_token_for_publication', { _seller_id: user.id, _product_id: null });
-
-        if (tokenError || !tokenConsumed) {
-          toast({
-            title: "❌ Erreur",
-            description: "Impossible de déduire le jeton",
+            title: isInsufficientTokens ? "❌ Jetons insuffisants" : "❌ Erreur",
+            description: isInsufficientTokens ? "Rechargez vos jetons pour publier" : "Impossible de déduire le jeton",
             variant: "destructive",
           });
           setLoading(false);
@@ -435,11 +410,10 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
         }
 
         await refreshBalance();
-        const newBalance = (balance?.token_balance || 1) - 1;
 
         toast({
           title: "✅ Article publié !",
-          description: `Il vous reste ${newBalance} jeton${newBalance > 1 ? 's' : ''}`,
+          description: "Votre produit est maintenant en ligne",
         });
         onSave();
       }

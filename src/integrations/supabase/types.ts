@@ -760,6 +760,7 @@ export type Database = {
       }
       seller_tokens: {
         Row: {
+          bonus_tokens_count: number | null
           created_at: string
           free_tokens_count: number | null
           free_tokens_expires_at: string | null
@@ -770,6 +771,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          bonus_tokens_count?: number | null
           created_at?: string
           free_tokens_count?: number | null
           free_tokens_expires_at?: string | null
@@ -780,6 +782,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          bonus_tokens_count?: number | null
           created_at?: string
           free_tokens_count?: number | null
           free_tokens_expires_at?: string | null

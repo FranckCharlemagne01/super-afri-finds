@@ -1163,8 +1163,8 @@ export type Database = {
         Returns: boolean
       }
       admin_adjust_tokens: {
-        Args: { _amount: number; _reason?: string; _seller_id: string }
-        Returns: Json
+        Args: { p_amount: number; p_reason: string; p_seller: string }
+        Returns: undefined
       }
       assign_current_user_superadmin: { Args: never; Returns: string }
       assign_superadmin_role: { Args: { _email: string }; Returns: string }

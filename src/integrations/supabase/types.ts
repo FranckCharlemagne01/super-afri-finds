@@ -1162,10 +1162,15 @@ export type Database = {
         }
         Returns: boolean
       }
-      admin_adjust_tokens: {
-        Args: { p_amount: number; p_reason?: string; p_seller: string }
-        Returns: undefined
-      }
+      admin_adjust_tokens:
+        | {
+            Args: { p_amount: number; p_reason: string; p_seller: string }
+            Returns: undefined
+          }
+        | {
+            Args: { p_amount: number; p_reason?: string; p_seller: string }
+            Returns: undefined
+          }
       assign_current_user_superadmin: { Args: never; Returns: string }
       assign_superadmin_role: { Args: { _email: string }; Returns: string }
       boost_product:
@@ -1194,6 +1199,10 @@ export type Database = {
       consume_token_for_publication: {
         Args: { _product_id?: string; _seller_id: string }
         Returns: boolean
+      }
+      consume_token_for_publish: {
+        Args: { p_seller: string }
+        Returns: undefined
       }
       create_shops_for_existing_sellers: { Args: never; Returns: undefined }
       delete_user_profile_and_roles: {

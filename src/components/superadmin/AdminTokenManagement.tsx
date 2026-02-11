@@ -118,9 +118,9 @@ export const AdminTokenManagement = () => {
     try {
       const finalAmount = isCredit ? numAmount : -numAmount;
       const { data, error } = await supabase.rpc('admin_adjust_tokens', {
-        _seller_id: selectedUser.user_id,
-        _amount: finalAmount,
-        _reason: reason || (isCredit ? 'Crédit admin' : 'Débit admin'),
+        p_seller: selectedUser.user_id,
+        p_amount: finalAmount,
+        p_reason: reason || (isCredit ? 'Crédit admin' : 'Débit admin'),
       });
 
       if (error) throw error;

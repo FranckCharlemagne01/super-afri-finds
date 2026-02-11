@@ -1163,7 +1163,7 @@ export type Database = {
         Returns: boolean
       }
       admin_adjust_tokens: {
-        Args: { p_amount: number; p_reason: string; p_seller: string }
+        Args: { p_amount: number; p_reason?: string; p_seller: string }
         Returns: undefined
       }
       assign_current_user_superadmin: { Args: never; Returns: string }

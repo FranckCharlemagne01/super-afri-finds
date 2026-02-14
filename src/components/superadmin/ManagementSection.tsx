@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, ShoppingBag, Store, Coins, Settings2 } from 'lucide-react';
+import { Users, ShoppingBag, Store, Coins, Settings2, ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { OrdersManagement } from './OrdersManagement';
 import { UsersManagement } from './UsersManagement';
@@ -8,6 +8,7 @@ import { TopSellersSection } from './TopSellersSection';
 import { TokenStatsSuperAdmin } from '@/components/TokenStatsSuperAdmin';
 import { TokenTransactionsSuperAdmin } from '@/components/TokenTransactionsSuperAdmin';
 import { AdminTokenManagement } from './AdminTokenManagement';
+import { SecurityDashboard } from './SecurityDashboard';
 
 interface ManagementSectionProps {
   orders: any[];
@@ -36,6 +37,7 @@ export const ManagementSection = ({ orders, users, onRefresh }: ManagementSectio
               { value: 'sellers', icon: Store, label: 'Vendeurs' },
               { value: 'tokens', icon: Coins, label: 'Jetons' },
               { value: 'admin-tokens', icon: Settings2, label: 'Gérer jetons' },
+              { value: 'security', icon: ShieldCheck, label: 'Sécurité' },
             ].map(tab => (
               <TabsTrigger 
                 key={tab.value} 
@@ -67,6 +69,10 @@ export const ManagementSection = ({ orders, users, onRefresh }: ManagementSectio
 
           <TabsContent value="admin-tokens" className="mt-4">
             <AdminTokenManagement />
+          </TabsContent>
+
+          <TabsContent value="security" className="mt-4">
+            <SecurityDashboard />
           </TabsContent>
         </Tabs>
       </motion.div>

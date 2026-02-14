@@ -14,6 +14,111 @@ export type Database = {
   }
   public: {
     Tables: {
+      affiliate_commissions: {
+        Row: {
+          ambassador_id: string
+          commission_amount: number
+          commission_rate: number
+          created_at: string
+          id: string
+          order_amount: number
+          order_id: string | null
+          paid_at: string | null
+          referral_signup_id: string | null
+          status: string
+        }
+        Insert: {
+          ambassador_id: string
+          commission_amount?: number
+          commission_rate?: number
+          created_at?: string
+          id?: string
+          order_amount?: number
+          order_id?: string | null
+          paid_at?: string | null
+          referral_signup_id?: string | null
+          status?: string
+        }
+        Update: {
+          ambassador_id?: string
+          commission_amount?: number
+          commission_rate?: number
+          created_at?: string
+          id?: string
+          order_amount?: number
+          order_id?: string | null
+          paid_at?: string | null
+          referral_signup_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_commissions_ambassador_id_fkey"
+            columns: ["ambassador_id"]
+            isOneToOne: false
+            referencedRelation: "ambassadors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_commissions_referral_signup_id_fkey"
+            columns: ["referral_signup_id"]
+            isOneToOne: false
+            referencedRelation: "referral_signups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ambassadors: {
+        Row: {
+          commission_rate: number
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          invited_by: string | null
+          phone: string | null
+          referral_code: string
+          referral_link: string | null
+          status: string
+          total_earnings: number
+          total_paid: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          commission_rate?: number
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          invited_by?: string | null
+          phone?: string | null
+          referral_code: string
+          referral_link?: string | null
+          status?: string
+          total_earnings?: number
+          total_paid?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          commission_rate?: number
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          invited_by?: string | null
+          phone?: string | null
+          referral_code?: string
+          referral_link?: string | null
+          status?: string
+          total_earnings?: number
+          total_paid?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       business_commissions: {
         Row: {
           commission_amount: number
@@ -172,6 +277,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      marketing_posts: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string
+          id: string
+          image_url: string | null
+          is_active: boolean
+          target_audience: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          target_audience?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          target_audience?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       messages: {
         Row: {
@@ -709,6 +850,41 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      referral_signups: {
+        Row: {
+          ambassador_id: string
+          created_at: string
+          id: string
+          referral_code: string
+          referred_user_id: string
+          status: string
+        }
+        Insert: {
+          ambassador_id: string
+          created_at?: string
+          id?: string
+          referral_code: string
+          referred_user_id: string
+          status?: string
+        }
+        Update: {
+          ambassador_id?: string
+          created_at?: string
+          id?: string
+          referral_code?: string
+          referred_user_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_signups_ambassador_id_fkey"
+            columns: ["ambassador_id"]
+            isOneToOne: false
+            referencedRelation: "ambassadors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       security_logs: {
         Row: {

@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Store, Package, ShoppingBag, Users, Coins, 
   BarChart3, ShieldCheck, ScrollText, Settings, UserCog, 
   ChevronLeft, ChevronRight, Menu, X, Sun, Moon, LogOut,
-  Building2, ArrowRightLeft
+  Building2, ArrowRightLeft, Megaphone
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 
 export type AdminSection = 
   | 'overview' | 'shops' | 'products' | 'orders' 
-  | 'users' | 'tokens' | 'analytics' 
+  | 'users' | 'tokens' | 'analytics' | 'marketing'
   | 'security' | 'logs' | 'settings' | 'profile';
 
 interface NavItem {
@@ -30,6 +30,7 @@ const navItems: NavItem[] = [
   { id: 'users', label: 'Utilisateurs', icon: Users, group: 'Management' },
   { id: 'tokens', label: 'Jetons', icon: Coins, group: 'Management' },
   { id: 'analytics', label: 'Analytics', icon: BarChart3, group: 'Management' },
+  { id: 'marketing', label: 'Marketing & Affiliés', icon: Megaphone, group: 'Management' },
   { id: 'security', label: 'Sécurité', icon: ShieldCheck, group: 'Sécurité & Système' },
   { id: 'logs', label: 'Logs & Audit', icon: ScrollText, group: 'Sécurité & Système' },
   { id: 'settings', label: 'Paramètres', icon: Settings, group: 'Réglages' },

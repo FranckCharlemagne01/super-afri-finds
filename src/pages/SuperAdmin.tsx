@@ -26,6 +26,7 @@ import { AdminTokenManagement } from '@/components/superadmin/AdminTokenManageme
 import { SecurityDashboard } from '@/components/superadmin/SecurityDashboard';
 import { SuperAdminSidebar, type AdminSection } from '@/components/superadmin/SuperAdminSidebar';
 import { SuperAdminOverview } from '@/components/superadmin/SuperAdminOverview';
+import { MarketingDashboard } from '@/components/superadmin/MarketingDashboard';
 import { AdminShops } from '@/components/AdminShops';
 
 interface AdminStats {
@@ -222,7 +223,7 @@ const SuperAdmin = () => {
 
   const sectionTitle: Record<AdminSection, string> = {
     overview: 'Dashboard', shops: 'Boutiques', products: 'Produits', orders: 'Commandes',
-    users: 'Utilisateurs', tokens: 'Jetons', analytics: 'Analytics',
+    users: 'Utilisateurs', tokens: 'Jetons', analytics: 'Analytics', marketing: 'Marketing & Affiliés',
     security: 'Sécurité', logs: 'Logs & Audit Trail', settings: 'Paramètres', profile: 'Profil SuperAdmin',
   };
 
@@ -635,6 +636,9 @@ const SuperAdmin = () => {
               </Card>
             </div>
           )}
+
+          {/* Marketing */}
+          {activeSection === 'marketing' && <MarketingDashboard />}
 
           {/* Security */}
           {activeSection === 'security' && <SecurityDashboard />}

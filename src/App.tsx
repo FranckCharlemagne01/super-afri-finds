@@ -49,6 +49,7 @@ const DemoVideo = lazy(() => import("./pages/DemoVideo"));
 const ConfirmEmail = lazy(() => import("./pages/ConfirmEmail"));
 const InstallApp = lazy(() => import("./pages/InstallApp"));
 const Diagnostic = lazy(() => import("./pages/Diagnostic"));
+const PartnerDashboard = lazy(() => import("./pages/PartnerDashboard"));
 
 // Optimized QueryClient configuration for better caching
 const queryClient = new QueryClient({
@@ -148,6 +149,14 @@ const AnimatedRoutes = () => {
               } 
             />
             <Route path="/product/:id" element={<ProductDetail />} />
+            <Route 
+              path="/partner-dashboard" 
+              element={
+                <ProtectedRoute>
+                  <PartnerDashboard />
+                </ProtectedRoute>
+              } 
+            />
             <Route path="/cart" element={<Cart />} />
             <Route path="/favorites" element={<Favorites />} />
             <Route path="/flash-sales" element={<FlashSales />} />

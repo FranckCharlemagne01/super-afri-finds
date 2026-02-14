@@ -124,29 +124,61 @@ export const MarketingDashboard = () => {
     fetchData();
   };
 
+  const [creatingPartner, setCreatingPartner] = useState(false);
+
   const handleCreateAmbassador = async () => {
-    if (!ambassadorForm.full_name) {
-      toast({ title: 'Erreur', description: 'Nom requis', variant: 'destructive' });
+    if (!ambassadorForm.full_name || !ambassadorForm.email) {
+      toast({ title: 'Erreur', description: 'Nom et email requis', variant: 'destructive' });
       return;
     }
-    const code = generateReferralCode();
-    const link = `${window.location.origin}/auth?ref=${code}`;
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const { error } = await supabase.from('ambassadors').insert({
-      user_id: user.id,
-      full_name: ambassadorForm.full_name,
-      email: ambassadorForm.email || null,
-      phone: ambassadorForm.phone || null,
-      referral_code: code,
-      referral_link: link,
-      commission_rate: parseFloat(ambassadorForm.commission_rate) / 100,
-    } as any);
-    if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); return; }
-    toast({ title: '✅ Ambassadeur ajouté', description: `Code: ${code}` });
-    setAmbassadorForm({ full_name: '', email: '', phone: '', commission_rate: '5' });
-    setShowNewAmbassador(false);
-    fetchData();
+    setCreatingPartner(true);
+    try {
+      const code = generateReferralCode();
+      const link = `${window.location.origin}/auth?ref=${code}`;
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch(
+        `https://zqskpspbyzptzjcoitwt.supabase.co/functions/v1/create-partner-account`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            full_name: ambassadorForm.full_name,
+            email: ambassadorForm.email,
+            phone: ambassadorForm.phone || null,
+            commission_rate: parseFloat(ambassadorForm.commission_rate) / 100,
+            referral_code: code,
+            referral_link: link,
+          }),
+        }
+      );
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        toast({ title: 'Erreur', description: result.error || 'Échec de création', variant: 'destructive' });
+        return;
+      }
+
+      toast({ 
+        title: '✅ Partenaire créé', 
+        description: result.temp_password 
+          ? `Code: ${code} — Mot de passe temporaire: ${result.temp_password}` 
+          : `Code: ${code} — Compte existant lié.`,
+      });
+      setAmbassadorForm({ full_name: '', email: '', phone: '', commission_rate: '5' });
+      setShowNewAmbassador(false);
+      fetchData();
+    } catch (err) {
+      toast({ title: 'Erreur', description: 'Erreur réseau', variant: 'destructive' });
+    } finally {
+      setCreatingPartner(false);
+    }
   };
 
   const handleTogglePostStatus = async (id: string, current: boolean) => {
@@ -322,7 +354,7 @@ export const MarketingDashboard = () => {
                     <Input placeholder="Nom..." value={ambassadorForm.full_name} onChange={e => setAmbassadorForm({ ...ambassadorForm, full_name: e.target.value })} />
                   </div>
                   <div>
-                    <Label className="text-xs">Email</Label>
+                    <Label className="text-xs">Email *</Label>
                     <Input type="email" placeholder="email@..." value={ambassadorForm.email} onChange={e => setAmbassadorForm({ ...ambassadorForm, email: e.target.value })} />
                   </div>
                   <div>
@@ -335,7 +367,9 @@ export const MarketingDashboard = () => {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={handleCreateAmbassador}>Créer & Générer code</Button>
+                  <Button size="sm" onClick={handleCreateAmbassador} disabled={creatingPartner}>
+                    {creatingPartner ? 'Création du compte...' : 'Créer compte partenaire'}
+                  </Button>
                   <Button size="sm" variant="ghost" onClick={() => setShowNewAmbassador(false)}>Annuler</Button>
                 </div>
               </CardContent>

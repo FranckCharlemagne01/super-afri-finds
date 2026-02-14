@@ -710,6 +710,45 @@ export type Database = {
         }
         Relationships: []
       }
+      security_logs: {
+        Row: {
+          created_at: string
+          description: string | null
+          event_type: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          severity: string
+          title: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          severity?: string
+          title: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          severity?: string
+          title?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       seller_shops: {
         Row: {
           banner_url: string | null
@@ -1330,6 +1369,28 @@ export type Database = {
           total_amount: number
         }[]
       }
+      get_recent_security_logs: {
+        Args: { _limit?: number }
+        Returns: {
+          created_at: string
+          description: string | null
+          event_type: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          severity: string
+          title: string
+          user_agent: string | null
+          user_id: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "security_logs"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_security_dashboard_stats: { Args: never; Returns: Json }
       get_seller_orders: {
         Args: never
         Returns: {

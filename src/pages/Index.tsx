@@ -10,7 +10,7 @@ import { HelpButton } from "@/components/HelpButton";
 import { MobileInfoDrawer } from "@/components/MobileInfoDrawer";
 import { FloatingChatButton } from "@/components/FloatingChatButton";
 import FAQ from "@/components/FAQ";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { useTheme } from "next-themes";
 
 import { CategorySidebar } from "@/components/CategorySidebar";
 import { PopularCategories } from "@/components/PopularCategories";
@@ -106,6 +106,12 @@ const Index = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [refreshKey, setRefreshKey] = useState(0);
+  const { setTheme } = useTheme();
+
+  // Force light mode on public marketplace
+  useEffect(() => {
+    setTheme("light");
+  }, [setTheme]);
   
   // ✅ Try to get products from cache IMMEDIATELY for instant display
   const cachedProducts = useMemo(() => getCached<Product[]>(CACHE_KEYS.PRODUCTS), []);
@@ -411,7 +417,6 @@ const Index = () => {
             
             {/* Mobile/Tablet Help Button, Notification Bell & Info Menu */}
             <div className="md:hidden flex items-center gap-0.5">
-              <ThemeToggle />
               <HelpButton />
               {user && <NotificationBell />}
               <MobileInfoDrawer />
@@ -419,7 +424,6 @@ const Index = () => {
 
             {/* Desktop Icons Only - Enhanced spacing */}
             <div className="hidden md:flex items-center gap-3 lg:gap-4">
-              <ThemeToggle />
               <Badge className="gradient-accent text-xs lg:text-sm px-3 py-1.5 rounded-full shadow-sm">
                 {userCountry}
               </Badge>

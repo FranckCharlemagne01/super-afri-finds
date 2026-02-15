@@ -6,16 +6,16 @@ import { useTokens } from '@/hooks/useTokens';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { ModernSellerHeader } from '@/components/seller/ModernSellerHeader';
+import { SellerSidebar, type SellerSection } from '@/components/seller/SellerSidebar';
 import { SellerDashboardSkeleton } from '@/components/seller/SellerDashboardSkeleton';
 import { RealtimeOrdersNotification } from '@/components/RealtimeOrdersNotification';
 import { RealtimeMessagesNotification } from '@/components/RealtimeMessagesNotification';
 import { TrialBanner } from '@/components/TrialBanner';
 import { SubscriptionExpiredBanner } from '@/components/SubscriptionExpiredBanner';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Store, Package, MessageSquare, Coins, Settings } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Store, RefreshCw } from 'lucide-react';
 import { getCached, setCache, isStale, CACHE_KEYS } from '@/utils/dataCache';
 import { useOptimizedShopQuery, useOptimizedQuery } from '@/hooks/useOptimizedQuery';
 import { isDashboardCached } from '@/hooks/useDashboardPrefetch';
@@ -28,8 +28,8 @@ const MessagesOrdersTab = lazy(() => import('@/components/seller/MessagesOrdersT
 const TokensSubscriptionTab = lazy(() => import('@/components/seller/TokensSubscriptionTab').then(m => ({ default: m.TokensSubscriptionTab })));
 const ShopSettingsTab = lazy(() => import('@/components/seller/ShopSettingsTab').then(m => ({ default: m.ShopSettingsTab })));
 
-// ✅ Lightweight skeleton for tab content
-const TabSkeleton = memo(() => (
+// ✅ Lightweight skeleton for section content
+const SectionSkeleton = memo(() => (
   <div className="space-y-4 animate-pulse">
     <Skeleton className="h-32 w-full rounded-xl" />
     <div className="grid grid-cols-2 gap-3">
@@ -73,6 +73,14 @@ interface Shop {
   is_active: boolean;
 }
 
+const sectionTitles: Record<SellerSection, string> = {
+  overview: 'Ma Boutique',
+  products: 'Produits',
+  'messages-orders': 'Commandes & Messages',
+  tokens: 'Jetons & Abonnement',
+  settings: 'Paramètres',
+};
+
 const SellerDashboard = memo(() => {
   const { user, signOut, userId, loading: authLoading } = useStableAuth();
   const { isSeller, isSuperAdmin, loading: roleLoading, refreshRole } = useStableRole();
@@ -81,10 +89,11 @@ const SellerDashboard = memo(() => {
 
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeSection, setActiveSection] = useState<SellerSection>('overview');
   const [openProductForm, setOpenProductForm] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState<string | null>(null);
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
   const initStartTime = useRef(Date.now());
   
   // ✅ Check if data was prefetched (instant display)
@@ -92,8 +101,15 @@ const SellerDashboard = memo(() => {
     return userId ? isDashboardCached(userId, true) : false;
   }, [userId]);
   
-  // ✅ Track mounted tabs to avoid re-fetching on tab switch
   const mountedTabs = useRef<Set<string>>(new Set(['overview']));
+
+  const toggleDark = useCallback(() => {
+    setIsDark(prev => {
+      const next = !prev;
+      document.documentElement.classList.toggle('dark', next);
+      return next;
+    });
+  }, []);
 
   // ✅ Fast timeout - reduced to 3 seconds for snappier experience
   useEffect(() => {
@@ -103,7 +119,7 @@ const SellerDashboard = memo(() => {
         console.log(`[SellerDashboard] ⚠️ Init timeout reached after ${elapsed}ms, forcing completion`);
         setIsInitializing(false);
       }
-    }, 3000); // Reduced from 8s to 3s
+    }, 3000);
 
     return () => clearTimeout(timeout);
   }, [isInitializing]);
@@ -117,7 +133,6 @@ const SellerDashboard = memo(() => {
         refreshBalance();
       });
       
-      // ✅ Relancer la vérification des jetons APRÈS l'enregistrement du callback
       console.log('[SellerDashboard] 🔁 Re-checking trial tokens after callback registration...');
       sellerAccess.refresh();
     }
@@ -131,7 +146,7 @@ const SellerDashboard = memo(() => {
   } = useOptimizedQuery({
     key: userId ? CACHE_KEYS.SHOP_BY_SELLER(userId) : 'shop:none',
     enabled: !!userId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
     fetcher: async () => {
       if (!userId) return null;
       
@@ -156,7 +171,7 @@ const SellerDashboard = memo(() => {
   } = useOptimizedQuery({
     key: userId ? CACHE_KEYS.PRODUCTS_BY_SELLER(userId) : 'products:none',
     enabled: !!userId,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 2 * 60 * 1000,
     fetcher: async () => {
       if (!userId) return [];
       
@@ -179,39 +194,32 @@ const SellerDashboard = memo(() => {
   // ✅ Fast initialization - prioritize cached data and quick role checks
   useEffect(() => {
     const initDashboard = async () => {
-      // If we have cached data, show content immediately
       if (hasPrefetchedData && isSeller) {
         console.log('[SellerDashboard] ✅ Instant display from cache');
         setIsInitializing(false);
         return;
       }
       
-      // Wait for auth only if not loaded
       if (authLoading) return;
       
-      // No user = redirect to auth
       if (!userId) {
         navigate('/auth', { replace: true });
         return;
       }
       
-      // Superadmin redirect
       if (isSuperAdmin) {
         navigate('/superadmin', { replace: true });
         return;
       }
       
-      // Wait for role loading to complete (but with short timeout)
       if (roleLoading) return;
       
-      // If seller, we're good
       if (isSeller) {
         console.log('[SellerDashboard] ✅ Seller confirmed');
         setIsInitializing(false);
         return;
       }
       
-      // Quick database check for role (fallback)
       try {
         const { data: roleData } = await supabase.rpc('get_user_role', { _user_id: userId });
         
@@ -222,11 +230,9 @@ const SellerDashboard = memo(() => {
           return;
         }
         
-        // Not a seller, redirect
         navigate('/buyer-dashboard', { replace: true });
       } catch (err) {
         console.error('[SellerDashboard] Role check error:', err);
-        // On error, complete init anyway to avoid stuck state
         setIsInitializing(false);
       }
     };
@@ -364,11 +370,11 @@ const SellerDashboard = memo(() => {
   }, [refetchProducts, refetchShop, refreshBalance, refreshRole, sellerAccess]);
 
   const handlePublishProduct = useCallback(() => {
-    setActiveTab('products');
+    setActiveSection('products');
     setOpenProductForm(true);
   }, []);
 
-  // ✅ Fast skeleton decision - prioritize cached data for instant display
+  // ✅ Fast skeleton decision
   const shouldShowSkeleton = !hasPrefetchedData && (
     isInitializing || 
     authLoading || 
@@ -376,21 +382,17 @@ const SellerDashboard = memo(() => {
     !userId
   );
 
-  // Show loading state during initialization
-  // Skip if prefetched data is available
   if (shouldShowSkeleton) {
     return <SellerDashboardSkeleton />;
   }
 
-  // Handle no user state (redirect to auth)
   if (!userId) {
     return null;
   }
 
-  // Afficher erreur si problème d'initialisation
   if (initError) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="p-6 md:p-8 text-center">
             <Store className="h-12 w-12 md:h-16 md:w-16 text-destructive mx-auto mb-4" />
@@ -407,15 +409,13 @@ const SellerDashboard = memo(() => {
     );
   }
 
-  // Redirect superadmin
   if (isSuperAdmin) {
     return null;
   }
 
-  // Non-seller access - show clear message (skip if still initializing)
   if (!isSeller && !roleLoading && !isInitializing) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="p-6 md:p-8 text-center">
             <Store className="h-12 w-12 md:h-16 md:w-16 text-muted-foreground mx-auto mb-4" />
@@ -432,7 +432,6 @@ const SellerDashboard = memo(() => {
     );
   }
 
-  // Create trial status object for components that need it
   const trialStatus = {
     isInTrial: sellerAccess.isInTrial,
     trialEndDate: sellerAccess.trialEndDate,
@@ -442,87 +441,72 @@ const SellerDashboard = memo(() => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background">
+    <div className="min-h-screen bg-background flex">
       {/* 🔥 Notifications en temps réel */}
       <RealtimeOrdersNotification />
       <RealtimeMessagesNotification />
-      
-      <div className="container mx-auto px-2.5 py-3 max-w-md md:max-w-3xl lg:max-w-7xl md:px-4 lg:px-6 md:py-4 lg:py-5">
-        {/* ⚠️ Subscription Expired Banner - Show when trial ended and no active subscription */}
-        {sellerAccess.subscriptionExpired && !sellerAccess.isInTrial && (
-          <SubscriptionExpiredBanner 
-            userEmail={user?.email || ''} 
-            userId={userId}
-            onSubscriptionSuccess={() => sellerAccess.refresh()}
-            isInTrial={sellerAccess.isInTrial}
-          />
-        )}
-        
-        {/* 🎁 Trial Banner - Only show if in trial */}
-        {sellerAccess.isInTrial && (
-          <TrialBanner 
-            daysLeft={sellerAccess.trialDaysLeft} 
-            trialEndDate={sellerAccess.trialEndDate}
-          />
-        )}
 
-        {/* Modern Header */}
-        <ModernSellerHeader
-          shop={shop}
-          onSignOut={handleSignOut}
-          trialStatus={trialStatus}
-          tokenBalance={tokenBalance}
-          freeTokens={freeTokens}
-          freeTokensExpiresAt={freeTokensExpiresAt}
-          onPublishProduct={handlePublishProduct}
-        />
+      {/* Sidebar */}
+      <SellerSidebar
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
+        isDark={isDark}
+        onToggleDark={toggleDark}
+        onSignOut={handleSignOut}
+        shopName={shop?.shop_name}
+        shopSlug={shop?.shop_slug}
+        shopLogoUrl={shop?.logo_url}
+      />
 
-        {/* Main Dashboard Tabs - Mobile First */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 md:space-y-4">
-          <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full bg-card/50 backdrop-blur-sm border border-border/50 shadow-md rounded-2xl h-auto p-1 md:p-1.5 gap-1 overflow-x-auto">
-            <TabsTrigger 
-              value="overview" 
-              className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md py-2 md:py-2.5 rounded-xl transition-all hover:bg-muted/50 touch-manipulation whitespace-nowrap text-xs md:text-sm"
-            >
-              <Store className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0" />
-              <span className="hidden sm:inline truncate">Ma Boutique</span>
-              <span className="sm:hidden truncate">Boutique</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="products" 
-              className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md py-2 md:py-2.5 rounded-xl transition-all hover:bg-muted/50 touch-manipulation whitespace-nowrap text-xs md:text-sm"
-            >
-              <Package className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0" />
-              <span className="truncate">Produits</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="messages-orders" 
-              className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md py-2 md:py-2.5 rounded-xl transition-all hover:bg-muted/50 touch-manipulation whitespace-nowrap text-xs md:text-sm"
-            >
-              <MessageSquare className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0" />
-              <span className="hidden sm:inline truncate">Messages</span>
-              <span className="sm:hidden truncate">Messages</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="tokens" 
-              className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md py-2 md:py-2.5 rounded-xl transition-all hover:bg-muted/50 touch-manipulation whitespace-nowrap text-xs md:text-sm"
-            >
-              <Coins className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0" />
-              <span className="hidden sm:inline truncate">Jetons</span>
-              <span className="sm:hidden truncate">Jetons</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="settings" 
-              className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md py-2 md:py-2.5 rounded-xl transition-all hover:bg-muted/50 touch-manipulation whitespace-nowrap text-xs md:text-sm"
-            >
-              <Settings className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0" />
-              <span className="hidden sm:inline truncate">Paramètres</span>
-              <span className="sm:hidden truncate">Réglages</span>
-            </TabsTrigger>
-          </TabsList>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
+        {/* Top Bar */}
+        <header className="sticky top-0 z-40 bg-card/80 backdrop-blur-xl border-b border-border/50">
+          <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-14">
+            {/* Left spacer for mobile hamburger */}
+            <div className="w-10 lg:hidden" />
+            <div className="flex items-center gap-3">
+              <h1 className="text-lg font-semibold text-foreground">{sectionTitles[activeSection]}</h1>
+              <Badge className="bg-primary/10 text-primary border-0 text-[10px] font-semibold">
+                Vendeur
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={handleRefresh} className="gap-2 text-muted-foreground hover:text-foreground">
+                <RefreshCw className="w-4 h-4" />
+                <span className="hidden sm:inline text-xs">Actualiser</span>
+              </Button>
+            </div>
+          </div>
+        </header>
 
-          <TabsContent value="overview" className="space-y-3 md:space-y-4 mt-3 md:mt-4" forceMount={activeTab === 'overview' || mountedTabs.current.has('overview') ? undefined : undefined}>
-            <Suspense fallback={<TabSkeleton />}>
+        {/* Banners */}
+        <div className="px-4 sm:px-6 lg:px-8">
+          {sellerAccess.subscriptionExpired && !sellerAccess.isInTrial && (
+            <div className="pt-4">
+              <SubscriptionExpiredBanner 
+                userEmail={user?.email || ''} 
+                userId={userId}
+                onSubscriptionSuccess={() => sellerAccess.refresh()}
+                isInTrial={sellerAccess.isInTrial}
+              />
+            </div>
+          )}
+          
+          {sellerAccess.isInTrial && (
+            <div className="pt-4">
+              <TrialBanner 
+                daysLeft={sellerAccess.trialDaysLeft} 
+                trialEndDate={sellerAccess.trialEndDate}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Page Content */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+          {activeSection === 'overview' && (
+            <Suspense fallback={<SectionSkeleton />}>
               <ShopOverviewTab
                 shop={shop}
                 products={products || []}
@@ -532,10 +516,10 @@ const SellerDashboard = memo(() => {
                 onPublishProduct={handlePublishProduct}
               />
             </Suspense>
-          </TabsContent>
+          )}
 
-          <TabsContent value="products" className="space-y-3 md:space-y-4 mt-3 md:mt-4">
-            <Suspense fallback={<TabSkeleton />}>
+          {activeSection === 'products' && (
+            <Suspense fallback={<SectionSkeleton />}>
               <ProductsTab
                 products={products || []}
                 loading={productsLoading}
@@ -548,16 +532,16 @@ const SellerDashboard = memo(() => {
                 canBoost={sellerAccess.canBoost}
               />
             </Suspense>
-          </TabsContent>
+          )}
 
-          <TabsContent value="messages-orders" className="space-y-3 md:space-y-4 mt-3 md:mt-4">
-            <Suspense fallback={<TabSkeleton />}>
+          {activeSection === 'messages-orders' && (
+            <Suspense fallback={<SectionSkeleton />}>
               <MessagesOrdersTab userId={userId} />
             </Suspense>
-          </TabsContent>
+          )}
 
-          <TabsContent value="tokens" className="space-y-3 md:space-y-4 mt-3 md:mt-4">
-            <Suspense fallback={<TabSkeleton />}>
+          {activeSection === 'tokens' && (
+            <Suspense fallback={<SectionSkeleton />}>
               <TokensSubscriptionTab
                 tokenBalance={tokenBalance}
                 freeTokens={freeTokens}
@@ -568,17 +552,17 @@ const SellerDashboard = memo(() => {
                 onRefresh={handleRefresh}
               />
             </Suspense>
-          </TabsContent>
+          )}
 
-          <TabsContent value="settings" className="space-y-3 md:space-y-4 mt-3 md:mt-4">
-            <Suspense fallback={<TabSkeleton />}>
+          {activeSection === 'settings' && (
+            <Suspense fallback={<SectionSkeleton />}>
               <ShopSettingsTab
                 shop={shop}
                 onRefresh={handleRefresh}
               />
             </Suspense>
-          </TabsContent>
-        </Tabs>
+          )}
+        </main>
       </div>
     </div>
   );

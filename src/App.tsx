@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
+import { ThemeProvider } from "next-themes";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { SmoothSkeleton } from "@/components/ui/smooth-skeleton";
@@ -216,6 +217,7 @@ const App = () => {
   });
 
   return (
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange={false}>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <NativeAppProvider>
@@ -235,6 +237,7 @@ const App = () => {
         </NativeAppProvider>
       </AuthProvider>
     </QueryClientProvider>
+    </ThemeProvider>
   );
 };
 

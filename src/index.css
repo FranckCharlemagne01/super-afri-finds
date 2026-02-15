@@ -69,52 +69,52 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Elegant dark gray - not pure black (#1a1a2e inspired) */
+    --background: 235 20% 11%;
+    --foreground: 220 15% 90%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 235 18% 14%;
+    --card-foreground: 220 15% 90%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 235 18% 14%;
+    --popover-foreground: 220 15% 90%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    /* Keep Djassa brand orange as primary in dark mode */
+    --primary: 16 100% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 16 100% 55%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 235 15% 20%;
+    --secondary-foreground: 220 15% 90%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 235 12% 18%;
+    --muted-foreground: 220 10% 55%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 51 100% 55%;
+    --accent-foreground: 235 20% 11%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 235 12% 20%;
+    --input: 235 12% 20%;
+    --ring: 16 100% 60%;
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 94.1%;
-    --sidebar-primary-foreground: 240 5.9% 10%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 235 20% 9%;
+    --sidebar-foreground: 220 15% 85%;
+    --sidebar-primary: 16 100% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 235 12% 18%;
+    --sidebar-accent-foreground: 220 15% 85%;
+    --sidebar-border: 235 12% 20%;
+    --sidebar-ring: 16 100% 60%;
     
     /* Enhanced dark mode colors for better visibility */
-    --promo: 0 84% 65%; /* Brighter red in dark mode */
+    --promo: 0 84% 65%;
     --promo-foreground: 0 0% 100%;
     
-    --success: 134 61% 45%; /* Brighter green in dark mode */
+    --success: 134 61% 50%;
     --success-foreground: 0 0% 100%;
-    
-    --accent: 51 100% 55%; /* Brighter yellow in dark mode */
-    --accent-foreground: 20 14.3% 4.1%;
   }
 }
 

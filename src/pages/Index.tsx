@@ -10,6 +10,7 @@ import { HelpButton } from "@/components/HelpButton";
 import { MobileInfoDrawer } from "@/components/MobileInfoDrawer";
 import { FloatingChatButton } from "@/components/FloatingChatButton";
 import FAQ from "@/components/FAQ";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 import { CategorySidebar } from "@/components/CategorySidebar";
 import { PopularCategories } from "@/components/PopularCategories";
@@ -388,7 +389,7 @@ const Index = () => {
       {/* Header - Visible at top, hides on scroll down, reappears on scroll up */}
       <header 
         className={`
-          sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-border/50
+          sticky top-0 z-50 bg-background/95 backdrop-blur-md shadow-sm border-b border-border/50
           transition-transform duration-300 ease-out
           ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}
         `}
@@ -410,6 +411,7 @@ const Index = () => {
             
             {/* Mobile/Tablet Help Button, Notification Bell & Info Menu */}
             <div className="md:hidden flex items-center gap-0.5">
+              <ThemeToggle />
               <HelpButton />
               {user && <NotificationBell />}
               <MobileInfoDrawer />
@@ -417,6 +419,7 @@ const Index = () => {
 
             {/* Desktop Icons Only - Enhanced spacing */}
             <div className="hidden md:flex items-center gap-3 lg:gap-4">
+              <ThemeToggle />
               <Badge className="gradient-accent text-xs lg:text-sm px-3 py-1.5 rounded-full shadow-sm">
                 {userCountry}
               </Badge>

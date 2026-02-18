@@ -751,10 +751,12 @@ export type Database = {
           full_name: string | null
           id: string
           is_premium: boolean | null
+          is_superadmin: boolean | null
           paystack_reference: string | null
           phone: string | null
           premium_expires_at: string | null
           push_token: string | null
+          role: string | null
           trial_bonus_tokens_given: boolean | null
           trial_end_date: string | null
           trial_start_date: string | null
@@ -775,10 +777,12 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_premium?: boolean | null
+          is_superadmin?: boolean | null
           paystack_reference?: string | null
           phone?: string | null
           premium_expires_at?: string | null
           push_token?: string | null
+          role?: string | null
           trial_bonus_tokens_given?: boolean | null
           trial_end_date?: string | null
           trial_start_date?: string | null
@@ -799,10 +803,12 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_premium?: boolean | null
+          is_superadmin?: boolean | null
           paystack_reference?: string | null
           phone?: string | null
           premium_expires_at?: string | null
           push_token?: string | null
+          role?: string | null
           trial_bonus_tokens_given?: boolean | null
           trial_end_date?: string | null
           trial_start_date?: string | null
@@ -1377,15 +1383,10 @@ export type Database = {
         }
         Returns: boolean
       }
-      admin_adjust_tokens:
-        | {
-            Args: { p_amount: number; p_reason: string; p_seller: string }
-            Returns: undefined
-          }
-        | {
-            Args: { p_amount: number; p_reason: string; p_seller: string }
-            Returns: undefined
-          }
+      admin_adjust_tokens: {
+        Args: { p_amount: number; p_reason?: string; p_seller: string }
+        Returns: undefined
+      }
       assign_current_user_superadmin: { Args: never; Returns: string }
       assign_superadmin_role: { Args: { _email: string }; Returns: string }
       boost_product:
@@ -1511,10 +1512,12 @@ export type Database = {
           full_name: string | null
           id: string
           is_premium: boolean | null
+          is_superadmin: boolean | null
           paystack_reference: string | null
           phone: string | null
           premium_expires_at: string | null
           push_token: string | null
+          role: string | null
           trial_bonus_tokens_given: boolean | null
           trial_end_date: string | null
           trial_start_date: string | null

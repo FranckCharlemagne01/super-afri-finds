@@ -125,7 +125,7 @@ export const AdminTokenManagement = () => {
 
       if (error) throw error;
 
-      const result = data as any;
+      const result = (typeof data === 'string' ? JSON.parse(data) : data) as any;
       if (result?.success) {
         toast.success(`Jetons ajustés ! Nouveau solde : ${result.new_balance}`);
         setAmount('');

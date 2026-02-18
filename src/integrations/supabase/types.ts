@@ -1385,7 +1385,7 @@ export type Database = {
       }
       admin_adjust_tokens: {
         Args: { p_amount: number; p_reason?: string; p_seller: string }
-        Returns: undefined
+        Returns: Json
       }
       assign_current_user_superadmin: { Args: never; Returns: string }
       assign_superadmin_role: { Args: { _email: string }; Returns: string }

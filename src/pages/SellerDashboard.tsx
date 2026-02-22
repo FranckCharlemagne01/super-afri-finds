@@ -441,7 +441,7 @@ const SellerDashboard = memo(() => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex overflow-hidden">
       {/* 🔥 Notifications en temps réel */}
       <RealtimeOrdersNotification />
       <RealtimeMessagesNotification />
@@ -459,7 +459,7 @@ const SellerDashboard = memo(() => {
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
+      <div className="flex-1 flex flex-col h-screen overflow-y-auto overflow-x-hidden overscroll-contain [-webkit-overflow-scrolling:touch]">
         {/* Top Bar */}
         <header className="sticky top-0 z-40 bg-card/80 backdrop-blur-xl border-b border-border/50">
           <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-14">

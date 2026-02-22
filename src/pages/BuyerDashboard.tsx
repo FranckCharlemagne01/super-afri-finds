@@ -193,7 +193,7 @@ const BuyerDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex overflow-hidden">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-[240px] bg-card border-r border-border/50 shrink-0">
         <div className="flex flex-col h-full">
@@ -261,7 +261,7 @@ const BuyerDashboard = () => {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden pb-20 lg:pb-0">
+      <div className="flex-1 flex flex-col h-screen overflow-y-auto overflow-x-hidden overscroll-contain [-webkit-overflow-scrolling:touch] pb-20 lg:pb-0">
         {/* Desktop Top Bar */}
         <header className="hidden lg:block sticky top-0 z-40 bg-card/80 backdrop-blur-xl border-b border-border/50">
           <div className="flex items-center justify-between px-8 h-14">

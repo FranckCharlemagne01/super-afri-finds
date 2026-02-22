@@ -119,7 +119,7 @@ export const SellerSidebar = ({
       </nav>
 
       {/* Bottom actions */}
-      <div className="p-3 border-t border-border/50 space-y-2">
+      <div className="p-3 border-t border-border/50 space-y-2 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         {/* Quick links */}
         {!collapsed && (
           <div className="space-y-1">

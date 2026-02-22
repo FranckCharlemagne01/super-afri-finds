@@ -142,22 +142,21 @@ export const SellerSidebar = ({
           </div>
         )}
 
-        <div className="flex items-center gap-1">
-          <button
-            onClick={onToggleDark}
-            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-colors"
-          >
-            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            {!collapsed && <span>{isDark ? 'Clair' : 'Sombre'}</span>}
-          </button>
-          <button
-            onClick={onSignOut}
-            className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            {!collapsed && <span>Quitter</span>}
-          </button>
-        </div>
+        <button
+          onClick={onToggleDark}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-colors"
+        >
+          {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          {!collapsed && <span>{isDark ? 'Clair' : 'Sombre'}</span>}
+        </button>
+
+        <button
+          onClick={onSignOut}
+          className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+        >
+          <LogOut className="w-[18px] h-[18px] shrink-0" />
+          {!collapsed && <span>Déconnexion</span>}
+        </button>
 
         {!isMobile && (
           <button

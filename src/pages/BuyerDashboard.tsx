@@ -516,8 +516,8 @@ const BuyerDashboard = () => {
 
           {/* Profile Section */}
           {activeSection === 'profile' && (
-            <div className="space-y-4">
-              <Card className="rounded-2xl border-border/50 shadow-sm overflow-hidden">
+            <div className="space-y-4 pb-8">
+              <Card className="rounded-2xl border-border/50 shadow-sm">
                 <CardContent className="p-4 space-y-4">
                   <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl">
                     <div className="w-14 h-14 bg-primary/20 rounded-xl flex items-center justify-center shrink-0">

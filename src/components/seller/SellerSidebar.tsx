@@ -218,7 +218,7 @@ export const SellerSidebar = ({
   return (
     <aside
       className={cn(
-        'hidden lg:flex flex-col bg-card border-r border-border/50 transition-all duration-300 shrink-0',
+        'hidden lg:flex lg:sticky lg:top-0 lg:h-screen flex-col bg-card border-r border-border/50 transition-all duration-300 shrink-0',
         collapsed ? 'w-[68px]' : 'w-[240px]'
       )}
     >

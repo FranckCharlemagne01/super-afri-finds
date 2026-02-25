@@ -193,9 +193,9 @@ const BuyerDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background lg:flex lg:overflow-hidden">
+    <div className="min-h-screen bg-background lg:flex">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-[240px] bg-card border-r border-border/50 shrink-0">
+      <aside className="hidden lg:flex lg:sticky lg:top-0 lg:h-screen flex-col w-[240px] bg-card border-r border-border/50 shrink-0">
         <div className="flex flex-col h-full">
           {/* Top: Logout button */}
           <div className="p-2 border-b border-border/50 flex items-center justify-end">
@@ -273,7 +273,7 @@ const BuyerDashboard = () => {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex flex-col overflow-x-hidden overscroll-contain [-webkit-overflow-scrolling:touch] pb-20 lg:pb-0 lg:flex-1 lg:min-h-0 lg:overflow-y-auto">
+      <div className="flex flex-col overflow-x-hidden overscroll-contain [-webkit-overflow-scrolling:touch] pb-20 lg:pb-0 lg:flex-1">
         {/* Desktop Top Bar */}
         <header className="hidden lg:block sticky top-0 z-40 bg-card/80 backdrop-blur-xl border-b border-border/50">
           <div className="flex items-center justify-between px-8 h-14">

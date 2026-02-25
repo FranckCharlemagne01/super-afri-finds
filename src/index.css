@@ -128,24 +128,29 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Ensure proper height calculation */
-  height: 100%;
+  /* Allow natural document growth for global scroll */
+  min-height: 100%;
+  height: auto;
+  overflow-x: clip;
+  overflow-y: auto;
 }
 
 body {
-  /* Use clip instead of hidden to allow proper scroll while preventing horizontal overflow */
+  /* Keep horizontal overflow clipped, allow vertical page scroll */
   overflow-x: clip;
   overflow-y: auto;
-  min-height: 100%;
+  min-height: 100vh;
   min-height: 100dvh; /* Dynamic viewport height for mobile browsers */
+  height: auto;
   /* Prevent pull-to-refresh interference */
   overscroll-behavior-y: contain;
 }
 
 /* Root container sizing */
 #root {
-  min-height: 100%;
+  min-height: 100vh;
   min-height: 100dvh;
+  height: auto;
   display: flex;
   flex-direction: column;
 }

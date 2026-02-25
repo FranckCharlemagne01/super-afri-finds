@@ -223,7 +223,7 @@ const BuyerDashboard = () => {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
+          <nav className="flex-1 py-3 px-2 space-y-0.5">
             {sidebarItems.map(item => {
               const isActive = activeSection === item.id;
               return (
@@ -273,7 +273,7 @@ const BuyerDashboard = () => {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex flex-col overflow-x-hidden overscroll-contain [-webkit-overflow-scrolling:touch] pb-20 lg:pb-0 lg:flex-1">
+      <div className="flex flex-col overflow-x-hidden pb-20 lg:pb-0 lg:flex-1">
         {/* Desktop Top Bar */}
         <header className="hidden lg:block sticky top-0 z-40 bg-card/80 backdrop-blur-xl border-b border-border/50">
           <div className="flex items-center justify-between px-8 h-14">

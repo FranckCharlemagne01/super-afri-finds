@@ -113,7 +113,7 @@ const CategoriesPage = () => {
   // Mobile layout: Style native e-commerce (Jumia, Amazon)
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-gray-50/80 pb-20 flex flex-col">
+      <div className="min-h-[100dvh] bg-gray-50/80 pb-20 flex flex-col">
         {/* Header mobile - Clean native style with dynamic hide/show */}
         <div 
           className={`
@@ -151,9 +151,9 @@ const CategoriesPage = () => {
         </div>
 
         {/* Layout split - Sidebar étroite + Produits */}
-        <div className="flex flex-1 min-h-0 overflow-x-hidden">
+        <div className="flex overflow-x-hidden">
           {/* Sidebar gauche - Style natif compact */}
-          <div className="w-[76px] bg-white border-r border-gray-100/80 overflow-y-auto scrollbar-hide flex-shrink-0">
+          <div className="w-[76px] bg-white border-r border-gray-100/80 scrollbar-hide flex-shrink-0">
             <div className="py-2">
               {/* Option "Tous" */}
               <button
@@ -242,7 +242,7 @@ const CategoriesPage = () => {
           </div>
 
           {/* Zone principale - Produits */}
-          <div className="flex-1 overflow-y-auto bg-gray-50/50 [scroll-behavior:smooth]">
+          <div className="flex-1 min-w-0 bg-gray-50/50">
             <div className="p-2.5">
               {/* Info résultats recherche */}
               {searchQuery && (

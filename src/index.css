@@ -128,27 +128,26 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Allow natural document growth for global scroll */
+  /* Scroll global natif */
   min-height: 100%;
   height: auto;
-  overflow-x: clip;
+  overflow-x: hidden;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 body {
-  /* Keep horizontal overflow clipped, allow vertical page scroll */
-  overflow-x: clip;
+  /* Un seul scroll principal (vertical) */
+  overflow-x: hidden;
   overflow-y: auto;
-  min-height: 100vh;
-  min-height: 100dvh; /* Dynamic viewport height for mobile browsers */
+  min-height: 100%;
+  min-height: 100dvh;
   height: auto;
-  /* Prevent pull-to-refresh interference */
-  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Root container sizing */
 #root {
-  min-height: 100vh;
   min-height: 100dvh;
   height: auto;
   display: flex;
@@ -478,7 +477,8 @@ textarea {
     /* Optimiser les modals sur mobile */
     .modal-mobile {
       width: 100vw !important;
-      height: 100vh !important;
+      min-height: 100dvh !important;
+      height: 100dvh !important;
       border-radius: 0 !important;
       margin: 0 !important;
     }
@@ -1218,18 +1218,18 @@ textarea {
    ENHANCED MOBILE NATIVE APP EXPERIENCE
    =========================================== */
 
-/* Prevent rubber-banding on iOS */
+/* iOS: conserver le scroll global sur body (pas de verrouillage) */
 @supports (-webkit-touch-callout: none) {
-  html, body {
-    height: 100%;
-    overflow: hidden;
-  }
-  
+  html,
+  body,
   #root {
-    height: 100%;
+    min-height: 100%;
+    height: auto;
+  }
+
+  body {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: none;
   }
 }
 
@@ -1247,6 +1247,14 @@ textarea {
 
 /* Bottom nav safe spacing */
 @layer utilities {
+  .min-h-screen {
+    min-height: 100dvh;
+  }
+
+  .h-screen {
+    height: 100dvh;
+  }
+
   .pb-safe-nav {
     padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 16px);
   }
@@ -1301,14 +1309,13 @@ textarea {
 /* Page content container for mobile */
 @layer components {
   .mobile-page-container {
-    @apply min-h-screen bg-background;
+    @apply min-h-[100dvh] bg-background;
     padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   }
   
   .mobile-scroll-container {
-    @apply overflow-y-auto overflow-x-hidden;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
+    @apply overflow-x-hidden;
+    overflow-y: visible;
   }
 }
 

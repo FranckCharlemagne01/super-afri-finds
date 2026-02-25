@@ -69,6 +69,21 @@ export const SuperAdminSidebar = ({
 
   const sidebarContent = (
     <div className="flex flex-col h-full">
+      {/* Top: Logout button */}
+      <div className="p-2 border-b border-border/50 flex items-center justify-end">
+        <button
+          onClick={onSignOut}
+          title="Déconnexion"
+          className={cn(
+            'flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors',
+            collapsed && 'justify-center px-2'
+          )}
+        >
+          <LogOut className="w-4 h-4 shrink-0" />
+          {!collapsed && <span>Déconnexion</span>}
+        </button>
+      </div>
+
       {/* Logo / Brand */}
       <div className="p-4 border-b border-border/50">
         <div className="flex items-center gap-3">

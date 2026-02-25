@@ -197,6 +197,18 @@ const BuyerDashboard = () => {
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-[240px] bg-card border-r border-border/50 shrink-0">
         <div className="flex flex-col h-full">
+          {/* Top: Logout button */}
+          <div className="p-2 border-b border-border/50 flex items-center justify-end">
+            <button
+              onClick={handleSignOut}
+              title="Déconnexion"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+            >
+              <LogOut className="w-4 h-4 shrink-0" />
+              <span>Déconnexion</span>
+            </button>
+          </div>
+
           {/* Brand */}
           <div className="p-4 border-b border-border/50">
             <div className="flex items-center gap-3">

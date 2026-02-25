@@ -100,7 +100,7 @@ export const SuperAdminSidebar = ({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-5">
+      <nav className="flex-1 py-3 px-2 space-y-5">
         {groups.map(group => {
           const items = navItems.filter(i => i.group === group);
           return (

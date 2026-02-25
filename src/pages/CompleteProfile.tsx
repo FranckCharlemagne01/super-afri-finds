@@ -98,8 +98,8 @@ const CompleteProfile = () => {
           : "Bienvenue sur Djassa ! Découvrez nos produits.",
       });
 
-      // Rediriger vers la bonne page
-      const redirectPath = objective === 'seller' ? '/seller-dashboard' : '/';
+      // Rediriger vers le bon dashboard selon le rôle choisi
+      const redirectPath = objective === 'seller' ? '/seller-dashboard' : '/buyer-dashboard';
       navigate(redirectPath, { replace: true });
 
     } catch (error) {

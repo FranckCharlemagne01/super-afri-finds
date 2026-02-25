@@ -215,7 +215,19 @@ export async function completeGoogleUserProfile(
       }
     }
 
-    console.log('[completeGoogleUserProfile] Success');
+    // 4. Mettre à jour user_metadata avec le rôle pour synchronisation immédiate
+    const { error: metaError } = await supabase.auth.updateUser({
+      data: { role: data.objective }
+    });
+
+    if (metaError) {
+      console.error('[completeGoogleUserProfile] user_metadata update error:', metaError);
+    }
+
+    // 5. Rafraîchir la session pour propager les changements
+    await supabase.auth.refreshSession();
+
+    console.log('[completeGoogleUserProfile] Success, role synced to user_metadata:', data.objective);
     return { success: true };
   } catch (error) {
     console.error('[completeGoogleUserProfile] Error:', error);

@@ -377,36 +377,31 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
         });
         onSave();
       } else {
-        // New product - consume token via official RPC (bonus > free > paid)
-        const { error: tokenError } = await supabase
-          .rpc('consume_token_for_publish', { p_seller: user.id });
-
-        if (tokenError) {
-          const isInsufficientTokens = tokenError.message?.includes('insuffisants') || tokenError.message?.includes('paiement requis');
-          toast({
-            title: isInsufficientTokens ? "❌ Jetons insuffisants" : "❌ Erreur",
-            description: isInsufficientTokens ? "Rechargez vos jetons pour publier" : "Impossible de déduire le jeton",
-            variant: "destructive",
-          });
-          setLoading(false);
-          return;
-        }
-
-        // Insert product
-        const { error: insertError } = await supabase
+        // New product - INSERT first (RLS checks can_insert_products which verifies token balance)
+        const { data: insertedProduct, error: insertError } = await supabase
           .from('products')
           .insert(productData)
           .select('id')
           .single();
         
         if (insertError) {
+          // Check if it's an RLS/token issue
+          const isRlsError = insertError.message?.includes('row-level security') || insertError.code === '42501';
           toast({
-            title: "❌ Erreur de sauvegarde",
-            description: "Impossible de sauvegarder le produit",
+            title: isRlsError ? "❌ Jetons insuffisants" : "❌ Erreur de sauvegarde",
+            description: isRlsError ? "Rechargez vos jetons pour publier" : "Impossible de sauvegarder le produit",
             variant: "destructive",
           });
           setLoading(false);
           return;
+        }
+
+        // Consume token AFTER successful insert (avoids RLS conflict)
+        const { error: tokenError } = await supabase
+          .rpc('consume_token_for_publish', { p_seller: user.id });
+
+        if (tokenError) {
+          console.error('Token consumption error (product already saved):', tokenError);
         }
 
         await refreshBalance();

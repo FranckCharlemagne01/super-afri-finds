@@ -9,6 +9,7 @@ import { CountrySelect } from '@/components/CountrySelect';
 import { CitySelect } from '@/components/CitySelect';
 import { supabase } from '@/integrations/supabase/client';
 import { getCountryByCode } from '@/data/countries';
+import { getRedirectPathForUser } from '@/utils/roleRedirect';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import OptimizedInput from '@/components/auth/OptimizedInput';
 import AuthErrorAlert from '@/components/auth/AuthErrorAlert';
@@ -424,7 +425,14 @@ const Auth = () => {
           sessionStorage.removeItem('redirectAfterLogin');
           navigate(redirectUrl);
         } else {
-          setTimeout(() => navigate('/', { replace: true }), 500);
+          // Get role-based redirect from DB
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user) {
+            const path = await getRedirectPathForUser(session.user.id);
+            setTimeout(() => navigate(path, { replace: true }), 500);
+          } else {
+            setTimeout(() => navigate('/', { replace: true }), 500);
+          }
         }
       }
     } catch {

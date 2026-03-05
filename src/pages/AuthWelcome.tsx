@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, Loader2, LogIn, Sparkles } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { getRedirectPathForUser } from '@/utils/roleRedirect';
 
 const AuthWelcome = () => {
   const navigate = useNavigate();
@@ -92,13 +93,16 @@ const AuthWelcome = () => {
 
           console.log('[AuthWelcome] Redirecting user with role:', role);
 
+          // Get role-based redirect path from DB
+          const redirectPath = await getRedirectPathForUser(session.user.id);
+          console.log('[AuthWelcome] Redirect path:', redirectPath);
+
           // Compte à rebours de 5 secondes
           const timer = setInterval(() => {
             setCountdown((prev) => {
               if (prev <= 1) {
                 clearInterval(timer);
-                // Rediriger vers la page publique
-                navigate('/', { replace: true });
+                navigate(redirectPath, { replace: true });
                 return 0;
               }
               return prev - 1;
@@ -186,7 +190,11 @@ const AuthWelcome = () => {
                 </p>
               </div>
               <Button 
-                onClick={() => navigate('/', { replace: true })}
+                onClick={async () => {
+                  const { data: { session } } = await supabase.auth.getSession();
+                  const path = session?.user ? await getRedirectPathForUser(session.user.id) : '/';
+                  navigate(path, { replace: true });
+                }}
                 className="w-full h-12 text-base font-semibold gradient-bg-primary hover:opacity-90 transition-opacity"
                 size="lg"
               >

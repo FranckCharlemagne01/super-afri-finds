@@ -605,7 +605,11 @@ const Index = () => {
             </div>
           ) : (
             <div className="text-center py-12 px-4 bg-muted/30 rounded-lg">
-              <p className="text-muted-foreground">Aucun produit disponible pour le moment</p>
+              <p className="text-muted-foreground">
+                {userLocation.city 
+                  ? `Aucun produit disponible à ${userLocation.city} pour le moment`
+                  : 'Aucun produit disponible pour le moment'}
+              </p>
             </div>
           )}
         </section>

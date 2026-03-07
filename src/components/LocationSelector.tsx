@@ -89,7 +89,8 @@ export const LocationSelector = () => {
 
       if (error) throw error;
 
-      // Invalidate all relevant caches
+      // Invalidate all relevant caches (react-query + custom dataCache)
+      invalidateCacheByPrefix('products:');
       await queryClient.invalidateQueries({ queryKey: ['user-location', user.id] });
       await queryClient.invalidateQueries({ queryKey: ['products'] });
       await queryClient.invalidateQueries({ queryKey: ['featured-products'] });

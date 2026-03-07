@@ -239,15 +239,22 @@ const Index = () => {
 
   const fetchFromServer = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('products')
         .select(`
           *,
           shop:seller_shops!shop_id(shop_slug, shop_name)
         `)
-        .eq('is_active', true)
+        .eq('is_active', true);
+
+      // Filter by user's city (case-insensitive)
+      if (userLocation.city) {
+        query = query.ilike('city', userLocation.city);
+      }
+
+      const { data, error } = await query
         .order('created_at', { ascending: false })
-        .limit(100); // Limit for performance
+        .limit(100);
       
       if (error) {
         console.error('Error fetching products:', error);

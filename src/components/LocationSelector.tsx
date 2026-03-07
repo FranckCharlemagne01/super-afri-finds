@@ -8,6 +8,7 @@ import { CitySelect } from '@/components/CitySelect';
 import { CountrySelect } from '@/components/CountrySelect';
 import { getCountryByCode } from '@/data/countries';
 import { MapPin, Loader2, Lock } from 'lucide-react';
+import { invalidateCacheByPrefix } from '@/utils/dataCache';
 import {
   Sheet,
   SheetContent,
@@ -88,7 +89,8 @@ export const LocationSelector = () => {
 
       if (error) throw error;
 
-      // Invalidate all relevant caches
+      // Invalidate all relevant caches (react-query + custom dataCache)
+      invalidateCacheByPrefix('products:');
       await queryClient.invalidateQueries({ queryKey: ['user-location', user.id] });
       await queryClient.invalidateQueries({ queryKey: ['products'] });
       await queryClient.invalidateQueries({ queryKey: ['featured-products'] });

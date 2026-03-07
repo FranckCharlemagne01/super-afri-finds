@@ -225,29 +225,12 @@ const Index = () => {
     }
   };
 
-  // Optimized fetch with caching - invalidate when city changes
-  const fetchProducts = useCallback(async (forceRefresh = false) => {
-    const cacheKey = CACHE_KEYS.PRODUCTS;
-    
-    // Check cache first (instant response)
-    if (!forceRefresh) {
-      const cached = getCached<Product[]>(cacheKey);
-      if (cached !== null) {
-        setProducts(cached);
-        setLoading(false);
-        
-        // Background revalidation if stale
-        if (isStale(cacheKey)) {
-          fetchFromServer();
-        }
-        return;
-      }
-    }
-    
-    await fetchFromServer();
-  }, [userLocation.city]);
+  // City-aware cache key
+  const productsCacheKey = userLocation.city 
+    ? `${CACHE_KEYS.PRODUCTS}:city:${userLocation.city.toLowerCase()}` 
+    : CACHE_KEYS.PRODUCTS;
 
-  const fetchFromServer = async () => {
+  const fetchFromServer = useCallback(async () => {
     try {
       let query = supabase
         .from('products')
@@ -273,7 +256,7 @@ const Index = () => {
       
       const products = data || [];
       setProducts(products);
-      setCache(CACHE_KEYS.PRODUCTS, products, 2 * 60 * 1000); // 2 min cache
+      setCache(productsCacheKey, products, 2 * 60 * 1000); // 2 min cache
       
       // ✅ Cache individual products for instant product detail navigation
       products.slice(0, 24).forEach((product: Product) => {
@@ -284,7 +267,27 @@ const Index = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userLocation.city, productsCacheKey]);
+
+  // Optimized fetch with caching - invalidate when city changes
+  const fetchProducts = useCallback(async (forceRefresh = false) => {
+    // Check cache first (instant response)
+    if (!forceRefresh) {
+      const cached = getCached<Product[]>(productsCacheKey);
+      if (cached !== null) {
+        setProducts(cached);
+        setLoading(false);
+        
+        // Background revalidation if stale
+        if (isStale(productsCacheKey)) {
+          fetchFromServer();
+        }
+        return;
+      }
+    }
+    
+    await fetchFromServer();
+  }, [userLocation.city, productsCacheKey, fetchFromServer]);
 
   const handleRefreshRecommendations = useCallback(() => {
     setRefreshKey(prev => prev + 1);

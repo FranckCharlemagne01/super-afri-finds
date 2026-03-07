@@ -199,9 +199,11 @@ const CategoryPage = () => {
           <Card className="p-12 text-center">
             <Icon className="h-16 w-16 mx-auto text-muted-foreground/30 mb-4" />
             <p className="text-muted-foreground">
-              {selectedShop === 'all' 
-                ? 'Aucun produit disponible dans cette catégorie.'
-                : 'Aucun produit de cette boutique dans cette catégorie.'}
+              {selectedShop !== 'all' 
+                ? 'Aucun produit de cette boutique dans cette catégorie.'
+                : userLocation.city
+                  ? `Aucun produit disponible dans cette catégorie à ${userLocation.city} pour le moment.`
+                  : 'Aucun produit disponible dans cette catégorie.'}
             </p>
           </Card>
         ) : (

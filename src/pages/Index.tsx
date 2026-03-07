@@ -215,7 +215,7 @@ const Index = () => {
     }
   };
 
-  // Optimized fetch with caching
+  // Optimized fetch with caching - invalidate when city changes
   const fetchProducts = useCallback(async (forceRefresh = false) => {
     const cacheKey = CACHE_KEYS.PRODUCTS;
     
@@ -235,7 +235,7 @@ const Index = () => {
     }
     
     await fetchFromServer();
-  }, []);
+  }, [userLocation.city]);
 
   const fetchFromServer = async () => {
     try {

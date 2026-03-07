@@ -177,8 +177,18 @@ const Index = () => {
     }
   };
 
-  // ✅ Fast initial load - fetch in background only if cache is stale
+  // ✅ Fast initial load - refetch when city changes
+  const prevCityRef = useRef(userLocation.city);
   useEffect(() => {
+    const cityChanged = prevCityRef.current !== userLocation.city;
+    prevCityRef.current = userLocation.city;
+
+    // If city changed, always force refetch
+    if (cityChanged) {
+      fetchProducts(true);
+      return;
+    }
+
     // If we have cached data, just check if it's stale for background refresh
     if (cachedProducts && !isStale(CACHE_KEYS.PRODUCTS)) {
       setLoading(false);
@@ -215,7 +225,7 @@ const Index = () => {
     }
   };
 
-  // Optimized fetch with caching
+  // Optimized fetch with caching - invalidate when city changes
   const fetchProducts = useCallback(async (forceRefresh = false) => {
     const cacheKey = CACHE_KEYS.PRODUCTS;
     
@@ -235,19 +245,26 @@ const Index = () => {
     }
     
     await fetchFromServer();
-  }, []);
+  }, [userLocation.city]);
 
   const fetchFromServer = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('products')
         .select(`
           *,
           shop:seller_shops!shop_id(shop_slug, shop_name)
         `)
-        .eq('is_active', true)
+        .eq('is_active', true);
+
+      // Filter by user's city (case-insensitive)
+      if (userLocation.city) {
+        query = query.ilike('city', userLocation.city);
+      }
+
+      const { data, error } = await query
         .order('created_at', { ascending: false })
-        .limit(100); // Limit for performance
+        .limit(100);
       
       if (error) {
         console.error('Error fetching products:', error);
@@ -588,7 +605,11 @@ const Index = () => {
             </div>
           ) : (
             <div className="text-center py-12 px-4 bg-muted/30 rounded-lg">
-              <p className="text-muted-foreground">Aucun produit disponible pour le moment</p>
+              <p className="text-muted-foreground">
+                {userLocation.city 
+                  ? `Aucun produit disponible à ${userLocation.city} pour le moment`
+                  : 'Aucun produit disponible pour le moment'}
+              </p>
             </div>
           )}
         </section>

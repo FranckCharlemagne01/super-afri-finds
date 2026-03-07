@@ -1425,6 +1425,10 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: boolean
       }
+      ensure_seller_shop: {
+        Args: { _shop_name?: string; _user_id: string }
+        Returns: Json
+      }
       ensure_seller_trial_tokens: { Args: { _user_id: string }; Returns: Json }
       expire_free_tokens: { Args: never; Returns: undefined }
       generate_shop_slug: { Args: { shop_name: string }; Returns: string }

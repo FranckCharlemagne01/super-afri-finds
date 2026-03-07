@@ -150,6 +150,8 @@ const SellerDashboard = memo(() => {
     fetcher: async () => {
       if (!userId) return null;
       
+      console.log('[SellerDashboard] 🔍 Fetching shop for seller_id:', userId);
+      
       const { data, error } = await supabase
         .from('seller_shops')
         .select('*')
@@ -157,7 +159,36 @@ const SellerDashboard = memo(() => {
         .eq('is_active', true)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('[SellerDashboard] ❌ Shop query error:', error);
+        throw error;
+      }
+      
+      // Safety net: if seller has no shop, auto-create one
+      if (!data) {
+        console.warn('[SellerDashboard] ⚠️ No shop found, attempting auto-creation...');
+        const { data: result, error: rpcError } = await supabase.rpc('ensure_seller_shop', { _user_id: userId });
+        
+        if (rpcError) {
+          console.error('[SellerDashboard] ❌ ensure_seller_shop error:', rpcError);
+          return null;
+        }
+        
+        const rpcResult = result as any;
+        if (rpcResult?.success) {
+          console.log('[SellerDashboard] ✅ Shop created/found:', rpcResult.shop_id);
+          // Re-fetch the shop data
+          const { data: newShop } = await supabase
+            .from('seller_shops')
+            .select('*')
+            .eq('seller_id', userId)
+            .eq('is_active', true)
+            .maybeSingle();
+          return newShop;
+        }
+      }
+      
+      console.log('[SellerDashboard] ✅ Shop found:', data?.shop_name);
       return data;
     },
   });

@@ -8,6 +8,7 @@ import { CitySelect } from '@/components/CitySelect';
 import { CountrySelect } from '@/components/CountrySelect';
 import { getCountryByCode } from '@/data/countries';
 import { MapPin, Loader2, Lock } from 'lucide-react';
+import { invalidateCacheByPrefix } from '@/utils/dataCache';
 import {
   Sheet,
   SheetContent,

@@ -177,8 +177,18 @@ const Index = () => {
     }
   };
 
-  // ✅ Fast initial load - fetch in background only if cache is stale
+  // ✅ Fast initial load - refetch when city changes
+  const prevCityRef = useRef(userLocation.city);
   useEffect(() => {
+    const cityChanged = prevCityRef.current !== userLocation.city;
+    prevCityRef.current = userLocation.city;
+
+    // If city changed, always force refetch
+    if (cityChanged) {
+      fetchProducts(true);
+      return;
+    }
+
     // If we have cached data, just check if it's stale for background refresh
     if (cachedProducts && !isStale(CACHE_KEYS.PRODUCTS)) {
       setLoading(false);

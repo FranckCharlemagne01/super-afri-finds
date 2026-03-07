@@ -60,12 +60,19 @@ const CategoryPage = () => {
         // Get all subcategory slugs for this main category
         const subcategorySlugs = categoryInfo.subcategories.map(sub => sub.slug);
 
-        // Fetch products
-        const { data: productsData, error: productsError } = await supabase
+        // Fetch products filtered by city
+        let query = supabase
           .from('products')
           .select('*')
           .in('category', subcategorySlugs)
-          .eq('is_active', true)
+          .eq('is_active', true);
+
+        // Filter by user's city (case-insensitive)
+        if (userLocation.city) {
+          query = query.ilike('city', userLocation.city);
+        }
+
+        const { data: productsData, error: productsError } = await query
           .order('created_at', { ascending: false });
 
         if (productsError) throw productsError;
@@ -101,7 +108,7 @@ const CategoryPage = () => {
     };
 
     fetchProducts();
-  }, [slug, categoryInfo, toast]);
+  }, [slug, categoryInfo, toast, userLocation.city]);
 
   if (!categoryInfo) {
     return (

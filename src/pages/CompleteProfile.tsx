@@ -285,9 +285,10 @@ const CompleteProfile = () => {
                 <AnimatePresence>
                   {objective === 'seller' && (
                     <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
+                      initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                      animate={{ opacity: 1, height: 'auto', overflow: 'visible' }}
+                      exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                      transition={{ duration: 0.3 }}
                       className="space-y-2"
                     >
                       <Label className="text-sm font-semibold flex items-center gap-2">

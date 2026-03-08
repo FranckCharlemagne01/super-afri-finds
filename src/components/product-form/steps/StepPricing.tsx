@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
-import { DollarSign, Tag, Package, Minus, Plus } from 'lucide-react';
+import { DollarSign, Tag, Package, Minus, Plus, Percent, TrendingUp, Coins } from 'lucide-react';
 import { Label } from '@/components/ui/label';
+import { calculateCommission, formatFCFA } from '@/utils/commissionCalculator';
 import { NumericInput } from '@/components/ui/validated-input';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -77,6 +78,41 @@ export const StepPricing = ({ formData, onInputChange }: StepPricingProps) => {
         {formData.price <= 0 && (
           <p className="text-xs text-destructive">Le prix doit être supérieur à 0</p>
         )}
+
+        {/* 💰 Commission Djassa Preview */}
+        {formData.price > 0 && (() => {
+          const commission = calculateCommission(formData.price);
+          return (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="p-3 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-2"
+            >
+              <p className="text-xs font-bold flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
+                <Percent className="w-3.5 h-3.5" />
+                Commission Djassa : {commission.rate}%
+              </p>
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground flex items-center gap-1">
+                  <Coins className="w-3 h-3" />
+                  Commission estimée
+                </span>
+                <span className="font-semibold text-amber-600 dark:text-amber-400">
+                  -{formatFCFA(commission.commissionAmount)}
+                </span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground flex items-center gap-1">
+                  <TrendingUp className="w-3 h-3" />
+                  Votre gain net estimé
+                </span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                  {formatFCFA(commission.sellerGain)}
+                </span>
+              </div>
+            </motion.div>
+          );
+        })()}
       </motion.div>
 
       {/* Original price */}

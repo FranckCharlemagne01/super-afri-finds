@@ -27,6 +27,7 @@ const CompleteProfile = () => {
   const [city, setCity] = useState('');
   const [objective, setObjective] = useState<Objective | null>(null);
   const [shopName, setShopName] = useState('');
+  const [shopDescription, setShopDescription] = useState('');
 
   // Vérifier l'authentification au chargement
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { memo, useMemo, useCallback } from 'react';
+import { memo, useMemo, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -9,10 +9,17 @@ import {
   Plus,
   BarChart3,
   Activity,
-  Lock
+  Lock,
+  Percent,
+  Coins,
+  Clock,
+  CheckCircle2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useStableAuth } from '@/hooks/useStableAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { calculateCommission, formatFCFA, getCommissionStatus } from '@/utils/commissionCalculator';
 
 interface Product {
   id: string;

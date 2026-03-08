@@ -147,6 +147,7 @@ export async function completeGoogleUserProfile(
     city: string;
     objective: 'buyer' | 'seller';
     shopName?: string;
+    shopDescription?: string;
   }
 ): Promise<{ success: boolean; error?: string }> {
   try {

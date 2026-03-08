@@ -301,6 +301,21 @@ const CompleteProfile = () => {
                         className="h-12"
                         maxLength={50}
                       />
+                      <Label className="text-sm font-semibold flex items-center gap-2 mt-3">
+                        <Store className="w-4 h-4 text-muted-foreground" />
+                        Description de la boutique
+                        <span className="text-xs font-normal text-muted-foreground">(optionnel)</span>
+                      </Label>
+                      <Textarea
+                        value={shopDescription}
+                        onChange={(e) => setShopDescription(e.target.value)}
+                        placeholder="Ex: Je vends des vêtements de mode africaine, accessoires et chaussures..."
+                        className="min-h-[80px]"
+                        maxLength={300}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        {shopDescription.length}/300 — Vous pourrez la modifier plus tard
+                      </p>
                     </motion.div>
                   )}
                 </AnimatePresence>

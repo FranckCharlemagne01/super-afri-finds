@@ -246,6 +246,28 @@ export const SellerOrdersList = ({ orders, onOrderUpdated }: SellerOrdersListPro
                 </div>
               </div>
 
+              {/* Commission info footer */}
+              {(() => {
+                const commission = calculateCommission(order.product_price, order.quantity);
+                const commissionStatus = getCommissionStatus(order.status, order.is_confirmed_by_seller, order.updated_at);
+                const statusDisplay = getCommissionStatusDisplay(commissionStatus);
+                return (
+                  <div className={`px-3.5 pb-2 pt-0`}>
+                    <div className={`p-2 rounded-lg border ${statusDisplay.borderColor} ${statusDisplay.bgColor} flex items-center justify-between`}>
+                      <span className="text-[10px] font-bold flex items-center gap-1 text-muted-foreground">
+                        Commission {commission.rate}%
+                        <Badge className={`text-[9px] px-1.5 py-0 border-0 ml-1 ${statusDisplay.bgColor} ${statusDisplay.textColor}`}>
+                          {statusDisplay.icon} {statusDisplay.label}
+                        </Badge>
+                      </span>
+                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                        Gain: {formatFCFA(commission.sellerGain)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* Quick info footer */}
               <div className="px-3.5 pb-3 flex items-center gap-4 text-[11px] text-muted-foreground">
                 <div className="flex items-center gap-1.5">

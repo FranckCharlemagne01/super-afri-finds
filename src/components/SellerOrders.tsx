@@ -250,7 +250,7 @@ export const SellerOrders = () => {
                           <span className="text-[10px] font-bold text-primary-foreground">x{order.quantity}</span>
                         </div>
                       </div>
-                      <div className="flex-1 min-w-0">
+                         <div className="flex-1 min-w-0">
                         <p className="font-bold text-sm md:text-base text-foreground line-clamp-2 mb-2 leading-snug">
                           {order.product_title}
                         </p>
@@ -263,6 +263,31 @@ export const SellerOrders = () => {
                           </span>
                         </div>
                       </div>
+                    </div>
+
+                    {/* Commission info pour cette commande */}
+                    {(() => {
+                      const commission = calculateCommission(order.product_price, order.quantity);
+                      const commissionStatus = getCommissionStatus(order.status, order.is_confirmed_by_seller, order.updated_at);
+                      const statusDisplay = getCommissionStatusDisplay(commissionStatus);
+                      return (
+                        <div className={`mt-3 p-2.5 rounded-lg border ${statusDisplay.borderColor} ${statusDisplay.bgColor} space-y-1`}>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold flex items-center gap-1 text-muted-foreground">
+                              <Percent className="w-3 h-3" />
+                              Commission Djassa ({commission.rate}%)
+                            </span>
+                            <Badge className={`text-[10px] px-2 py-0 border-0 ${statusDisplay.bgColor} ${statusDisplay.textColor}`}>
+                              {statusDisplay.icon} {statusDisplay.label}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-muted-foreground">Commission : <span className="font-semibold text-amber-600 dark:text-amber-400">-{formatFCFA(commission.commissionAmount)}</span></span>
+                            <span className="font-bold text-emerald-600 dark:text-emerald-400">Gain : {formatFCFA(commission.sellerGain)}</span>
+                          </div>
+                        </div>
+                      );
+                    })()}
                     </div>
                   </div>
 

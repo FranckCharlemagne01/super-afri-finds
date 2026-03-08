@@ -13,13 +13,14 @@ import {
   Percent,
   Coins,
   Clock,
-  CheckCircle2
+  CheckCircle2,
+  Wallet
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useStableAuth } from '@/hooks/useStableAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { calculateCommission, formatFCFA, getCommissionStatus } from '@/utils/commissionCalculator';
+import { calculateCommission, formatFCFA, getCommissionStatus, getCommissionTiers } from '@/utils/commissionCalculator';
 
 interface Product {
   id: string;

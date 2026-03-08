@@ -238,8 +238,14 @@ export async function completeGoogleUserProfile(
       console.error('[completeGoogleUserProfile] user_metadata update error:', metaError);
     }
 
-    // 5. Rafraîchir la session pour propager les changements
-    await supabase.auth.refreshSession();
+    // 5. Rafraîchir la session pour propager les changements immédiatement
+    const { error: refreshError } = await supabase.auth.refreshSession();
+    if (refreshError) {
+      console.error('[completeGoogleUserProfile] Session refresh error:', refreshError);
+      // Tenter un second refresh après un court délai
+      await new Promise(resolve => setTimeout(resolve, 500));
+      await supabase.auth.refreshSession();
+    }
 
     console.log('[completeGoogleUserProfile] Success, role synced to user_metadata:', data.objective);
     return { success: true };

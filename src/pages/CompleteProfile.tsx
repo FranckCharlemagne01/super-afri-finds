@@ -281,16 +281,16 @@ const CompleteProfile = () => {
                   </motion.button>
                 </div>
 
-                {/* Shop name input (only for sellers) */}
-                <AnimatePresence>
-                  {objective === 'seller' && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
-                      animate={{ opacity: 1, height: 'auto', overflow: 'visible' }}
-                      exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
-                      transition={{ duration: 0.3 }}
-                      className="space-y-2"
-                    >
+                {/* Shop name + description inputs (only for sellers) */}
+                {objective === 'seller' && (
+                  <motion.div
+                    key="seller-fields"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="space-y-3"
+                  >
+                    <div className="space-y-2">
                       <Label className="text-sm font-semibold flex items-center gap-2">
                         <Store className="w-4 h-4 text-muted-foreground" />
                         Nom de votre boutique
@@ -302,7 +302,10 @@ const CompleteProfile = () => {
                         className="h-12"
                         maxLength={50}
                       />
-                      <Label className="text-sm font-semibold flex items-center gap-2 mt-3">
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold flex items-center gap-2">
                         <Store className="w-4 h-4 text-muted-foreground" />
                         Description de la boutique
                         <span className="text-xs font-normal text-muted-foreground">(optionnel)</span>
@@ -317,9 +320,9 @@ const CompleteProfile = () => {
                       <p className="text-xs text-muted-foreground">
                         {shopDescription.length}/300 — Vous pourrez la modifier plus tard
                       </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                    </div>
+                  </motion.div>
+                )}
 
                 {/* Navigation buttons */}
                 <div className="flex gap-3">

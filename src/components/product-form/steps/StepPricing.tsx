@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
-import { DollarSign, Tag, Package, Minus, Plus } from 'lucide-react';
+import { DollarSign, Tag, Package, Minus, Plus, Percent, TrendingUp, Coins } from 'lucide-react';
 import { Label } from '@/components/ui/label';
+import { calculateCommission, formatFCFA } from '@/utils/commissionCalculator';
 import { NumericInput } from '@/components/ui/validated-input';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';

@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Globe, MapPin, ShoppingBag, Store, Sparkles, ChevronRight, CheckCircle2, Loader2 } from 'lucide-react';
@@ -27,6 +28,7 @@ const CompleteProfile = () => {
   const [city, setCity] = useState('');
   const [objective, setObjective] = useState<Objective | null>(null);
   const [shopName, setShopName] = useState('');
+  const [shopDescription, setShopDescription] = useState('');
 
   // Vérifier l'authentification au chargement
   useEffect(() => {
@@ -85,6 +87,7 @@ const CompleteProfile = () => {
         city,
         objective,
         shopName: objective === 'seller' ? shopName : undefined,
+        shopDescription: objective === 'seller' && shopDescription.trim() ? shopDescription.trim() : undefined,
       });
 
       if (!result.success) {
@@ -298,6 +301,21 @@ const CompleteProfile = () => {
                         className="h-12"
                         maxLength={50}
                       />
+                      <Label className="text-sm font-semibold flex items-center gap-2 mt-3">
+                        <Store className="w-4 h-4 text-muted-foreground" />
+                        Description de la boutique
+                        <span className="text-xs font-normal text-muted-foreground">(optionnel)</span>
+                      </Label>
+                      <Textarea
+                        value={shopDescription}
+                        onChange={(e) => setShopDescription(e.target.value)}
+                        placeholder="Ex: Je vends des vêtements de mode africaine, accessoires et chaussures..."
+                        className="min-h-[80px]"
+                        maxLength={300}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        {shopDescription.length}/300 — Vous pourrez la modifier plus tard
+                      </p>
                     </motion.div>
                   )}
                 </AnimatePresence>

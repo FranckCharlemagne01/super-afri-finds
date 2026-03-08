@@ -115,7 +115,7 @@ const CompleteProfile = () => {
     } finally {
       setLoading(false);
     }
-  }, [userId, country, city, objective, shopName, navigate]);
+  }, [userId, country, city, objective, shopName, shopDescription, navigate]);
 
   if (checkingAuth) {
     return (

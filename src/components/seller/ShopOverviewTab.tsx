@@ -59,7 +59,38 @@ export const ShopOverviewTab = memo(({
   onPublishProduct
 }: ShopOverviewTabProps) => {
   const navigate = useNavigate();
+  const { user } = useStableAuth();
 
+  // Fetch orders for commission summary
+  const [orders, setOrders] = useState<any[]>([]);
+  useEffect(() => {
+    if (!user?.id) return;
+    const fetchOrders = async () => {
+      const { data } = await supabase.rpc('get_seller_orders');
+      if (data) setOrders(data.filter((o: any) => o.seller_id === user.id));
+    };
+    fetchOrders();
+  }, [user?.id]);
+
+  // Commission summary
+  const commissionSummary = useMemo(() => {
+    let pendingCommission = 0;
+    let validatedCommission = 0;
+    let pendingOrders = 0;
+
+    orders.forEach(order => {
+      const c = calculateCommission(order.product_price, order.quantity);
+      const status = getCommissionStatus(order.status, order.is_confirmed_by_seller, order.updated_at);
+      if (status === 'pending') {
+        pendingCommission += c.commissionAmount;
+        pendingOrders++;
+      } else if (status === 'validated') {
+        validatedCommission += c.commissionAmount;
+      }
+    });
+
+    return { pendingCommission, validatedCommission, pendingOrders };
+  }, [orders]);
   // ✅ Memoize expensive calculations
   const { activeProducts, totalReviews, thisMonthProducts } = useMemo(() => {
     const active = products.filter(p => p.is_active).length;

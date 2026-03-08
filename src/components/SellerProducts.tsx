@@ -1,11 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, Eye, EyeOff, Zap, Lock } from 'lucide-react';
+import { Edit, Trash2, Eye, EyeOff, Zap, Lock, Percent, TrendingUp, Coins } from 'lucide-react';
 import { SmoothListSkeleton } from '@/components/ui/smooth-skeleton';
 import { CountdownTimer } from './CountdownTimer';
 import { OptimizedImage } from '@/components/ui/optimized-image';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { calculateCommission, formatFCFA } from '@/utils/commissionCalculator';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -152,6 +153,37 @@ export const SellerProducts = ({
                 <span>{product.reviews_count || 0}</span>
               </div>
             </div>
+
+            {/* Commission Djassa */}
+            {(() => {
+              const commission = calculateCommission(product.price);
+              return (
+                <div className="mb-4 p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 space-y-1.5">
+                  <p className="text-xs font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
+                    <Percent className="w-3.5 h-3.5" />
+                    Commission Djassa : {commission.rate}%
+                  </p>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      <Coins className="w-3 h-3" />
+                      Commission estimée
+                    </span>
+                    <span className="font-semibold text-amber-600 dark:text-amber-400">
+                      -{formatFCFA(commission.commissionAmount)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      <TrendingUp className="w-3 h-3" />
+                      Votre gain estimé
+                    </span>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                      {formatFCFA(commission.sellerGain)}
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
 
             <div className="flex flex-col gap-2">
               <div className="flex gap-2">

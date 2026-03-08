@@ -265,22 +265,22 @@ export const ShopOverviewTab = memo(({
             <span>Résumé financier</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-3 md:p-5 pt-0">
+        <CardContent className="p-3 md:p-5 pt-0 space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-3">
-            {/* Produits publiés */}
-            <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/20">
+            {/* Solde Djassa */}
+            <div className="p-3 rounded-xl bg-primary/5 border border-primary/20">
               <div className="flex items-center gap-2 mb-1.5">
-                <Package className="w-4 h-4 text-blue-600" />
-                <span className="text-[11px] font-semibold text-muted-foreground">Produits</span>
+                <Wallet className="w-4 h-4 text-primary" />
+                <span className="text-[11px] font-semibold text-muted-foreground">Solde Djassa</span>
               </div>
-              <p className="text-xl font-bold tabular-nums">{products.length}</p>
+              <p className="text-xl font-bold tabular-nums text-primary">{tokenBalance} <span className="text-xs font-normal text-muted-foreground">jetons</span></p>
             </div>
 
             {/* Commissions en attente */}
             <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20">
               <div className="flex items-center gap-2 mb-1.5">
                 <Clock className="w-4 h-4 text-amber-600" />
-                <span className="text-[11px] font-semibold text-muted-foreground">En attente</span>
+                <span className="text-[11px] font-semibold text-muted-foreground">🟠 En attente</span>
               </div>
               <p className="text-lg font-bold tabular-nums text-amber-600 dark:text-amber-400">
                 {formatFCFA(commissionSummary.pendingCommission)}
@@ -291,7 +291,7 @@ export const ShopOverviewTab = memo(({
             <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
               <div className="flex items-center gap-2 mb-1.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span className="text-[11px] font-semibold text-muted-foreground">Validées</span>
+                <span className="text-[11px] font-semibold text-muted-foreground">🟢 Validées</span>
               </div>
               <p className="text-lg font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
                 {formatFCFA(commissionSummary.validatedCommission)}
@@ -299,12 +299,30 @@ export const ShopOverviewTab = memo(({
             </div>
 
             {/* Commandes en attente */}
-            <div className="p-3 rounded-xl bg-purple-500/5 border border-purple-500/20">
+            <div className="p-3 rounded-xl bg-red-500/5 border border-red-500/20">
               <div className="flex items-center gap-2 mb-1.5">
-                <Coins className="w-4 h-4 text-purple-600" />
-                <span className="text-[11px] font-semibold text-muted-foreground">Cmd. en attente</span>
+                <Coins className="w-4 h-4 text-red-600" />
+                <span className="text-[11px] font-semibold text-muted-foreground">🔴 Cmd. en attente</span>
               </div>
               <p className="text-xl font-bold tabular-nums">{commissionSummary.pendingOrders}</p>
+            </div>
+          </div>
+
+          {/* Grille de commission */}
+          <div className="p-3 rounded-xl bg-muted/30 border border-border/50">
+            <p className="text-xs font-bold text-muted-foreground mb-2 flex items-center gap-1.5">
+              <Percent className="w-3.5 h-3.5" />
+              Grille de commission Djassa
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
+              {getCommissionTiers().map((tier, i) => (
+                <div key={i} className="px-2 py-1.5 rounded-lg bg-background border border-border/40 text-center">
+                  <p className="text-[10px] text-muted-foreground leading-tight">
+                    {tier.max === Infinity ? `${tier.min.toLocaleString()}+` : `${tier.min.toLocaleString()} – ${tier.max.toLocaleString()}`}
+                  </p>
+                  <p className="text-sm font-bold text-primary">{tier.rate}%</p>
+                </div>
+              ))}
             </div>
           </div>
         </CardContent>

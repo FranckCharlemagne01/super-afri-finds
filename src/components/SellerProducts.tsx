@@ -1,11 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, Eye, EyeOff, Zap, Lock } from 'lucide-react';
+import { Edit, Trash2, Eye, EyeOff, Zap, Lock, Percent, TrendingUp, Coins } from 'lucide-react';
 import { SmoothListSkeleton } from '@/components/ui/smooth-skeleton';
 import { CountdownTimer } from './CountdownTimer';
 import { OptimizedImage } from '@/components/ui/optimized-image';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { calculateCommission, formatFCFA } from '@/utils/commissionCalculator';
 import {
   AlertDialog,
   AlertDialogAction,

@@ -8,6 +8,7 @@ import { fr } from 'date-fns/locale';
 import { OrderDetailDialog } from '@/components/OrderDetailDialog';
 import { supabase } from "@/integrations/supabase/client";
 import { getProductImage, handleImageError } from '@/utils/productImageHelper';
+import { calculateCommission, formatFCFA, getCommissionStatus, getCommissionStatusDisplay } from '@/utils/commissionCalculator';
 
 interface Order {
   id: string;

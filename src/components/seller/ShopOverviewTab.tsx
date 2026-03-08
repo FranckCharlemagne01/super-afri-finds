@@ -23,6 +23,7 @@ import { calculateCommission, formatFCFA, getCommissionStatus } from '@/utils/co
 
 interface Product {
   id: string;
+  price: number;
   is_active?: boolean;
   reviews_count?: number;
   created_at: string;

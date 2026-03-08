@@ -56,12 +56,26 @@ const AuthWelcome = () => {
           }
 
           const role = roleData?.role || null;
-          const hasCompleteProfile = Boolean(profile?.country && profile?.city && role);
+          
+          // Pour les vendeurs, vérifier aussi l'existence de la boutique
+          let hasShop = true;
+          if (role === 'seller') {
+            const { data: shopData } = await supabase
+              .from('seller_shops')
+              .select('id')
+              .eq('seller_id', session.user.id)
+              .limit(1)
+              .maybeSingle();
+            hasShop = Boolean(shopData);
+          }
+
+          const hasCompleteProfile = Boolean(profile?.country && profile?.city && role && hasShop);
 
           console.log('[AuthWelcome] Profile completion check:', {
             country: profile?.country,
             city: profile?.city,
             role,
+            hasShop,
             hasCompleteProfile,
             isGoogleUser
           });

@@ -79,8 +79,21 @@ export function useProfileCompletion(user: User | null): ProfileCompletionStatus
         const city = profile?.city || null;
         const userRole = roleData?.role || null;
 
+        // Pour les vendeurs, vérifier aussi que la boutique existe
+        let hasShop = true;
+        if (userRole === 'seller') {
+          const { data: shopData } = await supabase
+            .from('seller_shops')
+            .select('id')
+            .eq('seller_id', user.id)
+            .limit(1)
+            .maybeSingle();
+          hasShop = Boolean(shopData);
+        }
+
         // Un profil est complet si country ET city sont renseignés ET un rôle existe
-        const isComplete = Boolean(country && city && userRole);
+        // ET si vendeur, une boutique existe
+        const isComplete = Boolean(country && city && userRole && hasShop);
 
         // Un utilisateur Google a besoin d'onboarding s'il n'a pas complété son profil
         const needsOnboarding = isGoogleUser && !isComplete;
@@ -90,6 +103,7 @@ export function useProfileCompletion(user: User | null): ProfileCompletionStatus
           country,
           city,
           userRole,
+          hasShop,
           isComplete,
           needsOnboarding
         });
@@ -224,8 +238,14 @@ export async function completeGoogleUserProfile(
       console.error('[completeGoogleUserProfile] user_metadata update error:', metaError);
     }
 
-    // 5. Rafraîchir la session pour propager les changements
-    await supabase.auth.refreshSession();
+    // 5. Rafraîchir la session pour propager les changements immédiatement
+    const { error: refreshError } = await supabase.auth.refreshSession();
+    if (refreshError) {
+      console.error('[completeGoogleUserProfile] Session refresh error:', refreshError);
+      // Tenter un second refresh après un court délai
+      await new Promise(resolve => setTimeout(resolve, 500));
+      await supabase.auth.refreshSession();
+    }
 
     console.log('[completeGoogleUserProfile] Success, role synced to user_metadata:', data.objective);
     return { success: true };

@@ -288,7 +288,6 @@ export const SellerOrders = () => {
                         </div>
                       );
                     })()}
-                    </div>
                   </div>
 
                   {/* Customer info */}

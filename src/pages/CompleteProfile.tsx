@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Globe, MapPin, ShoppingBag, Store, Sparkles, ChevronRight, CheckCircle2, Loader2 } from 'lucide-react';

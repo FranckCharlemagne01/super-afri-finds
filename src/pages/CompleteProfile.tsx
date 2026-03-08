@@ -86,6 +86,7 @@ const CompleteProfile = () => {
         city,
         objective,
         shopName: objective === 'seller' ? shopName : undefined,
+        shopDescription: objective === 'seller' && shopDescription.trim() ? shopDescription.trim() : undefined,
       });
 
       if (!result.success) {

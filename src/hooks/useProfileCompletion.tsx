@@ -212,6 +212,7 @@ export async function completeGoogleUserProfile(
           seller_id: userId,
           shop_name: data.shopName || 'Ma Boutique',
           shop_slug: shopSlug,
+          shop_description: data.shopDescription || null,
           is_active: true,
         });
 

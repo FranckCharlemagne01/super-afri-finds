@@ -254,7 +254,61 @@ export const ShopOverviewTab = memo(({
         ))}
       </div>
 
-      {/* Performance Chart - Mobile-First Enhanced */}
+      {/* 💰 Résumé financier - Commissions */}
+      <Card className="border-0 shadow-lg overflow-hidden rounded-2xl">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+            <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-500/10 flex items-center justify-center flex-shrink-0">
+              <Percent className="h-4 w-4 md:h-5 md:w-5 text-amber-600" />
+            </div>
+            <span>Résumé financier</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-3 md:p-5 pt-0">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-3">
+            {/* Produits publiés */}
+            <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/20">
+              <div className="flex items-center gap-2 mb-1.5">
+                <Package className="w-4 h-4 text-blue-600" />
+                <span className="text-[11px] font-semibold text-muted-foreground">Produits</span>
+              </div>
+              <p className="text-xl font-bold tabular-nums">{products.length}</p>
+            </div>
+
+            {/* Commissions en attente */}
+            <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20">
+              <div className="flex items-center gap-2 mb-1.5">
+                <Clock className="w-4 h-4 text-amber-600" />
+                <span className="text-[11px] font-semibold text-muted-foreground">En attente</span>
+              </div>
+              <p className="text-lg font-bold tabular-nums text-amber-600 dark:text-amber-400">
+                {formatFCFA(commissionSummary.pendingCommission)}
+              </p>
+            </div>
+
+            {/* Commissions validées */}
+            <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+              <div className="flex items-center gap-2 mb-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span className="text-[11px] font-semibold text-muted-foreground">Validées</span>
+              </div>
+              <p className="text-lg font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
+                {formatFCFA(commissionSummary.validatedCommission)}
+              </p>
+            </div>
+
+            {/* Commandes en attente */}
+            <div className="p-3 rounded-xl bg-purple-500/5 border border-purple-500/20">
+              <div className="flex items-center gap-2 mb-1.5">
+                <Coins className="w-4 h-4 text-purple-600" />
+                <span className="text-[11px] font-semibold text-muted-foreground">Cmd. en attente</span>
+              </div>
+              <p className="text-xl font-bold tabular-nums">{commissionSummary.pendingOrders}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card className="border-0 shadow-lg overflow-hidden rounded-2xl">
         <CardHeader className="pb-3 md:pb-4">
           <CardTitle className="flex items-center gap-2 text-base md:text-lg">

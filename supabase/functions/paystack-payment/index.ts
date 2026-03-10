@@ -255,6 +255,20 @@ serve(async (req) => {
         }
       }
 
+      // SECURITY: Server-side validation for wallet recharge
+      if (payment_type === 'wallet_recharge') {
+        if (!VALID_RECHARGE_AMOUNTS.includes(amount)) {
+          console.error(`❌ Invalid recharge amount: ${amount} FCFA`);
+          return new Response(JSON.stringify({ 
+            error: 'Montant de recharge invalide',
+            details: `Montants acceptés: ${VALID_RECHARGE_AMOUNTS.join(', ')} FCFA`
+          }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+      }
+
       // SECURITY: Sanitize product_data if present (remove any script tags, limit HTML)
       let sanitizedProductData = product_data;
       if (product_data) {

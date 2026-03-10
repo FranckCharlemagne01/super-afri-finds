@@ -21,7 +21,7 @@ import { useNavigate } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useStableAuth } from '@/hooks/useStableAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { calculateCommission, formatFCFA, getCommissionStatus, getSellerTiers, type SellerType } from '@/utils/commissionCalculator';
+import { formatFCFA, getSellerTiers, type SellerType } from '@/utils/commissionCalculator';
 
 interface Product {
   id: string;

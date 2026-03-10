@@ -23,7 +23,7 @@ const navItems: NavItem[] = [
   { id: 'overview', label: 'Ma Boutique', icon: LayoutDashboard, group: 'Principal' },
   { id: 'products', label: 'Produits', icon: Package, group: 'Principal' },
   { id: 'messages-orders', label: 'Commandes & Messages', icon: MessageSquare, group: 'Gestion' },
-  { id: 'tokens', label: 'Jetons & Abonnement', icon: Coins, group: 'Gestion' },
+  { id: 'tokens', label: 'Compte Djassa', icon: Wallet, group: 'Gestion' },
   { id: 'settings', label: 'Paramètres', icon: Settings, group: 'Réglages' },
 ];
 

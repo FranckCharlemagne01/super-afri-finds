@@ -77,7 +77,7 @@ const sectionTitles: Record<SellerSection, string> = {
   overview: 'Ma Boutique',
   products: 'Produits',
   'messages-orders': 'Commandes & Messages',
-  tokens: 'Jetons & Abonnement',
+  tokens: 'Compte Djassa',
   settings: 'Paramètres',
 };
 

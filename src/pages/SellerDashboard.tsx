@@ -24,7 +24,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 // ✅ Lazy load heavy tab components for faster initial render
 const ShopOverviewTab = lazy(() => import('@/components/seller/ShopOverviewTab').then(m => ({ default: m.ShopOverviewTab })));
 const ProductsTab = lazy(() => import('@/components/seller/ProductsTab').then(m => ({ default: m.ProductsTab })));
-const MessagesOrdersTab = lazy(() => import('@/components/seller/MessagesOrdersTab').then(m => ({ default: m.MessagesOrdersTab })));
+const MyOrdersTabs = lazy(() => import('@/components/orders/MyOrdersTabs').then(m => ({ default: m.MyOrdersTabs })));
+const MyMessagesTabs = lazy(() => import('@/components/messages/MyMessagesTabs').then(m => ({ default: m.MyMessagesTabs })));
 const TokensSubscriptionTab = lazy(() => import('@/components/seller/TokensSubscriptionTab').then(m => ({ default: m.TokensSubscriptionTab })));
 const ShopSettingsTab = lazy(() => import('@/components/seller/ShopSettingsTab').then(m => ({ default: m.ShopSettingsTab })));
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import {
-  LayoutDashboard, Package, MessageSquare, Wallet,
+  LayoutDashboard, Package, MessageSquare, Wallet, ShoppingBag,
   Settings, ChevronLeft, ChevronRight, Menu, X,
   Sun, Moon, LogOut, Store, ExternalLink, ArrowLeft
 } from 'lucide-react';

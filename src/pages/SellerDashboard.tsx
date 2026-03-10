@@ -566,9 +566,19 @@ const SellerDashboard = memo(() => {
             </Suspense>
           )}
 
-          {activeSection === 'messages-orders' && (
+          {activeSection === 'orders' && (
             <Suspense fallback={<SectionSkeleton />}>
-              <MessagesOrdersTab userId={userId} />
+              <Card className="border-0 shadow-lg overflow-hidden animate-in fade-in-0 duration-500 rounded-2xl p-3 md:p-5">
+                <MyOrdersTabs initialTab="sales" />
+              </Card>
+            </Suspense>
+          )}
+
+          {activeSection === 'messages' && (
+            <Suspense fallback={<SectionSkeleton />}>
+              <Card className="border-0 shadow-lg overflow-hidden animate-in fade-in-0 duration-500 rounded-2xl p-3 md:p-5">
+                <MyMessagesTabs initialTab="sales" />
+              </Card>
             </Suspense>
           )}
 

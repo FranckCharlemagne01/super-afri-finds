@@ -201,6 +201,15 @@ const About = () => {
               <Button
                 size="lg"
                 variant="outline"
+                onClick={() => navigate("/tarifs")}
+                className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10 font-bold text-base px-8"
+              >
+                <Eye className="w-5 h-5 mr-2" />
+                Voir les tarifs
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
                 onClick={() => navigate("/partner-dashboard")}
                 className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10 font-bold text-base px-8"
               >

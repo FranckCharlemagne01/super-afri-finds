@@ -442,6 +442,30 @@ const Index = () => {
               <MobileInfoDrawer />
             </div>
 
+            {/* Desktop Navigation Links */}
+            <nav className="hidden lg:flex items-center gap-1">
+              {[
+                { label: "Accueil", path: "/" },
+                { label: "Produits", path: "/categories" },
+                { label: "Tarifs", path: "/tarifs" },
+                { label: "À propos", path: "/about" },
+              ].map(({ label, path }) => (
+                <Button
+                  key={path}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(path)}
+                  className={`text-sm font-medium rounded-xl px-3 py-2 transition-colors ${
+                    location.pathname === path
+                      ? "text-primary bg-primary/10"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
+                  }`}
+                >
+                  {label}
+                </Button>
+              ))}
+            </nav>
+
             {/* Desktop Icons Only - Enhanced spacing */}
             <div className="hidden md:flex items-center gap-3 lg:gap-4">
               <Badge className="gradient-accent text-xs lg:text-sm px-3 py-1.5 rounded-full shadow-sm">

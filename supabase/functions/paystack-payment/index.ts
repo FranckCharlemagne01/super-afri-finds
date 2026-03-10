@@ -582,11 +582,13 @@ serve(async (req) => {
       return new Response(JSON.stringify({
         status: 'success',
         test_mode: false,
-        message: paymentRecord.payment_type === 'tokens'
-          ? 'Jetons ajoutés avec succès'
-          : (paymentRecord.payment_type === 'article_publication' 
-            ? 'Paiement vérifié et article publié avec succès' 
-            : 'Payment verified and premium access granted'),
+        message: paymentRecord.payment_type === 'wallet_recharge'
+          ? 'Compte Djassa rechargé avec succès'
+          : (paymentRecord.payment_type === 'tokens'
+            ? 'Jetons ajoutés avec succès'
+            : (paymentRecord.payment_type === 'article_publication' 
+              ? 'Paiement vérifié et article publié avec succès' 
+              : 'Payment verified and premium access granted')),
         data: paystackData.data
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

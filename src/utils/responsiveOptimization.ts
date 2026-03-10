@@ -9,15 +9,13 @@
 export function preventHorizontalScroll() {
   if (typeof window === 'undefined') return;
   
-  // Use 'clip' instead of 'hidden' to prevent Android scroll issues
-  // 'clip' blocks horizontal overflow without creating a new scroll context
   document.documentElement.style.overflowX = 'clip';
   document.body.style.overflowX = 'clip';
   document.body.style.maxWidth = '100vw';
   
-  // Ensure vertical scroll is always enabled
-  document.body.style.overflowY = 'auto';
-  document.documentElement.style.overflowY = 'auto';
+  // Let the document handle vertical scroll natively (no overflow-y: auto)
+  document.body.style.overflowY = '';
+  document.documentElement.style.overflowY = '';
 }
 
 /**

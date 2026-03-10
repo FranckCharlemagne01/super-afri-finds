@@ -1,18 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { 
-  Coins, 
+  Wallet, 
   TrendingUp, 
   Clock, 
   ShoppingCart,
   Calendar,
-  Zap
+  Zap,
+  Coins,
+  History,
+  ArrowUpRight,
+  ArrowDownRight,
+  RefreshCw,
+  Percent
 } from 'lucide-react';
 import { TokenTransactionHistory } from '@/components/TokenTransactionHistory';
 import { TokenPurchaseDialog } from '@/components/TokenPurchaseDialog';
+import { useStableAuth } from '@/hooks/useStableAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { formatFCFA, getSellerTiers, type SellerType } from '@/utils/commissionCalculator';
 
 interface Product {
   created_at: string;
@@ -47,6 +56,24 @@ export const TokensSubscriptionTab = ({
   onRefresh
 }: TokensSubscriptionTabProps) => {
   const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
+  const { user } = useStableAuth();
+  const [walletBalance, setWalletBalance] = useState<number>(0);
+  const [sellerType, setSellerType] = useState<SellerType>('particulier');
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const fetchWallet = async () => {
+      const [walletRes, profileRes] = await Promise.all([
+        supabase.from('seller_tokens').select('wallet_balance_fcfa').eq('seller_id', user.id).maybeSingle(),
+        supabase.from('profiles').select('seller_type').eq('user_id', user.id).maybeSingle(),
+      ]);
+      if (walletRes.data) setWalletBalance(walletRes.data.wallet_balance_fcfa || 0);
+      if (profileRes.data?.seller_type) setSellerType(profileRes.data.seller_type as SellerType);
+    };
+    fetchWallet();
+  }, [user?.id]);
+
+  const sellerTier = getSellerTiers().find(t => t.type === sellerType);
 
   const thisMonthProducts = products.filter(p => {
     const createdAt = new Date(p.created_at);
@@ -60,67 +87,75 @@ export const TokensSubscriptionTab = ({
 
   return (
     <div className="space-y-4 md:space-y-6 animate-in fade-in-0 duration-500">
-      {/* Token Balance Overview */}
+      {/* Compte Djassa Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         <Card className="border-0 shadow-lg bg-gradient-to-br from-primary/10 via-primary/5 to-background overflow-hidden relative group">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           <CardHeader className="relative">
             <CardTitle className="flex items-center gap-2">
               <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-                <Coins className="h-5 w-5 text-primary" />
+                <Wallet className="h-5 w-5 text-primary" />
               </div>
-              <span className="break-words">Solde de Jetons</span>
+              <span className="break-words">Compte Djassa</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="relative">
             <div className="space-y-4">
+              {/* FCFA Balance */}
               <div className="relative">
+                <p className="text-xs text-muted-foreground mb-1">Solde disponible</p>
                 <div className="flex items-baseline gap-2 mb-2 flex-wrap">
-                  <span className="text-4xl md:text-5xl font-bold text-primary tabular-nums">{tokenBalance}</span>
-                  <span className="text-sm md:text-base text-muted-foreground break-words">jetons disponibles</span>
+                  <span className="text-3xl md:text-4xl font-bold text-primary tabular-nums">
+                    {formatFCFA(walletBalance)}
+                  </span>
                 </div>
-                {tokenBalance === 0 && (
-                  <Badge variant="destructive" className="animate-pulse">Aucun jeton disponible</Badge>
+                {walletBalance === 0 && (
+                  <Badge variant="destructive" className="animate-pulse">Solde insuffisant</Badge>
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-3 md:gap-4 p-3 md:p-4 bg-card rounded-xl border border-border/50 shadow-sm">
-                <div className="space-y-2">
-                  <p className="text-xs md:text-sm text-muted-foreground font-medium truncate">Jetons Gratuits</p>
-                  <p className="text-2xl md:text-3xl font-bold text-green-600 tabular-nums">{freeTokens}</p>
+              {/* Seller type info */}
+              <div className="p-3 bg-card rounded-xl border border-border/50 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground font-medium">Type de compte</p>
+                    <p className="text-lg font-bold capitalize">{sellerTier?.label}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground font-medium">Commission</p>
+                    <p className="text-lg font-bold text-primary">{sellerTier?.rate}%</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Token balance (secondary info) */}
+              <div className="grid grid-cols-2 gap-3 p-3 bg-card rounded-xl border border-border/50 shadow-sm">
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground font-medium truncate">Jetons gratuits</p>
+                  <p className="text-xl font-bold text-green-600 tabular-nums">{freeTokens}</p>
                   {freeTokensExpiresAt && freeTokens > 0 && (
-                    <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                    <p className="text-[10px] text-muted-foreground flex items-center gap-1">
                       <Clock className="h-3 w-3 flex-shrink-0" />
                       <span className="truncate">Expire le {new Date(freeTokensExpiresAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
                     </p>
                   )}
-                  {/* Mini progress indicator */}
-                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-500" style={{ width: `${Math.min((freeTokens / 100) * 100, 100)}%` }} />
-                  </div>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-xs md:text-sm text-muted-foreground font-medium truncate">Jetons Payants</p>
-                  <p className="text-2xl md:text-3xl font-bold text-purple-600 tabular-nums">{paidTokens}</p>
-                  <p className="text-xs text-muted-foreground mt-1 truncate">Sans expiration</p>
-                  {/* Mini progress indicator */}
-                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-500" style={{ width: `${Math.min((paidTokens / 100) * 100, 100)}%` }} />
-                  </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground font-medium truncate">Jetons payants</p>
+                  <p className="text-xl font-bold text-purple-600 tabular-nums">{paidTokens}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">Sans expiration</p>
                 </div>
               </div>
 
-              {/* Masquer le bouton d'achat pendant la période d'essai */}
-              {!trialStatus.isInTrial && (
-                <Button 
-                  onClick={() => setShowPurchaseDialog(true)}
-                  size="lg"
-                  className="w-full bg-gradient-to-r from-primary via-primary to-primary/80 hover:shadow-lg transition-all hover:scale-105 active:scale-95 touch-manipulation"
-                >
-                  <ShoppingCart className="h-5 w-5 mr-2" />
-                  <span className="break-words">Acheter des jetons</span>
-                </Button>
-              )}
+              {/* Recharge button */}
+              <Button 
+                onClick={() => setShowPurchaseDialog(true)}
+                size="lg"
+                className="w-full bg-gradient-to-r from-primary via-primary to-primary/80 hover:shadow-lg transition-all hover:scale-105 active:scale-95 touch-manipulation"
+              >
+                <Wallet className="h-5 w-5 mr-2" />
+                <span>Recharger mon Compte Djassa</span>
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -132,7 +167,7 @@ export const TokensSubscriptionTab = ({
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                 <TrendingUp className="h-5 w-5 text-primary" />
               </div>
-              <span className="break-words">Utilisation des Jetons</span>
+              <span className="break-words">Activité</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="relative">
@@ -175,9 +210,7 @@ export const TokensSubscriptionTab = ({
                     <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center">
                       <Clock className="h-4 w-4 text-orange-600" />
                     </div>
-                    <span className="text-sm font-medium text-orange-600 truncate">
-                      Période d'essai
-                    </span>
+                    <span className="text-sm font-medium text-orange-600 truncate">Période d'essai</span>
                   </div>
                   <Progress 
                     value={((new Date(trialStatus.trialEndDate).getTime() - new Date().getTime()) / (28 * 24 * 60 * 60 * 1000)) * 100}
@@ -193,15 +226,52 @@ export const TokensSubscriptionTab = ({
         </Card>
       </div>
 
+      {/* Commission info card */}
+      <Card className="border-0 shadow-lg overflow-hidden rounded-2xl">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+              <Percent className="h-4 w-4 text-amber-600" />
+            </div>
+            <span>Comment fonctionne la commission ?</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-3 md:p-5 pt-0">
+          <div className="space-y-3 text-sm text-muted-foreground">
+            <div className="flex items-start gap-2">
+              <span className="text-primary font-bold">1.</span>
+              <span>La commission ({sellerTier?.rate}%) est calculée sur le total de la commande</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-primary font-bold">2.</span>
+              <span>Elle est prélevée du Compte Djassa <strong>après confirmation</strong> de la commande</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-primary font-bold">3.</span>
+              <span>Si le client annule → commission <strong>automatiquement remboursée</strong></span>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-primary font-bold">4.</span>
+              <span>Après 48h sans plainte → commission <strong>définitivement validée</strong></span>
+            </div>
+          </div>
+          <div className="mt-3 p-2.5 rounded-lg bg-amber-500/5 border border-amber-500/20">
+            <p className="text-xs text-amber-700 dark:text-amber-400">
+              ⚠️ Commission minimum : 200 FCFA par commande
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Transaction History */}
       <Card className="border-0 shadow-lg overflow-hidden relative group">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         <CardHeader className="relative">
           <CardTitle className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Coins className="h-5 w-5 text-primary" />
+              <History className="h-5 w-5 text-primary" />
             </div>
-            <span className="break-words">Historique des Transactions</span>
+            <span className="break-words">Historique des transactions</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="relative">
@@ -209,14 +279,12 @@ export const TokensSubscriptionTab = ({
         </CardContent>
       </Card>
 
-      {/* Purchase Dialog - Masqué pendant la période d'essai */}
-      {!trialStatus.isInTrial && (
-        <TokenPurchaseDialog
-          open={showPurchaseDialog}
-          onOpenChange={setShowPurchaseDialog}
-          onPurchaseComplete={onRefresh}
-        />
-      )}
+      {/* Purchase/Recharge Dialog */}
+      <TokenPurchaseDialog
+        open={showPurchaseDialog}
+        onOpenChange={setShowPurchaseDialog}
+        onPurchaseComplete={onRefresh}
+      />
     </div>
   );
 };

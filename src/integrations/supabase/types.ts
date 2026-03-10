@@ -445,6 +445,8 @@ export type Database = {
       }
       orders: {
         Row: {
+          commission_amount: number | null
+          commission_status: string | null
           created_at: string
           customer_id: string
           customer_name: string
@@ -462,6 +464,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          commission_amount?: number | null
+          commission_status?: string | null
           created_at?: string
           customer_id: string
           customer_name: string
@@ -479,6 +483,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          commission_amount?: number | null
+          commission_status?: string | null
           created_at?: string
           customer_id?: string
           customer_name?: string
@@ -604,6 +610,45 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      product_price_tiers: {
+        Row: {
+          created_at: string
+          id: string
+          min_quantity: number
+          product_id: string
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          min_quantity: number
+          product_id: string
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          min_quantity?: number
+          product_id?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_price_tiers_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_price_tiers_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       products: {
         Row: {
@@ -757,6 +802,7 @@ export type Database = {
           premium_expires_at: string | null
           push_token: string | null
           role: string | null
+          seller_type: Database["public"]["Enums"]["seller_type"] | null
           trial_bonus_tokens_given: boolean | null
           trial_end_date: string | null
           trial_start_date: string | null
@@ -783,6 +829,7 @@ export type Database = {
           premium_expires_at?: string | null
           push_token?: string | null
           role?: string | null
+          seller_type?: Database["public"]["Enums"]["seller_type"] | null
           trial_bonus_tokens_given?: boolean | null
           trial_end_date?: string | null
           trial_start_date?: string | null
@@ -809,6 +856,7 @@ export type Database = {
           premium_expires_at?: string | null
           push_token?: string | null
           role?: string | null
+          seller_type?: Database["public"]["Enums"]["seller_type"] | null
           trial_bonus_tokens_given?: boolean | null
           trial_end_date?: string | null
           trial_start_date?: string | null
@@ -990,6 +1038,7 @@ export type Database = {
           seller_id: string
           token_balance: number
           updated_at: string
+          wallet_balance_fcfa: number
         }
         Insert: {
           bonus_tokens_count?: number | null
@@ -1001,6 +1050,7 @@ export type Database = {
           seller_id: string
           token_balance?: number
           updated_at?: string
+          wallet_balance_fcfa?: number
         }
         Update: {
           bonus_tokens_count?: number | null
@@ -1012,6 +1062,7 @@ export type Database = {
           seller_id?: string
           token_balance?: number
           updated_at?: string
+          wallet_balance_fcfa?: number
         }
         Relationships: []
       }
@@ -1522,6 +1573,7 @@ export type Database = {
           premium_expires_at: string | null
           push_token: string | null
           role: string | null
+          seller_type: Database["public"]["Enums"]["seller_type"] | null
           trial_bonus_tokens_given: boolean | null
           trial_end_date: string | null
           trial_start_date: string | null
@@ -1574,6 +1626,10 @@ export type Database = {
         }
       }
       get_security_dashboard_stats: { Args: never; Returns: Json }
+      get_seller_commission_rate: {
+        Args: { _seller_id: string }
+        Returns: number
+      }
       get_seller_orders: {
         Args: never
         Returns: {
@@ -1731,6 +1787,7 @@ export type Database = {
       verify_email_with_token: { Args: { _token: string }; Returns: Json }
     }
     Enums: {
+      seller_type: "particulier" | "pro" | "premium"
       user_role:
         | "buyer"
         | "seller"
@@ -1868,6 +1925,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      seller_type: ["particulier", "pro", "premium"],
       user_role: [
         "buyer",
         "seller",

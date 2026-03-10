@@ -39,6 +39,9 @@ const TOKEN_PRICES: Record<number, number> = {
   65: 10000,
 };
 
+// Valid wallet recharge amounts (FCFA)
+const VALID_RECHARGE_AMOUNTS = [5000, 10000, 20000, 50000];
+
 // SECURITY: Input validation schemas
 const productDataSchema = z.object({
   title: z.string().trim().min(3).max(200),
@@ -58,8 +61,8 @@ const initializePaymentSchema = z.object({
   user_id: z.string().uuid(),
   email: z.string().email().max(255),
   amount: z.number().int().min(100).max(10000000),
-  payment_type: z.enum(['tokens', 'article_publication', 'subscription']),
-  tokens_amount: z.number().int().min(5).max(10000).optional(),
+  payment_type: z.enum(['tokens', 'article_publication', 'subscription', 'wallet_recharge']),
+  tokens_amount: z.number().int().min(0).max(10000).optional(),
   payment_method: z.enum(['card', 'orange_money', 'mtn_money', 'moov_money', 'wave_money']).optional(),
   product_data: productDataSchema.optional(),
 }).strict();
@@ -252,6 +255,20 @@ serve(async (req) => {
         }
       }
 
+      // SECURITY: Server-side validation for wallet recharge
+      if (payment_type === 'wallet_recharge') {
+        if (!VALID_RECHARGE_AMOUNTS.includes(amount)) {
+          console.error(`❌ Invalid recharge amount: ${amount} FCFA`);
+          return new Response(JSON.stringify({ 
+            error: 'Montant de recharge invalide',
+            details: `Montants acceptés: ${VALID_RECHARGE_AMOUNTS.join(', ')} FCFA`
+          }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+      }
+
       // SECURITY: Sanitize product_data if present (remove any script tags, limit HTML)
       let sanitizedProductData = product_data;
       if (product_data) {
@@ -265,9 +282,11 @@ serve(async (req) => {
       console.log('✅ Input validated. Initializing payment for user:', user_id);
 
       // Generate unique reference based on payment type
-      const reference = payment_type === 'tokens' 
-        ? `tokens_${user_id}_${Date.now()}`
-        : `premium_${user_id}_${Date.now()}`;
+      const reference = payment_type === 'wallet_recharge'
+        ? `wallet_${user_id}_${Date.now()}`
+        : (payment_type === 'tokens' 
+          ? `tokens_${user_id}_${Date.now()}`
+          : `premium_${user_id}_${Date.now()}`);
 
       // Store payment record in database with sanitized data and mode
       const { error: dbError } = await supabase
@@ -334,7 +353,8 @@ serve(async (req) => {
             payment_type,
             tokens_amount,
             payment_method,
-            product: payment_type === 'tokens' ? `Achat de ${tokens_amount} jetons` : (payment_type === 'article_publication' ? 'Publication d\'article' : 'Premium Seller Access')
+            product: payment_type === 'wallet_recharge' ? `Recharge Compte Djassa ${amount} FCFA` : (payment_type === 'tokens' ? `Achat de ${tokens_amount} jetons` : (payment_type === 'article_publication' ? 'Publication d\'article' : 'Premium Seller Access')),
+            recharge_amount: payment_type === 'wallet_recharge' ? amount : undefined
           }
         }),
       });
@@ -455,7 +475,48 @@ serve(async (req) => {
       console.log('💰 LIVE MODE: Processing real payment and adding credits');
       
       let updateError;
-      if (paymentRecord.payment_type === 'tokens') {
+      if (paymentRecord.payment_type === 'wallet_recharge') {
+        // Recharge Compte Djassa
+        const rechargeAmount = paystackData.data.amount / 100;
+        console.log('💰 Processing wallet recharge:', rechargeAmount, 'FCFA for user:', paymentRecord.user_id);
+        
+        // Ensure seller_tokens row exists
+        await supabase.rpc('initialize_seller_tokens', { _seller_id: paymentRecord.user_id });
+        
+        // Add to wallet balance
+        const { error: walletError } = await supabase
+          .from('seller_tokens')
+          .update({ 
+            wallet_balance_fcfa: supabase.rpc ? undefined : 0, // handled below
+            updated_at: new Date().toISOString()
+          })
+          .eq('seller_id', paymentRecord.user_id);
+
+        // Use raw SQL via RPC to atomically increment
+        const { error: rpcError } = await supabase.rpc('recharge_wallet', {
+          _seller_id: paymentRecord.user_id,
+          _amount: rechargeAmount,
+          _paystack_reference: reference
+        });
+        
+        updateError = rpcError;
+        
+        if (!updateError) {
+          // Update payment status
+          await supabase
+            .from('premium_payments')
+            .update({ status: 'completed', payment_date: new Date().toISOString() })
+            .eq('paystack_reference', reference);
+          
+          const { data: walletData } = await supabase
+            .from('seller_tokens')
+            .select('wallet_balance_fcfa')
+            .eq('seller_id', paymentRecord.user_id)
+            .single();
+          
+          console.log('📊 New wallet balance:', walletData?.wallet_balance_fcfa, 'FCFA');
+        }
+      } else if (paymentRecord.payment_type === 'tokens') {
         // Achat de jetons
         const tokensAmount = paystackData.data.metadata?.tokens_amount || 0;
         
@@ -483,7 +544,6 @@ serve(async (req) => {
         } else {
           console.log('✅ Tokens added successfully to seller:', paymentRecord.user_id);
           
-          // Vérifier que les jetons ont bien été ajoutés
           const { data: tokenData } = await supabase
             .from('seller_tokens')
             .select('token_balance')
@@ -522,11 +582,13 @@ serve(async (req) => {
       return new Response(JSON.stringify({
         status: 'success',
         test_mode: false,
-        message: paymentRecord.payment_type === 'tokens'
-          ? 'Jetons ajoutés avec succès'
-          : (paymentRecord.payment_type === 'article_publication' 
-            ? 'Paiement vérifié et article publié avec succès' 
-            : 'Payment verified and premium access granted'),
+        message: paymentRecord.payment_type === 'wallet_recharge'
+          ? 'Compte Djassa rechargé avec succès'
+          : (paymentRecord.payment_type === 'tokens'
+            ? 'Jetons ajoutés avec succès'
+            : (paymentRecord.payment_type === 'article_publication' 
+              ? 'Paiement vérifié et article publié avec succès' 
+              : 'Payment verified and premium access granted')),
         data: paystackData.data
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

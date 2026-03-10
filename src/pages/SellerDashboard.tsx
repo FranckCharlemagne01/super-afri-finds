@@ -76,7 +76,8 @@ interface Shop {
 const sectionTitles: Record<SellerSection, string> = {
   overview: 'Ma Boutique',
   products: 'Produits',
-  'messages-orders': 'Commandes & Messages',
+  orders: 'Commandes',
+  messages: 'Messages',
   tokens: 'Compte Djassa',
   settings: 'Paramètres',
 };

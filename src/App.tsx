@@ -42,6 +42,7 @@ const ShopPage = lazy(() => import("./pages/ShopPage"));
 const CategoryPage = lazy(() => import("./pages/CategoryPage"));
 const LegalNotice = lazy(() => import("./pages/LegalNotice"));
 const About = lazy(() => import("./pages/About"));
+const Pricing = lazy(() => import("./pages/Pricing"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const MessagesPage = lazy(() => import("./pages/MessagesPage"));
 const CategoriesPage = lazy(() => import("./pages/CategoriesPage"));
@@ -169,6 +170,7 @@ const AnimatedRoutes = () => {
             <Route path="/messages" element={<MessagesPage />} />
             <Route path="/legal" element={<LegalNotice />} />
             <Route path="/about" element={<About />} />
+            <Route path="/tarifs" element={<Pricing />} />
             <Route path="/demo" element={<DemoVideo />} />
             <Route path="/install" element={<InstallApp />} />
             <Route path="/diagnostic" element={<Diagnostic />} />

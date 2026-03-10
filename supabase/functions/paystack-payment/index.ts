@@ -475,7 +475,48 @@ serve(async (req) => {
       console.log('💰 LIVE MODE: Processing real payment and adding credits');
       
       let updateError;
-      if (paymentRecord.payment_type === 'tokens') {
+      if (paymentRecord.payment_type === 'wallet_recharge') {
+        // Recharge Compte Djassa
+        const rechargeAmount = paystackData.data.amount / 100;
+        console.log('💰 Processing wallet recharge:', rechargeAmount, 'FCFA for user:', paymentRecord.user_id);
+        
+        // Ensure seller_tokens row exists
+        await supabase.rpc('initialize_seller_tokens', { _seller_id: paymentRecord.user_id });
+        
+        // Add to wallet balance
+        const { error: walletError } = await supabase
+          .from('seller_tokens')
+          .update({ 
+            wallet_balance_fcfa: supabase.rpc ? undefined : 0, // handled below
+            updated_at: new Date().toISOString()
+          })
+          .eq('seller_id', paymentRecord.user_id);
+
+        // Use raw SQL via RPC to atomically increment
+        const { error: rpcError } = await supabase.rpc('recharge_wallet', {
+          _seller_id: paymentRecord.user_id,
+          _amount: rechargeAmount,
+          _paystack_reference: reference
+        });
+        
+        updateError = rpcError;
+        
+        if (!updateError) {
+          // Update payment status
+          await supabase
+            .from('premium_payments')
+            .update({ status: 'completed', payment_date: new Date().toISOString() })
+            .eq('paystack_reference', reference);
+          
+          const { data: walletData } = await supabase
+            .from('seller_tokens')
+            .select('wallet_balance_fcfa')
+            .eq('seller_id', paymentRecord.user_id)
+            .single();
+          
+          console.log('📊 New wallet balance:', walletData?.wallet_balance_fcfa, 'FCFA');
+        }
+      } else if (paymentRecord.payment_type === 'tokens') {
         // Achat de jetons
         const tokensAmount = paystackData.data.metadata?.tokens_amount || 0;
         
@@ -503,7 +544,6 @@ serve(async (req) => {
         } else {
           console.log('✅ Tokens added successfully to seller:', paymentRecord.user_id);
           
-          // Vérifier que les jetons ont bien été ajoutés
           const { data: tokenData } = await supabase
             .from('seller_tokens')
             .select('token_balance')

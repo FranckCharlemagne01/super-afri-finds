@@ -39,6 +39,9 @@ const TOKEN_PRICES: Record<number, number> = {
   65: 10000,
 };
 
+// Valid wallet recharge amounts (FCFA)
+const VALID_RECHARGE_AMOUNTS = [5000, 10000, 20000, 50000];
+
 // SECURITY: Input validation schemas
 const productDataSchema = z.object({
   title: z.string().trim().min(3).max(200),

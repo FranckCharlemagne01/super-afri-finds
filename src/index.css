@@ -128,22 +128,24 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Scroll global natif */
+  /* Scroll global natif — 'clip' prevents horizontal overflow without blocking vertical scroll on Android */
   min-height: 100%;
   height: auto;
-  overflow-x: hidden;
+  overflow-x: clip;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
 body {
   /* Un seul scroll principal (vertical) */
-  overflow-x: hidden;
+  overflow-x: clip;
   overflow-y: auto;
   min-height: 100%;
   min-height: 100dvh;
   height: auto;
   -webkit-overflow-scrolling: touch;
+  /* Android: ensure touch scrolling works */
+  touch-action: pan-y;
 }
 
 /* Root container sizing */

@@ -1792,6 +1792,7 @@ export type Database = {
         Args: { _first_name: string; _last_name: string; _phone: string }
         Returns: Json
       }
+      validate_pending_commissions: { Args: never; Returns: number }
       verify_email_with_token: { Args: { _token: string }; Returns: Json }
     }
     Enums: {

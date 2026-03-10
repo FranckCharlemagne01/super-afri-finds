@@ -21,7 +21,7 @@ import { useNavigate } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useStableAuth } from '@/hooks/useStableAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { calculateCommission, formatFCFA, getCommissionStatus, getSellerTiers, type SellerType } from '@/utils/commissionCalculator';
+import { formatFCFA, getSellerTiers, type SellerType } from '@/utils/commissionCalculator';
 
 interface Product {
   id: string;
@@ -84,7 +84,7 @@ export const ShopOverviewTab = memo(({
     fetchData();
   }, [user?.id]);
 
-  // Commission summary
+  // Commission summary from real DB commission_status
   const commissionSummary = useMemo(() => {
     let pendingCommission = 0;
     let validatedCommission = 0;
@@ -92,20 +92,20 @@ export const ShopOverviewTab = memo(({
     let pendingOrders = 0;
 
     orders.forEach(order => {
-      const c = calculateCommission(order.product_price, order.quantity, sellerType);
-      const status = getCommissionStatus(order.status, order.is_confirmed_by_seller, order.updated_at);
-      if (status === 'pending') {
-        pendingCommission += c.commissionAmount;
+      const amount = order.commission_amount || 0;
+      const status = order.commission_status || 'none';
+      if (status === 'reserved' || status === 'pending_validation') {
+        pendingCommission += amount;
         pendingOrders++;
       } else if (status === 'validated') {
-        validatedCommission += c.commissionAmount;
+        validatedCommission += amount;
       } else if (status === 'refunded') {
-        refundedCommission += c.commissionAmount;
+        refundedCommission += amount;
       }
     });
 
     return { pendingCommission, validatedCommission, refundedCommission, pendingOrders };
-  }, [orders, sellerType]);
+  }, [orders]);
 
   const { activeProducts, totalReviews, thisMonthProducts } = useMemo(() => {
     const active = products.filter(p => p.is_active).length;

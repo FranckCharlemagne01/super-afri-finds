@@ -61,8 +61,8 @@ const initializePaymentSchema = z.object({
   user_id: z.string().uuid(),
   email: z.string().email().max(255),
   amount: z.number().int().min(100).max(10000000),
-  payment_type: z.enum(['tokens', 'article_publication', 'subscription']),
-  tokens_amount: z.number().int().min(5).max(10000).optional(),
+  payment_type: z.enum(['tokens', 'article_publication', 'subscription', 'wallet_recharge']),
+  tokens_amount: z.number().int().min(0).max(10000).optional(),
   payment_method: z.enum(['card', 'orange_money', 'mtn_money', 'moov_money', 'wave_money']).optional(),
   product_data: productDataSchema.optional(),
 }).strict();

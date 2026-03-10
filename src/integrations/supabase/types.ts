@@ -1741,6 +1741,14 @@ export type Database = {
       }
       is_in_trial_period: { Args: { _user_id: string }; Returns: boolean }
       is_product_boosted: { Args: { _product_id: string }; Returns: boolean }
+      recharge_wallet: {
+        Args: {
+          _amount: number
+          _paystack_reference: string
+          _seller_id: string
+        }
+        Returns: boolean
+      }
       search_products: {
         Args: {
           search_query: string

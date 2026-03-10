@@ -42,6 +42,7 @@ const ShopPage = lazy(() => import("./pages/ShopPage"));
 const CategoryPage = lazy(() => import("./pages/CategoryPage"));
 const LegalNotice = lazy(() => import("./pages/LegalNotice"));
 const About = lazy(() => import("./pages/About"));
+const Pricing = lazy(() => import("./pages/Pricing"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const MessagesPage = lazy(() => import("./pages/MessagesPage"));
 const CategoriesPage = lazy(() => import("./pages/CategoriesPage"));

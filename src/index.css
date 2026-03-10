@@ -128,32 +128,20 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Scroll global natif — 'clip' prevents horizontal overflow without blocking vertical scroll on Android */
-  min-height: 100%;
-  height: auto;
+  /* Scroll natif — pas de conteneur scroll imbriqué */
+  height: 100%;
   overflow-x: clip;
-  overflow-y: auto;
+  overflow-y: visible;
   -webkit-overflow-scrolling: touch;
 }
 
 body {
-  /* Un seul scroll principal (vertical) */
+  /* Scroll principal du document — Android-safe */
   overflow-x: clip;
-  overflow-y: auto;
+  overflow-y: visible;
   min-height: 100%;
-  min-height: 100dvh;
-  height: auto;
   -webkit-overflow-scrolling: touch;
-  /* Android: ensure touch scrolling works */
-  touch-action: pan-y;
-}
-
-/* Root container sizing */
-#root {
-  min-height: 100dvh;
-  height: auto;
-  display: flex;
-  flex-direction: column;
+  touch-action: manipulation;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -86,17 +86,11 @@ const AnimatedRoutes = () => {
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={location.pathname}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ 
-          type: "spring", 
-          stiffness: 380, 
-          damping: 35,
-          mass: 0.8 
-        }}
+        transition={{ duration: 0.15, ease: "easeOut" }}
         className="flex-1 flex flex-col"
-        style={{ minHeight: '100dvh', overflowY: 'auto' }}
       >
         <Suspense fallback={<PageLoadingFallback />}>
           <Routes location={location}>

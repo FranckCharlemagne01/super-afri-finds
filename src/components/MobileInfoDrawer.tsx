@@ -54,6 +54,15 @@ export const MobileInfoDrawer = () => {
                   <button 
                     onClick={() => {
                       setIsOpen(false);
+                      navigate("/tarifs");
+                    }}
+                    className="block text-sm text-muted-foreground hover:text-foreground transition-colors text-left w-full"
+                  >
+                    Tarifs et abonnements
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setIsOpen(false);
                       navigate("/about");
                     }}
                     className="block text-sm text-muted-foreground hover:text-foreground transition-colors text-left w-full"

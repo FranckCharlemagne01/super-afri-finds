@@ -282,9 +282,11 @@ serve(async (req) => {
       console.log('✅ Input validated. Initializing payment for user:', user_id);
 
       // Generate unique reference based on payment type
-      const reference = payment_type === 'tokens' 
-        ? `tokens_${user_id}_${Date.now()}`
-        : `premium_${user_id}_${Date.now()}`;
+      const reference = payment_type === 'wallet_recharge'
+        ? `wallet_${user_id}_${Date.now()}`
+        : (payment_type === 'tokens' 
+          ? `tokens_${user_id}_${Date.now()}`
+          : `premium_${user_id}_${Date.now()}`);
 
       // Store payment record in database with sanitized data and mode
       const { error: dbError } = await supabase

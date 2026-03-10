@@ -1,26 +1,28 @@
 /**
- * Système de commission progressive Djassa
- * La commission est basée sur le prix unitaire du produit
+ * Système de commission Djassa
+ * La commission est basée sur le type de vendeur (Particulier, Pro, Premium)
  */
 
-interface CommissionTier {
-  min: number;
-  max: number;
-  rate: number; // percentage
+export type SellerType = 'particulier' | 'pro' | 'premium';
+
+interface SellerCommissionTier {
+  type: SellerType;
+  label: string;
+  rate: number;
+  maxProducts: number | null;
+  monthlyFee: number;
 }
 
-const COMMISSION_TIERS: CommissionTier[] = [
-  { min: 1000, max: 10000, rate: 5 },
-  { min: 10001, max: 15000, rate: 6 },
-  { min: 15001, max: 20000, rate: 8 },
-  { min: 20001, max: 30000, rate: 10 },
-  { min: 30001, max: 50000, rate: 12 },
-  { min: 50001, max: 80000, rate: 15 },
-  { min: 80001, max: 100000, rate: 18 },
-  { min: 100001, max: Infinity, rate: 20 },
+export const SELLER_COMMISSION_TIERS: SellerCommissionTier[] = [
+  { type: 'particulier', label: 'Particulier', rate: 15, maxProducts: 10, monthlyFee: 0 },
+  { type: 'pro', label: 'Pro', rate: 10, maxProducts: 100, monthlyFee: 10000 },
+  { type: 'premium', label: 'Premium', rate: 5, maxProducts: null, monthlyFee: 25000 },
 ];
 
-// Délai de validation de la commission (48 heures en ms)
+/** Commission minimum en FCFA */
+export const MIN_COMMISSION_FCFA = 200;
+
+/** Délai de validation de la commission (48 heures en ms) */
 export const COMMISSION_VALIDATION_DELAY_MS = 48 * 60 * 60 * 1000;
 
 export interface CommissionInfo {
@@ -35,21 +37,30 @@ export interface CommissionInfo {
 }
 
 /**
+ * Retourne le taux de commission selon le type de vendeur
+ */
+export function getCommissionRateBySellerType(sellerType: SellerType = 'particulier'): number {
+  const tier = SELLER_COMMISSION_TIERS.find(t => t.type === sellerType);
+  return tier ? tier.rate : 15;
+}
+
+/**
  * Calcule la commission Djassa pour un produit
  * @param unitPrice Prix unitaire du produit
  * @param quantity Quantité (défaut: 1)
+ * @param sellerType Type de vendeur (défaut: 'particulier')
  */
-export function calculateCommission(unitPrice: number, quantity: number = 1): CommissionInfo {
-  const tier = COMMISSION_TIERS.find(t => unitPrice >= t.min && unitPrice <= t.max);
-  const rate = tier ? tier.rate : unitPrice < 1000 ? 5 : 20;
+export function calculateCommission(unitPrice: number, quantity: number = 1, sellerType: SellerType = 'particulier'): CommissionInfo {
+  const rate = getCommissionRateBySellerType(sellerType);
   const totalPrice = unitPrice * quantity;
-  const commissionAmount = Math.round(totalPrice * rate / 100);
+  const rawCommission = Math.round(totalPrice * rate / 100);
+  const commissionAmount = Math.max(rawCommission, MIN_COMMISSION_FCFA);
   const sellerGain = totalPrice - commissionAmount;
 
   return { rate, commissionAmount, sellerGain, totalPrice };
 }
 
-export type CommissionStatus = 'pending' | 'validated' | 'cancelled';
+export type CommissionStatus = 'pending' | 'validated' | 'cancelled' | 'refunded';
 
 /**
  * Détermine le statut de la commission basé sur le statut de la commande et la date de confirmation
@@ -59,7 +70,7 @@ export function getCommissionStatus(
   isConfirmedBySeller: boolean | undefined,
   updatedAt: string
 ): CommissionStatus {
-  if (orderStatus === 'cancelled') return 'cancelled';
+  if (orderStatus === 'cancelled') return 'refunded';
   
   if (isConfirmedBySeller && orderStatus === 'delivered') {
     const confirmedTime = new Date(updatedAt).getTime();
@@ -80,7 +91,7 @@ export function getCommissionStatusDisplay(status: CommissionStatus) {
     case 'validated':
       return {
         label: 'Validée',
-        icon: '✅',
+        icon: '🟢',
         bgColor: 'bg-emerald-500/10',
         textColor: 'text-emerald-700 dark:text-emerald-400',
         borderColor: 'border-emerald-500/30',
@@ -93,11 +104,19 @@ export function getCommissionStatusDisplay(status: CommissionStatus) {
         textColor: 'text-red-700 dark:text-red-400',
         borderColor: 'border-red-500/30',
       };
+    case 'refunded':
+      return {
+        label: 'Remboursée',
+        icon: '🔄',
+        bgColor: 'bg-blue-500/10',
+        textColor: 'text-blue-700 dark:text-blue-400',
+        borderColor: 'border-blue-500/30',
+      };
     case 'pending':
     default:
       return {
         label: 'En attente (48h)',
-        icon: '⏳',
+        icon: '🟠',
         bgColor: 'bg-amber-500/10',
         textColor: 'text-amber-700 dark:text-amber-400',
         borderColor: 'border-amber-500/30',
@@ -112,7 +131,12 @@ export function formatFCFA(amount: number): string {
   return new Intl.NumberFormat('fr-FR').format(Math.round(amount)) + ' FCFA';
 }
 
-/** Retourne tous les paliers de commission */
-export function getCommissionTiers() {
-  return COMMISSION_TIERS;
+/** Retourne les infos de tous les types de vendeurs */
+export function getSellerTiers() {
+  return SELLER_COMMISSION_TIERS;
+}
+
+/** Retourne le tier d'un type de vendeur */
+export function getSellerTier(sellerType: SellerType) {
+  return SELLER_COMMISSION_TIERS.find(t => t.type === sellerType) || SELLER_COMMISSION_TIERS[0];
 }

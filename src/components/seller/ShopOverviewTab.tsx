@@ -14,13 +14,14 @@ import {
   Coins,
   Clock,
   CheckCircle2,
-  Wallet
+  Wallet,
+  RefreshCw
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useStableAuth } from '@/hooks/useStableAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { calculateCommission, formatFCFA, getCommissionStatus, getCommissionTiers } from '@/utils/commissionCalculator';
+import { calculateCommission, formatFCFA, getCommissionStatus, getSellerTiers, type SellerType } from '@/utils/commissionCalculator';
 
 interface Product {
   id: string;
@@ -62,37 +63,50 @@ export const ShopOverviewTab = memo(({
   const navigate = useNavigate();
   const { user } = useStableAuth();
 
-  // Fetch orders for commission summary
+  // Fetch seller type and orders
+  const [sellerType, setSellerType] = useState<SellerType>('particulier');
+  const [walletBalance, setWalletBalance] = useState<number>(0);
   const [orders, setOrders] = useState<any[]>([]);
+
   useEffect(() => {
     if (!user?.id) return;
-    const fetchOrders = async () => {
-      const { data } = await supabase.rpc('get_seller_orders');
-      if (data) setOrders(data.filter((o: any) => o.seller_id === user.id));
+    const fetchData = async () => {
+      // Fetch seller profile for seller_type and wallet
+      const [ordersRes, profileRes, walletRes] = await Promise.all([
+        supabase.rpc('get_seller_orders'),
+        supabase.from('profiles').select('seller_type').eq('user_id', user.id).maybeSingle(),
+        supabase.from('seller_tokens').select('wallet_balance_fcfa').eq('seller_id', user.id).maybeSingle(),
+      ]);
+      if (ordersRes.data) setOrders(ordersRes.data.filter((o: any) => o.seller_id === user.id));
+      if (profileRes.data?.seller_type) setSellerType(profileRes.data.seller_type as SellerType);
+      if (walletRes.data) setWalletBalance(walletRes.data.wallet_balance_fcfa || 0);
     };
-    fetchOrders();
+    fetchData();
   }, [user?.id]);
 
   // Commission summary
   const commissionSummary = useMemo(() => {
     let pendingCommission = 0;
     let validatedCommission = 0;
+    let refundedCommission = 0;
     let pendingOrders = 0;
 
     orders.forEach(order => {
-      const c = calculateCommission(order.product_price, order.quantity);
+      const c = calculateCommission(order.product_price, order.quantity, sellerType);
       const status = getCommissionStatus(order.status, order.is_confirmed_by_seller, order.updated_at);
       if (status === 'pending') {
         pendingCommission += c.commissionAmount;
         pendingOrders++;
       } else if (status === 'validated') {
         validatedCommission += c.commissionAmount;
+      } else if (status === 'refunded') {
+        refundedCommission += c.commissionAmount;
       }
     });
 
-    return { pendingCommission, validatedCommission, pendingOrders };
-  }, [orders]);
-  // ✅ Memoize expensive calculations
+    return { pendingCommission, validatedCommission, refundedCommission, pendingOrders };
+  }, [orders, sellerType]);
+
   const { activeProducts, totalReviews, thisMonthProducts } = useMemo(() => {
     const active = products.filter(p => p.is_active).length;
     const reviews = products.reduce((sum, p) => sum + (p.reviews_count || 0), 0);
@@ -101,49 +115,18 @@ export const ShopOverviewTab = memo(({
       const createdAt = new Date(p.created_at);
       return createdAt.getMonth() === now.getMonth() && createdAt.getFullYear() === now.getFullYear();
     }).length;
-    
     return { activeProducts: active, totalReviews: reviews, thisMonthProducts: thisMonth };
   }, [products]);
 
-  // ✅ Memoize stats array
   const stats = useMemo(() => [
-    {
-      title: 'Total Produits',
-      value: products.length,
-      icon: Package,
-      color: 'from-blue-500 to-cyan-500',
-      bgColor: 'bg-blue-500/10',
-      textColor: 'text-blue-600',
-    },
-    {
-      title: 'Produits Actifs',
-      value: activeProducts,
-      icon: Activity,
-      color: 'from-green-500 to-emerald-500',
-      bgColor: 'bg-green-500/10',
-      textColor: 'text-green-600',
-    },
-    {
-      title: 'Ce Mois',
-      value: thisMonthProducts,
-      icon: TrendingUp,
-      color: 'from-purple-500 to-pink-500',
-      bgColor: 'bg-purple-500/10',
-      textColor: 'text-purple-600',
-    },
-    {
-      title: 'Avis Clients',
-      value: totalReviews,
-      icon: Star,
-      color: 'from-orange-500 to-amber-500',
-      bgColor: 'bg-orange-500/10',
-      textColor: 'text-orange-600',
-    },
+    { title: 'Total Produits', value: products.length, icon: Package, bgColor: 'bg-blue-500/10', textColor: 'text-blue-600', color: 'from-blue-500 to-cyan-500' },
+    { title: 'Produits Actifs', value: activeProducts, icon: Activity, bgColor: 'bg-green-500/10', textColor: 'text-green-600', color: 'from-green-500 to-emerald-500' },
+    { title: 'Ce Mois', value: thisMonthProducts, icon: TrendingUp, bgColor: 'bg-purple-500/10', textColor: 'text-purple-600', color: 'from-purple-500 to-pink-500' },
+    { title: 'Avis Clients', value: totalReviews, icon: Star, bgColor: 'bg-orange-500/10', textColor: 'text-orange-600', color: 'from-orange-500 to-amber-500' },
   ], [products.length, activeProducts, thisMonthProducts, totalReviews]);
 
   const canPublish = trialStatus.canPublish ?? true;
 
-  // ✅ Memoize quick actions
   const quickActions = useMemo(() => [
     {
       label: 'Publier un produit',
@@ -163,9 +146,11 @@ export const ShopOverviewTab = memo(({
     },
   ], [canPublish, onPublishProduct, shop, navigate]);
 
+  const sellerTierInfo = getSellerTiers().find(t => t.type === sellerType);
+
   return (
     <div className="space-y-3 md:space-y-4 animate-in fade-in-0 duration-500">
-      {/* Welcome Section - Modernized */}
+      {/* Welcome Section */}
       <Card className="border-0 shadow-lg bg-gradient-to-br from-primary/10 via-primary/5 to-background overflow-hidden">
         <CardContent className="p-4 md:p-5 lg:p-6">
           <div className="mb-4">
@@ -176,8 +161,6 @@ export const ShopOverviewTab = memo(({
               Gérez vos produits et développez votre activité
             </p>
           </div>
-          
-          {/* Quick Actions Grid - Mobile First */}
           <div className="grid grid-cols-2 gap-2 md:gap-3">
             {quickActions.map((action) => (
               <TooltipProvider key={action.label}>
@@ -188,11 +171,7 @@ export const ShopOverviewTab = memo(({
                         onClick={action.onClick}
                         variant={action.variant}
                         disabled={action.disabled}
-                        className={`h-auto py-3 md:py-4 flex flex-col items-center gap-2 transition-all touch-manipulation rounded-xl shadow-sm w-full ${
-                          action.disabled 
-                            ? 'opacity-60 cursor-not-allowed' 
-                            : 'hover:scale-[1.02] active:scale-95'
-                        }`}
+                        className={`h-auto py-3 md:py-4 flex flex-col items-center gap-2 transition-all touch-manipulation rounded-xl shadow-sm w-full ${action.disabled ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.02] active:scale-95'}`}
                       >
                         <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full ${action.variant === 'default' ? 'bg-primary-foreground/20' : 'bg-primary/10'} flex items-center justify-center`}>
                           <action.icon className="h-5 w-5 md:h-6 md:w-6" />
@@ -205,9 +184,7 @@ export const ShopOverviewTab = memo(({
                     </span>
                   </TooltipTrigger>
                   {action.disabled && (
-                    <TooltipContent>
-                      <p>Renouvelez votre abonnement</p>
-                    </TooltipContent>
+                    <TooltipContent><p>Renouvelez votre abonnement</p></TooltipContent>
                   )}
                 </Tooltip>
               </TooltipProvider>
@@ -216,18 +193,13 @@ export const ShopOverviewTab = memo(({
         </CardContent>
       </Card>
 
-      {/* Statistics Grid - Mobile Optimized */}
+      {/* Statistics Grid */}
       <div className="grid grid-cols-2 gap-2.5 md:gap-3">
         {stats.map((stat, index) => (
-          <Card 
-            key={stat.title} 
-            className="border-0 shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group rounded-2xl animate-in fade-in-0 slide-in-from-bottom-2"
-            style={{ animationDelay: `${index * 75}ms`, animationFillMode: 'backwards' }}
-          >
+          <Card key={stat.title} className="border-0 shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group rounded-2xl animate-in fade-in-0 slide-in-from-bottom-2" style={{ animationDelay: `${index * 75}ms`, animationFillMode: 'backwards' }}>
             <CardContent className="p-3 md:p-4 relative">
               <div className="absolute inset-0 bg-gradient-to-br from-transparent to-primary/3 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="relative z-10 space-y-2 md:space-y-3">
-                {/* Icon & Value Row */}
                 <div className="flex items-start justify-between gap-2">
                   <div className={`w-9 h-9 md:w-11 md:h-11 rounded-xl ${stat.bgColor} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}>
                     <stat.icon className={`h-4 w-4 md:h-5 md:w-5 ${stat.textColor}`} />
@@ -236,17 +208,10 @@ export const ShopOverviewTab = memo(({
                     <p className="text-2xl md:text-3xl font-bold tabular-nums truncate">{stat.value}</p>
                   </div>
                 </div>
-                
-                {/* Title & Progress */}
                 <div className="space-y-1.5">
-                  <p className="text-[11px] md:text-xs text-muted-foreground font-medium truncate leading-tight">
-                    {stat.title}
-                  </p>
+                  <p className="text-[11px] md:text-xs text-muted-foreground font-medium truncate leading-tight">{stat.title}</p>
                   <div className="h-1 bg-muted/50 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full bg-gradient-to-r ${stat.color} transition-all duration-1000 rounded-full`}
-                      style={{ width: `${Math.min(stat.value * 10, 100)}%` }}
-                    />
+                    <div className={`h-full bg-gradient-to-r ${stat.color} transition-all duration-1000 rounded-full`} style={{ width: `${Math.min(stat.value * 10, 100)}%` }} />
                   </div>
                 </div>
               </div>
@@ -255,79 +220,83 @@ export const ShopOverviewTab = memo(({
         ))}
       </div>
 
-      {/* 💰 Résumé financier - Commissions */}
+      {/* 💰 Compte Djassa & Commissions */}
       <Card className="border-0 shadow-lg overflow-hidden rounded-2xl">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-            <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-500/10 flex items-center justify-center flex-shrink-0">
-              <Percent className="h-4 w-4 md:h-5 md:w-5 text-amber-600" />
+            <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0">
+              <Wallet className="h-4 w-4 md:h-5 md:w-5 text-primary" />
             </div>
-            <span>Résumé financier</span>
+            <span>Compte Djassa</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-3 md:p-5 pt-0 space-y-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-3">
-            {/* Solde Djassa */}
-            <div className="p-3 rounded-xl bg-primary/5 border border-primary/20">
+          {/* Wallet balance + Seller type */}
+          <div className="grid grid-cols-2 gap-2.5 md:gap-3">
+            <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 col-span-2 md:col-span-1">
               <div className="flex items-center gap-2 mb-1.5">
                 <Wallet className="w-4 h-4 text-primary" />
-                <span className="text-[11px] font-semibold text-muted-foreground">Solde Djassa</span>
+                <span className="text-[11px] font-semibold text-muted-foreground">Solde Compte Djassa</span>
               </div>
-              <p className="text-xl font-bold tabular-nums text-primary">{tokenBalance} <span className="text-xs font-normal text-muted-foreground">jetons</span></p>
+              <p className="text-2xl font-bold tabular-nums text-primary">
+                {formatFCFA(walletBalance)}
+              </p>
             </div>
 
-            {/* Commissions en attente */}
-            <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20">
+            <div className="p-3 rounded-xl bg-muted/30 border border-border/50 col-span-2 md:col-span-1">
               <div className="flex items-center gap-2 mb-1.5">
-                <Clock className="w-4 h-4 text-amber-600" />
-                <span className="text-[11px] font-semibold text-muted-foreground">🟠 En attente</span>
+                <Percent className="w-4 h-4 text-muted-foreground" />
+                <span className="text-[11px] font-semibold text-muted-foreground">Type de compte</span>
               </div>
-              <p className="text-lg font-bold tabular-nums text-amber-600 dark:text-amber-400">
+              <p className="text-lg font-bold capitalize">{sellerTierInfo?.label}</p>
+              <p className="text-xs text-muted-foreground">Commission : {sellerTierInfo?.rate}%</p>
+            </div>
+          </div>
+
+          {/* Commission summary */}
+          <div className="grid grid-cols-3 gap-2 md:gap-3">
+            <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20">
+              <div className="flex items-center gap-1.5 mb-1">
+                <Clock className="w-3.5 h-3.5 text-amber-600" />
+                <span className="text-[10px] font-semibold text-muted-foreground">🟠 En attente</span>
+              </div>
+              <p className="text-sm font-bold tabular-nums text-amber-600 dark:text-amber-400">
                 {formatFCFA(commissionSummary.pendingCommission)}
               </p>
             </div>
 
-            {/* Commissions validées */}
             <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
-              <div className="flex items-center gap-2 mb-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span className="text-[11px] font-semibold text-muted-foreground">🟢 Validées</span>
+              <div className="flex items-center gap-1.5 mb-1">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="text-[10px] font-semibold text-muted-foreground">🟢 Validées</span>
               </div>
-              <p className="text-lg font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
+              <p className="text-sm font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
                 {formatFCFA(commissionSummary.validatedCommission)}
               </p>
             </div>
 
-            {/* Commandes en attente */}
-            <div className="p-3 rounded-xl bg-red-500/5 border border-red-500/20">
-              <div className="flex items-center gap-2 mb-1.5">
-                <Coins className="w-4 h-4 text-red-600" />
-                <span className="text-[11px] font-semibold text-muted-foreground">🔴 Cmd. en attente</span>
+            <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/20">
+              <div className="flex items-center gap-1.5 mb-1">
+                <RefreshCw className="w-3.5 h-3.5 text-blue-600" />
+                <span className="text-[10px] font-semibold text-muted-foreground">🔄 Remboursées</span>
               </div>
-              <p className="text-xl font-bold tabular-nums">{commissionSummary.pendingOrders}</p>
+              <p className="text-sm font-bold tabular-nums text-blue-600 dark:text-blue-400">
+                {formatFCFA(commissionSummary.refundedCommission)}
+              </p>
             </div>
           </div>
 
-          {/* Grille de commission */}
+          {/* Info */}
           <div className="p-3 rounded-xl bg-muted/30 border border-border/50">
-            <p className="text-xs font-bold text-muted-foreground mb-2 flex items-center gap-1.5">
-              <Percent className="w-3.5 h-3.5" />
-              Grille de commission Djassa
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              💡 La commission Djassa ({sellerTierInfo?.rate}%) est prélevée après confirmation de la commande. 
+              En cas d'annulation, elle est automatiquement remboursée. Après 48h sans litige, la commission est validée.
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
-              {getCommissionTiers().map((tier, i) => (
-                <div key={i} className="px-2 py-1.5 rounded-lg bg-background border border-border/40 text-center">
-                  <p className="text-[10px] text-muted-foreground leading-tight">
-                    {tier.max === Infinity ? `${tier.min.toLocaleString()}+` : `${tier.min.toLocaleString()} – ${tier.max.toLocaleString()}`}
-                  </p>
-                  <p className="text-sm font-bold text-primary">{tier.rate}%</p>
-                </div>
-              ))}
-            </div>
           </div>
         </CardContent>
       </Card>
 
+      {/* Performance */}
       <Card className="border-0 shadow-lg overflow-hidden rounded-2xl">
         <CardHeader className="pb-3 md:pb-4">
           <CardTitle className="flex items-center gap-2 text-base md:text-lg">
@@ -339,32 +308,15 @@ export const ShopOverviewTab = memo(({
         </CardHeader>
         <CardContent className="p-3 md:p-5 pt-0">
           <div className="h-48 md:h-64 flex items-center justify-center bg-gradient-to-br from-muted/20 to-muted/5 rounded-xl border border-border/30 relative overflow-hidden">
-            {/* Decorative animated bars */}
             <div className="absolute inset-0 flex items-end justify-around px-4 md:px-8 py-4 md:py-6 gap-1 md:gap-2">
               {[40, 70, 45, 85, 60, 75, 50].map((height, i) => (
-                <div 
-                  key={i}
-                  className="flex-1 bg-gradient-to-t from-primary/30 to-primary/10 rounded-t-lg animate-pulse"
-                  style={{ 
-                    height: `${height}%`,
-                    animationDelay: `${i * 200}ms`,
-                    animationDuration: '2s'
-                  }}
-                />
+                <div key={i} className="flex-1 bg-gradient-to-t from-primary/30 to-primary/10 rounded-t-lg animate-pulse" style={{ height: `${height}%`, animationDelay: `${i * 200}ms`, animationDuration: '2s' }} />
               ))}
             </div>
-            
             <div className="text-center px-3 md:px-4 relative z-10 bg-background/90 backdrop-blur-sm rounded-xl p-4 md:p-6 mx-3">
               <Activity className="h-10 w-10 md:h-14 md:w-14 text-primary mx-auto mb-2 md:mb-3 animate-pulse" />
-              <p className="text-sm md:text-base font-semibold text-foreground mb-1">
-                Graphiques de performance
-              </p>
-              <p className="text-xs md:text-sm text-muted-foreground">
-                Bientôt disponibles
-              </p>
-              <p className="text-[11px] md:text-xs text-muted-foreground/80 mt-1.5 md:mt-2 max-w-[280px] mx-auto break-words leading-relaxed">
-                Suivez vos ventes, vues et statistiques en temps réel
-              </p>
+              <p className="text-sm md:text-base font-semibold text-foreground mb-1">Graphiques de performance</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Bientôt disponibles</p>
             </div>
           </div>
         </CardContent>

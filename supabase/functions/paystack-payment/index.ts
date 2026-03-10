@@ -353,7 +353,8 @@ serve(async (req) => {
             payment_type,
             tokens_amount,
             payment_method,
-            product: payment_type === 'tokens' ? `Achat de ${tokens_amount} jetons` : (payment_type === 'article_publication' ? 'Publication d\'article' : 'Premium Seller Access')
+            product: payment_type === 'wallet_recharge' ? `Recharge Compte Djassa ${amount} FCFA` : (payment_type === 'tokens' ? `Achat de ${tokens_amount} jetons` : (payment_type === 'article_publication' ? 'Publication d\'article' : 'Premium Seller Access')),
+            recharge_amount: payment_type === 'wallet_recharge' ? amount : undefined
           }
         }),
       });

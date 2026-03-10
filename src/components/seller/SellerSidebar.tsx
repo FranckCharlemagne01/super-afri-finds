@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import {
-  LayoutDashboard, Package, MessageSquare, Wallet,
+  LayoutDashboard, Package, MessageSquare, Wallet, ShoppingBag,
   Settings, ChevronLeft, ChevronRight, Menu, X,
   Sun, Moon, LogOut, Store, ExternalLink, ArrowLeft
 } from 'lucide-react';
@@ -10,7 +10,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 
-export type SellerSection = 'overview' | 'products' | 'messages-orders' | 'tokens' | 'settings';
+export type SellerSection = 'overview' | 'products' | 'orders' | 'messages' | 'tokens' | 'settings';
 
 interface NavItem {
   id: SellerSection;
@@ -22,7 +22,8 @@ interface NavItem {
 const navItems: NavItem[] = [
   { id: 'overview', label: 'Ma Boutique', icon: LayoutDashboard, group: 'Principal' },
   { id: 'products', label: 'Produits', icon: Package, group: 'Principal' },
-  { id: 'messages-orders', label: 'Commandes & Messages', icon: MessageSquare, group: 'Gestion' },
+  { id: 'orders', label: 'Commandes', icon: ShoppingBag, group: 'Gestion' },
+  { id: 'messages', label: 'Messages', icon: MessageSquare, group: 'Gestion' },
   { id: 'tokens', label: 'Compte Djassa', icon: Wallet, group: 'Gestion' },
   { id: 'settings', label: 'Paramètres', icon: Settings, group: 'Réglages' },
 ];

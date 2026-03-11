@@ -62,7 +62,7 @@ export const SellerSidebar = ({
   };
 
   const sidebarContent = (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
       {/* Top: Logout button */}
       <div className="p-2 border-b border-border/50 flex items-center justify-end">
         <button

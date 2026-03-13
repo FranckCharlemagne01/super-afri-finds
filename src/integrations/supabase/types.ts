@@ -1766,6 +1766,7 @@ export type Database = {
           badge: string
           category: string
           city: string
+          commune: string
           country: string
           description: string
           discount_percentage: number
@@ -1778,8 +1779,8 @@ export type Database = {
           relevance_score: number
           reviews_count: number
           seller_id: string
-          shop_id: string
           title: string
+          video_url: string
         }[]
       }
       search_suggestions: {

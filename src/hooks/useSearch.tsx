@@ -22,7 +22,7 @@ interface Product {
 interface SearchSuggestion {
   id: string;
   title: string;
-  type: 'product' | 'category';
+  type: 'product' | 'category' | 'city' | 'commune';
   category?: string;
 }
 

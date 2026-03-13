@@ -360,6 +360,7 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
         seller_id: user.id,
         shop_id: finalShopId,
         city: formData.city || null,
+        commune: formData.commune || null,
         country: userCountry || 'CI',
       };
 

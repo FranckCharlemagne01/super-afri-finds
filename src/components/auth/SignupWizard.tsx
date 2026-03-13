@@ -179,6 +179,8 @@ const SignupWizard = memo(({
             onPhoneChange={onPhoneChange}
             onCountryChange={onCountryChange}
             onCityChange={onCityChange}
+            commune={commune}
+            onCommuneChange={onCommuneChange}
             onNext={() => handleNextStep(2)}
             onBack={handlePrevStep}
             error={stepErrors[2]}

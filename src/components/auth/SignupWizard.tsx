@@ -15,6 +15,7 @@ interface SignupWizardProps {
   email: string;
   country: string;
   city: string;
+  commune?: string;
   phone: string;
   dialCode: string;
   // Step 2 fields

@@ -52,6 +52,7 @@ const Auth = () => {
   const [phone, setPhone] = useState('');
   const [country, setCountry] = useState('CI');
   const [city, setCity] = useState('');
+  const [commune, setCommune] = useState('');
   const [dialCode, setDialCode] = useState('+225');
   const [userRole, setUserRole] = useState<'buyer' | 'seller'>('buyer');
   const [shopName, setShopName] = useState('');

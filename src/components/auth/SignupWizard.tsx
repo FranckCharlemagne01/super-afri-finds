@@ -15,6 +15,7 @@ interface SignupWizardProps {
   email: string;
   country: string;
   city: string;
+  commune?: string;
   phone: string;
   dialCode: string;
   // Step 2 fields
@@ -27,6 +28,7 @@ interface SignupWizardProps {
   onEmailChange: (value: string) => void;
   onCountryChange: (value: string) => void;
   onCityChange: (value: string) => void;
+  onCommuneChange?: (value: string) => void;
   onPhoneChange: (value: string) => void;
   onUserRoleChange: (value: 'buyer' | 'seller') => void;
   onShopNameChange: (value: string) => void;
@@ -52,6 +54,7 @@ const SignupWizard = memo(({
   email,
   country,
   city,
+  commune = '',
   phone,
   dialCode,
   userRole,
@@ -62,6 +65,7 @@ const SignupWizard = memo(({
   onEmailChange,
   onCountryChange,
   onCityChange,
+  onCommuneChange,
   onPhoneChange,
   onUserRoleChange,
   onShopNameChange,
@@ -175,6 +179,8 @@ const SignupWizard = memo(({
             onPhoneChange={onPhoneChange}
             onCountryChange={onCountryChange}
             onCityChange={onCityChange}
+            commune={commune}
+            onCommuneChange={onCommuneChange}
             onNext={() => handleNextStep(2)}
             onBack={handlePrevStep}
             error={stepErrors[2]}

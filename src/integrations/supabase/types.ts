@@ -657,6 +657,7 @@ export type Database = {
           boosted_until: string | null
           category: string
           city: string | null
+          commune: string | null
           country: string | null
           created_at: string
           description: string | null
@@ -685,6 +686,7 @@ export type Database = {
           boosted_until?: string | null
           category: string
           city?: string | null
+          commune?: string | null
           country?: string | null
           created_at?: string
           description?: string | null
@@ -713,6 +715,7 @@ export type Database = {
           boosted_until?: string | null
           category?: string
           city?: string | null
+          commune?: string | null
           country?: string | null
           created_at?: string
           description?: string | null
@@ -787,6 +790,7 @@ export type Database = {
           address: string | null
           avatar_url: string | null
           city: string | null
+          commune: string | null
           country: string | null
           created_at: string
           email: string | null
@@ -814,6 +818,7 @@ export type Database = {
           address?: string | null
           avatar_url?: string | null
           city?: string | null
+          commune?: string | null
           country?: string | null
           created_at?: string
           email?: string | null
@@ -841,6 +846,7 @@ export type Database = {
           address?: string | null
           avatar_url?: string | null
           city?: string | null
+          commune?: string | null
           country?: string | null
           created_at?: string
           email?: string | null
@@ -1558,6 +1564,7 @@ export type Database = {
           address: string | null
           avatar_url: string | null
           city: string | null
+          commune: string | null
           country: string | null
           created_at: string
           email: string | null

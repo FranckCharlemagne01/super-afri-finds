@@ -5,9 +5,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { CitySelect } from '@/components/CitySelect';
+import { CommuneSelect } from '@/components/CommuneSelect';
 import { CountrySelect } from '@/components/CountrySelect';
 import { getCountryByCode } from '@/data/countries';
-import { MapPin, Loader2, Lock } from 'lucide-react';
+import { MapPin, Loader2, Lock, Building2 } from 'lucide-react';
 import { invalidateCacheByPrefix } from '@/utils/dataCache';
 import {
   Sheet,
@@ -29,6 +30,7 @@ export const LocationSelector = () => {
   const [loading, setLoading] = useState(false);
   const [newCity, setNewCity] = useState('');
   const [newCountry, setNewCountry] = useState('');
+  const [newCommune, setNewCommune] = useState('');
   
   // Determine if country is locked (already set in profile)
   const isCountryLocked = Boolean(location.country);
@@ -38,21 +40,27 @@ export const LocationSelector = () => {
     if (open) {
       setNewCity(location.city || '');
       setNewCountry(location.country || '');
+      setNewCommune(location.commune || '');
     }
-  }, [open, location.city, location.country]);
+  }, [open, location.city, location.country, location.commune]);
 
   const handleCountryChange = (value: string) => {
-    if (isCountryLocked) return; // Don't allow change if locked
+    if (isCountryLocked) return;
     if (value !== newCountry) {
-      setNewCity(''); // Reset city when country changes
+      setNewCity('');
+      setNewCommune('');
     }
     setNewCountry(value);
+  };
+
+  const handleCityChange = (value: string) => {
+    setNewCity(value);
+    setNewCommune(''); // Reset commune when city changes
   };
 
   const handleUpdateLocation = async () => {
     if (!user) return;
     
-    // For locked country, only city is required
     const effectiveCountry = isCountryLocked ? location.country : newCountry;
     
     if (!effectiveCountry || !newCity) {
@@ -65,19 +73,19 @@ export const LocationSelector = () => {
     }
     
     // If nothing changed, just close
-    if (newCity === location.city && effectiveCountry === location.country) {
+    if (newCity === location.city && effectiveCountry === location.country && newCommune === location.commune) {
       setOpen(false);
       return;
     }
 
     setLoading(true);
     try {
-      const updateData: { city: string; country?: string; updated_at: string } = {
+      const updateData: { city: string; commune?: string; country?: string; updated_at: string } = {
         city: newCity,
+        commune: newCommune || null,
         updated_at: new Date().toISOString()
       };
       
-      // Only update country if it wasn't locked
       if (!isCountryLocked && newCountry) {
         updateData.country = newCountry;
       }
@@ -89,7 +97,7 @@ export const LocationSelector = () => {
 
       if (error) throw error;
 
-      // Invalidate all relevant caches (react-query + custom dataCache)
+      // Invalidate all relevant caches
       invalidateCacheByPrefix('products:');
       await queryClient.invalidateQueries({ queryKey: ['user-location', user.id] });
       await queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -103,7 +111,9 @@ export const LocationSelector = () => {
 
       toast({
         title: "Localisation mise à jour",
-        description: "Les produits sont maintenant filtrés selon votre nouvelle ville.",
+        description: newCommune 
+          ? `Produits filtrés pour ${newCommune}, ${newCity}.`
+          : `Produits filtrés pour ${newCity}.`,
       });
     } catch (error: any) {
       console.error('Error updating location:', error);
@@ -134,7 +144,7 @@ export const LocationSelector = () => {
           <div className="flex-1 text-left min-w-0">
             <h4 className="font-medium text-sm">Changer de ville</h4>
             <p className="text-xs text-muted-foreground truncate">
-              {location.city || 'Aucune ville'} • {countryName}
+              {location.commune ? `${location.commune}, ` : ''}{location.city || 'Aucune ville'} • {countryName}
             </p>
           </div>
         </Button>
@@ -153,8 +163,8 @@ export const LocationSelector = () => {
               </SheetTitle>
               <SheetDescription>
                 {isCountryLocked 
-                  ? "Changez de ville pour voir les produits disponibles dans votre région"
-                  : "Définissez votre pays et votre ville pour voir les produits locaux"
+                  ? "Changez de ville ou de commune pour voir les produits disponibles dans votre zone"
+                  : "Définissez votre pays, ville et commune pour voir les produits locaux"
                 }
               </SheetDescription>
             </SheetHeader>
@@ -191,13 +201,33 @@ export const LocationSelector = () => {
                 <CitySelect
                   countryCode={effectiveCountryCode || ''}
                   value={newCity}
-                  onValueChange={setNewCity}
+                  onValueChange={handleCityChange}
                   placeholder="Sélectionnez votre ville"
                 />
                 <p className="text-xs text-muted-foreground">
                   Vous pouvez changer de ville à tout moment
                 </p>
               </div>
+
+              {/* Commune select */}
+              {newCity && (
+                <div className="space-y-2">
+                  <Label htmlFor="commune" className="text-sm font-medium flex items-center gap-2">
+                    <Building2 className="w-4 h-4" />
+                    Commune
+                    <span className="text-xs font-normal text-muted-foreground">(optionnel)</span>
+                  </Label>
+                  <CommuneSelect
+                    city={newCity}
+                    value={newCommune}
+                    onValueChange={setNewCommune}
+                    placeholder="Sélectionnez votre commune"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Précisez votre commune pour des résultats plus pertinents
+                  </p>
+                </div>
+              )}
 
               <div className="flex gap-3 pt-4">
                 <Button

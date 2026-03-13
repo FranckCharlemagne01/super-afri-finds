@@ -85,6 +85,7 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
     images: product?.images?.[0] || '',
     video_url: product?.video_url || '',
     city: '',
+    commune: '',
   });
 
   // Image state
@@ -111,14 +112,14 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
       
       const { data, error } = await supabase
         .from('profiles')
-        .select('country, city')
+        .select('country, city, commune')
         .eq('user_id', user.id)
         .maybeSingle();
       
       if (!error && data) {
         setUserCountry(data.country || '');
         if (!product?.id && data.city) {
-          setFormData(prev => ({ ...prev, city: data.city }));
+          setFormData(prev => ({ ...prev, city: data.city, commune: data.commune || '' }));
         }
       }
     };
@@ -359,6 +360,7 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
         seller_id: user.id,
         shop_id: finalShopId,
         city: formData.city || null,
+        commune: formData.commune || null,
         country: userCountry || 'CI',
       };
 

@@ -4,8 +4,10 @@ import { ProductCard } from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SearchBar } from '@/components/SearchBar';
-import { ArrowLeft, Search } from 'lucide-react';
+import { CommuneSelect } from '@/components/CommuneSelect';
+import { ArrowLeft, Search, Building2, X } from 'lucide-react';
 import { useSearch } from '@/hooks/useSearch';
+import { useUserLocation } from '@/hooks/useUserLocation';
 import { getProductImage } from '@/utils/productImageHelper';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
 
@@ -30,7 +32,8 @@ const SearchResults = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const query = searchParams.get('q') || '';
-  const { searchResults, loading, setSearchTerm } = useSearch();
+  const { searchResults, loading, setSearchTerm, communeFilter, setCommuneFilter } = useSearch();
+  const { location } = useUserLocation();
   const { isVisible: isHeaderVisible } = useScrollDirection();
 
   useEffect(() => {
@@ -56,7 +59,6 @@ const SearchResults = () => {
 
   const handleCategoryRedirect = () => {
     navigate('/');
-    // Scroll vers les catégories populaires
     setTimeout(() => {
       const categoriesSection = document.getElementById('popular-categories');
       if (categoriesSection) {
@@ -67,7 +69,7 @@ const SearchResults = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header avec navigation - Desktop: always visible, Mobile: hide on scroll down */}
+      {/* Header */}
       <header 
         className={`
           bg-background border-b border-border sticky top-0 z-40
@@ -98,9 +100,9 @@ const SearchResults = () => {
         </div>
       </header>
 
-      {/* Contenu principal */}
+      {/* Main content */}
       <main className="container mx-auto px-4 py-6">
-        {/* En-tête des résultats */}
+        {/* Results header */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
             <Search className="w-5 h-5 text-muted-foreground" />
@@ -124,7 +126,34 @@ const SearchResults = () => {
           )}
         </div>
 
-        {/* États de chargement et résultats */}
+        {/* Commune filter */}
+        {location.city && (
+          <div className="mb-4 p-3 bg-muted/30 rounded-xl border border-border/50">
+            <div className="flex items-center gap-2 mb-2">
+              <Building2 className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium">Filtrer par commune</span>
+              {communeFilter && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setCommuneFilter('')}
+                  className="ml-auto h-7 px-2 text-xs"
+                >
+                  <X className="w-3 h-3 mr-1" />
+                  Effacer
+                </Button>
+              )}
+            </div>
+            <CommuneSelect
+              city={location.city}
+              value={communeFilter}
+              onValueChange={setCommuneFilter}
+              placeholder="Toutes les communes"
+            />
+          </div>
+        )}
+
+        {/* Loading and results */}
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
@@ -142,7 +171,6 @@ const SearchResults = () => {
             ))}
           </div>
         ) : query ? (
-          // Aucun résultat trouvé
           <div className="text-center py-12">
             <div className="max-w-md mx-auto">
               <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
@@ -150,10 +178,22 @@ const SearchResults = () => {
                 🔍 Aucun produit trouvé
               </h3>
               <p className="text-muted-foreground mb-6">
-                Essayez un autre mot-clé ou explorez nos catégories populaires !
+                {communeFilter 
+                  ? `Aucun produit trouvé dans la commune "${communeFilter}". Essayez de retirer le filtre commune.`
+                  : "Essayez un autre mot-clé ou explorez nos catégories populaires !"
+                }
               </p>
               
               <div className="space-y-3">
+                {communeFilter && (
+                  <Button 
+                    variant="outline"
+                    onClick={() => setCommuneFilter('')}
+                    className="mr-2"
+                  >
+                    Voir toute la ville
+                  </Button>
+                )}
                 <Button 
                   onClick={handleCategoryRedirect}
                   className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
@@ -173,7 +213,6 @@ const SearchResults = () => {
             </div>
           </div>
         ) : (
-          // État initial (pas de recherche)
           <div className="text-center py-12">
             <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">

@@ -1,11 +1,12 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
-import { User, Phone, Globe, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
+import { User, Phone, Globe, MapPin, ChevronLeft, ChevronRight, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import OptimizedInput from '@/components/auth/OptimizedInput';
 import { CountrySelect } from '@/components/CountrySelect';
 import { CitySelect } from '@/components/CitySelect';
+import { CommuneSelect } from '@/components/CommuneSelect';
 import AuthErrorAlert from '@/components/auth/AuthErrorAlert';
 
 interface StepPersonalInfoProps {
@@ -15,11 +16,13 @@ interface StepPersonalInfoProps {
   dialCode: string;
   country: string;
   city: string;
+  commune?: string;
   onFirstNameChange: (value: string) => void;
   onLastNameChange: (value: string) => void;
   onPhoneChange: (value: string) => void;
   onCountryChange: (value: string) => void;
   onCityChange: (value: string) => void;
+  onCommuneChange?: (value: string) => void;
   onNext: () => void;
   onBack: () => void;
   error?: string;
@@ -32,11 +35,13 @@ const StepPersonalInfo = memo(({
   dialCode,
   country,
   city,
+  commune = '',
   onFirstNameChange,
   onLastNameChange,
   onPhoneChange,
   onCountryChange,
   onCityChange,
+  onCommuneChange,
   onNext,
   onBack,
   error
@@ -116,6 +121,23 @@ const StepPersonalInfo = memo(({
           placeholder="Sélectionnez votre ville" 
         />
       </div>
+
+      {/* Commune select */}
+      {city && (
+        <div className="space-y-2">
+          <Label className="text-sm font-semibold flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-muted-foreground" />
+            Commune
+            <span className="text-xs font-normal text-muted-foreground">(optionnel)</span>
+          </Label>
+          <CommuneSelect
+            city={city}
+            value={commune}
+            onValueChange={onCommuneChange || (() => {})}
+            placeholder="Sélectionnez votre commune"
+          />
+        </div>
+      )}
 
       {/* Phone field */}
       <OptimizedInput

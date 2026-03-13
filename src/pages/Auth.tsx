@@ -52,6 +52,7 @@ const Auth = () => {
   const [phone, setPhone] = useState('');
   const [country, setCountry] = useState('CI');
   const [city, setCity] = useState('');
+  const [commune, setCommune] = useState('');
   const [dialCode, setDialCode] = useState('+225');
   const [userRole, setUserRole] = useState<'buyer' | 'seller'>('buyer');
   const [shopName, setShopName] = useState('');
@@ -179,6 +180,11 @@ const Auth = () => {
 
   const handleCityChange = useCallback((value: string) => {
     setCity(value);
+    setCommune(''); // Reset commune when city changes
+  }, []);
+
+  const handleCommuneChange = useCallback((value: string) => {
+    setCommune(value);
   }, []);
 
   const handleUserRoleChange = useCallback((value: 'buyer' | 'seller') => {
@@ -904,6 +910,7 @@ const Auth = () => {
                 email={email}
                 country={country}
                 city={city}
+                commune={commune}
                 phone={phone}
                 dialCode={dialCode}
                 userRole={userRole}
@@ -914,6 +921,7 @@ const Auth = () => {
                 onEmailChange={handleEmailChange}
                 onCountryChange={handleCountryChange}
                 onCityChange={handleCityChange}
+                onCommuneChange={handleCommuneChange}
                 onPhoneChange={handlePhoneChange}
                 onUserRoleChange={handleUserRoleChange}
                 onShopNameChange={handleShopNameChange}

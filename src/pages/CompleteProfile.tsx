@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Globe, MapPin, ShoppingBag, Store, Sparkles, ChevronRight, CheckCircle2, Loader2 } from 'lucide-react';
+import { Globe, MapPin, Building2, ShoppingBag, Store, Sparkles, ChevronRight, CheckCircle2, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { CountrySelect } from '@/components/CountrySelect';
 import { CitySelect } from '@/components/CitySelect';
+import { CommuneSelect } from '@/components/CommuneSelect';
 import { toast } from '@/hooks/use-toast';
 import { completeGoogleUserProfile } from '@/hooks/useProfileCompletion';
 
@@ -26,6 +27,7 @@ const CompleteProfile = () => {
   // Form data
   const [country, setCountry] = useState('CI');
   const [city, setCity] = useState('');
+  const [commune, setCommune] = useState('');
   const [objective, setObjective] = useState<Objective | null>(null);
   const [shopName, setShopName] = useState('');
   const [shopDescription, setShopDescription] = useState('');
@@ -85,6 +87,7 @@ const CompleteProfile = () => {
       const result = await completeGoogleUserProfile(userId, {
         country,
         city,
+        commune: commune || undefined,
         objective,
         shopName: objective === 'seller' ? shopName : undefined,
         shopDescription: objective === 'seller' && shopDescription.trim() ? shopDescription.trim() : undefined,
@@ -115,7 +118,7 @@ const CompleteProfile = () => {
     } finally {
       setLoading(false);
     }
-  }, [userId, country, city, objective, shopName, shopDescription, navigate]);
+  }, [userId, country, city, commune, objective, shopName, shopDescription, navigate]);
 
   if (checkingAuth) {
     return (
@@ -188,10 +191,27 @@ const CompleteProfile = () => {
                   <CitySelect 
                     countryCode={country} 
                     value={city} 
-                    onValueChange={setCity}
+                    onValueChange={(v) => { setCity(v); setCommune(''); }}
                     placeholder="Sélectionnez votre ville"
                   />
                 </div>
+
+                {/* Commune select */}
+                {city && (
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-muted-foreground" />
+                      Commune
+                      <span className="text-xs font-normal text-muted-foreground">(optionnel)</span>
+                    </Label>
+                    <CommuneSelect
+                      city={city}
+                      value={commune}
+                      onValueChange={setCommune}
+                      placeholder="Sélectionnez votre commune"
+                    />
+                  </div>
+                )}
 
                 <Button
                   onClick={handleLocationNext}

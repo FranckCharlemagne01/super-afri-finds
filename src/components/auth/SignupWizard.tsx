@@ -65,6 +65,7 @@ const SignupWizard = memo(({
   onEmailChange,
   onCountryChange,
   onCityChange,
+  onCommuneChange,
   onPhoneChange,
   onUserRoleChange,
   onShopNameChange,

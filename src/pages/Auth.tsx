@@ -180,6 +180,11 @@ const Auth = () => {
 
   const handleCityChange = useCallback((value: string) => {
     setCity(value);
+    setCommune(''); // Reset commune when city changes
+  }, []);
+
+  const handleCommuneChange = useCallback((value: string) => {
+    setCommune(value);
   }, []);
 
   const handleUserRoleChange = useCallback((value: 'buyer' | 'seller') => {

@@ -910,6 +910,7 @@ const Auth = () => {
                 email={email}
                 country={country}
                 city={city}
+                commune={commune}
                 phone={phone}
                 dialCode={dialCode}
                 userRole={userRole}

@@ -191,10 +191,27 @@ const CompleteProfile = () => {
                   <CitySelect 
                     countryCode={country} 
                     value={city} 
-                    onValueChange={setCity}
+                    onValueChange={(v) => { setCity(v); setCommune(''); }}
                     placeholder="Sélectionnez votre ville"
                   />
                 </div>
+
+                {/* Commune select */}
+                {city && (
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-muted-foreground" />
+                      Commune
+                      <span className="text-xs font-normal text-muted-foreground">(optionnel)</span>
+                    </Label>
+                    <CommuneSelect
+                      city={city}
+                      value={commune}
+                      onValueChange={setCommune}
+                      placeholder="Sélectionnez votre commune"
+                    />
+                  </div>
+                )}
 
                 <Button
                   onClick={handleLocationNext}

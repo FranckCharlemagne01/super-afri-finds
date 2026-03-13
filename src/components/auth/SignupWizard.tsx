@@ -28,6 +28,7 @@ interface SignupWizardProps {
   onEmailChange: (value: string) => void;
   onCountryChange: (value: string) => void;
   onCityChange: (value: string) => void;
+  onCommuneChange?: (value: string) => void;
   onPhoneChange: (value: string) => void;
   onUserRoleChange: (value: 'buyer' | 'seller') => void;
   onShopNameChange: (value: string) => void;

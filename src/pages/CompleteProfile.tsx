@@ -87,6 +87,7 @@ const CompleteProfile = () => {
       const result = await completeGoogleUserProfile(userId, {
         country,
         city,
+        commune: commune || undefined,
         objective,
         shopName: objective === 'seller' ? shopName : undefined,
         shopDescription: objective === 'seller' && shopDescription.trim() ? shopDescription.trim() : undefined,

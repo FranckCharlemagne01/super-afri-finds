@@ -118,7 +118,7 @@ const CompleteProfile = () => {
     } finally {
       setLoading(false);
     }
-  }, [userId, country, city, objective, shopName, shopDescription, navigate]);
+  }, [userId, country, city, commune, objective, shopName, shopDescription, navigate]);
 
   if (checkingAuth) {
     return (

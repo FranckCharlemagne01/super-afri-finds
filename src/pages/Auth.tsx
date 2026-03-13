@@ -921,6 +921,7 @@ const Auth = () => {
                 onEmailChange={handleEmailChange}
                 onCountryChange={handleCountryChange}
                 onCityChange={handleCityChange}
+                onCommuneChange={handleCommuneChange}
                 onPhoneChange={handlePhoneChange}
                 onUserRoleChange={handleUserRoleChange}
                 onShopNameChange={handleShopNameChange}

@@ -33,6 +33,7 @@ export const useSearch = () => {
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [communeFilter, setCommuneFilter] = useState<string>('');
 
   // Recherche de produits optimisée avec full-text search PostgreSQL
   const searchProducts = async (query: string) => {
@@ -43,7 +44,6 @@ export const useSearch = () => {
 
     setLoading(true);
     try {
-      // Appel à la fonction RPC PostgreSQL avec full-text search
       const { data: products, error } = await supabase.rpc('search_products', {
         search_query: query.trim(),
         user_city: userLocation.city || null,
@@ -52,7 +52,20 @@ export const useSearch = () => {
 
       if (error) throw error;
 
-      setSearchResults(products || []);
+      let results = products || [];
+
+      // Client-side commune filtering and prioritization
+      if (communeFilter) {
+        const communeMatches = results.filter((p: any) => 
+          p.commune && p.commune.toLowerCase() === communeFilter.toLowerCase()
+        );
+        const otherResults = results.filter((p: any) => 
+          !p.commune || p.commune.toLowerCase() !== communeFilter.toLowerCase()
+        );
+        results = [...communeMatches, ...otherResults];
+      }
+
+      setSearchResults(results);
     } catch (error) {
       console.error('Erreur lors de la recherche:', error);
       setSearchResults([]);
@@ -69,7 +82,6 @@ export const useSearch = () => {
     }
 
     try {
-      // Appel à la fonction RPC PostgreSQL pour suggestions
       const { data: results, error } = await supabase.rpc('search_suggestions', {
         search_query: query.trim(),
         max_results: 10
@@ -77,7 +89,6 @@ export const useSearch = () => {
 
       if (error) throw error;
 
-      // Transformer les résultats pour assurer le bon typage
       const typedSuggestions: SearchSuggestion[] = (results || []).map(item => ({
         id: item.id,
         title: item.title,
@@ -98,14 +109,14 @@ export const useSearch = () => {
       const timeoutId = setTimeout(() => {
         searchProducts(searchTerm);
         generateSuggestions(searchTerm);
-      }, 300); // Debounce de 300ms
+      }, 300);
 
       return () => clearTimeout(timeoutId);
     } else {
       setSearchResults([]);
       setSuggestions([]);
     }
-  }, [searchTerm, userLocation.city, userLocation.country]);
+  }, [searchTerm, userLocation.city, userLocation.country, communeFilter]);
 
   return {
     searchTerm,
@@ -116,6 +127,8 @@ export const useSearch = () => {
     showSuggestions,
     setShowSuggestions,
     searchProducts,
-    generateSuggestions
+    generateSuggestions,
+    communeFilter,
+    setCommuneFilter,
   };
 };

@@ -85,6 +85,7 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
     images: product?.images?.[0] || '',
     video_url: product?.video_url || '',
     city: '',
+    commune: '',
   });
 
   // Image state

@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Globe, MapPin, ShoppingBag, Store, Sparkles, ChevronRight, CheckCircle2, Loader2 } from 'lucide-react';
+import { Globe, MapPin, Building2, ShoppingBag, Store, Sparkles, ChevronRight, CheckCircle2, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { CountrySelect } from '@/components/CountrySelect';
 import { CitySelect } from '@/components/CitySelect';
+import { CommuneSelect } from '@/components/CommuneSelect';
 import { toast } from '@/hooks/use-toast';
 import { completeGoogleUserProfile } from '@/hooks/useProfileCompletion';
 

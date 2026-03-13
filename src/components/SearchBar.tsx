@@ -1,9 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, X, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useSearch } from '@/hooks/useSearch';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { cities } from '@/data/cities';
+import { getCommunesByCity } from '@/data/communes';
 
 interface SearchBarProps {
   placeholder?: string;
@@ -21,23 +24,31 @@ export const SearchBar = ({
   const navigate = useNavigate();
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [selectedCity, setSelectedCity] = useState<string>('');
+  const [selectedCommune, setSelectedCommune] = useState<string>('');
+  const [locationOpen, setLocationOpen] = useState(false);
   const { 
     searchTerm, 
     setSearchTerm, 
     suggestions, 
     loading,
     showSuggestions,
-    setShowSuggestions 
+    setShowSuggestions,
+    setCommuneFilter,
   } = useSearch();
 
-  // Fermer les suggestions quand on clique ailleurs
+  const availableCommunes = selectedCity ? getCommunesByCity(selectedCity) : [];
+
+  useEffect(() => {
+    setCommuneFilter(selectedCommune);
+  }, [selectedCommune, setCommuneFilter]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setShowSuggestions(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [setShowSuggestions]);
@@ -52,10 +63,12 @@ export const SearchBar = ({
     e.preventDefault();
     if (searchTerm.trim()) {
       setShowSuggestions(false);
+      const locationQuery = selectedCity ? ` ${selectedCity}` : '';
+      const fullQuery = searchTerm + locationQuery;
       if (onSearch) {
-        onSearch(searchTerm);
+        onSearch(fullQuery);
       } else if (showResults) {
-        navigate(`/search?q=${encodeURIComponent(searchTerm)}`);
+        navigate(`/search?q=${encodeURIComponent(fullQuery)}`);
       }
     }
   };
@@ -82,9 +95,21 @@ export const SearchBar = ({
     inputRef.current?.focus();
   };
 
+  const clearLocation = () => {
+    setSelectedCity('');
+    setSelectedCommune('');
+  };
+
+  const locationLabel = selectedCity
+    ? selectedCommune
+      ? `${selectedCity} - ${selectedCommune}`
+      : selectedCity
+    : '';
+
   return (
-    <div ref={searchRef} className={cn("relative", className)}>
-      <form onSubmit={handleSubmit} className="relative">
+    <div ref={searchRef} className={cn("relative flex items-center gap-1.5", className)}>
+      {/* Search input */}
+      <form onSubmit={handleSubmit} className="relative flex-1">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
         <input
           ref={inputRef}
@@ -109,6 +134,91 @@ export const SearchBar = ({
         )}
       </form>
 
+      {/* Location picker */}
+      <Popover open={locationOpen} onOpenChange={setLocationOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant={selectedCity ? "default" : "outline"}
+            size="sm"
+            className={cn(
+              "min-h-[44px] shrink-0 gap-1 px-2.5 rounded-lg border-border",
+              selectedCity ? "bg-primary text-primary-foreground" : ""
+            )}
+          >
+            <MapPin className="w-4 h-4" />
+            {locationLabel ? (
+              <span className="text-xs max-w-[100px] truncate hidden sm:inline">{locationLabel}</span>
+            ) : null}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent align="end" className="w-72 p-3 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium">Filtrer par localisation</p>
+            {selectedCity && (
+              <Button variant="ghost" size="sm" onClick={clearLocation} className="h-6 px-2 text-xs text-muted-foreground">
+                Réinitialiser
+              </Button>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs text-muted-foreground">Ville</label>
+            <select
+              value={selectedCity}
+              onChange={(e) => {
+                setSelectedCity(e.target.value);
+                setSelectedCommune('');
+              }}
+              className="w-full h-10 rounded-lg border border-border bg-background px-3 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+            >
+              <option value="">Toutes les villes</option>
+              {cities.map((city) => (
+                <option key={city.name} value={city.name}>{city.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {selectedCity && availableCommunes.length > 0 && (
+            <div className="space-y-1.5">
+              <label className="text-xs text-muted-foreground">Commune</label>
+              <select
+                value={selectedCommune}
+                onChange={(e) => setSelectedCommune(e.target.value)}
+                className="w-full h-10 rounded-lg border border-border bg-background px-3 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+              >
+                <option value="">Toutes les communes</option>
+                {availableCommunes.map((c) => (
+                  <option key={c.name} value={c.name}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <Button
+            size="sm"
+            className="w-full"
+            onClick={() => {
+              setLocationOpen(false);
+              if (searchTerm.trim()) {
+                const locationQuery = selectedCity ? ` ${selectedCity}` : '';
+                const fullQuery = searchTerm + locationQuery;
+                if (onSearch) {
+                  onSearch(fullQuery);
+                } else if (showResults) {
+                  navigate(`/search?q=${encodeURIComponent(fullQuery)}`);
+                }
+              } else if (selectedCity) {
+                navigate(`/search?q=${encodeURIComponent(selectedCity)}`);
+              }
+            }}
+          >
+            <Search className="w-3.5 h-3.5 mr-1.5" />
+            Rechercher
+          </Button>
+        </PopoverContent>
+      </Popover>
+
       {/* Suggestions dropdown */}
       {showSuggestions && suggestions.length > 0 && (
         <div className="absolute top-full left-0 right-0 bg-background border border-border rounded-lg shadow-lg mt-1 z-50 max-h-80 overflow-y-auto md:max-h-64 lg:max-h-80">
@@ -121,26 +231,18 @@ export const SearchBar = ({
               >
                 <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm sm:text-sm font-medium truncate">{suggestion.title}</div>
+                  <div className="text-sm font-medium truncate">{suggestion.title}</div>
                   {suggestion.type === 'product' && suggestion.category && (
-                    <div className="text-xs text-muted-foreground truncate">
-                      dans {suggestion.category}
-                    </div>
+                    <div className="text-xs text-muted-foreground truncate">dans {suggestion.category}</div>
                   )}
                   {suggestion.type === 'category' && (
-                    <div className="text-xs text-muted-foreground">
-                      Catégorie
-                    </div>
+                    <div className="text-xs text-muted-foreground">Catégorie</div>
                   )}
                   {suggestion.type === 'city' && (
-                    <div className="text-xs text-muted-foreground">
-                      📍 Ville
-                    </div>
+                    <div className="text-xs text-muted-foreground">📍 Ville</div>
                   )}
                   {suggestion.type === 'commune' && (
-                    <div className="text-xs text-muted-foreground">
-                      📍 Commune
-                    </div>
+                    <div className="text-xs text-muted-foreground">📍 Commune</div>
                   )}
                 </div>
               </button>
@@ -158,7 +260,7 @@ export const SearchBar = ({
                   }
                   setShowSuggestions(false);
                 }}
-                className="text-sm text-primary hover:underline active:text-primary-hover min-h-[44px] flex items-center"
+                className="text-sm text-primary hover:underline min-h-[44px] flex items-center"
               >
                 Voir tous les résultats pour "{searchTerm.length > 20 ? searchTerm.substring(0, 20) + '...' : searchTerm}"
               </button>

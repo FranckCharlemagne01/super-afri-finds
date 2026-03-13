@@ -27,6 +27,7 @@ const CompleteProfile = () => {
   // Form data
   const [country, setCountry] = useState('CI');
   const [city, setCity] = useState('');
+  const [commune, setCommune] = useState('');
   const [objective, setObjective] = useState<Objective | null>(null);
   const [shopName, setShopName] = useState('');
   const [shopDescription, setShopDescription] = useState('');

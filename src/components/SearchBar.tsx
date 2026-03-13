@@ -132,6 +132,16 @@ export const SearchBar = ({
                       Catégorie
                     </div>
                   )}
+                  {suggestion.type === 'city' && (
+                    <div className="text-xs text-muted-foreground">
+                      📍 Ville
+                    </div>
+                  )}
+                  {suggestion.type === 'commune' && (
+                    <div className="text-xs text-muted-foreground">
+                      📍 Commune
+                    </div>
+                  )}
                 </div>
               </button>
             ))}

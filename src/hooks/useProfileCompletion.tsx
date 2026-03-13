@@ -160,6 +160,7 @@ export async function completeGoogleUserProfile(
       .update({
         country: data.country,
         city: data.city,
+        commune: data.commune || null,
         updated_at: new Date().toISOString(),
       })
       .eq('user_id', userId);

@@ -63,6 +63,12 @@ export const SearchBar = ({
   const handleSuggestionClick = (suggestion: any) => {
     if (suggestion.type === 'category') {
       navigate(`/category/${suggestion.id}`);
+    } else if (suggestion.type === 'city') {
+      const cityName = suggestion.id.replace('city:', '');
+      navigate(`/search?q=${encodeURIComponent(cityName)}`);
+    } else if (suggestion.type === 'commune') {
+      const communeName = suggestion.id.replace('commune:', '');
+      navigate(`/search?q=${encodeURIComponent(communeName)}`);
     } else {
       navigate(`/product/${suggestion.id}`);
     }
@@ -124,6 +130,16 @@ export const SearchBar = ({
                   {suggestion.type === 'category' && (
                     <div className="text-xs text-muted-foreground">
                       Catégorie
+                    </div>
+                  )}
+                  {suggestion.type === 'city' && (
+                    <div className="text-xs text-muted-foreground">
+                      📍 Ville
+                    </div>
+                  )}
+                  {suggestion.type === 'commune' && (
+                    <div className="text-xs text-muted-foreground">
+                      📍 Commune
                     </div>
                   )}
                 </div>

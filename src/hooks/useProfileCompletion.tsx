@@ -145,6 +145,7 @@ export async function completeGoogleUserProfile(
   data: {
     country: string;
     city: string;
+    commune?: string;
     objective: 'buyer' | 'seller';
     shopName?: string;
     shopDescription?: string;

@@ -123,6 +123,32 @@ export const StepProductInfo = ({ formData, onInputChange, categories, userCount
         </p>
       </motion.div>
 
+      {/* Commune */}
+      {formData.city && (
+        <motion.div 
+          custom={2.5}
+          variants={itemVariants}
+          initial="hidden"
+          animate="visible"
+          className="space-y-2"
+        >
+          <Label className="flex items-center gap-2 text-sm font-medium">
+            <Building2 className="w-4 h-4 text-primary" />
+            Commune du produit
+            <span className="text-xs font-normal text-muted-foreground">(optionnel)</span>
+          </Label>
+          <CommuneSelect
+            city={formData.city}
+            value={formData.commune || ''}
+            onValueChange={(value) => onInputChange('commune', value)}
+            placeholder="Sélectionnez la commune"
+          />
+          <p className="text-xs text-muted-foreground">
+            Précisez la commune pour aider les acheteurs à vous trouver
+          </p>
+        </motion.div>
+      )}
+
       {/* Description */}
       <motion.div 
         custom={3}

@@ -6,12 +6,11 @@ import {
   ShoppingBag, 
   Car,
   Gamepad2,
-  Tv,
   Baby,
   Watch,
-  Utensils,
   Gift,
-  Heart,
+  Footprints,
+  Headphones,
   LucideIcon
 } from "lucide-react";
 
@@ -31,59 +30,94 @@ export interface Category {
 
 export const categories: Category[] = [
   {
-    id: "tech",
-    name: "Technologie & Électronique",
-    slug: "technologie-electronique",
-    icon: Smartphone,
+    id: "men-fashion",
+    name: "Mode Homme",
+    slug: "mode-homme",
+    icon: Shirt,
     subcategories: [
-      { id: "tech-phones", name: "Téléphones portables & Accessoires", slug: "telephones-portables-accessoires" },
-      { id: "tech-tablets", name: "Tablettes & Accessoires", slug: "tablettes-accessoires" },
-      { id: "tech-computers", name: "Ordinateurs & Accessoires", slug: "ordinateurs-accessoires" },
-      { id: "tech-tv", name: "Télévisions & Audio", slug: "televisions-audio" },
-      { id: "tech-gaming", name: "Jeux vidéo & Consoles", slug: "jeux-video-consoles" },
-      { id: "tech-smart", name: "Électroménager intelligent", slug: "electromenager-intelligent" },
+      { id: "men-tshirts", name: "T-shirts Homme", slug: "tshirts-homme" },
+      { id: "men-pants", name: "Pantalons Homme", slug: "pantalons-homme" },
+      { id: "men-jackets", name: "Vestes & Manteaux Homme", slug: "vestes-manteaux-homme" },
+      { id: "men-clothing", name: "Vêtements Homme", slug: "vetements-homme" },
+      { id: "men-sportswear", name: "Sportwear & Streetwear", slug: "sportwear-streetwear" },
+      { id: "men-grooming", name: "Soins de barbe & Beauté Homme", slug: "soins-barbe-beaute-homme" },
+      { id: "men-accessories", name: "Lunettes & Casquettes Homme", slug: "lunettes-casquettes" },
+      { id: "men-suits", name: "Costumes & Chemises Homme", slug: "costumes-chemises-homme" },
     ]
   },
   {
     id: "women-fashion",
     name: "Mode Femme",
     slug: "mode-femme",
-    icon: Shirt,
+    icon: Sparkles,
     subcategories: [
+      { id: "women-dresses", name: "Robes Femme", slug: "robes-femme" },
+      { id: "women-tshirts", name: "T-shirts & Tops Femme", slug: "tshirts-tops-femme" },
       { id: "women-clothing", name: "Vêtements Femme", slug: "vetements-femme" },
-      { id: "women-shoes", name: "Chaussures Femme", slug: "chaussures-femme" },
-      { id: "women-bags", name: "Sacs à main & Maroquinerie", slug: "sacs-main-maroquinerie" },
+      { id: "women-bags", name: "Sacs Femme & Maroquinerie", slug: "sacs-main-maroquinerie" },
       { id: "women-jewelry", name: "Bijoux & Montres Femme", slug: "bijoux-montres-femme" },
       { id: "women-lingerie", name: "Lingerie & Sous-vêtements", slug: "lingerie-sous-vetements" },
       { id: "women-beauty", name: "Beauté, Maquillage & Soins", slug: "beaute-maquillage-soins" },
       { id: "women-muslim", name: "Mode musulmane & Voiles", slug: "mode-musulmane-voiles" },
-    ]
-  },
-  {
-    id: "men-fashion",
-    name: "Mode Homme",
-    slug: "mode-homme",
-    icon: Watch,
-    subcategories: [
-      { id: "men-clothing", name: "Vêtements Homme", slug: "vetements-homme" },
-      { id: "men-shoes", name: "Chaussures Homme", slug: "chaussures-homme" },
-      { id: "men-watches", name: "Montres & Accessoires", slug: "montres-accessoires" },
-      { id: "men-grooming", name: "Soins de barbe & Beauté Homme", slug: "soins-barbe-beaute-homme" },
-      { id: "men-sportswear", name: "Sportwear & Streetwear", slug: "sportwear-streetwear" },
-      { id: "men-accessories", name: "Lunettes & Casquettes", slug: "lunettes-casquettes" },
+      { id: "women-accessories", name: "Accessoires Femme", slug: "accessoires-femme" },
     ]
   },
   {
     id: "kids-baby",
-    name: "Enfants & Bébés",
+    name: "Mode Enfant & Bébé",
     slug: "enfants-bebes",
     icon: Baby,
     subcategories: [
+      { id: "kids-boys", name: "Vêtements Garçon", slug: "vetements-garcon" },
+      { id: "kids-girls", name: "Vêtements Fille", slug: "vetements-fille" },
       { id: "kids-baby-clothes", name: "Vêtements Bébé", slug: "vetements-bebe" },
       { id: "kids-shoes", name: "Chaussures Enfant", slug: "chaussures-enfant" },
       { id: "kids-toys", name: "Jouets & Jeux éducatifs", slug: "jouets-jeux-educatifs" },
       { id: "kids-strollers", name: "Poussettes & Accessoires Bébé", slug: "poussettes-accessoires-bebe" },
       { id: "kids-school", name: "Fournitures scolaires & Sac à dos", slug: "fournitures-scolaires-sac-dos" },
+    ]
+  },
+  {
+    id: "shoes",
+    name: "Chaussures",
+    slug: "chaussures",
+    icon: Footprints,
+    subcategories: [
+      { id: "shoes-men", name: "Chaussures Homme", slug: "chaussures-homme" },
+      { id: "shoes-women", name: "Chaussures Femme", slug: "chaussures-femme" },
+      { id: "shoes-kids", name: "Chaussures Enfant", slug: "chaussures-enfant-cat" },
+      { id: "shoes-sneakers", name: "Baskets & Sneakers", slug: "baskets-sneakers" },
+      { id: "shoes-sandals", name: "Sandales & Claquettes", slug: "sandales-claquettes" },
+      { id: "shoes-sport", name: "Chaussures de sport", slug: "chaussures-sport" },
+    ]
+  },
+  {
+    id: "watches-jewelry",
+    name: "Montres & Bijoux",
+    slug: "montres-bijoux",
+    icon: Watch,
+    subcategories: [
+      { id: "watches-men", name: "Montres Homme", slug: "montres-homme" },
+      { id: "watches-women", name: "Montres Femme", slug: "montres-femme" },
+      { id: "watches-accessories", name: "Montres & Accessoires", slug: "montres-accessoires" },
+      { id: "jewelry-general", name: "Bijoux & Parures", slug: "bijoux-parures" },
+      { id: "watches-jewelry-perfume", name: "Montres, Bijoux & Parfums", slug: "montres-bijoux-parfums" },
+    ]
+  },
+  {
+    id: "tech",
+    name: "Électronique",
+    slug: "technologie-electronique",
+    icon: Smartphone,
+    subcategories: [
+      { id: "tech-phones", name: "Téléphones portables", slug: "telephones-portables-accessoires" },
+      { id: "tech-phone-accessories", name: "Accessoires Téléphones", slug: "accessoires-telephones" },
+      { id: "tech-headphones", name: "Casques & Écouteurs", slug: "casques-ecouteurs" },
+      { id: "tech-computers", name: "Ordinateurs & Accessoires", slug: "ordinateurs-accessoires" },
+      { id: "tech-tablets", name: "Tablettes & Accessoires", slug: "tablettes-accessoires" },
+      { id: "tech-tv", name: "Télévisions & Audio", slug: "televisions-audio" },
+      { id: "tech-gaming", name: "Jeux vidéo & Consoles", slug: "jeux-video-consoles" },
+      { id: "tech-smart", name: "Électroménager intelligent", slug: "electromenager-intelligent" },
     ]
   },
   {
@@ -154,7 +188,6 @@ export const categories: Category[] = [
     slug: "accessoires-lifestyle",
     icon: Gift,
     subcategories: [
-      { id: "lifestyle-watches", name: "Montres, Bijoux & Parfums", slug: "montres-bijoux-parfums" },
       { id: "lifestyle-bags", name: "Sacs, Ceintures & Portefeuilles", slug: "sacs-ceintures-portefeuilles" },
       { id: "lifestyle-glasses", name: "Lunettes & Accessoires de mode", slug: "lunettes-accessoires-mode" },
       { id: "lifestyle-gifts", name: "Cadeaux & Gadgets", slug: "cadeaux-gadgets" },
@@ -197,7 +230,5 @@ export const getSubCategoryBySlug = (slug: string): { category: Category; subcat
 
 // Fonction pour compter les produits par catégorie/sous-catégorie
 export const getCategoryProductCount = async (categorySlug: string): Promise<number> => {
-  // Cette fonction sera implémentée dans les composants qui l'utilisent
-  // car elle nécessite l'accès à supabase
   return 0;
 };

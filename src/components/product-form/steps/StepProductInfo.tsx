@@ -1,9 +1,10 @@
 import { motion } from 'framer-motion';
-import { Package, Tag, MapPin, FileText } from 'lucide-react';
+import { Package, Tag, MapPin, Building2, FileText } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { TextInput } from '@/components/ui/validated-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CommuneSelect } from '@/components/CommuneSelect';
 
 interface StepProductInfoProps {
   formData: {
@@ -11,6 +12,7 @@ interface StepProductInfoProps {
     description: string;
     category: string;
     city: string;
+    commune?: string;
   };
   onInputChange: (field: string, value: any) => void;
   categories: { value: string; label: string }[];

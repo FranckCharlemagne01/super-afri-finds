@@ -54,6 +54,7 @@ const SignupWizard = memo(({
   email,
   country,
   city,
+  commune = '',
   phone,
   dialCode,
   userRole,

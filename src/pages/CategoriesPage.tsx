@@ -419,8 +419,8 @@ const CategoriesPage = () => {
           )}
         </div>
 
-        {/* Search */}
-        <div className="relative max-w-lg mb-8">
+        {/* Search + category chips */}
+        <div className="relative max-w-lg mb-4">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             type="text"
@@ -429,6 +429,41 @@ const CategoriesPage = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 h-11 rounded-xl"
           />
+        </div>
+
+        <div className="flex gap-2 flex-wrap mb-8">
+          <button
+            onClick={() => setSelectedCategory(null)}
+            className={cn(
+              "px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors",
+              selectedCategory === null
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "bg-muted text-muted-foreground hover:bg-accent"
+            )}
+          >
+            Tous ({products.length})
+          </button>
+          {categories.map((cat) => {
+            const slugs = new Set(cat.subcategories.map((s) => s.slug));
+            const count = products.filter((p) => slugs.has(p.category)).length;
+            if (count === 0) return null;
+            const Icon = cat.icon;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
+                className={cn(
+                  "px-3.5 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-colors",
+                  selectedCategory === cat.id
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "bg-muted text-muted-foreground hover:bg-accent"
+                )}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {cat.name} ({count})
+              </button>
+            );
+          })}
         </div>
 
         {loading ? (
@@ -465,23 +500,27 @@ const CategoriesPage = () => {
                     </Button>
                   </div>
 
-                  <div className="flex gap-2 flex-wrap">
-                    {category.subcategories.map((sub) => {
-                      const count = products.filter((p) => p.category === sub.slug).length;
-                      if (count === 0) return null;
-                      return (
-                        <button
-                          key={sub.id}
-                          onClick={() => navigate(`/category/${sub.slug}`)}
-                          className="px-3 py-1.5 text-xs font-medium rounded-full border border-border bg-background hover:bg-accent hover:border-primary/30 transition-colors text-foreground"
-                        >
-                          {sub.name} <span className="text-muted-foreground">({count})</span>
-                        </button>
-                      );
-                    })}
+                  {/* Vertical grid instead of carousel */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                    {categoryProducts.map((product) => (
+                      <CategoryProductCard
+                        key={product.id}
+                        id={product.id}
+                        image={getProductImage(product.images, 0)}
+                        title={product.title}
+                        originalPrice={product.original_price}
+                        salePrice={product.price}
+                        discount={product.discount_percentage}
+                        rating={product.rating}
+                        reviews={product.reviews_count}
+                        badge={product.badge}
+                        isFlashSale={product.is_flash_sale}
+                        isBoosted={product.is_boosted}
+                        boostedUntil={product.boosted_until}
+                        shop_name={product.shop_name}
+                      />
+                    ))}
                   </div>
-
-                  <ProductCarousel products={categoryProducts} />
                 </section>
               );
             })}
@@ -495,6 +534,12 @@ const CategoriesPage = () => {
               <div className="w-8 h-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
             )}
           </div>
+        )}
+
+        {!hasMore && filteredProducts.length > 0 && !selectedCategory && !searchQuery && (
+          <p className="text-center text-xs text-muted-foreground py-6">
+            Vous avez vu tous les produits 🎉
+          </p>
         )}
       </div>
     </div>

@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, Package, MessageSquare, Wallet, ShoppingBag,
   Settings, ChevronLeft, ChevronRight, Menu, X,
-  Sun, Moon, LogOut, Store, ExternalLink, ArrowLeft
+  Sun, Moon, LogOut, Store, ExternalLink, ArrowLeft, Banknote
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';

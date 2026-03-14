@@ -642,7 +642,9 @@ const SuperAdmin = () => {
           {/* Marketing */}
           {activeSection === 'marketing' && <MarketingDashboard />}
 
-          {/* Security */}
+          {/* KYC */}
+          {activeSection === 'kyc' && <KYCManagement />}
+
           {activeSection === 'security' && <SecurityDashboard />}
 
           {/* Logs - reuses SecurityDashboard's audit trail section */}

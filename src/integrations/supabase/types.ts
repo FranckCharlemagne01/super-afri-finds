@@ -1249,6 +1249,96 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          order_id: string | null
+          reference: string | null
+          status: string
+          transaction_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          order_id?: string | null
+          reference?: string | null
+          status?: string
+          transaction_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          order_id?: string | null
+          reference?: string | null
+          status?: string
+          transaction_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      withdrawal_requests: {
+        Row: {
+          admin_note: string | null
+          amount: number
+          created_at: string
+          currency: string
+          destination_name: string | null
+          destination_number: string
+          id: string
+          processed_at: string | null
+          processed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          withdrawal_method: string
+        }
+        Insert: {
+          admin_note?: string | null
+          amount: number
+          created_at?: string
+          currency?: string
+          destination_name?: string | null
+          destination_number: string
+          id?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          withdrawal_method: string
+        }
+        Update: {
+          admin_note?: string | null
+          amount?: number
+          created_at?: string
+          currency?: string
+          destination_name?: string | null
+          destination_number?: string
+          id?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          withdrawal_method?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       orders_seller_view: {
@@ -1718,6 +1808,7 @@ export type Database = {
           total_visits_today: number
         }[]
       }
+      get_wallet_balance: { Args: { _user_id: string }; Returns: Json }
       handle_article_payment_success: {
         Args: {
           _amount: number
@@ -1755,6 +1846,16 @@ export type Database = {
           _seller_id: string
         }
         Returns: boolean
+      }
+      request_withdrawal: {
+        Args: {
+          _amount: number
+          _destination: string
+          _destination_name?: string
+          _method: string
+          _user_id: string
+        }
+        Returns: Json
       }
       search_products: {
         Args: {

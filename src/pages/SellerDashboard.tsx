@@ -28,6 +28,7 @@ const MyOrdersTabs = lazy(() => import('@/components/orders/MyOrdersTabs').then(
 const MyMessagesTabs = lazy(() => import('@/components/messages/MyMessagesTabs').then(m => ({ default: m.MyMessagesTabs })));
 const TokensSubscriptionTab = lazy(() => import('@/components/seller/TokensSubscriptionTab').then(m => ({ default: m.TokensSubscriptionTab })));
 const ShopSettingsTab = lazy(() => import('@/components/seller/ShopSettingsTab').then(m => ({ default: m.ShopSettingsTab })));
+const WalletTab = lazy(() => import('@/components/seller/WalletTab').then(m => ({ default: m.WalletTab })));
 
 // ✅ Lightweight skeleton for section content
 const SectionSkeleton = memo(() => (
@@ -80,6 +81,7 @@ const sectionTitles: Record<SellerSection, string> = {
   orders: 'Commandes',
   messages: 'Messages',
   tokens: 'Compte Djassa',
+  wallet: 'Wallet Djassa',
   settings: 'Paramètres',
 };
 
@@ -594,6 +596,12 @@ const SellerDashboard = memo(() => {
                 products={products || []}
                 onRefresh={handleRefresh}
               />
+            </Suspense>
+          )}
+
+          {activeSection === 'wallet' && (
+            <Suspense fallback={<SectionSkeleton />}>
+              <WalletTab />
             </Suspense>
           )}
 

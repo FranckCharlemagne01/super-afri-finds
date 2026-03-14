@@ -3,14 +3,14 @@ import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, Package, MessageSquare, Wallet, ShoppingBag,
   Settings, ChevronLeft, ChevronRight, Menu, X,
-  Sun, Moon, LogOut, Store, ExternalLink, ArrowLeft
+  Sun, Moon, LogOut, Store, ExternalLink, ArrowLeft, Banknote
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 
-export type SellerSection = 'overview' | 'products' | 'orders' | 'messages' | 'tokens' | 'settings';
+export type SellerSection = 'overview' | 'products' | 'orders' | 'messages' | 'tokens' | 'wallet' | 'settings';
 
 interface NavItem {
   id: SellerSection;
@@ -25,6 +25,7 @@ const navItems: NavItem[] = [
   { id: 'orders', label: 'Commandes', icon: ShoppingBag, group: 'Gestion' },
   { id: 'messages', label: 'Messages', icon: MessageSquare, group: 'Gestion' },
   { id: 'tokens', label: 'Compte Djassa', icon: Wallet, group: 'Gestion' },
+  { id: 'wallet', label: 'Wallet Djassa', icon: Banknote, group: 'Gestion' },
   { id: 'settings', label: 'Paramètres', icon: Settings, group: 'Réglages' },
 ];
 

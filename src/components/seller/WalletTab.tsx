@@ -1,6 +1,8 @@
 import { useState, memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useKYC } from '@/hooks/useKYC';
+import { KYCVerificationDialog } from './KYCVerificationDialog';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

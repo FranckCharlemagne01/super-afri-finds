@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Store, Package, ShoppingBag, Users, Coins, 
   BarChart3, ShieldCheck, ScrollText, Settings, UserCog, 
   ChevronLeft, ChevronRight, Menu, X, Sun, Moon, LogOut,
-  Building2, ArrowRightLeft, Megaphone
+  Building2, ArrowRightLeft, Megaphone, Fingerprint
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';

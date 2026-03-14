@@ -599,6 +599,12 @@ const SellerDashboard = memo(() => {
             </Suspense>
           )}
 
+          {activeSection === 'wallet' && (
+            <Suspense fallback={<SectionSkeleton />}>
+              <WalletTab />
+            </Suspense>
+          )}
+
           {activeSection === 'settings' && (
             <Suspense fallback={<SectionSkeleton />}>
               <ShopSettingsTab

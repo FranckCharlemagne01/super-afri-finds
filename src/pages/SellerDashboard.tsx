@@ -80,6 +80,7 @@ const sectionTitles: Record<SellerSection, string> = {
   orders: 'Commandes',
   messages: 'Messages',
   tokens: 'Compte Djassa',
+  wallet: 'Wallet Djassa',
   settings: 'Paramètres',
 };
 

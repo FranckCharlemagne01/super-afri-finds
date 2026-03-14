@@ -148,10 +148,45 @@ export const WalletTab = memo(() => {
         </Card>
       </div>
 
+      {/* KYC Status Banner */}
+      {!kyc.loading && kyc.status !== 'approved' && (
+        <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-800/30">
+          <ShieldCheck className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-foreground">
+              {kyc.status === 'none' && 'Vérification d\'identité requise'}
+              {kyc.status === 'pending' && 'Vérification en cours...'}
+              {kyc.status === 'rejected' && 'Vérification rejetée'}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {kyc.status === 'none' && 'Vous devez vérifier votre identité (KYC) avant de pouvoir effectuer des retraits.'}
+              {kyc.status === 'pending' && 'Vos documents sont en cours d\'examen. Vous pourrez retirer dès l\'approbation.'}
+              {kyc.status === 'rejected' && (kyc.adminNote ? `Raison : ${kyc.adminNote}` : 'Veuillez soumettre de nouveaux documents.')}
+            </p>
+            {(kyc.status === 'none' || kyc.status === 'rejected') && (
+              <Button
+                size="sm"
+                onClick={() => setKycDialogOpen(true)}
+                className="mt-2 gap-2 rounded-xl"
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                {kyc.status === 'none' ? 'Vérifier mon identité' : 'Resoumettre mes documents'}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">
         <Button
-          onClick={() => setWithdrawOpen(true)}
+          onClick={() => {
+            if (!kyc.isVerified) {
+              setKycDialogOpen(true);
+              return;
+            }
+            setWithdrawOpen(true);
+          }}
           className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-lg"
           disabled={availableBalance < 500}
         >

@@ -57,7 +57,9 @@ const txTypeLabels: Record<string, { label: string; icon: React.ElementType; pos
 
 export const WalletTab = memo(() => {
   const { balance, transactions, withdrawals, loading, refreshAll, requestWithdrawal } = useWallet();
+  const kyc = useKYC();
   const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [kycDialogOpen, setKycDialogOpen] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [withdrawMethod, setWithdrawMethod] = useState('');
   const [withdrawDest, setWithdrawDest] = useState('');

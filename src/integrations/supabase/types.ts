@@ -278,6 +278,48 @@ export type Database = {
           },
         ]
       }
+      kyc_verifications: {
+        Row: {
+          admin_note: string | null
+          created_at: string
+          id: string
+          id_back_url: string
+          id_front_url: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          selfie_url: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          created_at?: string
+          id?: string
+          id_back_url: string
+          id_front_url: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          selfie_url: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          created_at?: string
+          id?: string
+          id_back_url?: string
+          id_front_url?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          selfie_url?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       marketing_posts: {
         Row: {
           content: string
@@ -1613,6 +1655,7 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
       }
+      get_kyc_status: { Args: { _user_id: string }; Returns: Json }
       get_order_details: {
         Args: { order_id: string }
         Returns: {
@@ -1855,6 +1898,10 @@ export type Database = {
           _method: string
           _user_id: string
         }
+        Returns: Json
+      }
+      review_kyc: {
+        Args: { _admin_note?: string; _kyc_id: string; _status: string }
         Returns: Json
       }
       search_products: {

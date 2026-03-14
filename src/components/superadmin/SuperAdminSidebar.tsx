@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 
 export type AdminSection = 
   | 'overview' | 'shops' | 'products' | 'orders' 
-  | 'users' | 'tokens' | 'analytics' | 'marketing'
+  | 'users' | 'tokens' | 'analytics' | 'marketing' | 'kyc'
   | 'security' | 'logs' | 'settings' | 'profile';
 
 interface NavItem {

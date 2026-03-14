@@ -25,7 +25,7 @@ const navItems: NavItem[] = [
   { id: 'orders', label: 'Commandes', icon: ShoppingBag, group: 'Gestion' },
   { id: 'messages', label: 'Messages', icon: MessageSquare, group: 'Gestion' },
   { id: 'tokens', label: 'Compte Djassa', icon: Wallet, group: 'Gestion' },
-  { id: 'wallet', label: 'Wallet Djassa', icon: Banknote, group: 'Gestion' },
+  { id: 'wallet', label: '💰 Retrait', icon: Banknote, group: 'Gestion' },
   { id: 'settings', label: 'Paramètres', icon: Settings, group: 'Réglages' },
 ];
 

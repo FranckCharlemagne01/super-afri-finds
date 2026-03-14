@@ -27,6 +27,7 @@ import { SecurityDashboard } from '@/components/superadmin/SecurityDashboard';
 import { SuperAdminSidebar, type AdminSection } from '@/components/superadmin/SuperAdminSidebar';
 import { SuperAdminOverview } from '@/components/superadmin/SuperAdminOverview';
 import { MarketingDashboard } from '@/components/superadmin/MarketingDashboard';
+import { KYCManagement } from '@/components/superadmin/KYCManagement';
 import { AdminShops } from '@/components/AdminShops';
 
 interface AdminStats {
@@ -224,6 +225,7 @@ const SuperAdmin = () => {
   const sectionTitle: Record<AdminSection, string> = {
     overview: 'Dashboard', shops: 'Boutiques', products: 'Produits', orders: 'Commandes',
     users: 'Utilisateurs', tokens: 'Jetons', analytics: 'Analytics', marketing: 'Marketing & Affiliés',
+    kyc: 'Vérifications KYC',
     security: 'Sécurité', logs: 'Logs & Audit Trail', settings: 'Paramètres', profile: 'Profil SuperAdmin',
   };
 
@@ -640,7 +642,9 @@ const SuperAdmin = () => {
           {/* Marketing */}
           {activeSection === 'marketing' && <MarketingDashboard />}
 
-          {/* Security */}
+          {/* KYC */}
+          {activeSection === 'kyc' && <KYCManagement />}
+
           {activeSection === 'security' && <SecurityDashboard />}
 
           {/* Logs - reuses SecurityDashboard's audit trail section */}

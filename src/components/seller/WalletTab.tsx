@@ -1,6 +1,8 @@
 import { useState, memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useKYC } from '@/hooks/useKYC';
+import { KYCVerificationDialog } from './KYCVerificationDialog';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,6 +22,7 @@ import {
   AlertCircle,
   Banknote,
   Smartphone,
+  ShieldCheck,
 } from 'lucide-react';
 import { useWallet, type WalletTransaction, type WithdrawalRequest } from '@/hooks/useWallet';
 import { toast } from 'sonner';
@@ -55,7 +58,9 @@ const txTypeLabels: Record<string, { label: string; icon: React.ElementType; pos
 
 export const WalletTab = memo(() => {
   const { balance, transactions, withdrawals, loading, refreshAll, requestWithdrawal } = useWallet();
+  const kyc = useKYC();
   const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [kycDialogOpen, setKycDialogOpen] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [withdrawMethod, setWithdrawMethod] = useState('');
   const [withdrawDest, setWithdrawDest] = useState('');
@@ -144,10 +149,45 @@ export const WalletTab = memo(() => {
         </Card>
       </div>
 
+      {/* KYC Status Banner */}
+      {!kyc.loading && kyc.status !== 'approved' && (
+        <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-800/30">
+          <ShieldCheck className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-foreground">
+              {kyc.status === 'none' && 'Vérification d\'identité requise'}
+              {kyc.status === 'pending' && 'Vérification en cours...'}
+              {kyc.status === 'rejected' && 'Vérification rejetée'}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {kyc.status === 'none' && 'Vous devez vérifier votre identité (KYC) avant de pouvoir effectuer des retraits.'}
+              {kyc.status === 'pending' && 'Vos documents sont en cours d\'examen. Vous pourrez retirer dès l\'approbation.'}
+              {kyc.status === 'rejected' && (kyc.adminNote ? `Raison : ${kyc.adminNote}` : 'Veuillez soumettre de nouveaux documents.')}
+            </p>
+            {(kyc.status === 'none' || kyc.status === 'rejected') && (
+              <Button
+                size="sm"
+                onClick={() => setKycDialogOpen(true)}
+                className="mt-2 gap-2 rounded-xl"
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                {kyc.status === 'none' ? 'Vérifier mon identité' : 'Resoumettre mes documents'}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">
         <Button
-          onClick={() => setWithdrawOpen(true)}
+          onClick={() => {
+            if (!kyc.isVerified) {
+              setKycDialogOpen(true);
+              return;
+            }
+            setWithdrawOpen(true);
+          }}
           className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-lg"
           disabled={availableBalance < 500}
         >
@@ -356,6 +396,9 @@ export const WalletTab = memo(() => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* KYC Verification Dialog */}
+      <KYCVerificationDialog open={kycDialogOpen} onOpenChange={setKycDialogOpen} />
     </div>
   );
 });

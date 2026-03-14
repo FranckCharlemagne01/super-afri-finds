@@ -224,6 +224,7 @@ const SuperAdmin = () => {
   const sectionTitle: Record<AdminSection, string> = {
     overview: 'Dashboard', shops: 'Boutiques', products: 'Produits', orders: 'Commandes',
     users: 'Utilisateurs', tokens: 'Jetons', analytics: 'Analytics', marketing: 'Marketing & Affiliés',
+    kyc: 'Vérifications KYC',
     security: 'Sécurité', logs: 'Logs & Audit Trail', settings: 'Paramètres', profile: 'Profil SuperAdmin',
   };
 

@@ -22,6 +22,7 @@ import {
   AlertCircle,
   Banknote,
   Smartphone,
+  ShieldCheck,
 } from 'lucide-react';
 import { useWallet, type WalletTransaction, type WithdrawalRequest } from '@/hooks/useWallet';
 import { toast } from 'sonner';

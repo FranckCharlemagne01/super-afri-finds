@@ -396,6 +396,9 @@ export const WalletTab = memo(() => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* KYC Verification Dialog */}
+      <KYCVerificationDialog open={kycDialogOpen} onOpenChange={setKycDialogOpen} />
     </div>
   );
 });

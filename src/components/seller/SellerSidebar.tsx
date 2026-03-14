@@ -10,7 +10,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 
-export type SellerSection = 'overview' | 'products' | 'orders' | 'messages' | 'tokens' | 'settings';
+export type SellerSection = 'overview' | 'products' | 'orders' | 'messages' | 'tokens' | 'wallet' | 'settings';
 
 interface NavItem {
   id: SellerSection;

@@ -31,6 +31,7 @@ const navItems: NavItem[] = [
   { id: 'tokens', label: 'Jetons', icon: Coins, group: 'Management' },
   { id: 'analytics', label: 'Analytics', icon: BarChart3, group: 'Management' },
   { id: 'marketing', label: 'Marketing & Affiliés', icon: Megaphone, group: 'Management' },
+  { id: 'kyc', label: 'Vérifications KYC', icon: Fingerprint, group: 'Management' },
   { id: 'security', label: 'Sécurité', icon: ShieldCheck, group: 'Sécurité & Système' },
   { id: 'logs', label: 'Logs & Audit', icon: ScrollText, group: 'Sécurité & Système' },
   { id: 'settings', label: 'Paramètres', icon: Settings, group: 'Réglages' },

@@ -27,6 +27,7 @@ import { SecurityDashboard } from '@/components/superadmin/SecurityDashboard';
 import { SuperAdminSidebar, type AdminSection } from '@/components/superadmin/SuperAdminSidebar';
 import { SuperAdminOverview } from '@/components/superadmin/SuperAdminOverview';
 import { MarketingDashboard } from '@/components/superadmin/MarketingDashboard';
+import { KYCManagement } from '@/components/superadmin/KYCManagement';
 import { AdminShops } from '@/components/AdminShops';
 
 interface AdminStats {

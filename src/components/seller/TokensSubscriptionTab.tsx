@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { TokenTransactionHistory } from '@/components/TokenTransactionHistory';
 import { TokenPurchaseDialog } from '@/components/TokenPurchaseDialog';
+import { PublicationBonusSection } from '@/components/seller/PublicationBonusSection';
 import { useStableAuth } from '@/hooks/useStableAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { formatFCFA, getSellerTiers, type SellerType } from '@/utils/commissionCalculator';
@@ -225,6 +226,9 @@ export const TokensSubscriptionTab = ({
           </CardContent>
         </Card>
       </div>
+
+      {/* Publication Bonus Section */}
+      <PublicationBonusSection />
 
       {/* Commission info card */}
       <Card className="border-0 shadow-lg overflow-hidden rounded-2xl">

@@ -90,7 +90,7 @@ export const QuickViewDialog = memo(({ product, open, onOpenChange }: QuickViewD
         {/* Image Section - larger on mobile */}
         <div
           className="relative w-full flex-shrink-0 bg-muted overflow-hidden touch-pan-x"
-          style={{ height: 'clamp(260px, 55vh, 380px)' }}
+          style={{ height: 'clamp(220px, 45vh, 360px)' }}
           onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
           onTouchEnd={(e) => {
             if (!hasMultipleImages || touchStartX.current === null) return;

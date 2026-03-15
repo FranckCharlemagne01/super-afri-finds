@@ -3,16 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, ShoppingCart, ExternalLink, Heart } from "lucide-react";
+import { Star, ShoppingCart, ExternalLink, Heart, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { getProductImage, handleImageError } from "@/utils/productImageHelper";
+import { getProductImage, getProductImages, handleImageError } from "@/utils/productImageHelper";
 
 export interface QuickViewProduct {
   id: string;
   image: string;
+  images?: string[];
   title: string;
   originalPrice: number;
   salePrice: number;
@@ -37,6 +38,7 @@ export const QuickViewDialog = memo(({ product, open, onOpenChange }: QuickViewD
   const { addToCart } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
   const [imgLoaded, setImgLoaded] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const handleViewProduct = useCallback(() => {
     if (!product) return;
@@ -57,10 +59,32 @@ export const QuickViewDialog = memo(({ product, open, onOpenChange }: QuickViewD
   if (!product) return null;
 
   const isFav = isFavorite(product.id);
-  const safeSrc = getProductImage([product.image], 0);
+  
+  // Get all valid images, fallback to single image
+  const allImages = product.images 
+    ? getProductImages(product.images) 
+    : [];
+  const validImages = allImages.length > 0 
+    ? allImages 
+    : [getProductImage([product.image], 0)];
+  
+  const hasMultipleImages = validImages.length > 1;
+  const currentImage = validImages[activeIndex] || validImages[0];
+
+  const goToPrev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setActiveIndex((prev) => (prev - 1 + validImages.length) % validImages.length);
+    setImgLoaded(false);
+  };
+
+  const goToNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setActiveIndex((prev) => (prev + 1) % validImages.length);
+    setImgLoaded(false);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) setActiveIndex(0); }}>
       <DialogContent className="max-w-[95vw] sm:max-w-lg p-0 overflow-hidden rounded-2xl border-border/50 gap-0">
         {/* Image Section */}
         <div className="relative w-full aspect-square sm:aspect-[4/3] bg-muted overflow-hidden">
@@ -69,20 +93,57 @@ export const QuickViewDialog = memo(({ product, open, onOpenChange }: QuickViewD
               <div className="w-6 h-6 rounded-full border-2 border-muted-foreground/20 border-t-primary animate-spin" />
             </div>
           )}
-          <img
-            src={safeSrc}
-            alt={product.title}
-            loading="eager"
-            onLoad={() => setImgLoaded(true)}
-            onError={handleImageError}
-            className={cn(
-              "w-full h-full object-cover transition-opacity duration-300",
-              imgLoaded ? "opacity-100" : "opacity-0"
-            )}
-          />
+          <AnimatePresence mode="wait">
+            <motion.img
+              key={activeIndex}
+              src={currentImage}
+              alt={product.title}
+              loading="eager"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: imgLoaded ? 1 : 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onLoad={() => setImgLoaded(true)}
+              onError={handleImageError}
+              className="w-full h-full object-cover"
+            />
+          </AnimatePresence>
+
+          {/* Navigation arrows */}
+          {hasMultipleImages && (
+            <>
+              <button
+                onClick={goToPrev}
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm shadow-md flex items-center justify-center text-foreground hover:bg-background transition-colors z-20"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={goToNext}
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm shadow-md flex items-center justify-center text-foreground hover:bg-background transition-colors z-20"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+              {/* Dots indicator */}
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+                {validImages.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={(e) => { e.stopPropagation(); setActiveIndex(i); setImgLoaded(false); }}
+                    className={cn(
+                      "w-2 h-2 rounded-full transition-all duration-200",
+                      i === activeIndex 
+                        ? "bg-background w-4 shadow-sm" 
+                        : "bg-background/50"
+                    )}
+                  />
+                ))}
+              </div>
+            </>
+          )}
 
           {/* Badges overlay */}
-          <div className="absolute top-3 left-3 flex flex-col gap-1">
+          <div className="absolute top-3 left-3 flex flex-col gap-1 z-10">
             {product.isBoosted && (
               <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] px-2 py-0.5 rounded-lg shadow-sm">
                 ⭐ Vedette
@@ -105,13 +166,33 @@ export const QuickViewDialog = memo(({ product, open, onOpenChange }: QuickViewD
             whileTap={{ scale: 0.85 }}
             onClick={handleToggleFavorite}
             className={cn(
-              "absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center shadow-md backdrop-blur-sm transition-colors",
+              "absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center shadow-md backdrop-blur-sm transition-colors z-10",
               isFav ? "bg-red-50/90 text-red-500" : "bg-background/90 text-muted-foreground"
             )}
           >
             <Heart className={cn("w-4 h-4", isFav && "fill-current")} />
           </motion.button>
         </div>
+
+        {/* Thumbnails strip */}
+        {hasMultipleImages && (
+          <div className="flex gap-1.5 px-4 pt-3 overflow-x-auto scrollbar-hide">
+            {validImages.map((img, i) => (
+              <button
+                key={i}
+                onClick={() => { setActiveIndex(i); setImgLoaded(false); }}
+                className={cn(
+                  "flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all duration-200",
+                  i === activeIndex 
+                    ? "border-primary ring-1 ring-primary/30" 
+                    : "border-transparent opacity-60 hover:opacity-100"
+                )}
+              >
+                <img src={img} alt="" className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Content Section */}
         <div className="p-4 sm:p-5 space-y-3">

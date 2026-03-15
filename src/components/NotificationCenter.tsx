@@ -410,7 +410,7 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
     </motion.div>
   );
 
-  return (
+  const content = (
     <AnimatePresence>
       {isOpen && (
         <>
@@ -420,7 +420,7 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className={cn(
-              "fixed inset-0 z-[99]",
+              "fixed inset-0 z-[9999]",
               isMobile ? "bg-black/40" : "bg-transparent"
             )}
             onClick={onClose}
@@ -431,4 +431,11 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
       )}
     </AnimatePresence>
   );
+
+  // On mobile, use portal to escape any parent transforms that break fixed positioning
+  if (isMobile) {
+    return createPortal(content, document.body);
+  }
+
+  return content;
 };

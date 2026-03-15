@@ -96,6 +96,7 @@ ProductCardImage.displayName = 'ProductCardImage';
 export const CategoryProductCard = memo(({
   id,
   image,
+  images,
   title,
   originalPrice,
   salePrice,

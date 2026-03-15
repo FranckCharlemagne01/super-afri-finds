@@ -1,4 +1,5 @@
 import { useRef, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { 
   ShoppingCart, 
@@ -212,7 +213,7 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
       className={cn(
         "overflow-hidden flex flex-col",
         isMobile 
-          ? "fixed top-0 right-0 bottom-0 w-[80vw] max-w-[340px] z-[100] bg-background shadow-[-8px_0_30px_-10px_rgba(0,0,0,0.2)] border-l border-border" 
+          ? "fixed top-0 right-0 bottom-0 w-[80vw] max-w-[340px] z-[10000] bg-background shadow-[-8px_0_30px_-10px_rgba(0,0,0,0.25)] border-l border-border" 
           : "absolute right-0 top-full mt-2 w-96 max-h-[80vh] rounded-xl z-[100] bg-background border border-border shadow-2xl"
       )}
     >
@@ -409,7 +410,7 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
     </motion.div>
   );
 
-  return (
+  const content = (
     <AnimatePresence>
       {isOpen && (
         <>
@@ -419,7 +420,7 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className={cn(
-              "fixed inset-0 z-[99]",
+              "fixed inset-0 z-[9999]",
               isMobile ? "bg-black/40" : "bg-transparent"
             )}
             onClick={onClose}
@@ -430,4 +431,11 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
       )}
     </AnimatePresence>
   );
+
+  // On mobile, use portal to escape any parent transforms that break fixed positioning
+  if (isMobile) {
+    return createPortal(content, document.body);
+  }
+
+  return content;
 };

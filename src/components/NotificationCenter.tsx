@@ -210,10 +210,10 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
       exit={isMobile ? { x: '100%' } : { opacity: 0, scale: 0.95, y: -10 }}
       transition={{ type: 'spring', damping: 30, stiffness: 400 }}
       className={cn(
-        "bg-background overflow-hidden flex flex-col",
+        "overflow-hidden flex flex-col",
         isMobile 
-          ? "fixed top-0 right-0 bottom-0 w-[78vw] max-w-[340px] z-[100] shadow-[-8px_0_30px_-10px_rgba(0,0,0,0.15)] border-l border-border" 
-          : "absolute right-0 top-full mt-2 w-96 max-h-[80vh] rounded-xl z-[100] border border-border shadow-2xl"
+          ? "fixed top-0 right-0 bottom-0 w-[80vw] max-w-[340px] z-[100] bg-background shadow-[-8px_0_30px_-10px_rgba(0,0,0,0.2)] border-l border-border" 
+          : "absolute right-0 top-full mt-2 w-96 max-h-[80vh] rounded-xl z-[100] bg-background border border-border shadow-2xl"
       )}
     >
       {/* Header */}
@@ -258,7 +258,7 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
       </div>
 
       {/* Content - scrollable */}
-      <ScrollArea className="flex-1 min-h-0">
+      <ScrollArea className="flex-1 min-h-0 overscroll-contain">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -326,19 +326,19 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
                             </div>
                             
                             <p className={cn(
-                              "text-[13px] leading-tight",
+                              "text-sm leading-snug",
                               !notification.is_read 
                                 ? "font-bold text-foreground" 
-                                : "font-medium text-foreground/90"
+                                : "font-medium text-foreground/80"
                             )}>
                               {notification.title}
                             </p>
                             
-                            <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5 leading-relaxed">
+                            <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5 leading-relaxed">
                               {notification.message}
                             </p>
                             
-                            <p className="text-[10px] text-muted-foreground/60 mt-1 font-medium">
+                            <p className="text-[11px] text-muted-foreground/70 mt-1.5 font-medium">
                               {formatTime(notification.created_at)}
                             </p>
                           </div>

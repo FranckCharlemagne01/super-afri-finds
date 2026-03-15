@@ -12,6 +12,7 @@ import { QuickViewDialog, type QuickViewProduct } from "@/components/QuickViewDi
 interface CategoryProductCardProps {
   id: string;
   image: string;
+  images?: string[];
   title: string;
   originalPrice: number;
   salePrice: number;
@@ -78,16 +79,14 @@ const ProductCardImage = memo(({
         )}
       />
 
-      {/* Quick View overlay */}
-      <div className="absolute inset-0 bg-foreground/0 group-hover/cimg:bg-foreground/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover/cimg:opacity-100">
-        <button
-          onClick={onQuickView}
-          className="bg-background/95 backdrop-blur-sm text-foreground text-[10px] sm:text-xs font-medium px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1 hover:bg-background transition-colors"
-        >
-          <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-          Aperçu
-        </button>
-      </div>
+      {/* Quick View button - bottom left */}
+      <button
+        onClick={onQuickView}
+        className="absolute bottom-2 left-2 z-10 bg-background/90 backdrop-blur-sm text-foreground text-[10px] sm:text-xs font-medium px-2.5 py-1.5 rounded-lg shadow-md flex items-center gap-1 opacity-0 group-hover/cimg:opacity-100 transition-all duration-200 hover:bg-background"
+      >
+        <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+        Aperçu
+      </button>
     </div>
   );
 });
@@ -97,6 +96,7 @@ ProductCardImage.displayName = 'ProductCardImage';
 export const CategoryProductCard = memo(({
   id,
   image,
+  images,
   title,
   originalPrice,
   salePrice,
@@ -234,6 +234,7 @@ export const CategoryProductCard = memo(({
         product={{
           id,
           image,
+          images,
           title,
           originalPrice,
           salePrice,

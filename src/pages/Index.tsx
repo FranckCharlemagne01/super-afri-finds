@@ -343,6 +343,7 @@ const Index = () => {
   const convertToProductCardProps = (product: any) => ({
     id: product.id,
     image: getProductImage(product.images, 0),
+    images: product.images,
     title: product.title,
     originalPrice: product.original_price || product.price,
     salePrice: product.price,

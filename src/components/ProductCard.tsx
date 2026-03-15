@@ -18,6 +18,7 @@ import { QuickViewDialog, type QuickViewProduct } from "@/components/QuickViewDi
 interface ProductCardProps {
   id?: string;
   image: string;
+  images?: string[];
   title: string;
   originalPrice: number;
   salePrice: number;
@@ -42,6 +43,7 @@ interface ProductCardProps {
 export const ProductCard = ({
   id = 'sample-product',
   image,
+  images,
   title,
   originalPrice,
   salePrice,
@@ -172,17 +174,15 @@ export const ProductCard = ({
             }}
           />
 
-          {/* Quick View overlay */}
-          <div className="absolute inset-0 bg-foreground/0 group-hover/img:bg-foreground/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover/img:opacity-100">
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={handleQuickView}
-              className="bg-background/95 backdrop-blur-sm text-foreground text-xs font-medium px-4 py-2 rounded-full shadow-lg flex items-center gap-1.5 hover:bg-background transition-colors"
-            >
-              <Eye className="w-3.5 h-3.5" />
-              Aperçu
-            </motion.button>
-          </div>
+          {/* Quick View button - bottom left */}
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={handleQuickView}
+            className="absolute bottom-2 left-2 z-10 bg-background/90 backdrop-blur-sm text-foreground text-[10px] sm:text-xs font-medium px-2.5 py-1.5 rounded-lg shadow-md flex items-center gap-1 opacity-0 group-hover/img:opacity-100 transition-all duration-200 hover:bg-background"
+          >
+            <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+            Aperçu
+          </motion.button>
           
           {/* Video indicator overlay */}
           {videoUrl && (
@@ -328,6 +328,7 @@ export const ProductCard = ({
         product={{
           id,
           image,
+          images,
           title,
           originalPrice,
           salePrice,

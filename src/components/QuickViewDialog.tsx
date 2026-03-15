@@ -1,4 +1,4 @@
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,7 @@ export const QuickViewDialog = memo(({ product, open, onOpenChange }: QuickViewD
   const { toggleFavorite, isFavorite } = useFavorites();
   const [imgLoaded, setImgLoaded] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const touchStartX = useRef<number | null>(null);
 
   const handleViewProduct = useCallback(() => {
     if (!product) return;
@@ -85,9 +86,23 @@ export const QuickViewDialog = memo(({ product, open, onOpenChange }: QuickViewD
 
   return (
     <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) setActiveIndex(0); }}>
-      <DialogContent className="max-w-[95vw] sm:max-w-lg p-0 overflow-hidden rounded-2xl border-border/50 gap-0">
-        {/* Image Section */}
-        <div className="relative w-full aspect-square sm:aspect-[4/3] bg-muted overflow-hidden">
+      <DialogContent className="max-w-[95vw] sm:max-w-lg p-0 overflow-hidden rounded-2xl border-border/50 gap-0 max-h-[90vh] flex flex-col">
+        {/* Image Section - fixed height, no overflow */}
+        <div
+          className="relative w-full flex-shrink-0 bg-muted overflow-hidden touch-pan-x"
+          style={{ height: 'clamp(200px, 50vw, 320px)' }}
+          onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+          onTouchEnd={(e) => {
+            if (!hasMultipleImages || touchStartX.current === null) return;
+            const diff = e.changedTouches[0].clientX - touchStartX.current;
+            if (Math.abs(diff) > 40) {
+              if (diff < 0) setActiveIndex((prev) => (prev + 1) % validImages.length);
+              else setActiveIndex((prev) => (prev - 1 + validImages.length) % validImages.length);
+              setImgLoaded(false);
+            }
+            touchStartX.current = null;
+          }}
+        >
           {!imgLoaded && (
             <div className="absolute inset-0 flex items-center justify-center bg-muted">
               <div className="w-6 h-6 rounded-full border-2 border-muted-foreground/20 border-t-primary animate-spin" />
@@ -99,13 +114,14 @@ export const QuickViewDialog = memo(({ product, open, onOpenChange }: QuickViewD
               src={currentImage}
               alt={product.title}
               loading="eager"
+              draggable={false}
               initial={{ opacity: 0 }}
               animate={{ opacity: imgLoaded ? 1 : 0 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.18 }}
               onLoad={() => setImgLoaded(true)}
               onError={handleImageError}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
             />
           </AnimatePresence>
 
@@ -194,8 +210,8 @@ export const QuickViewDialog = memo(({ product, open, onOpenChange }: QuickViewD
           </div>
         )}
 
-        {/* Content Section */}
-        <div className="p-4 sm:p-5 space-y-3">
+        {/* Content Section - scrollable on small screens */}
+        <div className="p-4 sm:p-5 space-y-3 overflow-y-auto flex-1 min-h-0">
           <DialogHeader className="space-y-1.5 p-0">
             <DialogTitle className="text-base sm:text-lg font-semibold text-foreground leading-snug line-clamp-2">
               {product.title}

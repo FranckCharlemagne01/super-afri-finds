@@ -100,7 +100,7 @@ const CompleteProfile = () => {
       toast({
         title: "🎉 Profil complété !",
         description: objective === 'seller' 
-          ? "Bienvenue vendeur ! Vous avez 100 jetons gratuits pour démarrer (28 jours d'essai)."
+          ? "Bienvenue vendeur ! Votre boutique est prête, commencez à vendre dès maintenant."
           : "Bienvenue sur Djassa ! Découvrez nos produits.",
       });
 

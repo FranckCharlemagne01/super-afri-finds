@@ -127,6 +127,11 @@ export const CategoryProductCard = memo(({
     toggleFavorite(id);
   }, [toggleFavorite, id]);
 
+  const handleQuickView = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setQuickViewOpen(true);
+  }, []);
+
   return (
     <div
       onClick={handleClick}

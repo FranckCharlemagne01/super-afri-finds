@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { sendPushNotification } from '@/utils/pushNotifications';
+import { createNotification } from '@/utils/notificationPersistence';
 import { User, Phone, MapPin, Package, Calendar, CheckCircle, CheckCircle2, Loader2, Truck, Clock, X, ShoppingBag, CreditCard, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';

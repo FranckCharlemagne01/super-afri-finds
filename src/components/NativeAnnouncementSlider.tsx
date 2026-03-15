@@ -58,16 +58,16 @@ export const NativeAnnouncementSlider = () => {
     {
       id: "seller",
       icon: <Briefcase className="w-5 h-5 sm:w-6 sm:h-6" />,
-      emoji: "💼",
-      message: "Devenez vendeur sur Djassa - 28 jours d'essai gratuit pour créer votre boutique !",
+      emoji: "🚀",
+      message: "Lancez votre boutique sur Djassa – Aucun frais pour commencer, commission uniquement après chaque vente !",
       action: handleSellerClick,
       gradient: "from-orange-500 via-orange-600 to-amber-500"
     },
     {
       id: "shop",
       icon: <Gift className="w-5 h-5 sm:w-6 sm:h-6" />,
-      emoji: "🎁",
-      message: "Créez une boutique dès aujourd'hui sur Djassa et profitez de l'offre gratuite pendant 28 jours !",
+      emoji: "✨",
+      message: "Inscrivez-vous et votre boutique est créée automatiquement – 80% à 95% de réduction sur les commissions !",
       action: handleShopClick,
       gradient: "from-primary via-orange-500 to-amber-500"
     }

@@ -5,9 +5,9 @@ const announcements = [
   "🔥 Nouveaux produits ajoutés chaque jour",
   "💰 Livraison rapide dans toute la Côte d'Ivoire",
   "✨ Paiement sécurisé avec Orange Money, MTN & Moov Money",
-  "🎁 28 jours d'essai gratuit pour les nouveaux vendeurs",
+  "🚀 Lancez votre boutique gratuitement – Commission uniquement après vente",
   "📱 Des milliers de produits à découvrir",
-  "🚀 Vendez vos produits en quelques clics"
+  "✔ 80% à 95% de réduction sur les commissions pour les vendeurs"
 ];
 
 export const ScrollingAnnouncementBanner = () => {

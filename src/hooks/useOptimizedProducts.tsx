@@ -49,6 +49,7 @@ interface ProductCardProps {
   stockQuantity?: number;
   isSold: boolean;
   isActive?: boolean;
+  description?: string;
 }
 
 // Global cache for products - Optimized for instant display

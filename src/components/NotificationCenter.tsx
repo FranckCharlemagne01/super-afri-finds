@@ -357,9 +357,8 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
                                 deleteNotification(notification.id);
                               }}
                               className={cn(
-                                "h-6 w-6 rounded-full",
-                                "opacity-0 group-hover:opacity-100",
-                                isMobile && "opacity-50",
+                                "h-7 w-7 rounded-full",
+                                isMobile ? "opacity-60" : "opacity-0 group-hover:opacity-100",
                                 "hover:bg-destructive/10 hover:text-destructive"
                               )}
                             >

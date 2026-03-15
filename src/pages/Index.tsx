@@ -360,6 +360,7 @@ const Index = () => {
     stockQuantity: product.stock_quantity,
     isSold: product.is_sold || false,
     isActive: product.is_active,
+    description: product.description,
   });
 
   // Afficher le formulaire de mise à niveau vendeur pour les utilisateurs connectés

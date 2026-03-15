@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { sendPushNotification } from '@/utils/pushNotifications';
+import { createNotification } from '@/utils/notificationPersistence';
 import { User, Phone, MapPin, Package, Calendar, CheckCircle, CheckCircle2, Loader2, Truck, Clock, X, ShoppingBag, CreditCard, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -242,6 +243,20 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
         body: `Votre commande "${order.product_title}" est maintenant: ${statusLabel}`,
         url: '/my-orders',
         tag: 'order_status',
+      });
+
+      // Persist notification for buyer bell
+      const statusTypeMap: Record<string, string> = {
+        confirmed: 'order_status',
+        shipped: 'order_shipped',
+        delivered: 'order_delivered',
+      };
+      createNotification({
+        userId: order.customer_id,
+        type: statusTypeMap[newStatus] || 'order_status',
+        title: `Commande ${statusLabel}`,
+        message: `Votre commande "${order.product_title}" est maintenant: ${statusLabel}`,
+        link: '/my-orders',
       });
 
       toast({

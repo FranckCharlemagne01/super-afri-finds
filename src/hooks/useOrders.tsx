@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { sendPushNotification } from '@/utils/pushNotifications';
+import { createNotification } from '@/utils/notificationPersistence';
 
 export interface OrderData {
   customerName: string;
@@ -53,6 +54,24 @@ export const useOrders = () => {
         body: `${orderData.customerName} a commandé ${orderData.productTitle}`,
         url: '/seller-dashboard',
         tag: 'new_order',
+      });
+
+      // Persist notification for seller bell
+      createNotification({
+        userId: orderData.sellerId,
+        type: 'new_order',
+        title: 'Nouvelle commande reçue',
+        message: `${orderData.customerName} a commandé "${orderData.productTitle}" pour ${totalAmount.toLocaleString()} FCFA`,
+        link: '/seller',
+      });
+
+      // Persist notification for buyer confirmation
+      createNotification({
+        userId: user.id,
+        type: 'order_status',
+        title: 'Commande envoyée',
+        message: `Votre commande "${orderData.productTitle}" a été envoyée au vendeur`,
+        link: '/my-orders',
       });
 
       toast({

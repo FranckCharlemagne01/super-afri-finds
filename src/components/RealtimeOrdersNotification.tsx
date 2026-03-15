@@ -3,6 +3,7 @@ import { useStableAuth } from '@/hooks/useStableAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ShoppingBag, Package } from 'lucide-react';
+import { createNotification } from '@/utils/notificationPersistence';
 
 interface NewOrder {
   id: string;
@@ -74,6 +75,15 @@ export const RealtimeOrdersNotification = () => {
               </div>
             ),
             duration: 8000,
+          });
+
+          // Persist notification for bell panel
+          createNotification({
+            userId,
+            type: 'new_order',
+            title: 'Nouvelle commande reçue',
+            message: `${newOrder.customer_name} a commandé "${newOrder.product_title}" pour ${newOrder.total_amount.toLocaleString()} FCFA`,
+            link: '/seller',
           });
 
           // Vibrer si disponible (mobile)

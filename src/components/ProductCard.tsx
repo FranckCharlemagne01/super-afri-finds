@@ -58,12 +58,14 @@ export const ProductCard = ({
   shop_name,
   isSold = false,
   stockQuantity,
+  description,
 }: ProductCardProps) => {
   const { addToCart } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { prefetchOnHover, cancelPrefetch } = useProductPrefetch();
+  const [quickViewOpen, setQuickViewOpen] = useState(false);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();

@@ -78,6 +78,11 @@ export const ProductCard = ({
     toggleFavorite(id);
   };
 
+  const handleQuickView = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setQuickViewOpen(true);
+  };
+
   const handleProductClick = () => {
     navigate(`/product/${id}`);
   };

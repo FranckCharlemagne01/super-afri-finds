@@ -31,9 +31,29 @@ export const StepImages = ({
         animate={{ opacity: 1, y: 0 }}
         className="text-center pb-2"
       >
-        <h2 className="text-xl font-bold text-foreground">Photos du produit</h2>
+        <h2 className="text-xl font-bold text-foreground">Images et vidéo du produit</h2>
         <p className="text-sm text-muted-foreground mt-1">
           Des photos de qualité augmentent vos ventes
+        </p>
+      </motion.div>
+
+      {/* Guide vendeur */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="bg-primary/5 border border-primary/20 rounded-2xl p-4"
+      >
+        <p className="text-sm text-foreground leading-relaxed">
+          Ajoutez des images claires du même produit pour aider les acheteurs à mieux le comprendre.
+        </p>
+        <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+          <li>✔ Montrez le produit sous différents angles</li>
+          <li>✔ Vous pouvez ajouter différentes couleurs du même modèle</li>
+          <li>🎥 Vous pouvez aussi ajouter une vidéo du produit</li>
+        </ul>
+        <p className="mt-2 text-xs font-medium text-primary">
+          Minimum recommandé : 3 images pour une meilleure visibilité.
         </p>
       </motion.div>
 

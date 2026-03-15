@@ -3,6 +3,7 @@ import { useStableAuth } from '@/hooks/useStableAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ShoppingBag, Package } from 'lucide-react';
+import { createNotification } from '@/utils/notificationPersistence';
 
 interface NewOrder {
   id: string;

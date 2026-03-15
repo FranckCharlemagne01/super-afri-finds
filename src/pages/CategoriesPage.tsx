@@ -98,6 +98,7 @@ const ProductCarousel = memo(({ products }: { products: Product[] }) => {
             <CategoryProductCard
               id={product.id}
               image={getProductImage(product.images, 0)}
+              images={product.images}
               title={product.title}
               originalPrice={product.original_price}
               salePrice={product.price}

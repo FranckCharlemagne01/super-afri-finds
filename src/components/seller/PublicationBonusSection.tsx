@@ -51,7 +51,7 @@ export const PublicationBonusSection = () => {
   const handleToggle = async (bonusId: string, active: boolean) => {
     setToggling(bonusId);
     try {
-      const { data, error } = await supabase.rpc('toggle_publication_bonus', {
+      const { data, error } = await (supabase.rpc as any)('toggle_publication_bonus', {
         p_bonus_id: bonusId,
         p_active: active,
       });

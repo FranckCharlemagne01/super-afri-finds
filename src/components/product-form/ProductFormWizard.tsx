@@ -400,7 +400,7 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
 
         // Try to consume a bonus publication first, otherwise wallet is used via commission system
         try {
-          const { data: bonusResult } = await supabase.rpc('consume_bonus_publication', { p_seller_id: user.id });
+          const { data: bonusResult } = await (supabase.rpc as any)('consume_bonus_publication', { p_seller_id: user.id });
           const br = (typeof bonusResult === 'string' ? JSON.parse(bonusResult) : bonusResult) as any;
           if (br?.has_bonus) {
             console.log('✅ Publication via bonus, produits restants:', br.products_remaining);

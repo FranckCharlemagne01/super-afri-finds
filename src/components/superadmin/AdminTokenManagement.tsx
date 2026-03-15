@@ -179,7 +179,7 @@ export const AdminTokenManagement = () => {
           setGrantingBonus(false);
           return;
         }
-        const { data, error } = await supabase.rpc('admin_create_publication_bonus', {
+        const { data, error } = await (supabase.rpc as any)('admin_create_publication_bonus', {
           p_seller_id: selectedUser.user_id,
           p_starts_at: new Date(bonusStartDate).toISOString(),
           p_expires_at: new Date(bonusEndDate).toISOString(),

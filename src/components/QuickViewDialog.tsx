@@ -39,6 +39,7 @@ export const QuickViewDialog = memo(({ product, open, onOpenChange }: QuickViewD
   const { toggleFavorite, isFavorite } = useFavorites();
   const [imgLoaded, setImgLoaded] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const touchStartX = useRef<number | null>(null);
 
   const handleViewProduct = useCallback(() => {
     if (!product) return;

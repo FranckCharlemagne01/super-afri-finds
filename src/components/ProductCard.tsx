@@ -328,6 +328,7 @@ export const ProductCard = ({
         product={{
           id,
           image,
+          images,
           title,
           originalPrice,
           salePrice,

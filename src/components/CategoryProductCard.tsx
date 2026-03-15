@@ -234,6 +234,7 @@ export const CategoryProductCard = memo(({
         product={{
           id,
           image,
+          images,
           title,
           originalPrice,
           salePrice,

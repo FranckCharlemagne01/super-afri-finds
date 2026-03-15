@@ -407,7 +407,7 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
           Mes messages privés
         </Button>
       </div>
-    </div>
+    </motion.div>
   );
 
   return (
@@ -426,14 +426,7 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
             onClick={onClose}
           />
           
-          <motion.div
-            initial={isMobile ? { x: '100%' } : { opacity: 0, scale: 0.95, y: -10 }}
-            animate={isMobile ? { x: 0 } : { opacity: 1, scale: 1, y: 0 }}
-            exit={isMobile ? { x: '100%' } : { opacity: 0, scale: 0.95, y: -10 }}
-            transition={{ type: 'spring', damping: 30, stiffness: 400 }}
-          >
-            {panelContent}
-          </motion.div>
+          {panelContent}
         </>
       )}
     </AnimatePresence>

@@ -1,11 +1,13 @@
 import { Badge } from "@/components/ui/badge";
-import { Star, Heart } from "lucide-react";
+import { Star, Heart, Eye } from "lucide-react";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useNavigate } from "react-router-dom";
 import { useState, memo, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { getProductImage, handleImageError } from "@/utils/productImageHelper";
 import { useProductPrefetch } from "@/hooks/useProductCache";
+import { motion } from "framer-motion";
+import { QuickViewDialog, type QuickViewProduct } from "@/components/QuickViewDialog";
 
 interface CategoryProductCardProps {
   id: string;

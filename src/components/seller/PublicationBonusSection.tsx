@@ -28,7 +28,7 @@ export const PublicationBonusSection = () => {
     if (!user?.id) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('publication_bonuses')
         .select('*')
         .eq('seller_id', user.id)

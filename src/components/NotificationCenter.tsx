@@ -258,7 +258,7 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
       </div>
 
       {/* Content - scrollable */}
-      <ScrollArea className="flex-1 min-h-0">
+      <ScrollArea className="flex-1 min-h-0 overscroll-contain">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />

@@ -36,6 +36,7 @@ interface ProductCardProps {
   isSold?: boolean;
   stockQuantity?: number;
   isActive?: boolean;
+  description?: string;
 }
 
 export const ProductCard = ({

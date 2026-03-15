@@ -87,10 +87,10 @@ export const QuickViewDialog = memo(({ product, open, onOpenChange }: QuickViewD
   return (
     <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) setActiveIndex(0); }}>
       <DialogContent className="max-w-[95vw] sm:max-w-lg p-0 overflow-hidden rounded-2xl border-border/50 gap-0 max-h-[90vh] flex flex-col">
-        {/* Image Section - fixed height, no overflow */}
+        {/* Image Section - larger on mobile */}
         <div
           className="relative w-full flex-shrink-0 bg-muted overflow-hidden touch-pan-x"
-          style={{ height: 'clamp(200px, 50vw, 320px)' }}
+          style={{ height: 'clamp(260px, 55vh, 380px)' }}
           onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
           onTouchEnd={(e) => {
             if (!hasMultipleImages || touchStartX.current === null) return;

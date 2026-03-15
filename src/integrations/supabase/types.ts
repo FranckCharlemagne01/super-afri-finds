@@ -1576,6 +1576,15 @@ export type Database = {
         Args: { p_amount: number; p_reason?: string; p_seller: string }
         Returns: Json
       }
+      admin_grant_bonus: {
+        Args: {
+          p_bonus_type: string
+          p_reason?: string
+          p_seller_id: string
+          p_value: number
+        }
+        Returns: Json
+      }
       assign_current_user_superadmin: { Args: never; Returns: string }
       assign_superadmin_role: { Args: { _email: string }; Returns: string }
       boost_product:

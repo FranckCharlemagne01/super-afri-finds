@@ -114,7 +114,7 @@ export const AdminTokenManagement = () => {
   };
 
   const loadUserBonuses = async (userId: string) => {
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .from('publication_bonuses')
       .select('*')
       .eq('seller_id', userId)

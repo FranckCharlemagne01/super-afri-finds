@@ -43,6 +43,7 @@ interface ProductCardProps {
 export const ProductCard = ({
   id = 'sample-product',
   image,
+  images,
   title,
   originalPrice,
   salePrice,

@@ -227,6 +227,9 @@ export const TokensSubscriptionTab = ({
         </Card>
       </div>
 
+      {/* Publication Bonus Section */}
+      <PublicationBonusSection />
+
       {/* Commission info card */}
       <Card className="border-0 shadow-lg overflow-hidden rounded-2xl">
         <CardHeader className="pb-2">

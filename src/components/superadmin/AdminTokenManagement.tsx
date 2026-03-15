@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Coins, Search, Plus, Minus, Loader2, User, AlertCircle, Gift, Calendar, Wallet } from 'lucide-react';
+import { Coins, Search, Plus, Minus, Loader2, User, AlertCircle, Gift, Calendar, Wallet, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -39,6 +39,17 @@ interface Transaction {
   created_at: string;
 }
 
+interface BonusInfo {
+  id: string;
+  bonus_type: string;
+  is_active: boolean;
+  starts_at: string;
+  expires_at: string;
+  max_products: number;
+  products_used: number;
+  reason: string | null;
+}
+
 export const AdminTokenManagement = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
@@ -52,11 +63,18 @@ export const AdminTokenManagement = () => {
   const [loadingHistory, setLoadingHistory] = useState(false);
 
   // Bonus state
-  const [bonusType, setBonusType] = useState<string>('free_publish_days');
-  const [bonusValue, setBonusValue] = useState('');
+  const [bonusType, setBonusType] = useState<string>('publication_bonus');
   const [bonusReason, setBonusReason] = useState('');
   const [grantingBonus, setGrantingBonus] = useState(false);
-  const [profileInfo, setProfileInfo] = useState<{ trial_end_date: string | null; free_publish_until: string | null } | null>(null);
+  const [userBonuses, setUserBonuses] = useState<BonusInfo[]>([]);
+
+  // Publication bonus fields
+  const [bonusStartDate, setBonusStartDate] = useState('');
+  const [bonusEndDate, setBonusEndDate] = useState('');
+  const [bonusMaxProducts, setBonusMaxProducts] = useState('10');
+
+  // Wallet credit
+  const [walletCreditAmount, setWalletCreditAmount] = useState('');
 
   const searchUsers = async () => {
     if (!searchQuery.trim()) return;
@@ -64,20 +82,15 @@ export const AdminTokenManagement = () => {
     try {
       const { data, error } = await supabase.rpc('get_users_with_profiles');
       if (error) throw error;
-
       const q = searchQuery.toLowerCase().trim();
       const filtered = (data || []).filter((u: any) =>
         u.email?.toLowerCase().includes(q) ||
         u.full_name?.toLowerCase().includes(q) ||
         u.user_id?.toLowerCase().includes(q)
       ).slice(0, 10);
-
       setUsers(filtered);
-      if (filtered.length === 0) {
-        toast.info('Aucun utilisateur trouvé');
-      }
+      if (filtered.length === 0) toast.info('Aucun utilisateur trouvé');
     } catch (err: any) {
-      console.error(err);
       toast.error('Erreur de recherche: ' + err.message);
     } finally {
       setSearching(false);
@@ -88,7 +101,7 @@ export const AdminTokenManagement = () => {
     setSelectedUser(user);
     setUsers([]);
     setSearchQuery('');
-    await Promise.all([loadTokenInfo(user.user_id), loadTransactions(user.user_id), loadProfileInfo(user.user_id)]);
+    await Promise.all([loadTokenInfo(user.user_id), loadTransactions(user.user_id), loadUserBonuses(user.user_id)]);
   };
 
   const loadTokenInfo = async (userId: string) => {
@@ -100,21 +113,13 @@ export const AdminTokenManagement = () => {
     setTokenInfo(data as TokenInfo | null);
   };
 
-  const loadProfileInfo = async (userId: string) => {
+  const loadUserBonuses = async (userId: string) => {
     const { data } = await supabase
-      .from('profiles')
-      .select('trial_end_date')
-      .eq('user_id', userId)
-      .maybeSingle();
-    
-    // free_publish_until may not be in generated types yet, fetch via raw query
-    const { data: extraData } = await supabase.rpc('can_access_seller_features', { _user_id: userId });
-    const extra = (typeof extraData === 'string' ? JSON.parse(extraData) : extraData) as any;
-    
-    setProfileInfo({
-      trial_end_date: data?.trial_end_date ?? null,
-      free_publish_until: extra?.free_publish_until ?? null,
-    });
+      .from('publication_bonuses')
+      .select('*')
+      .eq('seller_id', userId)
+      .order('created_at', { ascending: false });
+    setUserBonuses((data || []) as BonusInfo[]);
   };
 
   const loadTransactions = async (userId: string) => {
@@ -139,7 +144,6 @@ export const AdminTokenManagement = () => {
       toast.error('Montant invalide');
       return;
     }
-
     setAdjusting(true);
     try {
       const finalAmount = isCredit ? numAmount : -numAmount;
@@ -148,12 +152,10 @@ export const AdminTokenManagement = () => {
         p_amount: finalAmount,
         p_reason: reason || (isCredit ? 'Crédit admin' : 'Débit admin'),
       });
-
       if (error) throw error;
-
       const result = (typeof data === 'string' ? JSON.parse(data) : data) as any;
       if (result?.success) {
-        toast.success(`Jetons ajustés ! Nouveau solde : ${result.new_balance}`);
+        toast.success(`Ajusté ! Nouveau solde : ${result.new_balance}`);
         setAmount('');
         setReason('');
         await Promise.all([loadTokenInfo(selectedUser.user_id), loadTransactions(selectedUser.user_id)]);
@@ -168,41 +170,57 @@ export const AdminTokenManagement = () => {
   };
 
   const grantBonus = async () => {
-    if (!selectedUser || !bonusValue) return;
-    const numValue = parseInt(bonusValue);
-    if (isNaN(numValue) || numValue <= 0) {
-      toast.error('Valeur invalide');
-      return;
-    }
-
+    if (!selectedUser) return;
     setGrantingBonus(true);
     try {
-      const { data, error } = await supabase.rpc('admin_grant_bonus', {
-        p_seller_id: selectedUser.user_id,
-        p_bonus_type: bonusType,
-        p_value: numValue,
-        p_reason: bonusReason || 'Bonus admin',
-      });
-
-      if (error) throw error;
-
-      const result = (typeof data === 'string' ? JSON.parse(data) : data) as any;
-      if (result?.success) {
-        const messages: Record<string, string> = {
-          free_publish_days: `✅ ${result.days} jours de publication gratuite accordés jusqu'au ${result.until ? format(new Date(result.until), 'dd MMM yyyy', { locale: fr }) : ''}`,
-          wallet_credit: `✅ ${result.amount?.toLocaleString()} FCFA crédités au portefeuille`,
-          trial_extension: `✅ Essai étendu de ${result.days} jours jusqu'au ${result.until ? format(new Date(result.until), 'dd MMM yyyy', { locale: fr }) : ''}`,
-        };
-        toast.success(messages[bonusType] || 'Bonus accordé !');
-        setBonusValue('');
-        setBonusReason('');
-        await Promise.all([
-          loadTokenInfo(selectedUser.user_id),
-          loadTransactions(selectedUser.user_id),
-          loadProfileInfo(selectedUser.user_id),
-        ]);
-      } else {
-        toast.error(result?.error || 'Erreur inconnue');
+      if (bonusType === 'publication_bonus') {
+        if (!bonusStartDate || !bonusEndDate || !bonusMaxProducts) {
+          toast.error('Veuillez remplir tous les champs du bonus');
+          setGrantingBonus(false);
+          return;
+        }
+        const { data, error } = await supabase.rpc('admin_create_publication_bonus', {
+          p_seller_id: selectedUser.user_id,
+          p_starts_at: new Date(bonusStartDate).toISOString(),
+          p_expires_at: new Date(bonusEndDate).toISOString(),
+          p_max_products: parseInt(bonusMaxProducts),
+          p_reason: bonusReason || 'Bonus admin',
+        });
+        if (error) throw error;
+        const result = (typeof data === 'string' ? JSON.parse(data) : data) as any;
+        if (result?.success) {
+          toast.success(`✅ Bonus de ${result.max_products} publications accordé !`);
+          setBonusStartDate('');
+          setBonusEndDate('');
+          setBonusMaxProducts('10');
+          setBonusReason('');
+          await loadUserBonuses(selectedUser.user_id);
+        } else {
+          toast.error(result?.error || 'Erreur');
+        }
+      } else if (bonusType === 'wallet_credit') {
+        const numValue = parseInt(walletCreditAmount);
+        if (isNaN(numValue) || numValue <= 0) {
+          toast.error('Montant invalide');
+          setGrantingBonus(false);
+          return;
+        }
+        const { data, error } = await supabase.rpc('admin_grant_bonus', {
+          p_seller_id: selectedUser.user_id,
+          p_bonus_type: 'wallet_credit',
+          p_value: numValue,
+          p_reason: bonusReason || 'Bonus admin',
+        });
+        if (error) throw error;
+        const result = (typeof data === 'string' ? JSON.parse(data) : data) as any;
+        if (result?.success) {
+          toast.success(`✅ ${numValue.toLocaleString()} FCFA crédités !`);
+          setWalletCreditAmount('');
+          setBonusReason('');
+          await loadTokenInfo(selectedUser.user_id);
+        } else {
+          toast.error(result?.error || 'Erreur');
+        }
       }
     } catch (err: any) {
       toast.error('Erreur: ' + err.message);
@@ -224,11 +242,7 @@ export const AdminTokenManagement = () => {
     return <Badge className={info.className}>{info.label}</Badge>;
   };
 
-  const bonusPresets: Record<string, { label: string; values: number[] }> = {
-    free_publish_days: { label: 'Jours', values: [7, 14, 30] },
-    wallet_credit: { label: 'FCFA', values: [5000, 10000, 20000] },
-    trial_extension: { label: 'Jours', values: [7, 14, 30] },
-  };
+  const now = new Date();
 
   return (
     <div className="space-y-6">
@@ -250,7 +264,6 @@ export const AdminTokenManagement = () => {
             {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
           </Button>
         </div>
-
         {users.length > 0 && (
           <div className="mt-3 border rounded-lg divide-y max-h-60 overflow-auto">
             {users.map((u) => (
@@ -270,7 +283,7 @@ export const AdminTokenManagement = () => {
         )}
       </Card>
 
-      {/* Selected user + adjust */}
+      {/* Selected user */}
       {selectedUser && (
         <Card className="p-5">
           <div className="flex items-start justify-between mb-4">
@@ -279,57 +292,70 @@ export const AdminTokenManagement = () => {
               <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
               <p className="text-xs font-mono text-muted-foreground mt-0.5">{selectedUser.user_id}</p>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(null); setTokenInfo(null); setTransactions([]); setProfileInfo(null); }}>
+            <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(null); setTokenInfo(null); setTransactions([]); setUserBonuses([]); }}>
               ✕
             </Button>
           </div>
 
-          {/* Token & wallet balance display */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-            <div className="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 p-3 rounded-lg border border-amber-200 dark:border-amber-800 text-center">
-              <p className="text-xs font-medium text-amber-700 dark:text-amber-400">Jetons</p>
-              <p className="text-2xl font-bold text-amber-600 dark:text-amber-300">{tokenInfo?.token_balance ?? '—'}</p>
-            </div>
+          {/* Balance display */}
+          <div className="grid grid-cols-2 gap-3 mb-5">
             <div className="bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 p-3 rounded-lg border border-emerald-200 dark:border-emerald-800 text-center">
               <p className="text-xs font-medium text-emerald-700 dark:text-emerald-400">Portefeuille</p>
               <p className="text-xl font-bold text-emerald-600 dark:text-emerald-300">{tokenInfo?.wallet_balance_fcfa?.toLocaleString() ?? '—'} <span className="text-xs">FCFA</span></p>
             </div>
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800 text-center">
-              <p className="text-xs font-medium text-blue-700 dark:text-blue-400">Essai jusqu'au</p>
-              <p className="text-sm font-bold text-blue-600 dark:text-blue-300">
-                {profileInfo?.trial_end_date 
-                  ? format(new Date(profileInfo.trial_end_date), 'dd MMM yyyy', { locale: fr })
-                  : '—'}
-              </p>
-            </div>
-            <div className="bg-gradient-to-br from-purple-50 to-fuchsia-50 dark:from-purple-950/30 dark:to-fuchsia-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800 text-center">
-              <p className="text-xs font-medium text-purple-700 dark:text-purple-400">Pub. gratuite</p>
-              <p className="text-sm font-bold text-purple-600 dark:text-purple-300">
-                {profileInfo?.free_publish_until && new Date(profileInfo.free_publish_until) > new Date()
-                  ? format(new Date(profileInfo.free_publish_until), 'dd MMM yyyy', { locale: fr })
-                  : '—'}
+            <div className="bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-950/30 dark:to-teal-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800 text-center">
+              <p className="text-xs font-medium text-green-700 dark:text-green-400">Bonus actifs</p>
+              <p className="text-xl font-bold text-green-600 dark:text-green-300">
+                {userBonuses.filter(b => b.is_active && new Date(b.expires_at) > now && b.products_used < b.max_products).length}
               </p>
             </div>
           </div>
 
-          {tokenInfo === null && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-              <AlertCircle className="w-4 h-4" />
-              <span>Cet utilisateur n'a pas encore de solde de jetons (pas vendeur ou pas initialisé).</span>
+          {/* User's bonuses */}
+          {userBonuses.length > 0 && (
+            <div className="mb-5 space-y-2">
+              <h4 className="text-sm font-semibold flex items-center gap-2">
+                <Package className="w-4 h-4" /> Bonus de l'utilisateur
+              </h4>
+              {userBonuses.map(b => {
+                const isExpired = new Date(b.expires_at) <= now || b.products_used >= b.max_products;
+                return (
+                  <div key={b.id} className={`p-3 rounded-lg border text-sm ${isExpired ? 'bg-muted/30 opacity-60' : 'bg-green-500/5 border-green-500/20'}`}>
+                    <div className="flex items-center justify-between flex-wrap gap-1">
+                      <div className="flex items-center gap-2">
+                        <Badge variant={isExpired ? 'secondary' : 'default'} className={isExpired ? '' : 'bg-green-500'}>
+                          {b.bonus_type === 'trial' ? 'Essai' : 'Admin'}
+                        </Badge>
+                        <span className="text-xs">{b.products_used}/{b.max_products} utilisés</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {isExpired ? 'Expiré' : `Jusqu'au ${format(new Date(b.expires_at), 'dd MMM yyyy', { locale: fr })}`}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
 
-          {/* Adjust form */}
+          {tokenInfo === null && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+              <AlertCircle className="w-4 h-4" />
+              <span>Pas de compte vendeur initialisé.</span>
+            </div>
+          )}
+
+          {/* Adjust wallet */}
           <div className="space-y-3 border-t pt-4">
-            <Label>Montant de jetons</Label>
+            <Label>Montant portefeuille (FCFA)</Label>
             <Input
               type="number"
               min="1"
-              placeholder="Ex: 50"
+              placeholder="Ex: 5000"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
-            <Label>Raison / note (optionnel)</Label>
+            <Label>Raison (optionnel)</Label>
             <Textarea
               placeholder="Ex: Compensation suite à un bug..."
               value={reason}
@@ -337,20 +363,11 @@ export const AdminTokenManagement = () => {
               rows={2}
             />
             <div className="flex gap-3">
-              <Button
-                onClick={() => adjustTokens(true)}
-                disabled={adjusting || !amount}
-                className="flex-1 bg-green-600 hover:bg-green-700"
-              >
+              <Button onClick={() => adjustTokens(true)} disabled={adjusting || !amount} className="flex-1 bg-green-600 hover:bg-green-700">
                 {adjusting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
                 Ajouter
               </Button>
-              <Button
-                onClick={() => adjustTokens(false)}
-                disabled={adjusting || !amount}
-                variant="destructive"
-                className="flex-1"
-              >
+              <Button onClick={() => adjustTokens(false)} disabled={adjusting || !amount} variant="destructive" className="flex-1">
                 {adjusting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Minus className="w-4 h-4 mr-2" />}
                 Retirer
               </Button>
@@ -372,9 +389,9 @@ export const AdminTokenManagement = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="free_publish_days">
+                  <SelectItem value="publication_bonus">
                     <span className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" /> Publication gratuite (jours)
+                      <Package className="w-4 h-4" /> Bonus publication (produits + durée)
                     </span>
                   </SelectItem>
                   <SelectItem value="wallet_credit">
@@ -382,36 +399,70 @@ export const AdminTokenManagement = () => {
                       <Wallet className="w-4 h-4" /> Crédit portefeuille (FCFA)
                     </span>
                   </SelectItem>
-                  <SelectItem value="trial_extension">
-                    <span className="flex items-center gap-2">
-                      <Gift className="w-4 h-4" /> Extension essai gratuit (jours)
-                    </span>
-                  </SelectItem>
                 </SelectContent>
               </Select>
 
-              <Label>Valeur ({bonusPresets[bonusType]?.label})</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  min="1"
-                  placeholder={`Ex: ${bonusPresets[bonusType]?.values[0]}`}
-                  value={bonusValue}
-                  onChange={(e) => setBonusValue(e.target.value)}
-                  className="flex-1"
-                />
-                {bonusPresets[bonusType]?.values.map(v => (
-                  <Button
-                    key={v}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setBonusValue(String(v))}
-                    className="shrink-0"
-                  >
-                    {bonusType === 'wallet_credit' ? `${(v / 1000)}k` : `${v}j`}
-                  </Button>
-                ))}
-              </div>
+              {bonusType === 'publication_bonus' && (
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label>Date & heure de début</Label>
+                      <Input
+                        type="datetime-local"
+                        value={bonusStartDate}
+                        onChange={(e) => setBonusStartDate(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label>Date & heure d'expiration</Label>
+                      <Input
+                        type="datetime-local"
+                        value={bonusEndDate}
+                        onChange={(e) => setBonusEndDate(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Nombre max de produits</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        min="1"
+                        placeholder="Ex: 10"
+                        value={bonusMaxProducts}
+                        onChange={(e) => setBonusMaxProducts(e.target.value)}
+                        className="flex-1"
+                      />
+                      {[5, 10, 20, 50].map(v => (
+                        <Button key={v} variant="outline" size="sm" onClick={() => setBonusMaxProducts(String(v))} className="shrink-0">
+                          {v}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {bonusType === 'wallet_credit' && (
+                <div>
+                  <Label>Montant (FCFA)</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="Ex: 5000"
+                      value={walletCreditAmount}
+                      onChange={(e) => setWalletCreditAmount(e.target.value)}
+                      className="flex-1"
+                    />
+                    {[5000, 10000, 20000].map(v => (
+                      <Button key={v} variant="outline" size="sm" onClick={() => setWalletCreditAmount(String(v))} className="shrink-0">
+                        {(v / 1000)}k
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <Label>Raison (optionnel)</Label>
               <Textarea
@@ -421,11 +472,7 @@ export const AdminTokenManagement = () => {
                 rows={2}
               />
 
-              <Button
-                onClick={grantBonus}
-                disabled={grantingBonus || !bonusValue}
-                className="w-full"
-              >
+              <Button onClick={grantBonus} disabled={grantingBonus} className="w-full">
                 {grantingBonus ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Gift className="w-4 h-4 mr-2" />}
                 Accorder le bonus
               </Button>
@@ -441,7 +488,6 @@ export const AdminTokenManagement = () => {
             <Coins className="w-5 h-5 text-amber-500" />
             Historique des transactions
           </h3>
-
           {loadingHistory ? (
             <div className="flex justify-center py-8">
               <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -454,7 +500,7 @@ export const AdminTokenManagement = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Type</TableHead>
-                    <TableHead>Jetons</TableHead>
+                    <TableHead>Montant</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead>Note/Réf</TableHead>
                     <TableHead>Date</TableHead>

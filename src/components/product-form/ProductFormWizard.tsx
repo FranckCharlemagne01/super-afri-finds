@@ -398,12 +398,15 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
           return;
         }
 
-        // Consume token AFTER successful insert (avoids RLS conflict)
-        const { error: tokenError } = await supabase
-          .rpc('consume_token_for_publish', { p_seller: user.id });
-
-        if (tokenError) {
-          console.error('Token consumption error (product already saved):', tokenError);
+        // Try to consume a bonus publication first, otherwise wallet is used via commission system
+        try {
+          const { data: bonusResult } = await supabase.rpc('consume_bonus_publication', { p_seller_id: user.id });
+          const br = (typeof bonusResult === 'string' ? JSON.parse(bonusResult) : bonusResult) as any;
+          if (br?.has_bonus) {
+            console.log('✅ Publication via bonus, produits restants:', br.products_remaining);
+          }
+        } catch (bonusErr) {
+          console.log('Bonus check skipped:', bonusErr);
         }
 
         await refreshBalance();

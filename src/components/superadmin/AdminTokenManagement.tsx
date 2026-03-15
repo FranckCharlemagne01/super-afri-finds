@@ -103,10 +103,18 @@ export const AdminTokenManagement = () => {
   const loadProfileInfo = async (userId: string) => {
     const { data } = await supabase
       .from('profiles')
-      .select('trial_end_date, free_publish_until')
+      .select('trial_end_date')
       .eq('user_id', userId)
       .maybeSingle();
-    setProfileInfo(data);
+    
+    // free_publish_until may not be in generated types yet, fetch via raw query
+    const { data: extraData } = await supabase.rpc('can_access_seller_features', { _user_id: userId });
+    const extra = (typeof extraData === 'string' ? JSON.parse(extraData) : extraData) as any;
+    
+    setProfileInfo({
+      trial_end_date: data?.trial_end_date ?? null,
+      free_publish_until: extra?.free_publish_until ?? null,
+    });
   };
 
   const loadTransactions = async (userId: string) => {

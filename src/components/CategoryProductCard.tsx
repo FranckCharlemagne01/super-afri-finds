@@ -12,6 +12,7 @@ import { QuickViewDialog, type QuickViewProduct } from "@/components/QuickViewDi
 interface CategoryProductCardProps {
   id: string;
   image: string;
+  images?: string[];
   title: string;
   originalPrice: number;
   salePrice: number;

@@ -77,6 +77,15 @@ export const RealtimeOrdersNotification = () => {
             duration: 8000,
           });
 
+          // Persist notification for bell panel
+          createNotification({
+            userId,
+            type: 'new_order',
+            title: 'Nouvelle commande reçue',
+            message: `${newOrder.customer_name} a commandé "${newOrder.product_title}" pour ${newOrder.total_amount.toLocaleString()} FCFA`,
+            link: '/seller',
+          });
+
           // Vibrer si disponible (mobile)
           if ('vibrate' in navigator) {
             navigator.vibrate([200, 100, 200]);

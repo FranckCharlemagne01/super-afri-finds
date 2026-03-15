@@ -69,6 +69,17 @@ export const RealtimeMessagesNotification = () => {
             duration: 6000,
           });
 
+          // Persist notification for bell panel
+          createNotification({
+            userId,
+            type: 'new_message',
+            title: `Nouveau message de ${senderName}`,
+            message: newMessage.subject 
+              ? `${newMessage.subject}: ${newMessage.content.substring(0, 80)}`
+              : newMessage.content.substring(0, 100),
+            link: '/messages',
+          });
+
           // Vibrer si disponible (mobile)
           if ('vibrate' in navigator) {
             navigator.vibrate([100, 50, 100]);

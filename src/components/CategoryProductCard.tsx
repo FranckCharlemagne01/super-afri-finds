@@ -108,10 +108,12 @@ export const CategoryProductCard = memo(({
   isBoosted = false,
   boostedUntil,
   shop_name,
+  description,
 }: CategoryProductCardProps) => {
   const { toggleFavorite, isFavorite } = useFavorites();
   const navigate = useNavigate();
   const { prefetchOnHover, cancelPrefetch } = useProductPrefetch();
+  const [quickViewOpen, setQuickViewOpen] = useState(false);
 
   const isActiveBoosted = isBoosted && boostedUntil && new Date(boostedUntil) > new Date();
   const isFav = isFavorite(id);

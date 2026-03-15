@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { sendPushNotification } from '@/utils/pushNotifications';
+import { createNotification } from '@/utils/notificationPersistence';
 
 export interface OrderData {
   customerName: string;

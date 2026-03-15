@@ -30,10 +30,12 @@ interface CategoryProductCardProps {
 // Hauteur fixe responsive pour éviter le zoom excessif sur mobile
 const ProductCardImage = memo(({ 
   src, 
-  alt 
+  alt,
+  onQuickView 
 }: { 
   src: string; 
   alt: string;
+  onQuickView?: (e: React.MouseEvent) => void;
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);

@@ -56,6 +56,24 @@ export const useOrders = () => {
         tag: 'new_order',
       });
 
+      // Persist notification for seller bell
+      createNotification({
+        userId: orderData.sellerId,
+        type: 'new_order',
+        title: 'Nouvelle commande reçue',
+        message: `${orderData.customerName} a commandé "${orderData.productTitle}" pour ${totalAmount.toLocaleString()} FCFA`,
+        link: '/seller',
+      });
+
+      // Persist notification for buyer confirmation
+      createNotification({
+        userId: user.id,
+        type: 'order_status',
+        title: 'Commande envoyée',
+        message: `Votre commande "${orderData.productTitle}" a été envoyée au vendeur`,
+        link: '/my-orders',
+      });
+
       toast({
         title: '✅ Commande créée avec succès!',
         description: 'Votre commande a été envoyée au vendeur.',

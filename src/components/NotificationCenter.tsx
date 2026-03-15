@@ -338,7 +338,7 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
                               {notification.message}
                             </p>
                             
-                            <p className="text-[10px] text-muted-foreground/60 mt-1 font-medium">
+                            <p className="text-[11px] text-muted-foreground/70 mt-1.5 font-medium">
                               {formatTime(notification.created_at)}
                             </p>
                           </div>

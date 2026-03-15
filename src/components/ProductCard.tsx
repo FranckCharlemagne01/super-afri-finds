@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, Heart, ShoppingCart, Store } from "lucide-react";
+import { Star, Heart, ShoppingCart, Store, Eye } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +12,8 @@ import { BoostCountdown } from "@/components/BoostCountdown";
 import { ProductImage } from "@/components/ui/optimized-image";
 import { motion } from "framer-motion";
 import { useProductPrefetch } from "@/hooks/useProductCache";
+import { useState } from "react";
+import { QuickViewDialog, type QuickViewProduct } from "@/components/QuickViewDialog";
 
 interface ProductCardProps {
   id?: string;
@@ -34,6 +36,7 @@ interface ProductCardProps {
   isSold?: boolean;
   stockQuantity?: number;
   isActive?: boolean;
+  description?: string;
 }
 
 export const ProductCard = ({
@@ -56,12 +59,14 @@ export const ProductCard = ({
   shop_name,
   isSold = false,
   stockQuantity,
+  description,
 }: ProductCardProps) => {
   const { addToCart } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { prefetchOnHover, cancelPrefetch } = useProductPrefetch();
+  const [quickViewOpen, setQuickViewOpen] = useState(false);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -71,6 +76,11 @@ export const ProductCard = ({
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
     toggleFavorite(id);
+  };
+
+  const handleQuickView = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setQuickViewOpen(true);
   };
 
   const handleProductClick = () => {
@@ -149,7 +159,7 @@ export const ProductCard = ({
         </motion.button>
 
         {/* Product Image - Uniform fixed height display */}
-        <div className="relative w-full h-[200px] sm:h-[240px] md:h-[280px] overflow-hidden rounded-t-xl bg-[#f5f5f5]">
+        <div className="group/img relative w-full h-[200px] sm:h-[240px] md:h-[280px] overflow-hidden rounded-t-xl bg-muted">
           <img 
             src={image} 
             alt={title}
@@ -161,11 +171,23 @@ export const ProductCard = ({
               target.src = '/placeholder.svg';
             }}
           />
+
+          {/* Quick View overlay */}
+          <div className="absolute inset-0 bg-foreground/0 group-hover/img:bg-foreground/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover/img:opacity-100">
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={handleQuickView}
+              className="bg-background/95 backdrop-blur-sm text-foreground text-xs font-medium px-4 py-2 rounded-full shadow-lg flex items-center gap-1.5 hover:bg-background transition-colors"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              Aperçu
+            </motion.button>
+          </div>
           
           {/* Video indicator overlay */}
           {videoUrl && (
             <div className="absolute bottom-1.5 right-1.5 z-10">
-              <div className="bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded-md flex items-center gap-0.5 backdrop-blur-sm">
+              <div className="bg-foreground/60 text-background text-[9px] px-1.5 py-0.5 rounded-md flex items-center gap-0.5 backdrop-blur-sm">
                 <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M8 5v10l7-5-7-5z"/>
                 </svg>
@@ -301,6 +323,26 @@ export const ProductCard = ({
           </div>
         </div>
       </Card>
+
+      <QuickViewDialog
+        product={{
+          id,
+          image,
+          title,
+          originalPrice,
+          salePrice,
+          discount,
+          rating,
+          reviews,
+          description,
+          badge,
+          isFlashSale,
+          isBoosted: !!isActiveBoosted,
+          seller_id,
+        }}
+        open={quickViewOpen}
+        onOpenChange={setQuickViewOpen}
+      />
     </motion.div>
   );
 };

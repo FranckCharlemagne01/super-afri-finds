@@ -49,6 +49,7 @@ interface ProductCardProps {
   stockQuantity?: number;
   isSold: boolean;
   isActive?: boolean;
+  description?: string;
 }
 
 // Global cache for products - Optimized for instant display
@@ -194,6 +195,7 @@ export function useOptimizedProducts() {
     stockQuantity: product.stock_quantity,
     isSold: product.is_sold || false,
     isActive: product.is_active,
+    description: product.description,
   }), []);
 
   return {

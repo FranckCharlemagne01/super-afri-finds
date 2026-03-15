@@ -1,11 +1,13 @@
 import { Badge } from "@/components/ui/badge";
-import { Star, Heart } from "lucide-react";
+import { Star, Heart, Eye } from "lucide-react";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useNavigate } from "react-router-dom";
 import { useState, memo, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { getProductImage, handleImageError } from "@/utils/productImageHelper";
 import { useProductPrefetch } from "@/hooks/useProductCache";
+import { motion } from "framer-motion";
+import { QuickViewDialog, type QuickViewProduct } from "@/components/QuickViewDialog";
 
 interface CategoryProductCardProps {
   id: string;
@@ -21,16 +23,19 @@ interface CategoryProductCardProps {
   isBoosted?: boolean;
   boostedUntil?: string;
   shop_name?: string;
+  description?: string;
 }
 
 // Composant image optimisé pour les cartes produits dans les catégories
 // Hauteur fixe responsive pour éviter le zoom excessif sur mobile
 const ProductCardImage = memo(({ 
   src, 
-  alt 
+  alt,
+  onQuickView 
 }: { 
   src: string; 
   alt: string;
+  onQuickView?: (e: React.MouseEvent) => void;
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -48,10 +53,10 @@ const ProductCardImage = memo(({
   const safeSrc = getProductImage([src], 0);
   
   return (
-    <div className="relative w-full h-[180px] sm:h-[220px] md:h-[260px] overflow-hidden rounded-t-xl bg-[#f5f5f5]">
+    <div className="group/cimg relative w-full h-[180px] sm:h-[220px] md:h-[260px] overflow-hidden rounded-t-xl bg-muted">
       {/* Loader */}
       {isLoading && !hasError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-[#f5f5f5]">
+        <div className="absolute inset-0 flex items-center justify-center bg-muted">
           <div className="w-5 h-5 rounded-full border-2 border-muted-foreground/20 border-t-primary animate-spin" />
         </div>
       )}
@@ -72,6 +77,17 @@ const ProductCardImage = memo(({
           isLoading ? "opacity-0" : "opacity-100"
         )}
       />
+
+      {/* Quick View overlay */}
+      <div className="absolute inset-0 bg-foreground/0 group-hover/cimg:bg-foreground/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover/cimg:opacity-100">
+        <button
+          onClick={onQuickView}
+          className="bg-background/95 backdrop-blur-sm text-foreground text-[10px] sm:text-xs font-medium px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1 hover:bg-background transition-colors"
+        >
+          <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+          Aperçu
+        </button>
+      </div>
     </div>
   );
 });
@@ -92,10 +108,12 @@ export const CategoryProductCard = memo(({
   isBoosted = false,
   boostedUntil,
   shop_name,
+  description,
 }: CategoryProductCardProps) => {
   const { toggleFavorite, isFavorite } = useFavorites();
   const navigate = useNavigate();
   const { prefetchOnHover, cancelPrefetch } = useProductPrefetch();
+  const [quickViewOpen, setQuickViewOpen] = useState(false);
 
   const isActiveBoosted = isBoosted && boostedUntil && new Date(boostedUntil) > new Date();
   const isFav = isFavorite(id);
@@ -108,6 +126,11 @@ export const CategoryProductCard = memo(({
     e.stopPropagation();
     toggleFavorite(id);
   }, [toggleFavorite, id]);
+
+  const handleQuickView = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setQuickViewOpen(true);
+  }, []);
 
   return (
     <div
@@ -163,7 +186,7 @@ export const CategoryProductCard = memo(({
       </button>
 
       {/* Image du produit - Aspect ratio 4:5 avec contain */}
-      <ProductCardImage src={image} alt={title} />
+      <ProductCardImage src={image} alt={title} onQuickView={handleQuickView} />
 
       {/* Informations produit - Compact pour mobile */}
       <div className="p-2 space-y-1">
@@ -206,10 +229,28 @@ export const CategoryProductCard = memo(({
 
         {/* Nom de la boutique - Masqué pour les clients */}
       </div>
+
+      <QuickViewDialog
+        product={{
+          id,
+          image,
+          title,
+          originalPrice,
+          salePrice,
+          discount,
+          rating,
+          reviews,
+          description,
+          badge,
+          isFlashSale,
+          isBoosted: !!isActiveBoosted,
+        }}
+        open={quickViewOpen}
+        onOpenChange={setQuickViewOpen}
+      />
     </div>
   );
 });
 
 CategoryProductCard.displayName = 'CategoryProductCard';
-
 export default CategoryProductCard;

@@ -7,7 +7,7 @@ export const SellerPromoBanner = () => {
   const { user } = useStableAuth();
   const { isSeller } = useStableRole();
   
-  const message = "💼 Devenez vendeur sur Djassa - 28 jours d'essai gratuit pour créer votre boutique !";
+  const message = "🚀 Lancez votre boutique sur Djassa – Inscrivez-vous et commencez à vendre immédiatement ! ✔ Aucun frais pour commencer ✔ Commission uniquement après chaque vente";
   
   const handleClick = () => {
     if (user) {

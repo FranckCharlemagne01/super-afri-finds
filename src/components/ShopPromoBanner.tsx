@@ -1,5 +1,5 @@
 export const ShopPromoBanner = () => {
-  const message = "🎁 Créez une boutique dès aujourd'hui sur Djassa et profitez de l'offre gratuite pendant 28 jours !";
+  const message = "🚀 Lancez votre boutique sur Djassa – Aucun frais pour commencer, payez uniquement après chaque vente !";
   
   return (
     <div className="w-full overflow-hidden bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 py-2.5 sm:py-3 mb-0 rounded-lg shadow-md">

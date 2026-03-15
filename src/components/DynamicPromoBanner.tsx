@@ -35,12 +35,12 @@ export const DynamicPromoBanner = () => {
 
           {/* Titre principal */}
           <h3 className="text-base sm:text-lg md:text-xl font-bold text-foreground">
-            🛍️ Bienvenue sur Djassa !
+            🚀 Lancez votre boutique sur Djassa !
           </h3>
           
           {/* Sous-titre */}
           <p className="text-xs sm:text-sm md:text-base text-muted-foreground max-w-2xl leading-relaxed">
-            Profitez des bonus, réductions limitées et avantages exclusifs.
+            Inscrivez-vous et commencez à vendre immédiatement. Commission uniquement après chaque vente.
           </p>
         </div>
       </div>

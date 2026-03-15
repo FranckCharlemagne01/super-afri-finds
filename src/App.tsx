@@ -19,6 +19,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import PWABottomInstallBar from "@/components/PWABottomInstallBar";
 import { ProfileCompletionModal } from "@/components/ProfileCompletionModal";
 import { PreviewBrokenBanner } from "@/components/PreviewBrokenBanner";
+import { GoogleOnboardingRedirect } from "@/components/GoogleOnboardingRedirect";
 
 const Verify = lazy(() => import("./pages/Verify"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));

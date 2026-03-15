@@ -7,8 +7,8 @@ interface TrialBannerProps {
 }
 
 export const TrialBanner = ({ daysLeft, trialEndDate }: TrialBannerProps) => {
-  const isUrgent = daysLeft <= 7;
-  const isCritical = daysLeft <= 3;
+  const isUrgent = daysLeft <= 3;
+  const isCritical = daysLeft <= 1;
 
   const formatDate = (date: Date | null) => {
     if (!date) return '';

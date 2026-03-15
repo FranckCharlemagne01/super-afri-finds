@@ -203,13 +203,17 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
   };
 
   const panelContent = (
-    <div 
+    <motion.div 
       ref={containerRef}
+      initial={isMobile ? { x: '100%' } : { opacity: 0, scale: 0.95, y: -10 }}
+      animate={isMobile ? { x: 0 } : { opacity: 1, scale: 1, y: 0 }}
+      exit={isMobile ? { x: '100%' } : { opacity: 0, scale: 0.95, y: -10 }}
+      transition={{ type: 'spring', damping: 30, stiffness: 400 }}
       className={cn(
         "bg-background overflow-hidden flex flex-col",
         isMobile 
-          ? "fixed top-0 right-0 bottom-0 w-[78%] max-w-[340px] z-[100] shadow-[-8px_0_30px_-10px_rgba(0,0,0,0.15)] border-l border-border" 
-          : "absolute right-0 top-full mt-2 w-96 rounded-xl z-[100] border border-border shadow-2xl"
+          ? "fixed top-0 right-0 bottom-0 w-[78vw] max-w-[340px] z-[100] shadow-[-8px_0_30px_-10px_rgba(0,0,0,0.15)] border-l border-border" 
+          : "absolute right-0 top-full mt-2 w-96 max-h-[80vh] rounded-xl z-[100] border border-border shadow-2xl"
       )}
     >
       {/* Header */}
@@ -353,9 +357,8 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
                                 deleteNotification(notification.id);
                               }}
                               className={cn(
-                                "h-6 w-6 rounded-full",
-                                "opacity-0 group-hover:opacity-100",
-                                isMobile && "opacity-50",
+                                "h-7 w-7 rounded-full",
+                                isMobile ? "opacity-60" : "opacity-0 group-hover:opacity-100",
                                 "hover:bg-destructive/10 hover:text-destructive"
                               )}
                             >
@@ -403,7 +406,7 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
           Mes messages privés
         </Button>
       </div>
-    </div>
+    </motion.div>
   );
 
   return (
@@ -422,14 +425,7 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
             onClick={onClose}
           />
           
-          <motion.div
-            initial={isMobile ? { x: '100%' } : { opacity: 0, scale: 0.95, y: -10 }}
-            animate={isMobile ? { x: 0 } : { opacity: 1, scale: 1, y: 0 }}
-            exit={isMobile ? { x: '100%' } : { opacity: 0, scale: 0.95, y: -10 }}
-            transition={{ type: 'spring', damping: 30, stiffness: 400 }}
-          >
-            {panelContent}
-          </motion.div>
+          {panelContent}
         </>
       )}
     </AnimatePresence>

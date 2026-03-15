@@ -210,8 +210,8 @@ export const QuickViewDialog = memo(({ product, open, onOpenChange }: QuickViewD
           </div>
         )}
 
-        {/* Content Section */}
-        <div className="p-4 sm:p-5 space-y-3">
+        {/* Content Section - scrollable on small screens */}
+        <div className="p-4 sm:p-5 space-y-3 overflow-y-auto flex-1 min-h-0">
           <DialogHeader className="space-y-1.5 p-0">
             <DialogTitle className="text-base sm:text-lg font-semibold text-foreground leading-snug line-clamp-2">
               {product.title}

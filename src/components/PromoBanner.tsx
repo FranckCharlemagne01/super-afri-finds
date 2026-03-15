@@ -9,21 +9,9 @@ interface PromobannerProps {
 }
 
 const PromoBanner = ({ onShowSellerUpgrade }: PromobannerProps) => {
-  const { isInTrial, trialEndDate } = useTrialStatus();
   const { user } = useStableAuth();
   const { isSeller } = useStableRole();
   const navigate = useNavigate();
-
-  const calculateDaysRemaining = () => {
-    if (!trialEndDate) return 28;
-    const today = new Date();
-    const endDate = new Date(trialEndDate);
-    const timeDiff = endDate.getTime() - today.getTime();
-    const daysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
-    return Math.max(0, daysRemaining);
-  };
-
-  const daysRemaining = calculateDaysRemaining();
 
   const handleSellerSignup = () => {
     // Si l'utilisateur est connecté

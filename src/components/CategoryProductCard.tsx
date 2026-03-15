@@ -51,10 +51,10 @@ const ProductCardImage = memo(({
   const safeSrc = getProductImage([src], 0);
   
   return (
-    <div className="relative w-full h-[180px] sm:h-[220px] md:h-[260px] overflow-hidden rounded-t-xl bg-[#f5f5f5]">
+    <div className="group/cimg relative w-full h-[180px] sm:h-[220px] md:h-[260px] overflow-hidden rounded-t-xl bg-muted">
       {/* Loader */}
       {isLoading && !hasError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-[#f5f5f5]">
+        <div className="absolute inset-0 flex items-center justify-center bg-muted">
           <div className="w-5 h-5 rounded-full border-2 border-muted-foreground/20 border-t-primary animate-spin" />
         </div>
       )}
@@ -75,6 +75,17 @@ const ProductCardImage = memo(({
           isLoading ? "opacity-0" : "opacity-100"
         )}
       />
+
+      {/* Quick View overlay */}
+      <div className="absolute inset-0 bg-foreground/0 group-hover/cimg:bg-foreground/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover/cimg:opacity-100">
+        <button
+          onClick={onQuickView}
+          className="bg-background/95 backdrop-blur-sm text-foreground text-[10px] sm:text-xs font-medium px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1 hover:bg-background transition-colors"
+        >
+          <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+          Aperçu
+        </button>
+      </div>
     </div>
   );
 });

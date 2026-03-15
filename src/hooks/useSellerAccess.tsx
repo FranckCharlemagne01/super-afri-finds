@@ -32,7 +32,6 @@ interface AccessData {
   has_active_subscription: boolean;
   subscription_end: string | null;
   subscription_status: string;
-  free_publish_until: string | null;
 }
 
 export const useSellerAccess = () => {

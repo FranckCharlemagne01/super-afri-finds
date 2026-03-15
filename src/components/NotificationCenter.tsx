@@ -326,10 +326,10 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
                             </div>
                             
                             <p className={cn(
-                              "text-[13px] leading-tight",
+                              "text-sm leading-snug",
                               !notification.is_read 
                                 ? "font-bold text-foreground" 
-                                : "font-medium text-foreground/90"
+                                : "font-medium text-foreground/80"
                             )}>
                               {notification.title}
                             </p>

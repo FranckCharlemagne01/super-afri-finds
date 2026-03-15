@@ -229,10 +229,28 @@ export const CategoryProductCard = memo(({
 
         {/* Nom de la boutique - Masqué pour les clients */}
       </div>
+
+      <QuickViewDialog
+        product={{
+          id,
+          image,
+          title,
+          originalPrice,
+          salePrice,
+          discount,
+          rating,
+          reviews,
+          description,
+          badge,
+          isFlashSale,
+          isBoosted: !!isActiveBoosted,
+        }}
+        open={quickViewOpen}
+        onOpenChange={setQuickViewOpen}
+      />
     </div>
   );
 });
 
 CategoryProductCard.displayName = 'CategoryProductCard';
-
 export default CategoryProductCard;

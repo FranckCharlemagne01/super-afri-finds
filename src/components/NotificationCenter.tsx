@@ -334,7 +334,7 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
                               {notification.title}
                             </p>
                             
-                            <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5 leading-relaxed">
+                            <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5 leading-relaxed">
                               {notification.message}
                             </p>
                             

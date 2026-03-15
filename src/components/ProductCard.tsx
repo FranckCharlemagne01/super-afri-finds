@@ -323,6 +323,26 @@ export const ProductCard = ({
           </div>
         </div>
       </Card>
+
+      <QuickViewDialog
+        product={{
+          id,
+          image,
+          title,
+          originalPrice,
+          salePrice,
+          discount,
+          rating,
+          reviews,
+          description,
+          badge,
+          isFlashSale,
+          isBoosted: !!isActiveBoosted,
+          seller_id,
+        }}
+        open={quickViewOpen}
+        onOpenChange={setQuickViewOpen}
+      />
     </motion.div>
   );
 };

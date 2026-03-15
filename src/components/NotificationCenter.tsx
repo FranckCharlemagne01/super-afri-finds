@@ -399,13 +399,13 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
       </ScrollArea>
 
       {/* Footer */}
-      {notifications.length > 0 && (
-        <div className={cn(
-          "border-t border-border bg-muted/20",
-          isMobile ? "p-4 pb-8" : "p-3"
-        )}>
+      <div className={cn(
+        "border-t border-border bg-muted/20",
+        isMobile ? "p-4 pb-8 space-y-2" : "p-3 space-y-2"
+      )}>
+        {notifications.length > 0 && (
           <Button
-            variant="outline"
+            variant="default"
             className={cn(
               "w-full text-sm font-semibold rounded-xl",
               isMobile && "h-12"
@@ -415,11 +415,25 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
               onClose();
             }}
           >
-            <MessageSquare className="w-4 h-4 mr-2" />
-            Voir tous les messages
+            <Bell className="w-4 h-4 mr-2" />
+            Toutes les notifications
           </Button>
-        </div>
-      )}
+        )}
+        <Button
+          variant="outline"
+          className={cn(
+            "w-full text-sm font-semibold rounded-xl",
+            isMobile && "h-12"
+          )}
+          onClick={() => {
+            navigate('/messages');
+            onClose();
+          }}
+        >
+          <MessageSquare className="w-4 h-4 mr-2" />
+          Mes messages privés
+        </Button>
+      </div>
     </div>
   );
 

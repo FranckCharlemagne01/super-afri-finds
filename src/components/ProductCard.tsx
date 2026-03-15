@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, Heart, ShoppingCart, Store } from "lucide-react";
+import { Star, Heart, ShoppingCart, Store, Eye } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +12,8 @@ import { BoostCountdown } from "@/components/BoostCountdown";
 import { ProductImage } from "@/components/ui/optimized-image";
 import { motion } from "framer-motion";
 import { useProductPrefetch } from "@/hooks/useProductCache";
+import { useState } from "react";
+import { QuickViewDialog, type QuickViewProduct } from "@/components/QuickViewDialog";
 
 interface ProductCardProps {
   id?: string;

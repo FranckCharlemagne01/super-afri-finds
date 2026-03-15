@@ -213,7 +213,7 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
       className={cn(
         "overflow-hidden flex flex-col",
         isMobile 
-          ? "fixed top-0 right-0 bottom-0 w-[80vw] max-w-[340px] z-[100] bg-background shadow-[-8px_0_30px_-10px_rgba(0,0,0,0.2)] border-l border-border" 
+          ? "fixed top-0 right-0 bottom-0 w-[80vw] max-w-[340px] z-[10000] bg-background shadow-[-8px_0_30px_-10px_rgba(0,0,0,0.25)] border-l border-border" 
           : "absolute right-0 top-full mt-2 w-96 max-h-[80vh] rounded-xl z-[100] bg-background border border-border shadow-2xl"
       )}
     >

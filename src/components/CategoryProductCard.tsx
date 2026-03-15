@@ -23,6 +23,7 @@ interface CategoryProductCardProps {
   isBoosted?: boolean;
   boostedUntil?: string;
   shop_name?: string;
+  description?: string;
 }
 
 // Composant image optimisé pour les cartes produits dans les catégories

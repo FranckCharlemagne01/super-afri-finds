@@ -1,4 +1,4 @@
-import { useTrialStatus } from "@/hooks/useTrialStatus";
+import { useStableAuth } from "@/hooks/useStableAuth";
 import { useStableAuth } from "@/hooks/useStableAuth";
 import { useStableRole } from "@/hooks/useStableRole";
 import { useNavigate } from "react-router-dom";

@@ -245,6 +245,20 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
         tag: 'order_status',
       });
 
+      // Persist notification for buyer bell
+      const statusTypeMap: Record<string, string> = {
+        confirmed: 'order_status',
+        shipped: 'order_shipped',
+        delivered: 'order_delivered',
+      };
+      createNotification({
+        userId: order.customer_id,
+        type: statusTypeMap[newStatus] || 'order_status',
+        title: `Commande ${statusLabel}`,
+        message: `Votre commande "${order.product_title}" est maintenant: ${statusLabel}`,
+        link: '/my-orders',
+      });
+
       toast({
         title: "✅ Statut mis à jour",
         description: `Commande marquée comme "${statusLabel}"`,

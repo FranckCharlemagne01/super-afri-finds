@@ -56,11 +56,11 @@ export const TrialBanner = ({ daysLeft, trialEndDate }: TrialBannerProps) => {
                 ? 'text-orange-600 dark:text-orange-400'
                 : 'text-primary'
           }`}>
-            {isCritical 
-              ? `⚠️ Plus que ${daysLeft} jour${daysLeft > 1 ? 's' : ''} d'essai !`
+          {isCritical 
+              ? `⚠️ Dernier jour d'essai gratuit !`
               : isUrgent 
-                ? `${daysLeft} jours d'essai restants`
-                : `🎁 ${daysLeft} jours d'essai gratuit`
+                ? `⏰ Plus que ${daysLeft} jour${daysLeft > 1 ? 's' : ''} d'essai gratuit`
+                : `🎁 Essai gratuit actif – publiez vos produits gratuitement pendant ${daysLeft} jour${daysLeft > 1 ? 's' : ''}`
             }
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">

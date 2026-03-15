@@ -186,7 +186,7 @@ export const CategoryProductCard = memo(({
       </button>
 
       {/* Image du produit - Aspect ratio 4:5 avec contain */}
-      <ProductCardImage src={image} alt={title} />
+      <ProductCardImage src={image} alt={title} onQuickView={handleQuickView} />
 
       {/* Informations produit - Compact pour mobile */}
       <div className="p-2 space-y-1">

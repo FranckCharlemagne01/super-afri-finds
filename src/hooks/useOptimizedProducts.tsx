@@ -195,6 +195,7 @@ export function useOptimizedProducts() {
     stockQuantity: product.stock_quantity,
     isSold: product.is_sold || false,
     isActive: product.is_active,
+    description: product.description,
   }), []);
 
   return {

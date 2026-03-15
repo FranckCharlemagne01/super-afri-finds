@@ -6,11 +6,13 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Coins, Search, Plus, Minus, Loader2, User, AlertCircle } from 'lucide-react';
+import { Coins, Search, Plus, Minus, Loader2, User, AlertCircle, Gift, Calendar, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 
 interface UserResult {
   user_id: string;
@@ -24,6 +26,7 @@ interface TokenInfo {
   free_tokens_count: number;
   paid_tokens_count: number;
   free_tokens_expires_at: string | null;
+  wallet_balance_fcfa?: number;
 }
 
 interface Transaction {
@@ -48,11 +51,17 @@ export const AdminTokenManagement = () => {
   const [adjusting, setAdjusting] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
+  // Bonus state
+  const [bonusType, setBonusType] = useState<string>('free_publish_days');
+  const [bonusValue, setBonusValue] = useState('');
+  const [bonusReason, setBonusReason] = useState('');
+  const [grantingBonus, setGrantingBonus] = useState(false);
+  const [profileInfo, setProfileInfo] = useState<{ trial_end_date: string | null; free_publish_until: string | null } | null>(null);
+
   const searchUsers = async () => {
     if (!searchQuery.trim()) return;
     setSearching(true);
     try {
-      // Use get_users_with_profiles RPC (superadmin-only)
       const { data, error } = await supabase.rpc('get_users_with_profiles');
       if (error) throw error;
 
@@ -79,16 +88,25 @@ export const AdminTokenManagement = () => {
     setSelectedUser(user);
     setUsers([]);
     setSearchQuery('');
-    await Promise.all([loadTokenInfo(user.user_id), loadTransactions(user.user_id)]);
+    await Promise.all([loadTokenInfo(user.user_id), loadTransactions(user.user_id), loadProfileInfo(user.user_id)]);
   };
 
   const loadTokenInfo = async (userId: string) => {
     const { data } = await supabase
       .from('seller_tokens')
-      .select('token_balance, free_tokens_count, paid_tokens_count, free_tokens_expires_at')
+      .select('token_balance, free_tokens_count, paid_tokens_count, free_tokens_expires_at, wallet_balance_fcfa')
       .eq('seller_id', userId)
       .maybeSingle();
     setTokenInfo(data as TokenInfo | null);
+  };
+
+  const loadProfileInfo = async (userId: string) => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('trial_end_date, free_publish_until')
+      .eq('user_id', userId)
+      .maybeSingle();
+    setProfileInfo(data);
   };
 
   const loadTransactions = async (userId: string) => {
@@ -141,6 +159,50 @@ export const AdminTokenManagement = () => {
     }
   };
 
+  const grantBonus = async () => {
+    if (!selectedUser || !bonusValue) return;
+    const numValue = parseInt(bonusValue);
+    if (isNaN(numValue) || numValue <= 0) {
+      toast.error('Valeur invalide');
+      return;
+    }
+
+    setGrantingBonus(true);
+    try {
+      const { data, error } = await supabase.rpc('admin_grant_bonus', {
+        p_seller_id: selectedUser.user_id,
+        p_bonus_type: bonusType,
+        p_value: numValue,
+        p_reason: bonusReason || 'Bonus admin',
+      });
+
+      if (error) throw error;
+
+      const result = (typeof data === 'string' ? JSON.parse(data) : data) as any;
+      if (result?.success) {
+        const messages: Record<string, string> = {
+          free_publish_days: `✅ ${result.days} jours de publication gratuite accordés jusqu'au ${result.until ? format(new Date(result.until), 'dd MMM yyyy', { locale: fr }) : ''}`,
+          wallet_credit: `✅ ${result.amount?.toLocaleString()} FCFA crédités au portefeuille`,
+          trial_extension: `✅ Essai étendu de ${result.days} jours jusqu'au ${result.until ? format(new Date(result.until), 'dd MMM yyyy', { locale: fr }) : ''}`,
+        };
+        toast.success(messages[bonusType] || 'Bonus accordé !');
+        setBonusValue('');
+        setBonusReason('');
+        await Promise.all([
+          loadTokenInfo(selectedUser.user_id),
+          loadTransactions(selectedUser.user_id),
+          loadProfileInfo(selectedUser.user_id),
+        ]);
+      } else {
+        toast.error(result?.error || 'Erreur inconnue');
+      }
+    } catch (err: any) {
+      toast.error('Erreur: ' + err.message);
+    } finally {
+      setGrantingBonus(false);
+    }
+  };
+
   const getTxTypeBadge = (type: string) => {
     const map: Record<string, { label: string; className: string }> = {
       purchase: { label: '💳 Achat', className: 'bg-purple-500' },
@@ -152,6 +214,12 @@ export const AdminTokenManagement = () => {
     };
     const info = map[type] || { label: type, className: '' };
     return <Badge className={info.className}>{info.label}</Badge>;
+  };
+
+  const bonusPresets: Record<string, { label: string; values: number[] }> = {
+    free_publish_days: { label: 'Jours', values: [7, 14, 30] },
+    wallet_credit: { label: 'FCFA', values: [5000, 10000, 20000] },
+    trial_extension: { label: 'Jours', values: [7, 14, 30] },
   };
 
   return (
@@ -203,24 +271,36 @@ export const AdminTokenManagement = () => {
               <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
               <p className="text-xs font-mono text-muted-foreground mt-0.5">{selectedUser.user_id}</p>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(null); setTokenInfo(null); setTransactions([]); }}>
+            <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(null); setTokenInfo(null); setTransactions([]); setProfileInfo(null); }}>
               ✕
             </Button>
           </div>
 
-          {/* Token balance display */}
-          <div className="grid grid-cols-3 gap-3 mb-5">
-            <div className="bg-gradient-to-br from-amber-50 to-yellow-50 p-3 rounded-lg border border-amber-200 text-center">
-              <p className="text-xs font-medium text-amber-700">Solde total</p>
-              <p className="text-2xl font-bold text-amber-600">{tokenInfo?.token_balance ?? '—'}</p>
+          {/* Token & wallet balance display */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+            <div className="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 p-3 rounded-lg border border-amber-200 dark:border-amber-800 text-center">
+              <p className="text-xs font-medium text-amber-700 dark:text-amber-400">Jetons</p>
+              <p className="text-2xl font-bold text-amber-600 dark:text-amber-300">{tokenInfo?.token_balance ?? '—'}</p>
             </div>
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-3 rounded-lg border border-blue-200 text-center">
-              <p className="text-xs font-medium text-blue-700">Gratuits</p>
-              <p className="text-2xl font-bold text-blue-600">{tokenInfo?.free_tokens_count ?? '—'}</p>
+            <div className="bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 p-3 rounded-lg border border-emerald-200 dark:border-emerald-800 text-center">
+              <p className="text-xs font-medium text-emerald-700 dark:text-emerald-400">Portefeuille</p>
+              <p className="text-xl font-bold text-emerald-600 dark:text-emerald-300">{tokenInfo?.wallet_balance_fcfa?.toLocaleString() ?? '—'} <span className="text-xs">FCFA</span></p>
             </div>
-            <div className="bg-gradient-to-br from-purple-50 to-fuchsia-50 p-3 rounded-lg border border-purple-200 text-center">
-              <p className="text-xs font-medium text-purple-700">Payés</p>
-              <p className="text-2xl font-bold text-purple-600">{tokenInfo?.paid_tokens_count ?? '—'}</p>
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800 text-center">
+              <p className="text-xs font-medium text-blue-700 dark:text-blue-400">Essai jusqu'au</p>
+              <p className="text-sm font-bold text-blue-600 dark:text-blue-300">
+                {profileInfo?.trial_end_date 
+                  ? format(new Date(profileInfo.trial_end_date), 'dd MMM yyyy', { locale: fr })
+                  : '—'}
+              </p>
+            </div>
+            <div className="bg-gradient-to-br from-purple-50 to-fuchsia-50 dark:from-purple-950/30 dark:to-fuchsia-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800 text-center">
+              <p className="text-xs font-medium text-purple-700 dark:text-purple-400">Pub. gratuite</p>
+              <p className="text-sm font-bold text-purple-600 dark:text-purple-300">
+                {profileInfo?.free_publish_until && new Date(profileInfo.free_publish_until) > new Date()
+                  ? format(new Date(profileInfo.free_publish_until), 'dd MMM yyyy', { locale: fr })
+                  : '—'}
+              </p>
             </div>
           </div>
 
@@ -265,6 +345,81 @@ export const AdminTokenManagement = () => {
               >
                 {adjusting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Minus className="w-4 h-4 mr-2" />}
                 Retirer
+              </Button>
+            </div>
+          </div>
+
+          {/* Bonus Section */}
+          <Separator className="my-5" />
+          <div className="space-y-4">
+            <h4 className="text-base font-semibold flex items-center gap-2">
+              <Gift className="w-5 h-5 text-primary" />
+              Accorder un bonus
+            </h4>
+
+            <div className="space-y-3">
+              <Label>Type de bonus</Label>
+              <Select value={bonusType} onValueChange={setBonusType}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="free_publish_days">
+                    <span className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4" /> Publication gratuite (jours)
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="wallet_credit">
+                    <span className="flex items-center gap-2">
+                      <Wallet className="w-4 h-4" /> Crédit portefeuille (FCFA)
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="trial_extension">
+                    <span className="flex items-center gap-2">
+                      <Gift className="w-4 h-4" /> Extension essai gratuit (jours)
+                    </span>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Label>Valeur ({bonusPresets[bonusType]?.label})</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  min="1"
+                  placeholder={`Ex: ${bonusPresets[bonusType]?.values[0]}`}
+                  value={bonusValue}
+                  onChange={(e) => setBonusValue(e.target.value)}
+                  className="flex-1"
+                />
+                {bonusPresets[bonusType]?.values.map(v => (
+                  <Button
+                    key={v}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setBonusValue(String(v))}
+                    className="shrink-0"
+                  >
+                    {bonusType === 'wallet_credit' ? `${(v / 1000)}k` : `${v}j`}
+                  </Button>
+                ))}
+              </div>
+
+              <Label>Raison (optionnel)</Label>
+              <Textarea
+                placeholder="Ex: Récompense fidélité..."
+                value={bonusReason}
+                onChange={(e) => setBonusReason(e.target.value)}
+                rows={2}
+              />
+
+              <Button
+                onClick={grantBonus}
+                disabled={grantingBonus || !bonusValue}
+                className="w-full"
+              >
+                {grantingBonus ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Gift className="w-4 h-4 mr-2" />}
+                Accorder le bonus
               </Button>
             </div>
           </div>

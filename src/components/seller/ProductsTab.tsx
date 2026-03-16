@@ -2,7 +2,7 @@ import { useState } from 'react';
 import * as React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Package, Lock } from 'lucide-react';
+import { Plus, Package } from 'lucide-react';
 import { ProductFormWizard } from '@/components/product-form';
 import { SellerProducts } from '@/components/SellerProducts';
 import { ProductBoostDialog } from '@/components/ProductBoostDialog';

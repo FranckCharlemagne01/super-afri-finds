@@ -2,7 +2,7 @@ import { useState } from 'react';
 import * as React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Package, Lock } from 'lucide-react';
+import { Plus, Package } from 'lucide-react';
 import { ProductFormWizard } from '@/components/product-form';
 import { SellerProducts } from '@/components/SellerProducts';
 import { ProductBoostDialog } from '@/components/ProductBoostDialog';
@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 // Token system removed
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 
 interface Product {
   id: string;
@@ -66,29 +66,14 @@ export const ProductsTab = ({
 
   // Handle external trigger to open form
   React.useEffect(() => {
-    if (openFormTrigger && canPublish) {
+    if (openFormTrigger) {
       setShowProductForm(true);
       setEditingProduct(null);
       onFormOpenChange?.(false); // Reset trigger
-    } else if (openFormTrigger && !canPublish) {
-      toast({
-        title: "Abonnement requis",
-        description: "Renouvelez votre abonnement pour publier des produits",
-        variant: "destructive",
-      });
-      onFormOpenChange?.(false);
     }
-  }, [openFormTrigger, onFormOpenChange, canPublish, toast]);
+  }, [openFormTrigger, onFormOpenChange]);
 
   const handleEdit = (product: Product) => {
-    if (!canEdit) {
-      toast({
-        title: "Abonnement requis",
-        description: "Renouvelez votre abonnement pour modifier vos produits",
-        variant: "destructive",
-      });
-      return;
-    }
     setEditingProduct(product);
     setShowProductForm(true);
   };
@@ -145,14 +130,6 @@ export const ProductsTab = ({
   };
 
   const handleBoost = (productId: string, productTitle: string) => {
-    if (!canBoost) {
-      toast({
-        title: "Abonnement requis",
-        description: "Renouvelez votre abonnement pour booster vos produits",
-        variant: "destructive",
-      });
-      return;
-    }
     setSelectedProductForBoost({ id: productId, title: productTitle });
     setBoostDialogOpen(true);
   };
@@ -173,33 +150,14 @@ export const ProductsTab = ({
               </div>
               <span>Mes Produits ({products.length})</span>
             </CardTitle>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="w-full sm:w-auto">
-                    <Button 
-                      onClick={() => canPublish && setShowProductForm(true)} 
-                      size={isMobile ? "default" : "lg"} 
-                      disabled={!canPublish}
-                      className={`gap-2 w-full sm:w-auto transition-all touch-manipulation ${
-                        canPublish 
-                          ? 'hover:scale-105 active:scale-95' 
-                          : 'opacity-60 cursor-not-allowed'
-                      }`}
-                    >
-                      {!canPublish && <Lock className="h-4 w-4" />}
-                      <Plus className="h-4 w-4 md:h-5 md:w-5" />
-                      <span className="truncate">{isMobile ? "Ajouter" : "Ajouter un produit"}</span>
-                    </Button>
-                  </span>
-                </TooltipTrigger>
-                {!canPublish && (
-                  <TooltipContent>
-                    <p>Renouvelez votre abonnement pour publier</p>
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            </TooltipProvider>
+            <Button 
+              onClick={() => setShowProductForm(true)} 
+              size={isMobile ? "default" : "lg"} 
+              className="gap-2 w-full sm:w-auto transition-all touch-manipulation hover:scale-105 active:scale-95"
+            >
+              <Plus className="h-4 w-4 md:h-5 md:w-5" />
+              <span className="truncate">{isMobile ? "Ajouter" : "Ajouter un produit"}</span>
+            </Button>
           </div>
         </CardHeader>
         <CardContent className="relative">

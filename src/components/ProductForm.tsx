@@ -299,68 +299,7 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
 
         onSave();
       } else {
-        // New product - Transaction atomique : vérifier et déduire le jeton AVANT la publication
-        console.log('🔍 Vérification des jetons disponibles...');
-        
-        // Vérifier le solde de jetons
-        const { data: balanceCheck, error: balanceError } = await supabase
-          .rpc('check_token_balance', {
-            _seller_id: user.id
-          });
-
-        if (balanceError) {
-          console.error('Erreur lors de la vérification des jetons:', balanceError);
-          toast({
-            title: "❌ Erreur",
-            description: "Impossible de vérifier votre solde de jetons. Veuillez réessayer.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        // Type assertion pour le retour de la fonction
-        const balance = balanceCheck as { 
-          has_tokens: boolean; 
-          token_balance: number;
-          free_tokens: number;
-          paid_tokens: number;
-          expires_at: string | null;
-        } | null;
-
-        if (!balance?.has_tokens || balance?.token_balance <= 0) {
-          console.log('❌ Jetons insuffisants');
-          toast({
-            title: "❌ Jetons insuffisants",
-            description: "Vous n'avez plus de jetons disponibles pour publier ce produit. Veuillez recharger vos jetons pour continuer.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        console.log('✅ Jetons disponibles:', balance.token_balance);
-        console.log('🔒 Déduction d\'un jeton...');
-
-        // Déduire 1 jeton de manière atomique (avec verrou transactionnel)
-        const { data: tokenConsumed, error: tokenError } = await supabase
-          .rpc('consume_token_for_publication', {
-            _seller_id: user.id,
-            _product_id: null // Pas encore de product_id
-          });
-
-        if (tokenError || !tokenConsumed) {
-          console.error('❌ Erreur lors de la déduction du jeton:', tokenError);
-          toast({
-            title: "❌ Erreur",
-            description: "Impossible de déduire le jeton. Veuillez réessayer.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        console.log('✅ Jeton déduit avec succès');
-        console.log('📝 Création du produit...');
-
-        // Maintenant insérer le produit (le jeton a déjà été déduit)
+        // New product - INSERT (RLS checks can_insert_products which verifies bonus/wallet)
         const { data: insertedProduct, error: insertError } = await supabase
           .from('products')
           .insert(productData)
@@ -368,34 +307,25 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
           .single();
         
         if (insertError) {
-          console.error('❌ Erreur lors de la création du produit:', insertError);
-          // IMPORTANT: Le jeton a déjà été consommé, on informe l'utilisateur
+          const isRlsError = insertError.message?.includes('row-level security') || insertError.code === '42501';
           toast({
-            title: "❌ Erreur de sauvegarde",
-            description: "Impossible de sauvegarder le produit. Un jeton a été consommé. Contactez le support si le problème persiste.",
+            title: isRlsError ? "❌ Publication impossible" : "❌ Erreur de sauvegarde",
+            description: isRlsError ? "Vous n'avez aucun bonus de publication disponible." : "Impossible de sauvegarder le produit.",
             variant: "destructive",
           });
-          
-          // Log l'erreur pour l'admin
-          console.error('[ADMIN LOG] Product save failed after token consumption:', {
-            user_id: user.id,
-            error: insertError,
-            timestamp: new Date().toISOString()
-          });
-          
           return;
         }
 
-        console.log('✅ Produit créé avec succès:', insertedProduct.id);
-
-        // Rafraîchir le solde de jetons
-        await refreshBalance();
-
-        const newBalance = (balance?.token_balance || 1) - 1;
+        // Try to consume a bonus publication
+        try {
+          await (supabase.rpc as any)('consume_bonus_publication', { p_seller_id: user.id });
+        } catch (bonusErr) {
+          console.log('Bonus check skipped:', bonusErr);
+        }
 
         toast({
           title: "✅ Article publié avec succès",
-          description: `Votre article a été publié ! Il vous reste ${newBalance} jeton${newBalance > 1 ? 's' : ''}.`,
+          description: "Votre produit est maintenant en ligne !",
         });
 
         onSave();

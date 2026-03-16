@@ -74,14 +74,6 @@ export const ProductsTab = ({
   }, [openFormTrigger, onFormOpenChange]);
 
   const handleEdit = (product: Product) => {
-    if (!canEdit) {
-      toast({
-        title: "Abonnement requis",
-        description: "Renouvelez votre abonnement pour modifier vos produits",
-        variant: "destructive",
-      });
-      return;
-    }
     setEditingProduct(product);
     setShowProductForm(true);
   };

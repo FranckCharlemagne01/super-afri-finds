@@ -55,6 +55,7 @@ const Diagnostic = lazy(() => import("./pages/Diagnostic"));
 const PartnerDashboard = lazy(() => import("./pages/PartnerDashboard"));
 const Livraison = lazy(() => import("./pages/Livraison"));
 const DriverDashboard = lazy(() => import("./pages/DriverDashboard"));
+const DriverLogin = lazy(() => import("./pages/DriverLogin"));
 
 // Optimized QueryClient configuration for better caching
 const queryClient = new QueryClient({
@@ -172,6 +173,7 @@ const AnimatedRoutes = () => {
             <Route path="/install" element={<InstallApp />} />
             <Route path="/diagnostic" element={<Diagnostic />} />
             <Route path="/livraison" element={<Livraison />} />
+            <Route path="/driver-login" element={<DriverLogin />} />
             <Route 
               path="/driver-dashboard" 
               element={

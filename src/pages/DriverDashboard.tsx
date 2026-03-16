@@ -11,11 +11,10 @@ import { DriverOverview } from "@/components/driver/DriverOverview";
 import { DriverMissions } from "@/components/driver/DriverMissions";
 import { DriverDeliveries } from "@/components/driver/DriverDeliveries";
 import { DriverEarnings } from "@/components/driver/DriverEarnings";
-import { DriverVerification } from "@/components/driver/DriverVerification";
 import { DriverProfile } from "@/components/driver/DriverProfile";
 import { DriverSettings } from "@/components/driver/DriverSettings";
 
-export type DriverTab = 'overview' | 'missions' | 'deliveries' | 'earnings' | 'verification' | 'profile' | 'settings';
+export type DriverTab = 'overview' | 'missions' | 'deliveries' | 'earnings' | 'profile' | 'settings';
 
 export interface DriverProfileData {
   id: string;
@@ -74,8 +73,6 @@ const DriverDashboard = () => {
         return <DriverDeliveries profile={driverProfile} />;
       case 'earnings':
         return <DriverEarnings profile={driverProfile} />;
-      case 'verification':
-        return <DriverVerification profile={driverProfile} onRefresh={fetchDriverProfile} />;
       case 'profile':
         return <DriverProfile profile={driverProfile} onRefresh={fetchDriverProfile} />;
       case 'settings':

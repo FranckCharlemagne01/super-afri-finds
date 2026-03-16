@@ -1,15 +1,18 @@
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useStableAuth } from "@/hooks/useStableAuth";
+import { useNavigate } from "react-router-dom";
 import { DriverTab, DriverProfileData } from "@/pages/DriverDashboard";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
   MapPin,
   Package,
   Wallet,
-  UserCheck,
   User,
   Settings,
+  LogOut,
 } from "lucide-react";
 
 interface DriverSidebarProps {
@@ -20,10 +23,9 @@ interface DriverSidebarProps {
 
 const tabs: { key: DriverTab; label: string; icon: React.ElementType }[] = [
   { key: 'overview', label: 'Tableau de bord', icon: LayoutDashboard },
-  { key: 'missions', label: 'Missions disponibles', icon: MapPin },
+  { key: 'missions', label: 'Missions', icon: MapPin },
   { key: 'deliveries', label: 'Mes livraisons', icon: Package },
   { key: 'earnings', label: 'Mes gains', icon: Wallet },
-  { key: 'verification', label: 'Vérification', icon: UserCheck },
   { key: 'profile', label: 'Mon profil', icon: User },
   { key: 'settings', label: 'Paramètres', icon: Settings },
 ];
@@ -108,6 +110,28 @@ export const DriverSidebar = ({ activeTab, onTabChange, profile }: DriverSidebar
           );
         })}
       </nav>
+
+      {/* Logout */}
+      <div className="pt-4 border-t border-border">
+        <LogoutButton />
+      </div>
     </aside>
+  );
+};
+
+const LogoutButton = () => {
+  const { signOut } = useStableAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/driver-login');
+  };
+
+  return (
+    <Button variant="ghost" className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleLogout}>
+      <LogOut className="w-4 h-4" />
+      Déconnexion
+    </Button>
   );
 };

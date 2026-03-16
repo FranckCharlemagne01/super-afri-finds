@@ -10,7 +10,7 @@ export const DriverSettings = () => {
 
   const handleLogout = async () => {
     await signOut();
-    navigate('/');
+    navigate('/driver-login');
   };
 
   return (

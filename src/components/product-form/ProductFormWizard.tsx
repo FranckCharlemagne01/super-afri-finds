@@ -62,7 +62,6 @@ const categoriesFlat = getAllCategoriesFlat();
 export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: ProductFormWizardProps) => {
   const { user } = useAuth();
   const trialStatus = useTrialStatus();
-  const { tokenBalance, loading: tokensLoading, refreshBalance } = useTokens();
   const { toast } = useToast();
   const isMobile = useIsMobile();
 

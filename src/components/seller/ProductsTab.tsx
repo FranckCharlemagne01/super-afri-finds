@@ -240,7 +240,7 @@ export const ProductsTab = ({
           onOpenChange={setBoostDialogOpen}
           productId={selectedProductForBoost.id}
           productTitle={selectedProductForBoost.title}
-          currentTokens={tokenBalance}
+          currentTokens={0}
           onBoostComplete={handleBoostComplete}
         />
       )}

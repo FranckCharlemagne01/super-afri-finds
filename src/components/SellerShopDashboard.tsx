@@ -325,7 +325,7 @@ export const SellerShopDashboard = ({ shop, products, loading, onProductsUpdate 
           onOpenChange={setBoostDialogOpen}
           productId={selectedProductForBoost.id}
           productTitle={selectedProductForBoost.title}
-          currentTokens={tokenBalance}
+          currentTokens={0}
           onBoostComplete={handleBoostComplete}
         />
       )}

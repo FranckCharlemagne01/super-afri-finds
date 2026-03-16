@@ -11,6 +11,7 @@ import { DriverOverview } from "@/components/driver/DriverOverview";
 import { DriverMissions } from "@/components/driver/DriverMissions";
 import { DriverDeliveries } from "@/components/driver/DriverDeliveries";
 import { DriverEarnings } from "@/components/driver/DriverEarnings";
+import { DriverProfile } from "@/components/driver/DriverProfile";
 import { DriverSettings } from "@/components/driver/DriverSettings";
 
 export type DriverTab = 'overview' | 'missions' | 'deliveries' | 'earnings' | 'profile' | 'settings';

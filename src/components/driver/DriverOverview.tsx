@@ -23,20 +23,17 @@ export const DriverOverview = ({ profile, onNavigate }: Props) => {
         </p>
       </div>
 
-      {/* Pending verification banner */}
+      {/* Status info */}
       {isPending && (
         <Card className="border-yellow-500/30 bg-yellow-50 dark:bg-yellow-900/10">
           <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <AlertTriangle className="w-8 h-8 text-yellow-500 shrink-0" />
             <div className="flex-1">
-              <h3 className="font-semibold text-foreground">Compte non vérifié</h3>
+              <h3 className="font-semibold text-foreground">Compte en attente</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Votre compte livreur n'est pas encore vérifié. Pour recevoir des missions de livraison, veuillez compléter la vérification de votre profil.
+                Votre compte livreur est en cours de validation. Vous serez notifié dès que votre profil sera activé.
               </p>
             </div>
-            <Button onClick={() => onNavigate('verification')} className="shrink-0">
-              Vérifier mon compte
-            </Button>
           </CardContent>
         </Card>
       )}

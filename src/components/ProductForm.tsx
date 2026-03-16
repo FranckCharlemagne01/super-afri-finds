@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrialStatus } from '@/hooks/useTrialStatus';
-import { useTokens } from '@/hooks/useTokens';
+// Token system removed - using publication bonus
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

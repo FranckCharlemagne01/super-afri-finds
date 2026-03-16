@@ -159,7 +159,6 @@ export const ProductsTab = ({
 
   const handleBoostComplete = () => {
     onRefresh();
-    refreshBalance();
   };
 
   return (

@@ -898,17 +898,15 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
         </Button>
         <Button 
           type="submit" 
-          disabled={loading || uploadingVideo || uploadingImages || tokensLoading || (!product?.id && tokenBalance <= 0)}
+          disabled={loading || uploadingVideo || uploadingImages}
           className={isMobile ? "w-full min-h-[44px]" : ""}
         >
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {loading ? 'Sauvegarde...' : 
            uploadingImages ? 'Upload images...' : 
            uploadingVideo ? 'Upload vidéo...' : 
-           tokensLoading ? 'Chargement...' :
            product?.id ? 'Modifier le produit' : 
-           tokenBalance <= 0 ? 'Jetons insuffisants' :
-           `Publier le produit (1 jeton)`}
+           'Publier le produit'}
         </Button>
       </div>
     </form>

@@ -386,10 +386,9 @@ const SellerDashboard = memo(() => {
   const handleRefresh = useCallback(() => {
     refetchProducts();
     refetchShop();
-    refreshBalance();
     refreshRole();
     sellerAccess.refresh();
-  }, [refetchProducts, refetchShop, refreshBalance, refreshRole, sellerAccess]);
+  }, [refetchProducts, refetchShop, refreshRole, sellerAccess]);
 
   const handlePublishProduct = useCallback(() => {
     setActiveSection('products');

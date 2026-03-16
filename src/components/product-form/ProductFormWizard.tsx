@@ -597,7 +597,7 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
               ) : (
                 <>
                   <Check className="w-5 h-5 mr-2" />
-                  {product?.id ? 'Modifier' : `Publier (1 jeton)`}
+                  {product?.id ? 'Modifier' : 'Publier'}
                 </>
               )}
             </Button>

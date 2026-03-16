@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Settings, Eye, Zap, Video, Package, Check, Coins } from 'lucide-react';
+import { Settings, Eye, Zap, Video, Package, Check } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
@@ -15,7 +15,6 @@ interface StepOptionsProps {
   };
   onInputChange: (field: string, value: any) => void;
   previewImages: string[];
-  tokenBalance: number;
   isEditing: boolean;
   videoFile: File | null;
   onVideoChange: (file: File | null) => void;
@@ -25,7 +24,6 @@ export const StepOptions = ({
   formData, 
   onInputChange, 
   previewImages,
-  tokenBalance,
   isEditing,
   videoFile,
   onVideoChange
@@ -112,31 +110,6 @@ export const StepOptions = ({
           )}
         </div>
       </motion.div>
-
-      {/* Token info */}
-      {!isEditing && (
-        <motion.div
-          custom={0}
-          variants={itemVariants}
-          initial="hidden"
-          animate="visible"
-          className={`flex items-center gap-3 p-4 rounded-2xl ${
-            tokenBalance > 0 
-              ? 'bg-green-50 dark:bg-green-950/30' 
-              : 'bg-red-50 dark:bg-red-950/30'
-          }`}
-        >
-          <Coins className={`w-6 h-6 ${tokenBalance > 0 ? 'text-green-600' : 'text-red-600'}`} />
-          <div className="flex-1">
-            <p className={`font-medium ${tokenBalance > 0 ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'}`}>
-              {tokenBalance} jeton{tokenBalance > 1 ? 's' : ''} disponible{tokenBalance > 1 ? 's' : ''}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              1 jeton sera déduit à la publication
-            </p>
-          </div>
-        </motion.div>
-      )}
 
       {/* Options */}
       <motion.div

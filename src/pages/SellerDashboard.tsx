@@ -588,10 +588,6 @@ const SellerDashboard = memo(() => {
           {activeSection === 'tokens' && (
             <Suspense fallback={<SectionSkeleton />}>
               <TokensSubscriptionTab
-                tokenBalance={tokenBalance}
-                freeTokens={freeTokens}
-                paidTokens={paidTokens}
-                freeTokensExpiresAt={freeTokensExpiresAt}
                 trialStatus={trialStatus}
                 products={products || []}
                 onRefresh={handleRefresh}

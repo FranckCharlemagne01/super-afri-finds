@@ -191,9 +191,8 @@ export const PublicationBonusSection = () => {
                 </div>
               </div>
 
-              {bonus.reason && (
-                <p className="text-xs text-muted-foreground italic">📝 {bonus.reason}</p>
-              )}
+            </div>
+          );
             </div>
           );
         })}

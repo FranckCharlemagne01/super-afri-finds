@@ -579,6 +579,16 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
                 videoFile={videoFile}
                 onVideoChange={setVideoFile}
                 activeBonus={activeBonus}
+                bonusActivated={bonusActivated}
+                onActivateBonus={() => {
+                  if (activeBonus && activeBonus.is_active && activeBonus.used_products < activeBonus.max_products) {
+                    setBonusActivated(true);
+                    toast({
+                      title: "✅ Bonus activé",
+                      description: `Ce produit sera publié avec votre bonus. ${activeBonus.max_products - activeBonus.used_products - 1} produit(s) restant(s) après publication.`,
+                    });
+                  }
+                }}
               />
             )}
           </motion.div>

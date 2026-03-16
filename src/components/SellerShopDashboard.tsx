@@ -66,7 +66,7 @@ export const SellerShopDashboard = ({ shop, products, loading, onProductsUpdate 
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [boostDialogOpen, setBoostDialogOpen] = useState(false);
   const [selectedProductForBoost, setSelectedProductForBoost] = useState<{ id: string; title: string } | null>(null);
-  const { tokenBalance, freeTokens, paidTokens, freeTokensExpiresAt, refreshBalance } = useTokens();
+  // Token system removed
 
   const handleProductEdit = (product: Product) => {
     setEditingProduct(product);

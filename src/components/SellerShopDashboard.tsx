@@ -227,32 +227,13 @@ export const SellerShopDashboard = ({ shop, products, loading, onProductsUpdate 
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Coins className="h-5 w-5" />
-                  Solde de jetons
+                  Compte Djassa
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-3xl font-bold text-primary">{tokenBalance}</span>
-                    <Badge variant="secondary">jetons disponibles</Badge>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Gratuits:</span>
-                      <p className="font-semibold">{freeTokens}</p>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Payants:</span>
-                      <p className="font-semibold">{paidTokens}</p>
-                    </div>
-                  </div>
-                  {freeTokensExpiresAt && freeTokens > 0 && (
-                    <div className="text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3 inline mr-1" />
-                      Expiration: {new Date(freeTokensExpiresAt).toLocaleDateString('fr-FR')}
-                    </div>
-                  )}
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  Gérez votre compte depuis le tableau de bord vendeur.
+                </p>
               </CardContent>
             </Card>
             <Card>

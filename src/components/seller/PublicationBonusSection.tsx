@@ -193,8 +193,6 @@ export const PublicationBonusSection = () => {
 
             </div>
           );
-            </div>
-          );
         })}
 
         {expiredBonuses.length > 0 && (

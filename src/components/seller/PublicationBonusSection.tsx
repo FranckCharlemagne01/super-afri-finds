@@ -120,8 +120,8 @@ export const PublicationBonusSection = () => {
         )}
 
         {activeBonuses.map((bonus) => {
-          const remaining = bonus.max_products - bonus.products_used;
-          const progress = (bonus.products_used / bonus.max_products) * 100;
+          const remaining = bonus.max_products - bonus.used_products;
+          const progress = (bonus.used_products / bonus.max_products) * 100;
           const isToggling = toggling === bonus.id;
 
           return (

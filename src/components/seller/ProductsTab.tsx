@@ -150,33 +150,14 @@ export const ProductsTab = ({
               </div>
               <span>Mes Produits ({products.length})</span>
             </CardTitle>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="w-full sm:w-auto">
-                    <Button 
-                      onClick={() => canPublish && setShowProductForm(true)} 
-                      size={isMobile ? "default" : "lg"} 
-                      disabled={!canPublish}
-                      className={`gap-2 w-full sm:w-auto transition-all touch-manipulation ${
-                        canPublish 
-                          ? 'hover:scale-105 active:scale-95' 
-                          : 'opacity-60 cursor-not-allowed'
-                      }`}
-                    >
-                      {!canPublish && <Lock className="h-4 w-4" />}
-                      <Plus className="h-4 w-4 md:h-5 md:w-5" />
-                      <span className="truncate">{isMobile ? "Ajouter" : "Ajouter un produit"}</span>
-                    </Button>
-                  </span>
-                </TooltipTrigger>
-                {!canPublish && (
-                  <TooltipContent>
-                    <p>Renouvelez votre abonnement pour publier</p>
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            </TooltipProvider>
+            <Button 
+              onClick={() => setShowProductForm(true)} 
+              size={isMobile ? "default" : "lg"} 
+              className="gap-2 w-full sm:w-auto transition-all touch-manipulation hover:scale-105 active:scale-95"
+            >
+              <Plus className="h-4 w-4 md:h-5 md:w-5" />
+              <span className="truncate">{isMobile ? "Ajouter" : "Ajouter un produit"}</span>
+            </Button>
           </div>
         </CardHeader>
         <CardContent className="relative">

@@ -545,17 +545,6 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
         </AnimatePresence>
       </div>
 
-      {/* Token warning */}
-      {!product?.id && tokenBalance <= 0 && !tokensLoading && (
-        <div className="flex-shrink-0 px-4 pb-2">
-          <Alert variant="destructive" className="rounded-xl">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription className="text-sm">
-              Jetons insuffisants. Rechargez pour publier.
-            </AlertDescription>
-          </Alert>
-        </div>
-      )}
 
       {/* Sticky bottom navigation */}
       <div className="flex-shrink-0 px-4 py-4 bg-background border-t border-border/50 safe-area-bottom">

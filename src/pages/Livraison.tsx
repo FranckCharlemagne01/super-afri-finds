@@ -56,6 +56,8 @@ const Livraison = () => {
   const [driverPhone, setDriverPhone] = useState("");
   const [driverCity, setDriverCity] = useState("");
   const [vehicleType, setVehicleType] = useState("");
+  const [driverEmail, setDriverEmail] = useState("");
+  const [driverPassword, setDriverPassword] = useState("");
   const [submittingDriver, setSubmittingDriver] = useState(false);
 
   const handleQuickDelivery = (e: React.FormEvent) => {

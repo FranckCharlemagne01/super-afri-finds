@@ -7,9 +7,9 @@ import {
   MapPin,
   Package,
   Wallet,
-  UserCheck,
   User,
   Settings,
+  LogOut,
 } from "lucide-react";
 
 interface DriverSidebarProps {

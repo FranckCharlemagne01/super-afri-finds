@@ -74,23 +74,52 @@ const Livraison = () => {
 
   const handleDriverSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!driverName || !driverPhone || !driverCity || !vehicleType) {
+    if (!driverName || !driverPhone || !driverCity || !vehicleType || !driverEmail || !driverPassword) {
       toast({ title: "Veuillez remplir tous les champs", variant: "destructive" });
       return;
     }
 
-    if (!user) {
-      toast({ title: "Connexion requise", description: "Veuillez vous connecter pour vous inscrire comme livreur.", variant: "destructive" });
+    if (driverPassword.length < 6) {
+      toast({ title: "Le mot de passe doit contenir au moins 6 caractères", variant: "destructive" });
       return;
     }
 
     setSubmittingDriver(true);
     try {
-      // Create driver profile
+      // 1. Create Supabase auth account
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: driverEmail.trim(),
+        password: driverPassword,
+        options: {
+          data: {
+            full_name: driverName.trim(),
+            phone: driverPhone.trim(),
+            user_role: 'driver',
+          },
+        },
+      });
+
+      if (signUpError) {
+        const msg = signUpError.message.toLowerCase();
+        if (msg.includes('already registered') || msg.includes('already been registered')) {
+          toast({ title: "Cet email est déjà utilisé", description: "Connectez-vous ou utilisez un autre email.", variant: "destructive" });
+        } else {
+          toast({ title: "Erreur d'inscription", description: signUpError.message, variant: "destructive" });
+        }
+        return;
+      }
+
+      const userId = signUpData.user?.id;
+      if (!userId) {
+        toast({ title: "Erreur lors de la création du compte", variant: "destructive" });
+        return;
+      }
+
+      // 2. Create driver profile
       const { error: profileError } = await supabase
         .from('driver_profiles')
         .upsert({
-          user_id: user.id,
+          user_id: userId,
           full_name: driverName.trim(),
           phone: driverPhone.trim(),
           city: driverCity.trim(),
@@ -98,24 +127,23 @@ const Livraison = () => {
           driver_status: 'pending',
         }, { onConflict: 'user_id' });
 
-      if (profileError) throw profileError;
+      if (profileError) console.warn('Driver profile creation warning:', profileError);
 
-      // Assign driver role
+      // 3. Assign driver role
       const { error: roleError } = await supabase
         .from('user_roles')
         .upsert({
-          user_id: user.id,
+          user_id: userId,
           role: 'driver' as any,
         }, { onConflict: 'user_id,role' });
 
       if (roleError) console.warn('Role assignment warning:', roleError);
 
       toast({
-        title: "✅ Inscription envoyée !",
-        description: "Votre compte livreur a été créé. Complétez la vérification dans votre tableau de bord.",
+        title: "✅ Inscription réussie !",
+        description: "Votre compte livreur a été créé. Bienvenue sur Djassa !",
       });
 
-      // Redirect to driver dashboard
       navigate('/driver-dashboard');
     } catch (err) {
       console.error('Driver signup error:', err);

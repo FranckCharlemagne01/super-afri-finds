@@ -919,27 +919,33 @@ export type Database = {
       }
       publication_bonus: {
         Row: {
+          bonus_type: string | null
           created_at: string | null
           expires_at: string
           id: string
+          is_active: boolean | null
           max_products: number
           seller_id: string
           starts_at: string
           used_products: number | null
         }
         Insert: {
+          bonus_type?: string | null
           created_at?: string | null
           expires_at: string
           id?: string
+          is_active?: boolean | null
           max_products: number
           seller_id: string
           starts_at: string
           used_products?: number | null
         }
         Update: {
+          bonus_type?: string | null
           created_at?: string | null
           expires_at?: string
           id?: string
+          is_active?: boolean | null
           max_products?: number
           seller_id?: string
           starts_at?: string
@@ -1639,27 +1645,16 @@ export type Database = {
         Args: { p_amount: number; p_reason?: string; p_seller: string }
         Returns: Json
       }
-      admin_create_publication_bonus:
-        | {
-            Args: {
-              p_expires_at: string
-              p_max_products: number
-              p_reason?: string
-              p_seller_id: string
-              p_starts_at: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              p_expires_at: string
-              p_max_products: number
-              p_reason: string
-              p_seller_id: string
-              p_starts_at: string
-            }
-            Returns: undefined
-          }
+      admin_create_publication_bonus: {
+        Args: {
+          p_expires_at: string
+          p_max_products: number
+          p_reason: string
+          p_seller_id: string
+          p_starts_at: string
+        }
+        Returns: string
+      }
       admin_create_publication_bonus_safe: {
         Args: {
           p_expires_at: string

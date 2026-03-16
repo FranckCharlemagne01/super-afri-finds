@@ -74,8 +74,6 @@ const DriverDashboard = () => {
         return <DriverDeliveries profile={driverProfile} />;
       case 'earnings':
         return <DriverEarnings profile={driverProfile} />;
-      case 'verification':
-        return <DriverVerification profile={driverProfile} onRefresh={fetchDriverProfile} />;
       case 'profile':
         return <DriverProfile profile={driverProfile} onRefresh={fetchDriverProfile} />;
       case 'settings':

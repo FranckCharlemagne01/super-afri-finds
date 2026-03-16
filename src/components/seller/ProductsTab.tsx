@@ -57,7 +57,7 @@ export const ProductsTab = ({
   canBoost = true
 }: ProductsTabProps) => {
   const { toast } = useToast();
-  const { tokenBalance, refreshBalance } = useTokens();
+  // Token system removed
   const isMobile = useIsMobile();
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);

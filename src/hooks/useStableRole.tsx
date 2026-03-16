@@ -119,6 +119,7 @@ export const useStableRole = () => {
       
       const roleHierarchy: Record<UserRole, number> = {
         buyer: 1,
+        driver: 2,
         partner: 2,
         seller: 2,
         admin: 3,

@@ -14,8 +14,7 @@ interface PublicationBonus {
   starts_at: string;
   expires_at: string;
   max_products: number;
-  products_used: number;
-  reason: string | null;
+  used_products: number;
 }
 
 export const PublicationBonusSection = () => {

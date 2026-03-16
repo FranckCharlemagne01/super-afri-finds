@@ -91,7 +91,6 @@ export const SellerShopDashboard = ({ shop, products, loading, onProductsUpdate 
 
   const handleBoostComplete = () => {
     onProductsUpdate();
-    refreshBalance();
   };
 
   return (

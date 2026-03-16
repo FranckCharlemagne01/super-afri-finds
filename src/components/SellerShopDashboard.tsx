@@ -19,7 +19,7 @@ import { SellerProducts } from '@/components/SellerProducts';
 import { ProductForm } from '@/components/ProductForm';
 import { ProductBoostDialog } from '@/components/ProductBoostDialog';
 import { TokenTransactionHistory } from '@/components/TokenTransactionHistory';
-import { useTokens } from '@/hooks/useTokens';
+// Token system removed
 
 interface Shop {
   id: string;

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo, memo, lazy, Suspense, useRef
 import { useStableAuth } from '@/hooks/useStableAuth';
 import { useStableRole } from '@/hooks/useStableRole';
 import { useSellerAccess } from '@/hooks/useSellerAccess';
-import { useTokens } from '@/hooks/useTokens';
+// Token system removed - using publication bonus system
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -89,7 +89,7 @@ const SellerDashboard = memo(() => {
   const { user, signOut, userId, loading: authLoading } = useStableAuth();
   const { isSeller, isSuperAdmin, loading: roleLoading, refreshRole } = useStableRole();
   const sellerAccess = useSellerAccess();
-  const { tokenBalance, freeTokens, paidTokens, freeTokensExpiresAt, refreshBalance } = useTokens();
+  // Token system removed
 
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -128,19 +128,7 @@ const SellerDashboard = memo(() => {
     return () => clearTimeout(timeout);
   }, [isInitializing]);
 
-  // ✅ Enregistrer le callback pour rafraîchir les jetons immédiatement après attribution
-  useEffect(() => {
-    if (sellerAccess.registerTokenRefreshCallback && userId) {
-      console.log('[SellerDashboard] 📝 Registering token refresh callback');
-      sellerAccess.registerTokenRefreshCallback(() => {
-        console.log('[SellerDashboard] 🔄 Token refresh callback triggered - refreshing balance...');
-        refreshBalance();
-      });
-      
-      console.log('[SellerDashboard] 🔁 Re-checking trial tokens after callback registration...');
-      sellerAccess.refresh();
-    }
-  }, [sellerAccess.registerTokenRefreshCallback, userId]);
+  // Token system removed - bonus system handles publication access
 
   // Fetch seller shop - using optimized query with caching
   const { 
@@ -380,10 +368,9 @@ const SellerDashboard = memo(() => {
         } else {
           toast({
             title: "🎉 Paiement réussi !",
-            description: data.message || "Vos jetons ont été ajoutés à votre compte !",
+            description: data.message || "Votre compte a été rechargé !",
           });
           refetchProducts();
-          refreshBalance();
         }
       }
     } catch (error) {
@@ -399,10 +386,9 @@ const SellerDashboard = memo(() => {
   const handleRefresh = useCallback(() => {
     refetchProducts();
     refetchShop();
-    refreshBalance();
     refreshRole();
     sellerAccess.refresh();
-  }, [refetchProducts, refetchShop, refreshBalance, refreshRole, sellerAccess]);
+  }, [refetchProducts, refetchShop, refreshRole, sellerAccess]);
 
   const handlePublishProduct = useCallback(() => {
     setActiveSection('products');
@@ -545,7 +531,7 @@ const SellerDashboard = memo(() => {
               <ShopOverviewTab
                 shop={shop}
                 products={products || []}
-                tokenBalance={tokenBalance}
+                tokenBalance={0}
                 trialStatus={trialStatus}
                 onRefresh={handleRefresh}
                 onPublishProduct={handlePublishProduct}
@@ -588,10 +574,6 @@ const SellerDashboard = memo(() => {
           {activeSection === 'tokens' && (
             <Suspense fallback={<SectionSkeleton />}>
               <TokensSubscriptionTab
-                tokenBalance={tokenBalance}
-                freeTokens={freeTokens}
-                paidTokens={paidTokens}
-                freeTokensExpiresAt={freeTokensExpiresAt}
                 trialStatus={trialStatus}
                 products={products || []}
                 onRefresh={handleRefresh}

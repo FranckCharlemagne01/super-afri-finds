@@ -9,7 +9,7 @@ import { ProductBoostDialog } from '@/components/ProductBoostDialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useTokens } from '@/hooks/useTokens';
+// Token system removed
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -57,7 +57,7 @@ export const ProductsTab = ({
   canBoost = true
 }: ProductsTabProps) => {
   const { toast } = useToast();
-  const { tokenBalance, refreshBalance } = useTokens();
+  // Token system removed
   const isMobile = useIsMobile();
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -159,7 +159,6 @@ export const ProductsTab = ({
 
   const handleBoostComplete = () => {
     onRefresh();
-    refreshBalance();
   };
 
   return (
@@ -241,7 +240,7 @@ export const ProductsTab = ({
           onOpenChange={setBoostDialogOpen}
           productId={selectedProductForBoost.id}
           productTitle={selectedProductForBoost.title}
-          currentTokens={tokenBalance}
+          currentTokens={0}
           onBoostComplete={handleBoostComplete}
         />
       )}

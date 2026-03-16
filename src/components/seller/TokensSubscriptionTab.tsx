@@ -7,14 +7,10 @@ import {
   Wallet, 
   TrendingUp, 
   Clock, 
-  ShoppingCart,
   Calendar,
   Zap,
   Coins,
   History,
-  ArrowUpRight,
-  ArrowDownRight,
-  RefreshCw,
   Percent
 } from 'lucide-react';
 import { TokenTransactionHistory } from '@/components/TokenTransactionHistory';
@@ -38,20 +34,12 @@ interface TrialStatus {
 }
 
 interface TokensSubscriptionTabProps {
-  tokenBalance: number;
-  freeTokens: number;
-  paidTokens: number;
-  freeTokensExpiresAt: string | null;
   trialStatus: TrialStatus;
   products: Product[];
   onRefresh: () => void;
 }
 
 export const TokensSubscriptionTab = ({
-  tokenBalance,
-  freeTokens,
-  paidTokens,
-  freeTokensExpiresAt,
   trialStatus,
   products,
   onRefresh
@@ -129,25 +117,6 @@ export const TokensSubscriptionTab = ({
                 </div>
               </div>
 
-              {/* Token balance (secondary info) */}
-              <div className="grid grid-cols-2 gap-3 p-3 bg-card rounded-xl border border-border/50 shadow-sm">
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground font-medium truncate">Jetons gratuits</p>
-                  <p className="text-xl font-bold text-green-600 tabular-nums">{freeTokens}</p>
-                  {freeTokensExpiresAt && freeTokens > 0 && (
-                    <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                      <Clock className="h-3 w-3 flex-shrink-0" />
-                      <span className="truncate">Expire le {new Date(freeTokensExpiresAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground font-medium truncate">Jetons payants</p>
-                  <p className="text-xl font-bold text-purple-600 tabular-nums">{paidTokens}</p>
-                  <p className="text-[10px] text-muted-foreground truncate">Sans expiration</p>
-                </div>
-              </div>
-
               {/* Recharge button */}
               <Button 
                 onClick={() => setShowPurchaseDialog(true)}
@@ -214,7 +183,7 @@ export const TokensSubscriptionTab = ({
                     <span className="text-sm font-medium text-orange-600 truncate">Période d'essai</span>
                   </div>
                   <Progress 
-                    value={((new Date(trialStatus.trialEndDate).getTime() - new Date().getTime()) / (28 * 24 * 60 * 60 * 1000)) * 100}
+                    value={((new Date(trialStatus.trialEndDate).getTime() - new Date().getTime()) / (7 * 24 * 60 * 60 * 1000)) * 100}
                     className="h-2 mb-2"
                   />
                   <p className="text-xs text-muted-foreground truncate">

@@ -14,8 +14,7 @@ interface PublicationBonus {
   starts_at: string;
   expires_at: string;
   max_products: number;
-  products_used: number;
-  reason: string | null;
+  used_products: number;
 }
 
 export const PublicationBonusSection = () => {
@@ -29,7 +28,7 @@ export const PublicationBonusSection = () => {
     setLoading(true);
     try {
       const { data, error } = await (supabase as any)
-        .from('publication_bonuses')
+        .from('publication_bonus')
         .select('*')
         .eq('seller_id', user.id)
         .order('created_at', { ascending: false });
@@ -74,10 +73,10 @@ export const PublicationBonusSection = () => {
   const now = new Date();
 
   const activeBonuses = bonuses.filter(
-    b => new Date(b.expires_at) > now && b.products_used < b.max_products
+    b => new Date(b.expires_at) > now && b.used_products < b.max_products
   );
   const expiredBonuses = bonuses.filter(
-    b => new Date(b.expires_at) <= now || b.products_used >= b.max_products
+    b => new Date(b.expires_at) <= now || b.used_products >= b.max_products
   );
 
   const formatDate = (dateStr: string) =>
@@ -121,8 +120,8 @@ export const PublicationBonusSection = () => {
         )}
 
         {activeBonuses.map((bonus) => {
-          const remaining = bonus.max_products - bonus.products_used;
-          const progress = (bonus.products_used / bonus.max_products) * 100;
+          const remaining = bonus.max_products - bonus.used_products;
+          const progress = (bonus.used_products / bonus.max_products) * 100;
           const isToggling = toggling === bonus.id;
 
           return (
@@ -182,7 +181,7 @@ export const PublicationBonusSection = () => {
                   <span className="text-muted-foreground flex items-center gap-1">
                     <Package className="h-3 w-3" /> Publications
                   </span>
-                  <span className="font-semibold">{bonus.products_used} / {bonus.max_products}</span>
+                  <span className="font-semibold">{bonus.used_products} / {bonus.max_products}</span>
                 </div>
                 <div className="h-2 rounded-full bg-muted overflow-hidden">
                   <div
@@ -192,9 +191,6 @@ export const PublicationBonusSection = () => {
                 </div>
               </div>
 
-              {bonus.reason && (
-                <p className="text-xs text-muted-foreground italic">📝 {bonus.reason}</p>
-              )}
             </div>
           );
         })}
@@ -215,7 +211,7 @@ export const PublicationBonusSection = () => {
                       {bonus.bonus_type === 'trial' ? 'Essai' : 'Admin'} – expiré
                     </Badge>
                     <span className="text-xs text-muted-foreground">
-                      {bonus.products_used}/{bonus.max_products} utilisés
+                      {bonus.used_products}/{bonus.max_products} utilisés
                     </span>
                   </div>
                 </div>

@@ -695,6 +695,7 @@ export type Database = {
       products: {
         Row: {
           badge: string | null
+          bonus_id: string | null
           boosted_at: string | null
           boosted_until: string | null
           category: string
@@ -724,6 +725,7 @@ export type Database = {
         }
         Insert: {
           badge?: string | null
+          bonus_id?: string | null
           boosted_at?: string | null
           boosted_until?: string | null
           category: string
@@ -753,6 +755,7 @@ export type Database = {
         }
         Update: {
           badge?: string | null
+          bonus_id?: string | null
           boosted_at?: string | null
           boosted_until?: string | null
           category?: string
@@ -911,6 +914,66 @@ export type Database = {
           trial_used?: boolean | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      publication_bonus: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: string
+          max_products: number
+          seller_id: string
+          starts_at: string
+          used_products: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          max_products: number
+          seller_id: string
+          starts_at: string
+          used_products?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          max_products?: number
+          seller_id?: string
+          starts_at?: string
+          used_products?: number | null
+        }
+        Relationships: []
+      }
+      publication_bonuses: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: number
+          max_products: number
+          reason: string | null
+          seller_id: string
+          starts_at: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at: string
+          id?: number
+          max_products: number
+          reason?: string | null
+          seller_id: string
+          starts_at: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: number
+          max_products?: number
+          reason?: string | null
+          seller_id?: string
+          starts_at?: string
         }
         Relationships: []
       }
@@ -1576,6 +1639,41 @@ export type Database = {
         Args: { p_amount: number; p_reason?: string; p_seller: string }
         Returns: Json
       }
+      admin_create_publication_bonus:
+        | {
+            Args: {
+              p_expires_at: string
+              p_max_products: number
+              p_reason?: string
+              p_seller_id: string
+              p_starts_at: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_expires_at: string
+              p_max_products: number
+              p_reason: string
+              p_seller_id: string
+              p_starts_at: string
+            }
+            Returns: undefined
+          }
+      admin_create_publication_bonus_safe: {
+        Args: {
+          p_expires_at: string
+          p_max_products: number
+          p_reason: string
+          p_seller_id: string
+          p_starts_at: string
+        }
+        Returns: string
+      }
+      admin_give_publication_bonus: {
+        Args: { p_days: number; p_max_products: number; p_seller_id: string }
+        Returns: string
+      }
       admin_grant_bonus: {
         Args: {
           p_bonus_type: string
@@ -1604,10 +1702,18 @@ export type Database = {
       can_insert_products: { Args: { _user_id: string }; Returns: boolean }
       can_publish_products: { Args: { _user_id: string }; Returns: boolean }
       cancel_order_by_customer: { Args: { order_id: string }; Returns: Json }
+      check_publication_bonus: {
+        Args: { p_seller_id: string }
+        Returns: string
+      }
       check_token_balance: { Args: { _seller_id: string }; Returns: Json }
       cleanup_expired_otp: { Args: never; Returns: undefined }
       confirm_sale_by_seller: {
         Args: { _mark_product_as_sold?: boolean; _order_id: string }
+        Returns: Json
+      }
+      consume_bonus_publication: {
+        Args: { p_seller_id: string }
         Returns: Json
       }
       consume_token_for_publication: {
@@ -1948,6 +2054,10 @@ export type Database = {
           title: string
           type: string
         }[]
+      }
+      toggle_publication_bonus: {
+        Args: { p_active: boolean; p_bonus_id: string }
+        Returns: Json
       }
       update_order_status: {
         Args: { new_status: string; order_id: string }

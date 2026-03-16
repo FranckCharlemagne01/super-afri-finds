@@ -46,8 +46,7 @@ interface BonusInfo {
   starts_at: string;
   expires_at: string;
   max_products: number;
-  products_used: number;
-  reason: string | null;
+  used_products: number;
 }
 
 export const AdminTokenManagement = () => {
@@ -115,7 +114,7 @@ export const AdminTokenManagement = () => {
 
   const loadUserBonuses = async (userId: string) => {
     const { data } = await (supabase as any)
-      .from('publication_bonuses')
+      .from('publication_bonus')
       .select('*')
       .eq('seller_id', userId)
       .order('created_at', { ascending: false });
@@ -306,7 +305,7 @@ export const AdminTokenManagement = () => {
             <div className="bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-950/30 dark:to-teal-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800 text-center">
               <p className="text-xs font-medium text-green-700 dark:text-green-400">Bonus actifs</p>
               <p className="text-xl font-bold text-green-600 dark:text-green-300">
-                {userBonuses.filter(b => b.is_active && new Date(b.expires_at) > now && b.products_used < b.max_products).length}
+                {userBonuses.filter(b => b.is_active && new Date(b.expires_at) > now && b.used_products < b.max_products).length}
               </p>
             </div>
           </div>
@@ -318,7 +317,7 @@ export const AdminTokenManagement = () => {
                 <Package className="w-4 h-4" /> Bonus de l'utilisateur
               </h4>
               {userBonuses.map(b => {
-                const isExpired = new Date(b.expires_at) <= now || b.products_used >= b.max_products;
+                const isExpired = new Date(b.expires_at) <= now || b.used_products >= b.max_products;
                 return (
                   <div key={b.id} className={`p-3 rounded-lg border text-sm ${isExpired ? 'bg-muted/30 opacity-60' : 'bg-green-500/5 border-green-500/20'}`}>
                     <div className="flex items-center justify-between flex-wrap gap-1">
@@ -326,7 +325,7 @@ export const AdminTokenManagement = () => {
                         <Badge variant={isExpired ? 'secondary' : 'default'} className={isExpired ? '' : 'bg-green-500'}>
                           {b.bonus_type === 'trial' ? 'Essai' : 'Admin'}
                         </Badge>
-                        <span className="text-xs">{b.products_used}/{b.max_products} utilisés</span>
+                        <span className="text-xs">{b.used_products}/{b.max_products} utilisés</span>
                       </div>
                       <span className="text-xs text-muted-foreground">
                         {isExpired ? 'Expiré' : `Jusqu'au ${format(new Date(b.expires_at), 'dd MMM yyyy', { locale: fr })}`}

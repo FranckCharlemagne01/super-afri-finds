@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrialStatus } from '@/hooks/useTrialStatus';
-import { useTokens } from '@/hooks/useTokens';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -63,7 +62,6 @@ const categoriesFlat = getAllCategoriesFlat();
 export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: ProductFormWizardProps) => {
   const { user } = useAuth();
   const trialStatus = useTrialStatus();
-  const { tokenBalance, loading: tokensLoading, refreshBalance } = useTokens();
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -387,11 +385,10 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
           .single();
         
         if (insertError) {
-          // Check if it's an RLS/token issue
           const isRlsError = insertError.message?.includes('row-level security') || insertError.code === '42501';
           toast({
-            title: isRlsError ? "❌ Jetons insuffisants" : "❌ Erreur de sauvegarde",
-            description: isRlsError ? "Rechargez vos jetons pour publier" : "Impossible de sauvegarder le produit",
+            title: isRlsError ? "❌ Publication impossible" : "❌ Erreur de sauvegarde",
+            description: isRlsError ? "Vous n'avez aucun bonus de publication disponible. Contactez l'administrateur." : "Impossible de sauvegarder le produit",
             variant: "destructive",
           });
           setLoading(false);
@@ -408,8 +405,6 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
         } catch (bonusErr) {
           console.log('Bonus check skipped:', bonusErr);
         }
-
-        await refreshBalance();
 
         toast({
           title: "✅ Article publié !",
@@ -447,7 +442,7 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
   };
 
   const isUploading = uploadingImages || uploadingVideo;
-  const canSubmit = stepValidation[1] && stepValidation[2] && stepValidation[3] && !loading && !isUploading && !tokensLoading && (product?.id || tokenBalance > 0);
+  const canSubmit = stepValidation[1] && stepValidation[2] && stepValidation[3] && !loading && !isUploading;
 
   const progress = ((currentStep - 1) / 3) * 100;
 
@@ -541,7 +536,6 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
                 formData={formData}
                 onInputChange={handleInputChange}
                 previewImages={previewImages}
-                tokenBalance={tokenBalance}
                 isEditing={!!product?.id}
                 videoFile={videoFile}
                 onVideoChange={setVideoFile}
@@ -551,17 +545,6 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
         </AnimatePresence>
       </div>
 
-      {/* Token warning */}
-      {!product?.id && tokenBalance <= 0 && !tokensLoading && (
-        <div className="flex-shrink-0 px-4 pb-2">
-          <Alert variant="destructive" className="rounded-xl">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription className="text-sm">
-              Jetons insuffisants. Rechargez pour publier.
-            </AlertDescription>
-          </Alert>
-        </div>
-      )}
 
       {/* Sticky bottom navigation */}
       <div className="flex-shrink-0 px-4 py-4 bg-background border-t border-border/50 safe-area-bottom">
@@ -614,7 +597,7 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
               ) : (
                 <>
                   <Check className="w-5 h-5 mr-2" />
-                  {product?.id ? 'Modifier' : `Publier (1 jeton)`}
+                  {product?.id ? 'Modifier' : 'Publier'}
                 </>
               )}
             </Button>

@@ -1639,16 +1639,27 @@ export type Database = {
         Args: { p_amount: number; p_reason?: string; p_seller: string }
         Returns: Json
       }
-      admin_create_publication_bonus: {
-        Args: {
-          p_expires_at: string
-          p_max_products: number
-          p_reason: string
-          p_seller_id: string
-          p_starts_at: string
-        }
-        Returns: undefined
-      }
+      admin_create_publication_bonus:
+        | {
+            Args: {
+              p_expires_at: string
+              p_max_products: number
+              p_reason?: string
+              p_seller_id: string
+              p_starts_at: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_expires_at: string
+              p_max_products: number
+              p_reason: string
+              p_seller_id: string
+              p_starts_at: string
+            }
+            Returns: undefined
+          }
       admin_create_publication_bonus_safe: {
         Args: {
           p_expires_at: string
@@ -1699,6 +1710,10 @@ export type Database = {
       cleanup_expired_otp: { Args: never; Returns: undefined }
       confirm_sale_by_seller: {
         Args: { _mark_product_as_sold?: boolean; _order_id: string }
+        Returns: Json
+      }
+      consume_bonus_publication: {
+        Args: { p_seller_id: string }
         Returns: Json
       }
       consume_token_for_publication: {
@@ -2039,6 +2054,10 @@ export type Database = {
           title: string
           type: string
         }[]
+      }
+      toggle_publication_bonus: {
+        Args: { p_active: boolean; p_bonus_id: string }
+        Returns: Json
       }
       update_order_status: {
         Args: { new_status: string; order_id: string }

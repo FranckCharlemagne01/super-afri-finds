@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo, memo, lazy, Suspense, useRef
 import { useStableAuth } from '@/hooks/useStableAuth';
 import { useStableRole } from '@/hooks/useStableRole';
 import { useSellerAccess } from '@/hooks/useSellerAccess';
-import { useTokens } from '@/hooks/useTokens';
+// Token system removed - using publication bonus system
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';

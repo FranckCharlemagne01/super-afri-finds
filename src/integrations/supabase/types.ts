@@ -1649,11 +1649,11 @@ export type Database = {
         Args: {
           p_expires_at: string
           p_max_products: number
-          p_reason: string
+          p_reason?: string
           p_seller_id: string
           p_starts_at: string
         }
-        Returns: string
+        Returns: Json
       }
       admin_create_publication_bonus_safe: {
         Args: {

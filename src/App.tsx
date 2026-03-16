@@ -53,6 +53,7 @@ const ConfirmEmail = lazy(() => import("./pages/ConfirmEmail"));
 const InstallApp = lazy(() => import("./pages/InstallApp"));
 const Diagnostic = lazy(() => import("./pages/Diagnostic"));
 const PartnerDashboard = lazy(() => import("./pages/PartnerDashboard"));
+const Livraison = lazy(() => import("./pages/Livraison"));
 
 // Optimized QueryClient configuration for better caching
 const queryClient = new QueryClient({

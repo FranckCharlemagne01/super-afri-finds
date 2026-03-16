@@ -68,6 +68,14 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [userCountry, setUserCountry] = useState<string>('');
+  const [activeBonus, setActiveBonus] = useState<{
+    id: string;
+    bonus_type: string;
+    max_products: number;
+    used_products: number;
+    expires_at: string;
+    is_active: boolean;
+  } | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -124,6 +132,31 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
     
     fetchUserCountry();
   }, [user, product?.id]);
+
+  // Fetch active bonus
+  useEffect(() => {
+    const fetchActiveBonus = async () => {
+      if (!user) return;
+      
+      const { data, error } = await (supabase as any)
+        .from('publication_bonus')
+        .select('*')
+        .eq('seller_id', user.id)
+        .eq('is_active', true)
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: true })
+        .limit(1);
+      
+      if (!error && data && data.length > 0) {
+        const bonus = data[0];
+        if (bonus.used_products < bonus.max_products) {
+          setActiveBonus(bonus);
+        }
+      }
+    };
+    
+    fetchActiveBonus();
+  }, [user]);
 
   // Validate steps
   // Images are OPTIONAL (reset mode): product can be created/updated with images = []
@@ -395,11 +428,16 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
           return;
         }
 
-        // Try to consume a bonus publication first, otherwise wallet is used via commission system
+        // Consume bonus and link bonus_id to the product
         try {
           const { data: bonusResult } = await (supabase.rpc as any)('consume_bonus_publication', { p_seller_id: user.id });
           const br = (typeof bonusResult === 'string' ? JSON.parse(bonusResult) : bonusResult) as any;
-          if (br?.has_bonus) {
+          if (br?.has_bonus && br?.bonus_id && insertedProduct?.id) {
+            // Update the product with the bonus_id
+            await supabase
+              .from('products')
+              .update({ bonus_id: br.bonus_id } as any)
+              .eq('id', insertedProduct.id);
             console.log('✅ Publication via bonus, produits restants:', br.products_remaining);
           }
         } catch (bonusErr) {
@@ -539,6 +577,7 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
                 isEditing={!!product?.id}
                 videoFile={videoFile}
                 onVideoChange={setVideoFile}
+                activeBonus={activeBonus}
               />
             )}
           </motion.div>

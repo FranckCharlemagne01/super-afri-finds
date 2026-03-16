@@ -1,9 +1,19 @@
 import { motion } from 'framer-motion';
-import { Settings, Eye, Zap, Video, Package, Check } from 'lucide-react';
+import { Settings, Eye, Zap, Video, Package, Check, Gift, AlertCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+
+interface ActiveBonus {
+  id: string;
+  bonus_type: string;
+  max_products: number;
+  used_products: number;
+  expires_at: string;
+  is_active: boolean;
+}
 
 interface StepOptionsProps {
   formData: {
@@ -18,6 +28,7 @@ interface StepOptionsProps {
   isEditing: boolean;
   videoFile: File | null;
   onVideoChange: (file: File | null) => void;
+  activeBonus?: ActiveBonus | null;
 }
 
 export const StepOptions = ({ 
@@ -26,7 +37,8 @@ export const StepOptions = ({
   previewImages,
   isEditing,
   videoFile,
-  onVideoChange
+  onVideoChange,
+  activeBonus
 }: StepOptionsProps) => {
   const { toast } = useToast();
 
@@ -110,6 +122,56 @@ export const StepOptions = ({
           )}
         </div>
       </motion.div>
+
+      {/* Bonus publication info */}
+      {!isEditing && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          {activeBonus && activeBonus.is_active ? (
+            <div className="p-4 rounded-2xl border border-green-500/20 bg-gradient-to-r from-green-500/5 to-emerald-500/5 space-y-2">
+              <div className="flex items-center gap-2">
+                <Gift className="w-5 h-5 text-green-600" />
+                <span className="font-semibold text-sm text-green-700 dark:text-green-400">
+                  Bonus actif
+                </span>
+                <Badge className="bg-green-500 text-white text-xs">
+                  {activeBonus.bonus_type === 'trial' ? 'Essai' : 'Admin'}
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Produits restants : <span className="font-bold text-foreground">{activeBonus.max_products - activeBonus.used_products}</span> / {activeBonus.max_products}
+              </p>
+              <div className="h-2 rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all"
+                  style={{ width: `${(activeBonus.used_products / activeBonus.max_products) * 100}%` }}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Expire le {new Date(activeBonus.expires_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+              </p>
+              <p className="text-xs text-green-600 dark:text-green-400 font-medium">
+                ✅ Ce produit sera publié avec votre bonus
+              </p>
+            </div>
+          ) : (
+            <div className="p-4 rounded-2xl border border-destructive/20 bg-destructive/5 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-destructive">
+                  Aucun bonus disponible
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Vous n'avez aucun bonus de publication disponible. Contactez l'administrateur pour en obtenir un.
+                </p>
+              </div>
+            </div>
+          )}
+        </motion.div>
+      )}
 
       {/* Options */}
       <motion.div

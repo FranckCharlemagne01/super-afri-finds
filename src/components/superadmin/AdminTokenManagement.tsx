@@ -325,7 +325,7 @@ export const AdminTokenManagement = () => {
                         <Badge variant={isExpired ? 'secondary' : 'default'} className={isExpired ? '' : 'bg-green-500'}>
                           {b.bonus_type === 'trial' ? 'Essai' : 'Admin'}
                         </Badge>
-                        <span className="text-xs">{b.products_used}/{b.max_products} utilisés</span>
+                        <span className="text-xs">{b.used_products}/{b.max_products} utilisés</span>
                       </div>
                       <span className="text-xs text-muted-foreground">
                         {isExpired ? 'Expiré' : `Jusqu'au ${format(new Date(b.expires_at), 'dd MMM yyyy', { locale: fr })}`}

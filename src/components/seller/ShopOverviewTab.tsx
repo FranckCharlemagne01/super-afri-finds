@@ -125,16 +125,14 @@ export const ShopOverviewTab = memo(({
     { title: 'Avis Clients', value: totalReviews, icon: Star, bgColor: 'bg-orange-500/10', textColor: 'text-orange-600', color: 'from-orange-500 to-amber-500' },
   ], [products.length, activeProducts, thisMonthProducts, totalReviews]);
 
-  const canPublish = trialStatus.canPublish ?? true;
-
   const quickActions = useMemo(() => [
     {
       label: 'Publier un produit',
-      icon: canPublish ? Plus : Lock,
-      onClick: canPublish ? (onPublishProduct || (() => {})) : undefined,
+      icon: Plus,
+      onClick: onPublishProduct || (() => {}),
       variant: 'default' as const,
-      description: canPublish ? 'Ajouter un nouveau produit' : 'Abonnement requis',
-      disabled: !canPublish,
+      description: 'Ajouter un nouveau produit',
+      disabled: false,
     },
     {
       label: 'Voir ma boutique',
@@ -144,7 +142,7 @@ export const ShopOverviewTab = memo(({
       description: 'Voir la page publique',
       disabled: false,
     },
-  ], [canPublish, onPublishProduct, shop, navigate]);
+  ], [onPublishProduct, shop, navigate]);
 
   const sellerTierInfo = getSellerTiers().find(t => t.type === sellerType);
 

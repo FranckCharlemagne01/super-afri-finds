@@ -525,6 +525,19 @@ const Livraison = () => {
 
                     <div className="space-y-2">
                       <Label className="text-sm font-medium">
+                        <Mail className="w-4 h-4 inline mr-1.5 text-primary" />
+                        Adresse email
+                      </Label>
+                      <Input
+                        type="email"
+                        placeholder="votre@email.com"
+                        value={driverEmail}
+                        onChange={(e) => setDriverEmail(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">
                         <Lock className="w-4 h-4 inline mr-1.5 text-primary" />
                         Mot de passe
                       </Label>

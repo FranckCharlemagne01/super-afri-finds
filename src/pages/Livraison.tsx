@@ -521,6 +521,19 @@ const Livraison = () => {
                       </Select>
                     </div>
 
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">
+                        <Lock className="w-4 h-4 inline mr-1.5 text-primary" />
+                        Mot de passe
+                      </Label>
+                      <Input
+                        type="password"
+                        placeholder="Minimum 6 caractères"
+                        value={driverPassword}
+                        onChange={(e) => setDriverPassword(e.target.value)}
+                      />
+                    </div>
+
                     <Button
                       type="submit"
                       className="w-full rounded-xl text-base font-semibold"
@@ -532,7 +545,10 @@ const Livraison = () => {
                     </Button>
 
                     <p className="text-xs text-muted-foreground text-center mt-2">
-                      Votre compte sera validé sous 24-48h par notre équipe.
+                      Déjà inscrit ?{" "}
+                      <a href="/driver-login" className="text-primary font-semibold hover:underline">
+                        Se connecter
+                      </a>
                     </p>
                   </form>
                 </CardContent>

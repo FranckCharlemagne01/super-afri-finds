@@ -1,9 +1,19 @@
 import { motion } from 'framer-motion';
-import { Settings, Eye, Zap, Video, Package, Check } from 'lucide-react';
+import { Settings, Eye, Zap, Video, Package, Check, Gift, AlertCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+
+interface ActiveBonus {
+  id: string;
+  bonus_type: string;
+  max_products: number;
+  used_products: number;
+  expires_at: string;
+  is_active: boolean;
+}
 
 interface StepOptionsProps {
   formData: {
@@ -18,6 +28,7 @@ interface StepOptionsProps {
   isEditing: boolean;
   videoFile: File | null;
   onVideoChange: (file: File | null) => void;
+  activeBonus?: ActiveBonus | null;
 }
 
 export const StepOptions = ({ 

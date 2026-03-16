@@ -531,7 +531,7 @@ const SellerDashboard = memo(() => {
               <ShopOverviewTab
                 shop={shop}
                 products={products || []}
-                tokenBalance={tokenBalance}
+                tokenBalance={0}
                 trialStatus={trialStatus}
                 onRefresh={handleRefresh}
                 onPublishProduct={handlePublishProduct}

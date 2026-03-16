@@ -130,14 +130,6 @@ export const ProductsTab = ({
   };
 
   const handleBoost = (productId: string, productTitle: string) => {
-    if (!canBoost) {
-      toast({
-        title: "Abonnement requis",
-        description: "Renouvelez votre abonnement pour booster vos produits",
-        variant: "destructive",
-      });
-      return;
-    }
     setSelectedProductForBoost({ id: productId, title: productTitle });
     setBoostDialogOpen(true);
   };

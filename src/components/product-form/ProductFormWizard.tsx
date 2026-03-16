@@ -406,8 +406,6 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
           console.log('Bonus check skipped:', bonusErr);
         }
 
-        await refreshBalance();
-
         toast({
           title: "✅ Article publié !",
           description: "Votre produit est maintenant en ligne",

@@ -66,19 +66,12 @@ export const ProductsTab = ({
 
   // Handle external trigger to open form
   React.useEffect(() => {
-    if (openFormTrigger && canPublish) {
+    if (openFormTrigger) {
       setShowProductForm(true);
       setEditingProduct(null);
       onFormOpenChange?.(false); // Reset trigger
-    } else if (openFormTrigger && !canPublish) {
-      toast({
-        title: "Abonnement requis",
-        description: "Renouvelez votre abonnement pour publier des produits",
-        variant: "destructive",
-      });
-      onFormOpenChange?.(false);
     }
-  }, [openFormTrigger, onFormOpenChange, canPublish, toast]);
+  }, [openFormTrigger, onFormOpenChange]);
 
   const handleEdit = (product: Product) => {
     if (!canEdit) {

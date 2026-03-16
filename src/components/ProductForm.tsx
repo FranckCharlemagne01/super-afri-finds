@@ -49,7 +49,7 @@ const categoriesFlat = getAllCategoriesFlat();
 export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormProps) => {
   const { user } = useAuth();
   const trialStatus = useTrialStatus();
-  const { tokenBalance, loading: tokensLoading, refreshBalance } = useTokens();
+  // Token system removed
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [loading, setLoading] = useState(false);

@@ -28,7 +28,7 @@ export const PublicationBonusSection = () => {
     setLoading(true);
     try {
       const { data, error } = await (supabase as any)
-        .from('publication_bonuses')
+        .from('publication_bonus')
         .select('*')
         .eq('seller_id', user.id)
         .order('created_at', { ascending: false });

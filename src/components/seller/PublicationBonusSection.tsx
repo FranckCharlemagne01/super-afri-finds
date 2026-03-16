@@ -73,10 +73,10 @@ export const PublicationBonusSection = () => {
   const now = new Date();
 
   const activeBonuses = bonuses.filter(
-    b => new Date(b.expires_at) > now && b.products_used < b.max_products
+    b => new Date(b.expires_at) > now && b.used_products < b.max_products
   );
   const expiredBonuses = bonuses.filter(
-    b => new Date(b.expires_at) <= now || b.products_used >= b.max_products
+    b => new Date(b.expires_at) <= now || b.used_products >= b.max_products
   );
 
   const formatDate = (dateStr: string) =>

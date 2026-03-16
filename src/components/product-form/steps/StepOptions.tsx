@@ -37,7 +37,8 @@ export const StepOptions = ({
   previewImages,
   isEditing,
   videoFile,
-  onVideoChange
+  onVideoChange,
+  activeBonus
 }: StepOptionsProps) => {
   const { toast } = useToast();
 

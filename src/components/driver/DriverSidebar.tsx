@@ -20,10 +20,9 @@ interface DriverSidebarProps {
 
 const tabs: { key: DriverTab; label: string; icon: React.ElementType }[] = [
   { key: 'overview', label: 'Tableau de bord', icon: LayoutDashboard },
-  { key: 'missions', label: 'Missions disponibles', icon: MapPin },
+  { key: 'missions', label: 'Missions', icon: MapPin },
   { key: 'deliveries', label: 'Mes livraisons', icon: Package },
   { key: 'earnings', label: 'Mes gains', icon: Wallet },
-  { key: 'verification', label: 'Vérification', icon: UserCheck },
   { key: 'profile', label: 'Mon profil', icon: User },
   { key: 'settings', label: 'Paramètres', icon: Settings },
 ];

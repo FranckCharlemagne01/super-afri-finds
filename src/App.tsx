@@ -173,6 +173,7 @@ const AnimatedRoutes = () => {
             <Route path="/install" element={<InstallApp />} />
             <Route path="/diagnostic" element={<Diagnostic />} />
             <Route path="/livraison" element={<Livraison />} />
+            <Route path="/driver-login" element={<DriverLogin />} />
             <Route 
               path="/driver-dashboard" 
               element={

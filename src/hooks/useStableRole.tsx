@@ -142,6 +142,7 @@ export const useStableRole = () => {
       isAdmin: role === 'admin' || role === 'superadmin',
       isSeller: role === 'seller' || role === 'admin' || role === 'superadmin',
       isPartner: role === 'partner',
+      isDriver: role === 'driver',
       isBuyer: !!role, // Tous les rôles incluent buyer
       refreshRole,
     };

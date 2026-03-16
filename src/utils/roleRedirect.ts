@@ -41,6 +41,8 @@ export function getDashboardPath(role: RedirectRole): string {
       return '/superadmin';
     case 'partner':
       return '/partner-dashboard';
+    case 'driver':
+      return '/driver-dashboard';
     case 'buyer':
     default:
       return '/buyer-dashboard';

@@ -317,7 +317,7 @@ export const AdminTokenManagement = () => {
                 <Package className="w-4 h-4" /> Bonus de l'utilisateur
               </h4>
               {userBonuses.map(b => {
-                const isExpired = new Date(b.expires_at) <= now || b.products_used >= b.max_products;
+                const isExpired = new Date(b.expires_at) <= now || b.used_products >= b.max_products;
                 return (
                   <div key={b.id} className={`p-3 rounded-lg border text-sm ${isExpired ? 'bg-muted/30 opacity-60' : 'bg-green-500/5 border-green-500/20'}`}>
                     <div className="flex items-center justify-between flex-wrap gap-1">

@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useStableAuth } from './useStableAuth';
 import { prefetchSellerDashboard, prefetchBuyerDashboard } from './useDashboardPrefetch';
 
-export type UserRole = 'buyer' | 'seller' | 'admin' | 'superadmin' | 'super_admin_business' | 'admin_finance' | 'admin_vendeurs' | 'admin_marketing' | 'partner';
+export type UserRole = 'buyer' | 'seller' | 'admin' | 'superadmin' | 'super_admin_business' | 'admin_finance' | 'admin_vendeurs' | 'admin_marketing' | 'partner' | 'driver';
 
 /**
  * Hook stable pour la gestion des rôles utilisateur

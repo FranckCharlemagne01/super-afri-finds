@@ -9,7 +9,7 @@ import {
   Plus,
   BarChart3,
   Activity,
-  Lock,
+  
   Percent,
   Coins,
   Clock,

@@ -40,6 +40,12 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
       return;
     }
 
+    // Drivers should always go to their dashboard (except if already there)
+    if (role === 'driver' && location.pathname !== '/driver-dashboard') {
+      navigate('/driver-dashboard', { replace: true });
+      return;
+    }
+
     // If role is required and user doesn't have it, redirect appropriately
     if (requiredRole && role !== requiredRole) {
       // Redirect superadmins to their dashboard

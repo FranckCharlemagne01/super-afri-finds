@@ -242,6 +242,114 @@ export type Database = {
           },
         ]
       }
+      delivery_missions: {
+        Row: {
+          created_at: string
+          customer_name: string | null
+          customer_phone: string
+          delivered_at: string | null
+          delivery_address: string
+          distance_km: number | null
+          driver_id: string | null
+          fee: number
+          id: string
+          package_type: string
+          picked_up_at: string | null
+          pickup_address: string
+          requester_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_name?: string | null
+          customer_phone: string
+          delivered_at?: string | null
+          delivery_address: string
+          distance_km?: number | null
+          driver_id?: string | null
+          fee?: number
+          id?: string
+          package_type?: string
+          picked_up_at?: string | null
+          pickup_address: string
+          requester_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string | null
+          customer_phone?: string
+          delivered_at?: string | null
+          delivery_address?: string
+          distance_km?: number | null
+          driver_id?: string | null
+          fee?: number
+          id?: string
+          package_type?: string
+          picked_up_at?: string | null
+          pickup_address?: string
+          requester_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      driver_profiles: {
+        Row: {
+          average_rating: number | null
+          city: string
+          created_at: string
+          driver_status: string
+          full_name: string
+          id: string
+          id_document_url: string | null
+          phone: string
+          selfie_url: string | null
+          total_deliveries: number | null
+          total_earnings: number | null
+          updated_at: string
+          user_id: string
+          vehicle_photo_url: string | null
+          vehicle_type: string
+        }
+        Insert: {
+          average_rating?: number | null
+          city?: string
+          created_at?: string
+          driver_status?: string
+          full_name: string
+          id?: string
+          id_document_url?: string | null
+          phone: string
+          selfie_url?: string | null
+          total_deliveries?: number | null
+          total_earnings?: number | null
+          updated_at?: string
+          user_id: string
+          vehicle_photo_url?: string | null
+          vehicle_type?: string
+        }
+        Update: {
+          average_rating?: number | null
+          city?: string
+          created_at?: string
+          driver_status?: string
+          full_name?: string
+          id?: string
+          id_document_url?: string | null
+          phone?: string
+          selfie_url?: string | null
+          total_deliveries?: number | null
+          total_earnings?: number | null
+          updated_at?: string
+          user_id?: string
+          vehicle_photo_url?: string | null
+          vehicle_type?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -2077,6 +2185,7 @@ export type Database = {
         | "admin_vendeurs"
         | "admin_marketing"
         | "partner"
+        | "driver"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2215,6 +2324,7 @@ export const Constants = {
         "admin_vendeurs",
         "admin_marketing",
         "partner",
+        "driver",
       ],
     },
   },

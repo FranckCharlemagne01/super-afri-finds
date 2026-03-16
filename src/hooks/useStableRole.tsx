@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useStableAuth } from './useStableAuth';
 import { prefetchSellerDashboard, prefetchBuyerDashboard } from './useDashboardPrefetch';
 
-export type UserRole = 'buyer' | 'seller' | 'admin' | 'superadmin' | 'super_admin_business' | 'admin_finance' | 'admin_vendeurs' | 'admin_marketing' | 'partner';
+export type UserRole = 'buyer' | 'seller' | 'admin' | 'superadmin' | 'super_admin_business' | 'admin_finance' | 'admin_vendeurs' | 'admin_marketing' | 'partner' | 'driver';
 
 /**
  * Hook stable pour la gestion des rôles utilisateur
@@ -119,6 +119,7 @@ export const useStableRole = () => {
       
       const roleHierarchy: Record<UserRole, number> = {
         buyer: 1,
+        driver: 2,
         partner: 2,
         seller: 2,
         admin: 3,
@@ -141,6 +142,7 @@ export const useStableRole = () => {
       isAdmin: role === 'admin' || role === 'superadmin',
       isSeller: role === 'seller' || role === 'admin' || role === 'superadmin',
       isPartner: role === 'partner',
+      isDriver: role === 'driver',
       isBuyer: !!role, // Tous les rôles incluent buyer
       refreshRole,
     };

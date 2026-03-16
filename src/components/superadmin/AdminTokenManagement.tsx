@@ -305,7 +305,7 @@ export const AdminTokenManagement = () => {
             <div className="bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-950/30 dark:to-teal-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800 text-center">
               <p className="text-xs font-medium text-green-700 dark:text-green-400">Bonus actifs</p>
               <p className="text-xl font-bold text-green-600 dark:text-green-300">
-                {userBonuses.filter(b => b.is_active && new Date(b.expires_at) > now && b.products_used < b.max_products).length}
+                {userBonuses.filter(b => b.is_active && new Date(b.expires_at) > now && b.used_products < b.max_products).length}
               </p>
             </div>
           </div>

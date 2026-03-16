@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, Eye, Zap, Video, Package, Check, Gift, AlertCircle } from 'lucide-react';
+import { Eye, Zap, Video, Package, Check, Gift, AlertCircle, Sparkles, Wallet } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
 interface ActiveBonus {
@@ -29,6 +31,8 @@ interface StepOptionsProps {
   videoFile: File | null;
   onVideoChange: (file: File | null) => void;
   activeBonus?: ActiveBonus | null;
+  bonusActivated?: boolean;
+  onActivateBonus?: () => void;
 }
 
 export const StepOptions = ({ 
@@ -38,7 +42,9 @@ export const StepOptions = ({
   isEditing,
   videoFile,
   onVideoChange,
-  activeBonus
+  activeBonus,
+  bonusActivated = false,
+  onActivateBonus
 }: StepOptionsProps) => {
   const { toast } = useToast();
 
@@ -58,14 +64,8 @@ export const StepOptions = ({
     }
   };
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: (i: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: { delay: i * 0.1, duration: 0.3 }
-    })
-  };
+  const hasValidBonus = activeBonus && activeBonus.is_active && activeBonus.used_products < activeBonus.max_products;
+  const remaining = hasValidBonus ? activeBonus.max_products - activeBonus.used_products : 0;
 
   return (
     <div className="space-y-5">
@@ -123,50 +123,84 @@ export const StepOptions = ({
         </div>
       </motion.div>
 
-      {/* Bonus publication info */}
+      {/* Bonus activation section */}
       {!isEditing && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
         >
-          {activeBonus && activeBonus.is_active ? (
-            <div className="p-4 rounded-2xl border border-green-500/20 bg-gradient-to-r from-green-500/5 to-emerald-500/5 space-y-2">
-              <div className="flex items-center gap-2">
-                <Gift className="w-5 h-5 text-green-600" />
-                <span className="font-semibold text-sm text-green-700 dark:text-green-400">
-                  Bonus actif
-                </span>
-                <Badge className="bg-green-500 text-white text-xs">
-                  {activeBonus.bonus_type === 'trial' ? 'Essai' : 'Admin'}
-                </Badge>
+          {hasValidBonus ? (
+            <div className={`p-4 rounded-2xl border space-y-3 ${
+              bonusActivated 
+                ? 'border-green-500/30 bg-gradient-to-r from-green-500/10 to-emerald-500/10' 
+                : 'border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10'
+            }`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Gift className="w-5 h-5 text-primary" />
+                  <span className="font-semibold text-sm">
+                    Bonus de publication
+                  </span>
+                  <Badge className="bg-primary/10 text-primary text-xs border-0">
+                    {activeBonus.bonus_type === 'trial' ? 'Essai' : 'Admin'}
+                  </Badge>
+                </div>
+                {bonusActivated && (
+                  <Badge className="bg-green-500 text-white text-xs">
+                    <Check className="w-3 h-3 mr-1" /> Activé
+                  </Badge>
+                )}
               </div>
-              <p className="text-sm text-muted-foreground">
-                Produits restants : <span className="font-bold text-foreground">{activeBonus.max_products - activeBonus.used_products}</span> / {activeBonus.max_products}
-              </p>
+
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Produits restants</span>
+                <span className="font-bold text-foreground">{remaining} / {activeBonus.max_products}</span>
+              </div>
+
               <div className="h-2 rounded-full bg-muted overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all"
+                  className="h-full rounded-full bg-gradient-to-r from-primary to-primary/70 transition-all"
                   style={{ width: `${(activeBonus.used_products / activeBonus.max_products) * 100}%` }}
                 />
               </div>
+
               <p className="text-xs text-muted-foreground">
                 Expire le {new Date(activeBonus.expires_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
               </p>
-              <p className="text-xs text-green-600 dark:text-green-400 font-medium">
-                ✅ Ce produit sera publié avec votre bonus
-              </p>
+
+              {bonusActivated ? (
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-green-500/10 text-green-700 dark:text-green-400">
+                  <Sparkles className="w-4 h-4 flex-shrink-0" />
+                  <p className="text-sm font-medium">Ce produit sera publié avec votre bonus</p>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  onClick={onActivateBonus}
+                  className="w-full rounded-xl h-12 text-base font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                >
+                  <Gift className="w-5 h-5 mr-2" />
+                  Activer le bonus
+                </Button>
+              )}
             </div>
           ) : (
-            <div className="p-4 rounded-2xl border border-destructive/20 bg-destructive/5 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-destructive">
-                  Aucun bonus disponible
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Vous n'avez aucun bonus de publication disponible. Contactez l'administrateur pour en obtenir un.
-                </p>
+            <div className="p-4 rounded-2xl border border-muted bg-muted/30 space-y-2">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    Aucun bonus disponible
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Votre solde Compte Djassa sera utilisé pour cette publication.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-background/50">
+                <Wallet className="w-4 h-4 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">Publication via Compte Djassa</span>
               </div>
             </div>
           )}
@@ -175,19 +209,15 @@ export const StepOptions = ({
 
       {/* Options */}
       <motion.div
-        custom={1}
-        variants={itemVariants}
-        initial="hidden"
-        animate="visible"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
         className="space-y-4"
       >
         <p className="text-sm font-medium">Options de visibilité</p>
         
         <div className="space-y-3">
-          <motion.div
-            whileTap={{ scale: 0.98 }}
-            className="flex items-center justify-between p-4 bg-muted/30 rounded-2xl"
-          >
+          <div className="flex items-center justify-between p-4 bg-muted/30 rounded-2xl">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                 <Eye className="w-5 h-5 text-primary" />
@@ -206,12 +236,9 @@ export const StepOptions = ({
               checked={formData.is_active}
               onCheckedChange={(checked) => onInputChange('is_active', checked)}
             />
-          </motion.div>
+          </div>
 
-          <motion.div
-            whileTap={{ scale: 0.98 }}
-            className="flex items-center justify-between p-4 bg-muted/30 rounded-2xl"
-          >
+          <div className="flex items-center justify-between p-4 bg-muted/30 rounded-2xl">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
                 <Zap className="w-5 h-5 text-orange-500" />
@@ -230,16 +257,15 @@ export const StepOptions = ({
               checked={formData.is_flash_sale}
               onCheckedChange={(checked) => onInputChange('is_flash_sale', checked)}
             />
-          </motion.div>
+          </div>
         </div>
       </motion.div>
 
       {/* Video upload */}
       <motion.div
-        custom={2}
-        variants={itemVariants}
-        initial="hidden"
-        animate="visible"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
         className="space-y-2"
       >
         <Label htmlFor="video" className="flex items-center gap-2 text-sm font-medium">

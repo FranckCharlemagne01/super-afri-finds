@@ -68,6 +68,7 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [userCountry, setUserCountry] = useState<string>('');
+  const [bonusActivated, setBonusActivated] = useState(false);
   const [activeBonus, setActiveBonus] = useState<{
     id: string;
     bonus_type: string;
@@ -428,20 +429,21 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
           return;
         }
 
-        // Consume bonus and link bonus_id to the product
-        try {
-          const { data: bonusResult } = await (supabase.rpc as any)('consume_bonus_publication', { p_seller_id: user.id });
-          const br = (typeof bonusResult === 'string' ? JSON.parse(bonusResult) : bonusResult) as any;
-          if (br?.has_bonus && br?.bonus_id && insertedProduct?.id) {
-            // Update the product with the bonus_id
-            await supabase
-              .from('products')
-              .update({ bonus_id: br.bonus_id } as any)
-              .eq('id', insertedProduct.id);
-            console.log('✅ Publication via bonus, produits restants:', br.products_remaining);
+        // Consume bonus only if the seller activated it
+        if (bonusActivated && activeBonus) {
+          try {
+            const { data: bonusResult } = await (supabase.rpc as any)('consume_bonus_publication', { p_seller_id: user.id });
+            const br = (typeof bonusResult === 'string' ? JSON.parse(bonusResult) : bonusResult) as any;
+            if (br?.has_bonus && br?.bonus_id && insertedProduct?.id) {
+              await supabase
+                .from('products')
+                .update({ bonus_id: br.bonus_id } as any)
+                .eq('id', insertedProduct.id);
+              console.log('✅ Publication via bonus, produits restants:', br.products_remaining);
+            }
+          } catch (bonusErr) {
+            console.log('Bonus consumption error:', bonusErr);
           }
-        } catch (bonusErr) {
-          console.log('Bonus check skipped:', bonusErr);
         }
 
         toast({
@@ -578,6 +580,16 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
                 videoFile={videoFile}
                 onVideoChange={setVideoFile}
                 activeBonus={activeBonus}
+                bonusActivated={bonusActivated}
+                onActivateBonus={() => {
+                  if (activeBonus && activeBonus.is_active && activeBonus.used_products < activeBonus.max_products) {
+                    setBonusActivated(true);
+                    toast({
+                      title: "✅ Bonus activé",
+                      description: `Ce produit sera publié avec votre bonus. ${activeBonus.max_products - activeBonus.used_products - 1} produit(s) restant(s) après publication.`,
+                    });
+                  }
+                }}
               />
             )}
           </motion.div>

@@ -77,19 +77,46 @@ const Livraison = () => {
       return;
     }
 
+    if (!user) {
+      toast({ title: "Connexion requise", description: "Veuillez vous connecter pour vous inscrire comme livreur.", variant: "destructive" });
+      return;
+    }
+
     setSubmittingDriver(true);
     try {
-      // For now, store driver application in a simple way
-      // The actual driver table/role will be managed via admin
+      // Create driver profile
+      const { error: profileError } = await supabase
+        .from('driver_profiles')
+        .upsert({
+          user_id: user.id,
+          full_name: driverName.trim(),
+          phone: driverPhone.trim(),
+          city: driverCity.trim(),
+          vehicle_type: vehicleType,
+          driver_status: 'pending',
+        }, { onConflict: 'user_id' });
+
+      if (profileError) throw profileError;
+
+      // Assign driver role
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .upsert({
+          user_id: user.id,
+          role: 'driver' as any,
+        }, { onConflict: 'user_id,role' });
+
+      if (roleError) console.warn('Role assignment warning:', roleError);
+
       toast({
         title: "✅ Inscription envoyée !",
-        description: "Votre demande est en cours de validation. Nous vous contacterons bientôt.",
+        description: "Votre compte livreur a été créé. Complétez la vérification dans votre tableau de bord.",
       });
-      setDriverName("");
-      setDriverPhone("");
-      setDriverCity("");
-      setVehicleType("");
-    } catch {
+
+      // Redirect to driver dashboard
+      navigate('/driver-dashboard');
+    } catch (err) {
+      console.error('Driver signup error:', err);
       toast({ title: "Erreur lors de l'inscription", variant: "destructive" });
     } finally {
       setSubmittingDriver(false);

@@ -1,7 +1,10 @@
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useStableAuth } from "@/hooks/useStableAuth";
+import { useNavigate } from "react-router-dom";
 import { DriverTab, DriverProfileData } from "@/pages/DriverDashboard";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
   MapPin,

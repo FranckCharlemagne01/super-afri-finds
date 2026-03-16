@@ -885,27 +885,6 @@ export const ProductForm = ({ product, onSave, onCancel, shopId }: ProductFormPr
         </div>
       </div>
 
-      {/* Alert if no tokens available for new product */}
-      {!product?.id && tokenBalance <= 0 && !tokensLoading && (
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            ⚠️ Vous n'avez plus de jetons disponibles pour publier un produit. 
-            Veuillez acheter des jetons pour continuer.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Alert if low tokens */}
-      {!product?.id && tokenBalance > 0 && tokenBalance < 5 && !tokensLoading && (
-        <Alert className="border-orange-500 bg-orange-50">
-          <AlertTriangle className="h-4 w-4 text-orange-600" />
-          <AlertDescription className="text-orange-800">
-            ⚠️ Attention ! Il ne vous reste que {tokenBalance} jeton{tokenBalance > 1 ? 's' : ''}. 
-            Pensez à recharger bientôt.
-          </AlertDescription>
-        </Alert>
-      )}
 
       <div className={`flex ${isMobile ? 'flex-col-reverse space-y-reverse space-y-2 pt-2' : 'justify-end space-x-2'}`}>
         <Button 

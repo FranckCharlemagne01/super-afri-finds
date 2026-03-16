@@ -28,6 +28,8 @@ import {
   CircleDollarSign,
   Shield,
   Zap,
+  Mail,
+  Lock,
 } from "lucide-react";
 import deliveryHero from "@/assets/delivery-hero.jpg";
 

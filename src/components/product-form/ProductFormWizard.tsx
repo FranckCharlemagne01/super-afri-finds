@@ -536,7 +536,6 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
                 formData={formData}
                 onInputChange={handleInputChange}
                 previewImages={previewImages}
-                tokenBalance={tokenBalance}
                 isEditing={!!product?.id}
                 videoFile={videoFile}
                 onVideoChange={setVideoFile}

@@ -15,7 +15,7 @@ import { DriverVerification } from "@/components/driver/DriverVerification";
 import { DriverProfile } from "@/components/driver/DriverProfile";
 import { DriverSettings } from "@/components/driver/DriverSettings";
 
-export type DriverTab = 'overview' | 'missions' | 'deliveries' | 'earnings' | 'verification' | 'profile' | 'settings';
+export type DriverTab = 'overview' | 'missions' | 'deliveries' | 'earnings' | 'profile' | 'settings';
 
 export interface DriverProfileData {
   id: string;

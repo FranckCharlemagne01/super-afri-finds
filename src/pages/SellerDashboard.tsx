@@ -128,19 +128,7 @@ const SellerDashboard = memo(() => {
     return () => clearTimeout(timeout);
   }, [isInitializing]);
 
-  // ✅ Enregistrer le callback pour rafraîchir les jetons immédiatement après attribution
-  useEffect(() => {
-    if (sellerAccess.registerTokenRefreshCallback && userId) {
-      console.log('[SellerDashboard] 📝 Registering token refresh callback');
-      sellerAccess.registerTokenRefreshCallback(() => {
-        console.log('[SellerDashboard] 🔄 Token refresh callback triggered - refreshing balance...');
-        refreshBalance();
-      });
-      
-      console.log('[SellerDashboard] 🔁 Re-checking trial tokens after callback registration...');
-      sellerAccess.refresh();
-    }
-  }, [sellerAccess.registerTokenRefreshCallback, userId]);
+  // Token system removed - bonus system handles publication access
 
   // Fetch seller shop - using optimized query with caching
   const { 

@@ -385,11 +385,10 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
           .single();
         
         if (insertError) {
-          // Check if it's an RLS/token issue
           const isRlsError = insertError.message?.includes('row-level security') || insertError.code === '42501';
           toast({
-            title: isRlsError ? "❌ Jetons insuffisants" : "❌ Erreur de sauvegarde",
-            description: isRlsError ? "Rechargez vos jetons pour publier" : "Impossible de sauvegarder le produit",
+            title: isRlsError ? "❌ Publication impossible" : "❌ Erreur de sauvegarde",
+            description: isRlsError ? "Vous n'avez aucun bonus de publication disponible. Contactez l'administrateur." : "Impossible de sauvegarder le produit",
             variant: "destructive",
           });
           setLoading(false);

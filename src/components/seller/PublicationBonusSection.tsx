@@ -213,7 +213,7 @@ export const PublicationBonusSection = () => {
                       {bonus.bonus_type === 'trial' ? 'Essai' : 'Admin'} – expiré
                     </Badge>
                     <span className="text-xs text-muted-foreground">
-                      {bonus.products_used}/{bonus.max_products} utilisés
+                      {bonus.used_products}/{bonus.max_products} utilisés
                     </span>
                   </div>
                 </div>

@@ -428,11 +428,16 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
           return;
         }
 
-        // Try to consume a bonus publication first, otherwise wallet is used via commission system
+        // Consume bonus and link bonus_id to the product
         try {
           const { data: bonusResult } = await (supabase.rpc as any)('consume_bonus_publication', { p_seller_id: user.id });
           const br = (typeof bonusResult === 'string' ? JSON.parse(bonusResult) : bonusResult) as any;
-          if (br?.has_bonus) {
+          if (br?.has_bonus && br?.bonus_id && insertedProduct?.id) {
+            // Update the product with the bonus_id
+            await supabase
+              .from('products')
+              .update({ bonus_id: br.bonus_id } as any)
+              .eq('id', insertedProduct.id);
             console.log('✅ Publication via bonus, produits restants:', br.products_remaining);
           }
         } catch (bonusErr) {

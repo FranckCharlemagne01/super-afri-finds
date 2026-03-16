@@ -368,10 +368,9 @@ const SellerDashboard = memo(() => {
         } else {
           toast({
             title: "🎉 Paiement réussi !",
-            description: data.message || "Vos jetons ont été ajoutés à votre compte !",
+            description: data.message || "Votre compte a été rechargé !",
           });
           refetchProducts();
-          refreshBalance();
         }
       }
     } catch (error) {

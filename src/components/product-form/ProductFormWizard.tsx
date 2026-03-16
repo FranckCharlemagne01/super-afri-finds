@@ -577,6 +577,7 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
                 isEditing={!!product?.id}
                 videoFile={videoFile}
                 onVideoChange={setVideoFile}
+                activeBonus={activeBonus}
               />
             )}
           </motion.div>

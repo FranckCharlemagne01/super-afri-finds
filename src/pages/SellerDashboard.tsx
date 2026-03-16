@@ -89,7 +89,7 @@ const SellerDashboard = memo(() => {
   const { user, signOut, userId, loading: authLoading } = useStableAuth();
   const { isSeller, isSuperAdmin, loading: roleLoading, refreshRole } = useStableRole();
   const sellerAccess = useSellerAccess();
-  const { tokenBalance, freeTokens, paidTokens, freeTokensExpiresAt, refreshBalance } = useTokens();
+  // Token system removed
 
   const { toast } = useToast();
   const navigate = useNavigate();

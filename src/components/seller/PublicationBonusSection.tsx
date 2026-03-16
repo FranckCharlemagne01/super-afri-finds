@@ -181,7 +181,7 @@ export const PublicationBonusSection = () => {
                   <span className="text-muted-foreground flex items-center gap-1">
                     <Package className="h-3 w-3" /> Publications
                   </span>
-                  <span className="font-semibold">{bonus.products_used} / {bonus.max_products}</span>
+                  <span className="font-semibold">{bonus.used_products} / {bonus.max_products}</span>
                 </div>
                 <div className="h-2 rounded-full bg-muted overflow-hidden">
                   <div

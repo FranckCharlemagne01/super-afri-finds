@@ -442,7 +442,7 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
   };
 
   const isUploading = uploadingImages || uploadingVideo;
-  const canSubmit = stepValidation[1] && stepValidation[2] && stepValidation[3] && !loading && !isUploading && !tokensLoading && (product?.id || tokenBalance > 0);
+  const canSubmit = stepValidation[1] && stepValidation[2] && stepValidation[3] && !loading && !isUploading;
 
   const progress = ((currentStep - 1) / 3) * 100;
 

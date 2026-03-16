@@ -133,6 +133,31 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
     fetchUserCountry();
   }, [user, product?.id]);
 
+  // Fetch active bonus
+  useEffect(() => {
+    const fetchActiveBonus = async () => {
+      if (!user) return;
+      
+      const { data, error } = await (supabase as any)
+        .from('publication_bonus')
+        .select('*')
+        .eq('seller_id', user.id)
+        .eq('is_active', true)
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: true })
+        .limit(1);
+      
+      if (!error && data && data.length > 0) {
+        const bonus = data[0];
+        if (bonus.used_products < bonus.max_products) {
+          setActiveBonus(bonus);
+        }
+      }
+    };
+    
+    fetchActiveBonus();
+  }, [user]);
+
   // Validate steps
   // Images are OPTIONAL (reset mode): product can be created/updated with images = []
   useEffect(() => {

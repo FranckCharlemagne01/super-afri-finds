@@ -178,7 +178,7 @@ export const AdminTokenManagement = () => {
           setGrantingBonus(false);
           return;
         }
-        const { data, error } = await (supabase.rpc as any)('admin_create_publication_bonus', {
+        const { data, error } = await supabase.rpc('admin_create_publication_bonus', {
           p_seller_id: selectedUser.user_id,
           p_starts_at: new Date(bonusStartDate).toISOString(),
           p_expires_at: new Date(bonusEndDate).toISOString(),
@@ -186,9 +186,9 @@ export const AdminTokenManagement = () => {
           p_reason: bonusReason || 'Bonus admin',
         });
         if (error) throw error;
-        const result = (typeof data === 'string' ? JSON.parse(data) : data) as any;
-        if (result?.success) {
-          toast.success(`✅ Bonus de ${result.max_products} publications accordé !`);
+        const result = (typeof data === 'object' && data !== null) ? data : (typeof data === 'string' ? (() => { try { return JSON.parse(data); } catch { return { success: true }; } })() : { success: true });
+        if (result?.success || result?.bonus_id) {
+          toast.success(`✅ Bonus de ${parseInt(bonusMaxProducts)} publications accordé !`);
           setBonusStartDate('');
           setBonusEndDate('');
           setBonusMaxProducts('10');

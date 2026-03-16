@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 
-export type RedirectRole = 'buyer' | 'seller' | 'admin' | 'superadmin' | 'super_admin_business' | 'admin_finance' | 'admin_vendeurs' | 'admin_marketing' | 'partner';
+export type RedirectRole = 'buyer' | 'seller' | 'admin' | 'superadmin' | 'super_admin_business' | 'admin_finance' | 'admin_vendeurs' | 'admin_marketing' | 'partner' | 'driver';
 
 /**
  * Fetches the user's role from user_roles table and returns the appropriate dashboard path.

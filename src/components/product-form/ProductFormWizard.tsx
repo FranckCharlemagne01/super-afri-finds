@@ -68,6 +68,7 @@ export const ProductFormWizard = ({ product, onSave, onCancel, shopId }: Product
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [userCountry, setUserCountry] = useState<string>('');
+  const [bonusActivated, setBonusActivated] = useState(false);
   const [activeBonus, setActiveBonus] = useState<{
     id: string;
     bonus_type: string;

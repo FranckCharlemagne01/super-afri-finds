@@ -26,3 +26,9 @@ verify_jwt = false
 
 [functions.create-partner-account]
 verify_jwt = false
+
+[functions.send-email-otp]
+verify_jwt = false
+
+[functions.verify-email-otp]
+verify_jwt = false

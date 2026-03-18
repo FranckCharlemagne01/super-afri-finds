@@ -65,6 +65,9 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
         navigate('/buyer-dashboard', { replace: true });
         return;
       }
+
+      // Fallback: redirect to home for any other role mismatch
+      navigate('/', { replace: true });
     }
   }, [user, role, authLoading, roleLoading, requiredRole, navigate, profileStatus.isLoading, profileStatus.needsOnboarding, location.pathname]);
 

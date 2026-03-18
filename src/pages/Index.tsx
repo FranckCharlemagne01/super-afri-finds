@@ -449,7 +449,7 @@ const Index = () => {
               {[
                 { label: "Accueil", path: "/" },
                 { label: "Produits", path: "/categories" },
-                { label: "Livraison", path: "/livraison" },
+                ...(isSuperAdmin ? [{ label: "Livraison", path: "/livraison" }] : []),
                 { label: "Tarifs", path: "/tarifs" },
                 { label: "À propos", path: "/about" },
               ].map(({ label, path }) => (

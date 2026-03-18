@@ -21,13 +21,25 @@ export const GoogleOnboardingRedirect = () => {
     // Only redirect if Google user needs onboarding
     if (!profileStatus.needsOnboarding) return;
 
-    // Don't redirect if already on the complete-profile or auth pages
-    const exemptPaths = ['/auth/complete-profile', '/auth', '/auth/callback', '/auth/welcome'];
+    // Don't redirect if already on the complete-profile or auth/callback pages
+    const exemptPaths = ['/auth/complete-profile', '/auth/callback'];
     if (exemptPaths.some(p => location.pathname.startsWith(p))) return;
 
-    console.log('[GoogleOnboardingRedirect] New Google user detected, redirecting to complete-profile');
+    console.log('[GoogleOnboardingRedirect] Google user with incomplete profile detected, redirecting to complete-profile');
     navigate('/auth/complete-profile', { replace: true });
   }, [user, authLoading, profileStatus.isLoading, profileStatus.needsOnboarding, location.pathname, navigate]);
+
+  // Block rendering while checking for Google users that need onboarding
+  if (!authLoading && !profileStatus.isLoading && user && profileStatus.needsOnboarding) {
+    const exemptPaths = ['/auth/complete-profile', '/auth/callback'];
+    if (!exemptPaths.some(p => location.pathname.startsWith(p))) {
+      return (
+        <div className="fixed inset-0 z-[9999] bg-background flex items-center justify-center">
+          <div className="w-16 h-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+        </div>
+      );
+    }
+  }
 
   return null;
 };

@@ -80,7 +80,36 @@ const AuthCallback = () => {
           }
 
           if (data?.session?.user) {
-            console.log('[AuthCallback] Session established successfully for user:', data.session.user.id);
+            const user = data.session.user;
+            console.log('[AuthCallback] Session established successfully for user:', user.id);
+            
+            // Check if this is a Google user with incomplete profile
+            const isGoogleUser = user.app_metadata?.provider === 'google' ||
+              user.identities?.some(id => id.provider === 'google');
+            
+            if (isGoogleUser) {
+              console.log('[AuthCallback] Google user detected, checking profile completion...');
+              
+              const [profileResult, roleResult] = await Promise.all([
+                supabase.from('profiles').select('country, city').eq('user_id', user.id).maybeSingle(),
+                supabase.from('user_roles').select('role').eq('user_id', user.id).limit(1).maybeSingle(),
+              ]);
+              
+              const hasCountry = Boolean(profileResult.data?.country);
+              const hasCity = Boolean(profileResult.data?.city);
+              const hasRole = Boolean(roleResult.data?.role);
+              
+              if (!hasCountry || !hasCity || !hasRole) {
+                console.log('[AuthCallback] Google user profile incomplete, redirecting to complete-profile');
+                setStatus('success');
+                setMessage('Complétez votre profil pour continuer...');
+                setTimeout(() => {
+                  navigate('/auth/complete-profile', { replace: true });
+                }, 800);
+                return;
+              }
+            }
+            
             setStatus('success');
             setMessage('Email vérifié avec succès !');
 

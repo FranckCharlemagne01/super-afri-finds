@@ -85,7 +85,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Djassa <noreply@djassa.ci>',
+        from: 'Djassa <noreply@mail.djassa.tech>',
         to: [cleanEmail],
         subject: 'Code de vérification Djassa',
         html: `

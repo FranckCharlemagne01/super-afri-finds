@@ -499,7 +499,7 @@ const Auth = () => {
              description: "Un compte existe déjà avec cet email. Nous venons de vous renvoyer le lien de confirmation.",
              duration: 6000,
            });
-           navigate(`/auth/confirm-email?email=${encodeURIComponent(email)}&existing=true`, { replace: true });
+           navigate(`/verify-otp?email=${encodeURIComponent(email)}`, { replace: true });
            return;
          }
 

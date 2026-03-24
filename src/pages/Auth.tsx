@@ -540,9 +540,42 @@ const Auth = () => {
         return;
       }
 
-      // CAS 1: Nouvel utilisateur créé → rediriger vers confirmation
+      // CAS 1: Nouvel utilisateur créé → envoyer OTP par email
       if (signUpData?.user) {
         const userEmail = email;
+        
+        // Appeler la Edge Function send-email-otp
+        try {
+          const { data: otpData, error: otpError } = await supabase.functions.invoke('send-email-otp', {
+            body: { email: userEmail }
+          });
+          
+          if (otpError || otpData?.error) {
+            const errMsg = otpData?.error || otpError?.message || "Erreur d'envoi du code";
+            console.error('[signup] OTP send error:', errMsg);
+            toast({
+              title: "⚠️ Compte créé",
+              description: `Le compte a été créé mais l'envoi du code a échoué: ${errMsg}`,
+              variant: "destructive",
+              duration: 6000,
+            });
+          } else {
+            console.log('[signup] OTP sent successfully to', userEmail);
+            toast({
+              title: "✅ Compte créé !",
+              description: "Un code de vérification a été envoyé à votre email.",
+              duration: 5000,
+            });
+          }
+        } catch (otpException) {
+          console.error('[signup] OTP exception:', otpException);
+          toast({
+            title: "⚠️ Compte créé",
+            description: "Le compte a été créé mais l'envoi du code a échoué. Réessayez depuis la page de confirmation.",
+            variant: "destructive",
+            duration: 6000,
+          });
+        }
         
         // Reset form
         setEmail('');
@@ -551,12 +584,6 @@ const Auth = () => {
         setLastName('');
         setPhone('');
         setShopName('');
-        
-        toast({
-          title: "✅ Compte créé !",
-          description: "Vérifiez votre boîte mail pour confirmer votre email.",
-          duration: 5000,
-        });
         
         navigate(`/auth/confirm-email?email=${encodeURIComponent(userEmail)}`, { replace: true });
       } else {

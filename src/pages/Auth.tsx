@@ -412,7 +412,7 @@ const Auth = () => {
         } else if (error.message.includes('Email not confirmed') || 
                    error.message.includes('email_not_confirmed')) {
           // Redirect to confirmation page
-          navigate(`/auth/confirm-email?email=${encodeURIComponent(loginIdentifier)}`, { replace: true });
+          navigate(`/verify-otp?email=${encodeURIComponent(loginIdentifier)}`, { replace: true });
           return;
         } else if (error.message.includes('Too many requests')) {
           setFormError('Trop de tentatives. Patientez quelques minutes.');
@@ -499,7 +499,7 @@ const Auth = () => {
              description: "Un compte existe déjà avec cet email. Nous venons de vous renvoyer le lien de confirmation.",
              duration: 6000,
            });
-           navigate(`/auth/confirm-email?email=${encodeURIComponent(email)}&existing=true`, { replace: true });
+           navigate(`/verify-otp?email=${encodeURIComponent(email)}`, { replace: true });
            return;
          }
 
@@ -585,7 +585,7 @@ const Auth = () => {
         setPhone('');
         setShopName('');
         
-        navigate(`/auth/confirm-email?email=${encodeURIComponent(userEmail)}`, { replace: true });
+        navigate(`/verify-otp?email=${encodeURIComponent(userEmail)}&name=${encodeURIComponent(firstName + ' ' + lastName)}`, { replace: true });
       } else {
         setFormError("Erreur lors de l'inscription. Réessayez.");
       }

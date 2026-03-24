@@ -22,6 +22,7 @@ import { ProfileCompletionModal } from "@/components/ProfileCompletionModal";
 import { PreviewBrokenBanner } from "@/components/PreviewBrokenBanner";
 import { GoogleOnboardingRedirect } from "@/components/GoogleOnboardingRedirect";
 
+const VerifyOtp = lazyWithRetry(() => import("./pages/VerifyOtp"));
 const Verify = lazyWithRetry(() => import("./pages/Verify"));
 const AuthCallback = lazyWithRetry(() => import("./pages/AuthCallback"));
 const AuthWelcome = lazyWithRetry(() => import("./pages/AuthWelcome"));
@@ -109,6 +110,7 @@ const AnimatedRoutes = () => {
             <Route path="/welcome" element={<Welcome />} />
             <Route path="/auth/reset-password" element={<ResetPassword />} />
             <Route path="/verify" element={<Verify />} />
+            <Route path="/verify-otp" element={<VerifyOtp />} />
             <Route 
               path="/seller-dashboard" 
               element={

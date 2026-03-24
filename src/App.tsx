@@ -110,6 +110,7 @@ const AnimatedRoutes = () => {
             <Route path="/welcome" element={<Welcome />} />
             <Route path="/auth/reset-password" element={<ResetPassword />} />
             <Route path="/verify" element={<Verify />} />
+            <Route path="/verify-otp" element={<VerifyOtp />} />
             <Route 
               path="/seller-dashboard" 
               element={

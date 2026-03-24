@@ -412,7 +412,7 @@ const Auth = () => {
         } else if (error.message.includes('Email not confirmed') || 
                    error.message.includes('email_not_confirmed')) {
           // Redirect to confirmation page
-          navigate(`/auth/confirm-email?email=${encodeURIComponent(loginIdentifier)}`, { replace: true });
+          navigate(`/verify-otp?email=${encodeURIComponent(loginIdentifier)}`, { replace: true });
           return;
         } else if (error.message.includes('Too many requests')) {
           setFormError('Trop de tentatives. Patientez quelques minutes.');

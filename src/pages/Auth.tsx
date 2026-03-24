@@ -585,7 +585,7 @@ const Auth = () => {
         setPhone('');
         setShopName('');
         
-        navigate(`/auth/confirm-email?email=${encodeURIComponent(userEmail)}`, { replace: true });
+        navigate(`/verify-otp?email=${encodeURIComponent(userEmail)}&name=${encodeURIComponent(firstName + ' ' + lastName)}`, { replace: true });
       } else {
         setFormError("Erreur lors de l'inscription. Réessayez.");
       }

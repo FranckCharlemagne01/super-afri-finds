@@ -120,7 +120,6 @@ const Index = () => {
   const [loading, setLoading] = useState(!cachedProducts);
   
   const [showSellerUpgrade, setShowSellerUpgrade] = useState(false);
-  const [userCountry, setUserCountry] = useState<string>("Côte d'Ivoire");
   const { location: userLocation } = useUserLocation();
   const { isVisible: isHeaderVisible } = useScrollDirection();
 

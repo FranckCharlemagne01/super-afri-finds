@@ -7,7 +7,7 @@ import PromoBanner from "@/components/PromoBanner";
 import { FloatingChatWidget } from "@/components/FloatingChatWidget";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 import { HelpButton } from "@/components/HelpButton";
-import { MobileInfoDrawer } from "@/components/MobileInfoDrawer";
+
 import { FloatingChatButton } from "@/components/FloatingChatButton";
 import FAQ from "@/components/FAQ";
 import { useTheme } from "next-themes";

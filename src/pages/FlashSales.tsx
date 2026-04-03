@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Clock } from 'lucide-react';
+import SEOHead from '@/components/SEOHead';
 import { useUserLocation } from '@/hooks/useUserLocation';
 import { getProductImage } from '@/utils/productImageHelper';
 

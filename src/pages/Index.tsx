@@ -37,7 +37,7 @@ import { RealtimeNotificationBadge } from "@/components/RealtimeNotificationBadg
 import { useNavigate, useLocation } from "react-router-dom";
 import { SellerUpgradeForm } from "@/components/SellerUpgradeForm";
 
-import { getCountryName } from "@/data/countries";
+import { getCountryName, getCountryByCode } from "@/data/countries";
 import { 
   Smartphone, 
   Shirt, 
@@ -53,7 +53,8 @@ import {
   Tv,
   Sparkles,
   ShoppingBag,
-  ArrowLeft
+  ArrowLeft,
+  MapPin
 } from "lucide-react";
 
 // Import product images

@@ -124,6 +124,21 @@ const Index = () => {
   const { location: userLocation } = useUserLocation();
   const { isVisible: isHeaderVisible } = useScrollDirection();
 
+  // Derive country code for compact display
+  const countryInfo = useMemo(() => {
+    if (userLocation.country) {
+      const c = getCountryByCode(userLocation.country);
+      if (c) return { code: c.code, flag: c.flag, name: c.name };
+    }
+    return { code: 'CI', flag: '🇨🇮', name: "Côte d'Ivoire" };
+  }, [userLocation.country]);
+
+  const locationLabel = useMemo(() => {
+    const city = userLocation.city || userLocation.commune;
+    if (city) return `${city}, ${countryInfo.code}`;
+    return countryInfo.code;
+  }, [userLocation.city, userLocation.commune, countryInfo.code]);
+
   const handleProfileClick = () => {
     if (!user) {
       navigate('/auth');

@@ -408,6 +408,7 @@ const CategoriesPage = () => {
           )}
         </div>
       </div>
+      </>
     );
   }
 

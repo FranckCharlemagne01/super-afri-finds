@@ -189,11 +189,11 @@ const AnimatedRoutes = () => {
                 </ProtectedRoute>
               } 
             />
-            <Route path="*" element={<NotFound />} />
+          <Route path="*" element={<NotFound />} />
           </Routes>
-        </Suspense>
-      </motion.div>
-    </AnimatePresence>
+        </motion.div>
+      </Suspense>
+    </div>
   );
 };
 

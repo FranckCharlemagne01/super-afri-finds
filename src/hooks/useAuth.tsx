@@ -21,39 +21,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
-    
-    // Set up auth state listener
+    let initialised = false;
+
+    // 1) Restore session from storage first (prevents race condition)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+      initialised = true;
+    });
+
+    // 2) Listen for subsequent auth changes (sign-in, sign-out, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!mounted) return;
-        
-        // Éviter les re-renderings inutiles si les valeurs n'ont pas changé
+
+        // Skip INITIAL_SESSION — already handled by getSession above
+        if (event === 'INITIAL_SESSION') return;
+
         setSession(prevSession => {
-          if (prevSession?.access_token === session?.access_token) {
-            return prevSession;
-          }
+          if (prevSession?.access_token === session?.access_token) return prevSession;
           return session;
         });
         
         setUser(prevUser => {
           const newUser = session?.user ?? null;
-          if (prevUser?.id === newUser?.id) {
-            return prevUser;
-          }
+          if (prevUser?.id === newUser?.id) return prevUser;
           return newUser;
         });
         
         setLoading(false);
       }
     );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!mounted) return;
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
 
     return () => {
       mounted = false;

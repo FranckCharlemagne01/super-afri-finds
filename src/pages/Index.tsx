@@ -404,8 +404,8 @@ const Index = () => {
     <>
       {/* SEO Head */}
       <SEOHead 
-        title="Marketplace"
-        description="Découvrez les meilleures offres sur Djassa Marketplace. Achetez en ligne des téléphones, vêtements, électronique et plus en Côte d'Ivoire. Livraison rapide à Abidjan, Bouaké, Yamoussoukro."
+        title="Djassa – Marketplace Locale Africaine | Boutique en Ligne Gratuite"
+        description="Djassa permet aux commerçants africains de créer automatiquement leur boutique en ligne dès l'inscription. Gérez vos ventes et profitez de commissions réduites jusqu'à 95%."
         keywords="marketplace Côte d'Ivoire, achat en ligne Abidjan, vente en ligne, téléphones, vêtements, électronique, beauté, livraison Côte d'Ivoire"
         url="/marketplace"
       />

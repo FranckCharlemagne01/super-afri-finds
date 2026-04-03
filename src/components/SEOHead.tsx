@@ -26,7 +26,7 @@ interface SEOHeadProps {
   noindex?: boolean;
 }
 
-const BASE_URL = 'https://djassa.djassa.tech';
+const BASE_URL = 'https://djassa.tech';
 const DEFAULT_IMAGE = `${BASE_URL}/images/preview.jpg`;
 
 const SEOHead = ({

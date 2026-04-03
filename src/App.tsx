@@ -76,29 +76,26 @@ const queryClient = new QueryClient({
   },
 });
 
-// Optimized loading fallback - minimal and fast
+// Invisible fallback — keeps background stable while chunk loads (no spinner flash)
 const PageLoadingFallback = memo(() => (
-  <div className="min-h-screen bg-background flex items-center justify-center pb-safe-nav">
-    <div className="w-16 h-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
-  </div>
+  <div className="min-h-screen bg-background" />
 ));
 PageLoadingFallback.displayName = 'PageLoadingFallback';
 
-// Animated routes wrapper for page transitions
+// Routes wrapper — simple fade-in only (no exit animation to avoid double-flash)
 const AnimatedRoutes = () => {
   const location = useLocation();
   
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div
-        key={location.pathname}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.15, ease: "easeOut" }}
-        className="flex-1 flex flex-col"
-      >
-        <Suspense fallback={<PageLoadingFallback />}>
+    <div className="flex-1 flex flex-col">
+      <Suspense fallback={<PageLoadingFallback />}>
+        <motion.div
+          key={location.pathname}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
+          className="flex-1 flex flex-col"
+        >
           <Routes location={location}>
             <Route path="/" element={<Index />} />
             <Route path="/marketplace" element={<Index />} />

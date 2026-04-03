@@ -37,7 +37,7 @@ import { RealtimeNotificationBadge } from "@/components/RealtimeNotificationBadg
 import { useNavigate, useLocation } from "react-router-dom";
 import { SellerUpgradeForm } from "@/components/SellerUpgradeForm";
 
-import { getCountryName, getCountryByCode } from "@/data/countries";
+import { getCountryByCode } from "@/data/countries";
 import { 
   Smartphone, 
   Shirt, 

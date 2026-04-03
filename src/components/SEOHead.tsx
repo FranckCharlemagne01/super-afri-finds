@@ -41,14 +41,14 @@ const SEOHead = ({
   noindex = false,
 }: SEOHeadProps) => {
   const fullTitle = title 
-    ? `${title} | Djassa Marketplace - Achat & Vente en Ligne Côte d'Ivoire`
-    : "Djassa Marketplace – Achat et Vente en Ligne en Côte d'Ivoire";
+    ? `${title} | Djassa – Vente en Ligne Afrique`
+    : "Djassa – Vente en Ligne Afrique | Marketplace Locale & Boutique Gratuite";
   
   const fullDescription = description || 
-    "Djassa Marketplace est la plateforme e-commerce #1 en Côte d'Ivoire. Achetez et vendez en ligne : téléphones, vêtements, électronique, beauté. Créez votre boutique en ligne gratuitement.";
+    "Djassa, marketplace locale africaine. Créez votre boutique en ligne gratuite dès l'inscription. Vendez dans votre ville ou pays. Commissions réduites jusqu'à 95%.";
   
   const fullKeywords = keywords || 
-    "marketplace Côte d'Ivoire, Djassa Marketplace, achat en ligne Abidjan, vente en ligne, boutique en ligne, e-commerce Afrique, créer boutique en ligne, marketplace africaine";
+    "vente en ligne Afrique, marketplace locale africaine, e-commerce Afrique, créer boutique en ligne gratuite, gestion ventes commerçants locaux, Djassa Marketplace";
   
   const fullImage = image || DEFAULT_IMAGE;
   const fullUrl = url ? `${BASE_URL}${url}` : BASE_URL;

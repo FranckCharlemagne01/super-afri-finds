@@ -438,190 +438,184 @@ const Index = () => {
           ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}
         `}
       >
-        {/* Row 1: Logo + Search + mobile menu */}
-        <div className="container mx-auto px-3 sm:px-4 lg:px-8 xl:px-12 pt-2.5 pb-1.5 sm:py-3 lg:py-4 max-w-[1600px]">
-          <div className="flex items-center gap-3 sm:gap-4 lg:gap-6">
-            {/* Logo Djassa */}
+        {/* === MOBILE HEADER === */}
+        <div className="md:hidden">
+          {/* Row 1: Logo + Location + Icons */}
+          <div className="px-3 pt-2 pb-1 flex items-center gap-2">
             <h1 
-              className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold gradient-text-primary cursor-pointer transition-transform active:scale-95 hover:opacity-90 whitespace-nowrap" 
+              className="text-lg font-bold gradient-text-primary cursor-pointer transition-transform active:scale-95 whitespace-nowrap" 
               onClick={handleLogoClick}
             >
               Djassa
             </h1>
-            
-            {/* Search Bar - Centered and wider on desktop */}
-            <div className="flex-1 lg:max-w-xl xl:max-w-2xl lg:mx-auto">
-              <SearchBar placeholder="Rechercher des produits..." />
-            </div>
-            
-            {/* Mobile: Notification + Menu */}
-            <div className="md:hidden flex items-center gap-0.5">
-              {user && <NotificationBell />}
-              <MobileInfoDrawer />
-            </div>
 
-            {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-1">
+            {/* Location badge */}
+            <button 
+              onClick={() => navigate('/categories')}
+              className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted/60 text-muted-foreground active:bg-muted transition-colors flex-shrink-0"
+            >
+              <MapPin className="w-3 h-3 text-primary" />
+              <span className="text-[11px] font-medium truncate max-w-[100px]">{locationLabel}</span>
+            </button>
+
+            {/* Spacer */}
+            <div className="flex-1" />
+
+            {/* Quick icons */}
+            {user && <NotificationBell />}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="relative w-9 h-9 p-0 rounded-full" 
+              onClick={handleCartClick}
+            >
+              <ShoppingCart className="w-[18px] h-[18px]" />
+              {cartCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-promo text-white text-[8px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                  {cartCount > 9 ? '9+' : cartCount}
+                </span>
+              )}
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="w-9 h-9 p-0 rounded-full" 
+              onClick={handleProfileClick}
+            >
+              <User className={`w-[18px] h-[18px] ${user ? 'text-primary' : ''}`} />
+            </Button>
+          </div>
+
+          {/* Row 2: Full-width search bar */}
+          <div className="px-3 pb-1.5">
+            <SearchBar placeholder="Rechercher des produits..." />
+          </div>
+
+          {/* Row 3: Category pills (horizontal scroll) */}
+          <div className="border-t border-border/30 px-1">
+            <div className="flex items-center gap-1.5 py-1.5 overflow-x-auto scrollbar-hide px-2">
               {[
                 { label: "Accueil", path: "/" },
                 { label: "Produits", path: "/categories" },
-                ...(isSuperAdmin ? [{ label: "Livraison", path: "/livraison" }] : []),
+                { label: "Téléphones", path: "/category/telephones-portables-accessoires" },
+                { label: "Mode", path: "/category/mode-homme" },
+                { label: "Beauté", path: "/category/beaute-cosmetique" },
+                { label: "Maison", path: "/category/maison-vie-quotidienne" },
                 { label: "Tarifs", path: "/tarifs" },
-                { label: "À propos", path: "/about" },
               ].map(({ label, path }) => (
-                <Button
+                <button
                   key={path}
-                  variant="ghost"
-                  size="sm"
                   onClick={() => navigate(path)}
-                  className={`text-sm font-medium rounded-xl px-3 py-2 transition-colors ${
+                  className={`text-[11px] font-medium px-2.5 py-1 rounded-full whitespace-nowrap transition-colors flex-shrink-0 ${
                     location.pathname === path
-                      ? "text-primary bg-primary/10"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted/60 text-muted-foreground active:bg-muted"
                   }`}
                 >
                   {label}
-                </Button>
+                </button>
               ))}
-            </nav>
-
-            {/* Desktop Icons Only - Enhanced spacing */}
-            <div className="hidden md:flex items-center gap-3 lg:gap-4">
-              <Badge className="gradient-accent text-xs lg:text-sm px-3 py-1.5 rounded-full shadow-sm">
-                {userCountry}
-              </Badge>
-              
-              {/* Notification Bell */}
-              {user && <NotificationBell />}
-              
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="relative p-2 min-w-[44px] min-h-[44px] rounded-xl hover:bg-muted/80 transition-colors" 
-                onClick={handleFavoritesClick}
-              >
-                <Heart className={`w-5 h-5 lg:w-6 lg:h-6 ${favoriteIds.length > 0 ? 'fill-current text-promo' : ''}`} />
-                <RealtimeNotificationBadge count={favoriteIds.length} className="bg-promo text-white" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="relative p-2 min-w-[44px] min-h-[44px] rounded-xl hover:bg-muted/80 transition-colors" 
-                onClick={handleCartClick}
-              >
-                <ShoppingCart className="w-5 h-5 lg:w-6 lg:h-6" />
-                <RealtimeNotificationBadge count={cartCount} className="bg-promo text-white" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="p-2 min-w-[44px] min-h-[44px] rounded-xl hover:bg-muted/80 transition-colors" 
-                onClick={handleProfileClick}
-              >
-                <User className={`w-5 h-5 lg:w-6 lg:h-6 ${user ? 'text-primary' : ''}`} />
-              </Button>
-              {isSuperAdmin && (
-                <Button 
-                  variant="default" 
-                  size="sm" 
-                  onClick={() => navigate('/superadmin')}
-                  className="text-xs lg:text-sm min-h-[40px] px-4 rounded-xl bg-primary hover:bg-primary/90 shadow-sm"
-                >
-                  Retour au Dashboard
-                </Button>
-              )}
-              {user && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={signOut} 
-                  className="text-xs lg:text-sm min-h-[40px] px-4 rounded-xl hover:bg-destructive/10 hover:text-destructive transition-colors"
-                >
-                  Déconnexion
-                </Button>
-              )}
             </div>
           </div>
         </div>
 
-        {/* Row 2: Mobile sub-header — nav links + country + quick icons */}
-        <div className="md:hidden border-t border-border/30">
-          <div className="container mx-auto px-3 max-w-[1600px]">
-            <div className="flex items-center gap-1 py-1.5 overflow-x-auto scrollbar-hide">
-              {/* Navigation pills */}
-              <div className="flex items-center gap-1 flex-shrink-0">
+        {/* === DESKTOP HEADER === */}
+        <div className="hidden md:block">
+          <div className="container mx-auto px-4 lg:px-8 xl:px-12 py-3 lg:py-4 max-w-[1600px]">
+            <div className="flex items-center gap-4 lg:gap-6">
+              <h1 
+                className="text-xl lg:text-2xl xl:text-3xl font-bold gradient-text-primary cursor-pointer transition-transform active:scale-95 hover:opacity-90 whitespace-nowrap" 
+                onClick={handleLogoClick}
+              >
+                Djassa
+              </h1>
+              
+              <div className="flex-1 lg:max-w-xl xl:max-w-2xl lg:mx-auto">
+                <SearchBar placeholder="Rechercher des produits..." />
+              </div>
+              
+              <nav className="hidden lg:flex items-center gap-1">
                 {[
                   { label: "Accueil", path: "/" },
                   { label: "Produits", path: "/categories" },
+                  ...(isSuperAdmin ? [{ label: "Livraison", path: "/livraison" }] : []),
                   { label: "Tarifs", path: "/tarifs" },
                   { label: "À propos", path: "/about" },
                 ].map(({ label, path }) => (
-                  <button
+                  <Button
                     key={path}
+                    variant="ghost"
+                    size="sm"
                     onClick={() => navigate(path)}
-                    className={`text-[11px] font-medium px-2.5 py-1 rounded-full whitespace-nowrap transition-colors ${
+                    className={`text-sm font-medium rounded-xl px-3 py-2 transition-colors ${
                       location.pathname === path
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted/60 text-muted-foreground active:bg-muted"
+                        ? "text-primary bg-primary/10"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
                     }`}
                   >
                     {label}
-                  </button>
+                  </Button>
                 ))}
-              </div>
+              </nav>
 
-              {/* Separator */}
-              <div className="w-px h-4 bg-border/60 flex-shrink-0 mx-0.5" />
-
-              {/* Country badge */}
-              <Badge className="gradient-accent text-[10px] px-2 py-0.5 rounded-full shadow-sm flex-shrink-0">
-                {userCountry}
-              </Badge>
-
-              {/* Quick icons */}
-              <div className="flex items-center gap-0 flex-shrink-0 ml-auto">
+              <div className="flex items-center gap-3 lg:gap-4">
+                <Badge className="gradient-accent text-xs lg:text-sm px-3 py-1.5 rounded-full shadow-sm">
+                  {countryInfo.flag} {countryInfo.name}
+                </Badge>
+                
+                {user && <NotificationBell />}
+                
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="relative w-8 h-8 p-0 rounded-full" 
+                  className="relative p-2 min-w-[44px] min-h-[44px] rounded-xl hover:bg-muted/80 transition-colors" 
                   onClick={handleFavoritesClick}
                 >
-                  <Heart className={`w-4 h-4 ${favoriteIds.length > 0 ? 'fill-current text-promo' : 'text-muted-foreground'}`} />
-                  {favoriteIds.length > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 bg-promo text-white text-[8px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center">
-                      {favoriteIds.length > 9 ? '9+' : favoriteIds.length}
-                    </span>
-                  )}
+                  <Heart className={`w-5 h-5 lg:w-6 lg:h-6 ${favoriteIds.length > 0 ? 'fill-current text-promo' : ''}`} />
+                  <RealtimeNotificationBadge count={favoriteIds.length} className="bg-promo text-white" />
                 </Button>
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="relative w-8 h-8 p-0 rounded-full" 
+                  className="relative p-2 min-w-[44px] min-h-[44px] rounded-xl hover:bg-muted/80 transition-colors" 
                   onClick={handleCartClick}
                 >
-                  <ShoppingCart className="w-4 h-4 text-muted-foreground" />
-                  {cartCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 bg-promo text-white text-[8px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center">
-                      {cartCount > 9 ? '9+' : cartCount}
-                    </span>
-                  )}
+                  <ShoppingCart className="w-5 h-5 lg:w-6 lg:h-6" />
+                  <RealtimeNotificationBadge count={cartCount} className="bg-promo text-white" />
                 </Button>
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="w-8 h-8 p-0 rounded-full" 
+                  className="p-2 min-w-[44px] min-h-[44px] rounded-xl hover:bg-muted/80 transition-colors" 
                   onClick={handleProfileClick}
                 >
-                  <User className={`w-4 h-4 ${user ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <User className={`w-5 h-5 lg:w-6 lg:h-6 ${user ? 'text-primary' : ''}`} />
                 </Button>
+                {isSuperAdmin && (
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    onClick={() => navigate('/superadmin')}
+                    className="text-xs lg:text-sm min-h-[40px] px-4 rounded-xl bg-primary hover:bg-primary/90 shadow-sm"
+                  >
+                    Retour au Dashboard
+                  </Button>
+                )}
+                {user && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={signOut} 
+                    className="text-xs lg:text-sm min-h-[40px] px-4 rounded-xl hover:bg-destructive/10 hover:text-destructive transition-colors"
+                  >
+                    Déconnexion
+                  </Button>
+                )}
               </div>
             </div>
           </div>
         </div>
       </header>
-
-      {/* Native Announcement Slider - Mobile App Style */}
-      <NativeAnnouncementSlider />
 
       {/* Main Content - Enhanced for desktop */}
       <main className="container mx-auto px-3 sm:px-4 lg:px-8 xl:px-12 py-4 sm:py-6 lg:py-8 max-w-[1600px] overflow-x-hidden">

@@ -132,6 +132,11 @@ const CategoryPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title={`${categoryInfo.name} – Produits Locaux Afrique | Djassa`}
+        description={`Découvrez les produits ${categoryInfo.name} sur Djassa. Achetez local auprès de commerçants africains. Boutique en ligne gratuite et commissions réduites jusqu'à 95%.`}
+        url={`/category/${slug}`}
+      />
       {/* Header - Desktop: always visible, Mobile: hide on scroll down */}
       <header 
         className={`

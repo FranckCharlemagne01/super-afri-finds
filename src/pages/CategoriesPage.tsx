@@ -413,6 +413,11 @@ const CategoriesPage = () => {
   // ─── DESKTOP ───
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Djassa – Catégories de Produits Locaux en Afrique"
+        description="Explorez les catégories de produits locaux et trouvez des commerçants africains près de chez vous. Vendre sur Djassa est gratuit et simple avec gestion de boutique automatique."
+        url="/categories"
+      />
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center gap-4 mb-6">
           <Button variant="ghost" onClick={() => navigate("/")} className="shrink-0">

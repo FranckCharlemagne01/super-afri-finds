@@ -24,17 +24,11 @@ const About = () => {
 
   return (
     <>
-      <Helmet>
-        <title>À propos de Djassa - Marketplace e-commerce locale</title>
-        <meta
-          name="description"
-          content="Djassa est la marketplace dédiée au commerce local en Côte d'Ivoire et en Afrique. Découvrez notre mission, notre vision et nos partenariats."
-        />
-        <meta property="og:title" content="À propos de Djassa - Commerce local en ligne" />
-        <meta property="og:description" content="Marketplace locale pour acheter et vendre en ligne en Côte d'Ivoire et en Afrique." />
-        <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://djassa.djassa.tech/about" />
-      </Helmet>
+      <SEOHead
+        title="À propos de Djassa – Marketplace Africaine"
+        description="Djassa soutient les commerçants locaux africains en leur offrant une boutique en ligne gratuite, une gestion facile des ventes et des commissions avantageuses."
+        url="/about"
+      />
 
       <div className="min-h-screen bg-background">
         {/* Header */}

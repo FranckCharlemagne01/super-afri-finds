@@ -26,7 +26,7 @@ interface SEOHeadProps {
   noindex?: boolean;
 }
 
-const BASE_URL = 'https://djassa.djassa.tech';
+const BASE_URL = 'https://djassa.tech';
 const DEFAULT_IMAGE = `${BASE_URL}/images/preview.jpg`;
 
 const SEOHead = ({
@@ -41,14 +41,14 @@ const SEOHead = ({
   noindex = false,
 }: SEOHeadProps) => {
   const fullTitle = title 
-    ? `${title} | Djassa – Vente en Ligne Afrique`
-    : "Djassa – Vente en Ligne Afrique | Marketplace Locale & Boutique Gratuite";
+    ? `${title} | Djassa – Marketplace Locale Africaine`
+    : "Djassa – Marketplace Locale Africaine | Boutique en Ligne Gratuite";
   
   const fullDescription = description || 
-    "Djassa, marketplace locale africaine. Créez votre boutique en ligne gratuite dès l'inscription. Vendez dans votre ville ou pays. Commissions réduites jusqu'à 95%.";
+    "Djassa, marketplace locale africaine. Créez votre boutique en ligne gratuite dès l'inscription. Gérez vos ventes depuis un tableau de bord dédié. Commissions réduites jusqu'à 95%.";
   
   const fullKeywords = keywords || 
-    "vente en ligne Afrique, marketplace locale africaine, e-commerce Afrique, créer boutique en ligne gratuite, gestion ventes commerçants locaux, Djassa Marketplace";
+    "vente en ligne Afrique, marketplace locale africaine, e-commerce Afrique, créer boutique en ligne gratuite, gestion ventes commerçants locaux, Djassa Marketplace, marketplace locale";
   
   const fullImage = image || DEFAULT_IMAGE;
   const fullUrl = url ? `${BASE_URL}${url}` : BASE_URL;

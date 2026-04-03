@@ -1,12 +1,19 @@
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import SEOHead from "@/components/SEOHead";
 
 const LegalNotice = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Conditions et Politique Djassa – Marketplace Africaine"
+        description="Informations sur les conditions d'utilisation, les commissions et la gestion des ventes sur Djassa, la marketplace locale africaine."
+        url="/legal"
+        noindex
+      />
       {/* Header */}
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4">

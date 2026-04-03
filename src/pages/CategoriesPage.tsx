@@ -1,3 +1,4 @@
+import SEOHead from "@/components/SEOHead";
 import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { categories } from "@/data/categories";
@@ -270,6 +271,12 @@ const CategoriesPage = () => {
   // ─── MOBILE ───
   if (isMobile) {
     return (
+      <>
+      <SEOHead
+        title="Djassa – Catégories de Produits Locaux en Afrique"
+        description="Explorez les catégories de produits locaux et trouvez des commerçants africains près de chez vous. Vendre sur Djassa est gratuit et simple avec gestion de boutique automatique."
+        url="/categories"
+      />
       <div className="min-h-[100dvh] bg-muted/30 pb-20 flex flex-col">
         {/* Sticky header */}
         <div
@@ -401,12 +408,18 @@ const CategoriesPage = () => {
           )}
         </div>
       </div>
+      </>
     );
   }
 
   // ─── DESKTOP ───
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Djassa – Catégories de Produits Locaux en Afrique"
+        description="Explorez les catégories de produits locaux et trouvez des commerçants africains près de chez vous. Vendre sur Djassa est gratuit et simple avec gestion de boutique automatique."
+        url="/categories"
+      />
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center gap-4 mb-6">
           <Button variant="ghost" onClick={() => navigate("/")} className="shrink-0">

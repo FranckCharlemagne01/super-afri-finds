@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Clock } from 'lucide-react';
+import SEOHead from '@/components/SEOHead';
 import { useUserLocation } from '@/hooks/useUserLocation';
 import { getProductImage } from '@/utils/productImageHelper';
 
@@ -89,6 +90,11 @@ const FlashSales = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Offres Flash Djassa – Vente Locale Africaine"
+        description="Profitez des promotions locales sur Djassa. Les vendeurs peuvent gérer leurs ventes et bénéficier de réductions de commissions jusqu'à 95%."
+        url="/flash-sales"
+      />
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-3">

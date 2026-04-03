@@ -52,35 +52,53 @@ const About = () => {
         <section className="bg-primary py-14 md:py-20">
           <div className="container mx-auto px-4 text-center max-w-3xl">
             <h2 className="text-3xl md:text-5xl font-extrabold text-primary-foreground mb-6">
-              Bienvenue sur Djassa 🛍️
+              Djassa — Le commerce africain, simplifié 🌍
             </h2>
             <p className="text-lg md:text-xl text-primary-foreground/90 leading-relaxed">
-              La marketplace locale qui connecte vendeurs et acheteurs en Côte d'Ivoire et en Afrique francophone.
+              La marketplace qui donne à chaque commerçant africain une boutique en ligne gratuite pour vendre localement et au-delà.
             </p>
           </div>
         </section>
 
         <div className="container mx-auto px-4 py-12 max-w-5xl space-y-20">
 
-          {/* Section 1 : Présentation */}
+          {/* Section 1 : Qu'est-ce que Djassa */}
           <section>
             <div className="flex items-center gap-3 mb-6">
               <Globe className="w-8 h-8 text-primary flex-shrink-0" />
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground">Présentation de Djassa</h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">Qu'est-ce que Djassa ?</h2>
             </div>
             <Card className="border-primary/20">
               <CardContent className="pt-6 space-y-4 text-foreground/90 text-base md:text-lg leading-relaxed">
                 <p>
-                  <strong>Djassa</strong> est une marketplace dédiée au commerce local. Elle permet aux particuliers, aux commerçants et aux entreprises de vendre leurs produits en ligne et de toucher plus de clients dans leur ville et leur région.
+                  <strong>Djassa</strong> est une marketplace locale et internationale dédiée au commerce en Afrique. Elle permet aux commerçants de vendre leurs produits dans leur ville, leur région ou leur pays, tout en leur offrant une visibilité bien au-delà de leur zone habituelle.
                 </p>
                 <p>
-                  Simple, professionnelle et accessible, Djassa offre à chaque vendeur une vitrine moderne pour développer son activité et atteindre de nouveaux acheteurs chaque jour.
+                  Que vous soyez un vendeur de prêt-à-porter à Abidjan, un artisan à Dakar ou un grossiste à Douala, Djassa vous connecte directement avec vos clients — là où ils se trouvent.
+                </p>
+              </CardContent>
+            </Card>
+          </section>
+
+          {/* Section 2 : Boutique gratuite */}
+          <section>
+            <div className="flex items-center gap-3 mb-6">
+              <Store className="w-8 h-8 text-primary flex-shrink-0" />
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">Une boutique en ligne gratuite, dès l'inscription</h2>
+            </div>
+            <Card className="border-primary/20">
+              <CardContent className="pt-6 space-y-4 text-foreground/90 text-base md:text-lg leading-relaxed">
+                <p>
+                  Dès que vous créez votre compte vendeur sur Djassa, <strong>une boutique en ligne professionnelle est automatiquement créée pour vous</strong> — gratuitement et prête à l'emploi.
+                </p>
+                <p>
+                  Pas besoin de connaissances techniques. Ajoutez vos produits, personnalisez votre vitrine et commencez à vendre en quelques minutes. C'est aussi simple que ça.
                 </p>
                 <div className="grid sm:grid-cols-3 gap-4 pt-4">
                   {[
-                    { icon: Users, label: "Particuliers" },
-                    { icon: Store, label: "Commerçants" },
-                    { icon: Briefcase, label: "Entreprises locales" },
+                    { icon: Users, label: "Inscription gratuite" },
+                    { icon: Store, label: "Boutique automatique" },
+                    { icon: ShoppingBag, label: "Vente immédiate" },
                   ].map(({ icon: Icon, label }) => (
                     <div key={label} className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50 text-center">
                       <Icon className="w-8 h-8 text-primary" />
@@ -92,7 +110,7 @@ const About = () => {
             </Card>
           </section>
 
-          {/* Section 2 : Mission */}
+          {/* Section 3 : Mission */}
           <section>
             <div className="flex items-center gap-3 mb-6">
               <Target className="w-8 h-8 text-primary flex-shrink-0" />
@@ -101,47 +119,45 @@ const About = () => {
             <Card className="border-primary/20">
               <CardContent className="pt-6 space-y-4 text-foreground/90 text-base md:text-lg leading-relaxed">
                 <p>
-                  La mission de Djassa est de <strong>faciliter la vente en ligne pour les vendeurs locaux</strong> et de connecter les acheteurs et les vendeurs dans un environnement simple, fiable et transparent.
+                  La mission de Djassa est simple : <strong>faciliter le commerce local en ligne en Afrique</strong>. Nous aidons les entrepreneurs à gérer facilement leurs produits, suivre leurs ventes en temps réel et développer leur activité — sans complexité technique, sans frais cachés.
                 </p>
                 <p>
-                  Nous croyons que chaque commerçant — qu'il soit un particulier ou une entreprise — mérite une plateforme accessible pour développer son activité et toucher plus de clients.
+                  Nous croyons que chaque commerçant, qu'il soit à ses débuts ou déjà établi, mérite des outils modernes et accessibles pour prospérer dans l'économie numérique.
                 </p>
               </CardContent>
             </Card>
           </section>
 
-          {/* Section 3 : Vision */}
-          <section>
-            <div className="flex items-center gap-3 mb-6">
-              <Eye className="w-8 h-8 text-primary flex-shrink-0" />
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground">Notre vision</h2>
-            </div>
-            <Card className="border-primary/20">
-              <CardContent className="pt-6 space-y-4 text-foreground/90 text-base md:text-lg leading-relaxed">
-                <p>
-                  Djassa aspire à devenir <strong>la plateforme de référence pour le commerce local en Afrique</strong>. Notre vision est de développer un écosystème moderne qui soutient l'économie locale et permet aux entrepreneurs de développer leur activité grâce au numérique.
-                </p>
-                <p>
-                  Nous construisons un avenir où chaque vendeur local dispose des outils numériques nécessaires pour prospérer et atteindre son plein potentiel.
-                </p>
-              </CardContent>
-            </Card>
-          </section>
-
-          {/* Section 4 : Marché local */}
+          {/* Section 4 : À qui s'adresse Djassa */}
           <section>
             <div className="flex items-center gap-3 mb-6">
               <MapPin className="w-8 h-8 text-primary flex-shrink-0" />
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground">Le commerce local au cœur de Djassa</h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">À qui s'adresse Djassa ?</h2>
             </div>
             <Card className="border-primary/20">
               <CardContent className="pt-6 space-y-4 text-foreground/90 text-base md:text-lg leading-relaxed">
                 <p>
-                  Djassa est conçu pour <strong>encourager le commerce local</strong>. La plateforme permet aux vendeurs de proposer leurs produits aux clients de leur ville ou de leur région, en facilitant la mise en relation et en rendant l'achat en ligne accessible à tous.
+                  Djassa est conçu pour <strong>tous les commerçants locaux africains</strong> — petits ou moyens — qui souhaitent digitaliser leur commerce et toucher plus de clients dans leur zone géographique.
                 </p>
                 <p>
-                  Que vous soyez à Abidjan, Bouaké, Yamoussoukro ou ailleurs, Djassa vous connecte avec les vendeurs et les acheteurs autour de vous.
+                  Boutiques de quartier, vendeurs sur les marchés, artisans, revendeurs, créateurs de mode, commerçants de produits alimentaires… Si vous vendez un produit, Djassa est fait pour vous.
                 </p>
+                <div className="grid sm:grid-cols-2 gap-4 pt-4">
+                  {[
+                    { icon: Store, label: "Commerçants locaux", desc: "Vendez dans votre ville et votre région" },
+                    { icon: Briefcase, label: "PME & entrepreneurs", desc: "Gérez votre activité avec des outils pro" },
+                    { icon: Heart, label: "Artisans & créateurs", desc: "Montrez vos créations au monde entier" },
+                    { icon: Users, label: "Revendeurs & grossistes", desc: "Touchez plus de clients, plus facilement" },
+                  ].map(({ icon: Icon, label, desc }) => (
+                    <div key={label} className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
+                      <Icon className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-semibold text-foreground">{label}</span>
+                        <p className="text-sm text-muted-foreground mt-1">{desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </section>

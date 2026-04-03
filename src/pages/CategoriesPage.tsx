@@ -271,6 +271,7 @@ const CategoriesPage = () => {
   // ─── MOBILE ───
   if (isMobile) {
     return (
+      <>
       <SEOHead
         title="Djassa – Catégories de Produits Locaux en Afrique"
         description="Explorez les catégories de produits locaux et trouvez des commerçants africains près de chez vous. Vendre sur Djassa est gratuit et simple avec gestion de boutique automatique."

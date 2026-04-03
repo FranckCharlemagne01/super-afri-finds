@@ -422,7 +422,8 @@ const Index = () => {
           ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}
         `}
       >
-        <div className="container mx-auto px-3 sm:px-4 lg:px-8 xl:px-12 py-2.5 sm:py-3 lg:py-4 max-w-[1600px]">
+        {/* Row 1: Logo + Search + mobile menu */}
+        <div className="container mx-auto px-3 sm:px-4 lg:px-8 xl:px-12 pt-2.5 pb-1.5 sm:py-3 lg:py-4 max-w-[1600px]">
           <div className="flex items-center gap-3 sm:gap-4 lg:gap-6">
             {/* Logo Djassa */}
             <h1 
@@ -437,9 +438,8 @@ const Index = () => {
               <SearchBar placeholder="Rechercher des produits..." />
             </div>
             
-            {/* Mobile/Tablet Help Button, Notification Bell & Info Menu */}
+            {/* Mobile: Notification + Menu */}
             <div className="md:hidden flex items-center gap-0.5">
-              <HelpButton />
               {user && <NotificationBell />}
               <MobileInfoDrawer />
             </div>
@@ -524,6 +524,81 @@ const Index = () => {
                   Déconnexion
                 </Button>
               )}
+            </div>
+          </div>
+        </div>
+
+        {/* Row 2: Mobile sub-header — nav links + country + quick icons */}
+        <div className="md:hidden border-t border-border/30">
+          <div className="container mx-auto px-3 max-w-[1600px]">
+            <div className="flex items-center gap-1 py-1.5 overflow-x-auto scrollbar-hide">
+              {/* Navigation pills */}
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {[
+                  { label: "Accueil", path: "/" },
+                  { label: "Produits", path: "/categories" },
+                  { label: "Tarifs", path: "/tarifs" },
+                  { label: "À propos", path: "/about" },
+                ].map(({ label, path }) => (
+                  <button
+                    key={path}
+                    onClick={() => navigate(path)}
+                    className={`text-[11px] font-medium px-2.5 py-1 rounded-full whitespace-nowrap transition-colors ${
+                      location.pathname === path
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted/60 text-muted-foreground active:bg-muted"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Separator */}
+              <div className="w-px h-4 bg-border/60 flex-shrink-0 mx-0.5" />
+
+              {/* Country badge */}
+              <Badge className="gradient-accent text-[10px] px-2 py-0.5 rounded-full shadow-sm flex-shrink-0">
+                {userCountry}
+              </Badge>
+
+              {/* Quick icons */}
+              <div className="flex items-center gap-0 flex-shrink-0 ml-auto">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="relative w-8 h-8 p-0 rounded-full" 
+                  onClick={handleFavoritesClick}
+                >
+                  <Heart className={`w-4 h-4 ${favoriteIds.length > 0 ? 'fill-current text-promo' : 'text-muted-foreground'}`} />
+                  {favoriteIds.length > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 bg-promo text-white text-[8px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center">
+                      {favoriteIds.length > 9 ? '9+' : favoriteIds.length}
+                    </span>
+                  )}
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="relative w-8 h-8 p-0 rounded-full" 
+                  onClick={handleCartClick}
+                >
+                  <ShoppingCart className="w-4 h-4 text-muted-foreground" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 bg-promo text-white text-[8px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center">
+                      {cartCount > 9 ? '9+' : cartCount}
+                    </span>
+                  )}
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="w-8 h-8 p-0 rounded-full" 
+                  onClick={handleProfileClick}
+                >
+                  <User className={`w-4 h-4 ${user ? 'text-primary' : 'text-muted-foreground'}`} />
+                </Button>
+              </div>
             </div>
           </div>
         </div>

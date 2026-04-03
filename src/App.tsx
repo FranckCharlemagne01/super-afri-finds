@@ -16,7 +16,7 @@ import { useVisitorTracking } from "@/hooks/useVisitorTracking";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import { NativeAppProvider } from "@/components/NativeAppProvider";
 import { prefetchCriticalRoutes, useAutoPrefetch } from "@/hooks/usePrefetch";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import PWABottomInstallBar from "@/components/PWABottomInstallBar";
 import { ProfileCompletionModal } from "@/components/ProfileCompletionModal";
 import { PreviewBrokenBanner } from "@/components/PreviewBrokenBanner";

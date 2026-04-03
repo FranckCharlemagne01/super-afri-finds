@@ -211,34 +211,7 @@ const Index = () => {
     }
     
     fetchProducts();
-    if (user) {
-      fetchUserCountry();
-    }
   }, [user, userLocation.city, userLocation.country]);
-
-  const fetchUserCountry = async () => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('country')
-        .eq('user_id', user.id)
-        .single();
-      
-      if (error) {
-        console.error('Error fetching user country:', error);
-        return;
-      }
-      
-      if (data?.country) {
-        const countryName = getCountryName(data.country);
-        setUserCountry(countryName);
-      }
-    } catch (error) {
-      console.error('Error fetching user country:', error);
-    }
-  };
 
   // City-aware cache key
   const productsCacheKey = userLocation.city 

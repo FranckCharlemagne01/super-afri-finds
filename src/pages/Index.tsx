@@ -14,9 +14,7 @@ import { FlashSalesCarousel } from "@/components/FlashSalesCarousel";
 import { MarketplaceFooter } from "@/components/MarketplaceFooter";
 import { useTheme } from "next-themes";
 
-import { CategorySidebar } from "@/components/CategorySidebar";
 import { PopularCategories } from "@/components/PopularCategories";
-import { NotificationBell } from "@/components/NotificationBell";
 import { MarketplaceTutorial } from "@/components/MarketplaceTutorial";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ProductSkeleton } from "@/components/ui/ProductSkeleton";

@@ -162,16 +162,22 @@ export const MobileBottomNav = () => {
               )}
             >
               <div className="relative">
-                <motion.div
-                  initial={false}
-                  animate={active ? { scale: 1.1, y: -2 } : { scale: 1, y: 0 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                >
-                  <Icon className={cn(
-                    "transition-all duration-200",
-                    active ? "w-6 h-6 stroke-[2.5px]" : "w-5 h-5 stroke-[1.8px]"
-                  )} />
-                </motion.div>
+                {highlight ? (
+                  <div className="w-10 h-10 -mt-4 rounded-full bg-gradient-to-br from-primary to-[hsl(16,100%,50%)] flex items-center justify-center shadow-lg">
+                    <Icon className="w-5 h-5 text-white stroke-[2.5px]" />
+                  </div>
+                ) : (
+                  <motion.div
+                    initial={false}
+                    animate={active ? { scale: 1.1, y: -2 } : { scale: 1, y: 0 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  >
+                    <Icon className={cn(
+                      "transition-all duration-200",
+                      active ? "w-6 h-6 stroke-[2.5px]" : "w-5 h-5 stroke-[1.8px]"
+                    )} />
+                  </motion.div>
+                )}
                 
                 <AnimatePresence>
                   {badge !== undefined && badge > 0 && (

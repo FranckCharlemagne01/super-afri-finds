@@ -94,13 +94,28 @@ export const MobileBottomNav = () => {
   }, [location.pathname, navigate]);
 
   // Dynamic nav items with smart dashboard routing - MUST be before early return
+  // Navigate to sell / create shop
+  const handleSellClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isAuthenticated) {
+      navigate('/auth?mode=signup&role=seller');
+      return;
+    }
+    if (isSeller || isSuperAdmin) {
+      navigate('/seller-dashboard');
+    } else {
+      navigate('/auth?mode=signup&role=seller');
+    }
+  }, [isAuthenticated, isSeller, isSuperAdmin, navigate]);
+
   const navItems = useMemo(() => [
     { icon: Home, label: "Accueil", path: "/marketplace", onClick: handleHomeClick },
-    { icon: Grid3X3, label: "Catégories", path: "/categories" },
-    { icon: MessageSquare, label: "Messages", path: "/messages", badge: messageBadgeCount },
+    { icon: Search, label: "Explorer", path: "/categories" },
+    { icon: PlusCircle, label: "Vendre", path: "/seller-dashboard", onClick: handleSellClick, highlight: true },
     { icon: ShoppingCart, label: "Panier", path: "/cart", badge: cartItems },
     { icon: User, label: "Compte", path: dashboardPath, onClick: handleAccountClick, onPrefetch: handleAccountPrefetch },
-  ], [handleHomeClick, messageBadgeCount, cartItems, dashboardPath, handleAccountClick, handleAccountPrefetch]);
+  ], [handleHomeClick, cartItems, dashboardPath, handleAccountClick, handleAccountPrefetch, handleSellClick]);
 
   // isActive function - memoized to avoid recreation
   const isActive = useCallback((path: string) => {

@@ -411,37 +411,37 @@ const Index = () => {
         {/* === MOBILE HEADER === */}
         <div className="md:hidden">
           {/* Row 1: Logo + Location + Icons */}
-          <div className="px-3 pt-2 pb-1 flex items-center gap-2">
+          <div className="px-3 pt-2.5 pb-1.5 flex items-center gap-2">
             <h1 
-              className="text-lg font-bold gradient-text-primary cursor-pointer transition-transform active:scale-95 whitespace-nowrap" 
+              className="text-xl font-extrabold gradient-text-primary cursor-pointer transition-transform active:scale-95 whitespace-nowrap tracking-tight" 
               onClick={handleLogoClick}
             >
               Djassa
             </h1>
 
-            {/* Location badge */}
+            {/* Location badge - more prominent */}
             <button 
               onClick={() => navigate('/categories')}
-              className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted/60 text-muted-foreground active:bg-muted transition-colors flex-shrink-0"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary active:bg-primary/20 transition-colors flex-shrink-0"
             >
-              <MapPin className="w-3 h-3 text-primary" />
-              <span className="text-[11px] font-medium truncate max-w-[100px]">{locationLabel}</span>
+              <MapPin className="w-3.5 h-3.5" />
+              <span className="text-[11px] font-semibold truncate max-w-[90px]">{locationLabel}</span>
             </button>
 
             {/* Spacer */}
             <div className="flex-1" />
 
-            {/* Quick icons */}
+            {/* Quick icons - bigger touch targets */}
             {user && <NotificationBell />}
             <Button 
               variant="ghost" 
               size="icon" 
-              className="relative w-9 h-9 p-0 rounded-full" 
+              className="relative w-10 h-10 p-0 rounded-full" 
               onClick={handleCartClick}
             >
-              <ShoppingCart className="w-[18px] h-[18px]" />
+              <ShoppingCart className="w-5 h-5" />
               {cartCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-promo text-white text-[8px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 bg-[hsl(var(--promo))] text-white text-[9px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shadow-sm">
                   {cartCount > 9 ? '9+' : cartCount}
                 </span>
               )}
@@ -449,43 +449,16 @@ const Index = () => {
             <Button 
               variant="ghost" 
               size="icon" 
-              className="w-9 h-9 p-0 rounded-full" 
+              className="w-10 h-10 p-0 rounded-full" 
               onClick={handleProfileClick}
             >
-              <User className={`w-[18px] h-[18px] ${user ? 'text-primary' : ''}`} />
+              <User className={`w-5 h-5 ${user ? 'text-primary' : ''}`} />
             </Button>
           </div>
 
           {/* Row 2: Full-width search bar */}
-          <div className="px-3 pb-1.5">
+          <div className="px-3 pb-2">
             <SearchBar placeholder="Rechercher des produits..." />
-          </div>
-
-          {/* Row 3: Category pills (horizontal scroll) */}
-          <div className="border-t border-border/30 px-1">
-            <div className="flex items-center gap-1.5 py-1.5 overflow-x-auto scrollbar-hide px-2">
-              {[
-                { label: "Accueil", path: "/" },
-                { label: "Produits", path: "/categories" },
-                { label: "Téléphones", path: "/category/telephones-portables-accessoires" },
-                { label: "Mode", path: "/category/mode-homme" },
-                { label: "Beauté", path: "/category/beaute-cosmetique" },
-                { label: "Maison", path: "/category/maison-vie-quotidienne" },
-                { label: "Tarifs", path: "/tarifs" },
-              ].map(({ label, path }) => (
-                <button
-                  key={path}
-                  onClick={() => navigate(path)}
-                  className={`text-[11px] font-medium px-2.5 py-1 rounded-full whitespace-nowrap transition-colors flex-shrink-0 ${
-                    location.pathname === path
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted/60 text-muted-foreground active:bg-muted"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
 

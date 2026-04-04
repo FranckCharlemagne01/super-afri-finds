@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Grid3X3, MessageSquare, ShoppingCart, User } from "lucide-react";
+import { Home, Search, PlusCircle, ShoppingCart, User } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { useNotifications } from "@/hooks/useNotifications";

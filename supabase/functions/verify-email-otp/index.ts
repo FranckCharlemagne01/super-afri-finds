@@ -12,7 +12,9 @@ serve(async (req) => {
   }
 
   try {
-    const { email, otp, fullName } = await req.json();
+    const { email, otp, fullName, password, phone, country, userRole, shopName } = await req.json();
+
+    console.log('📩 verify-email-otp appelé pour:', email);
 
     if (!email || !otp) {
       return new Response(
@@ -57,6 +59,7 @@ serve(async (req) => {
           .eq('id', latestOtp.id);
       }
 
+      console.log('❌ Code invalide pour:', cleanEmail);
       return new Response(
         JSON.stringify({ error: 'Code invalide' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -65,6 +68,7 @@ serve(async (req) => {
 
     // Vérifier expiration
     if (new Date(otpRecord.expires_at) < new Date()) {
+      console.log('❌ Code expiré pour:', cleanEmail);
       return new Response(
         JSON.stringify({ error: 'Code expiré. Demandez un nouveau code.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -73,6 +77,7 @@ serve(async (req) => {
 
     // Vérifier tentatives (max 5)
     if (otpRecord.attempts >= 5) {
+      console.log('❌ Trop de tentatives pour:', cleanEmail);
       return new Response(
         JSON.stringify({ error: 'Trop de tentatives. Demandez un nouveau code.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -85,6 +90,8 @@ serve(async (req) => {
       .update({ verified: true })
       .eq('id', otpRecord.id);
 
+    console.log('✅ OTP vérifié pour:', cleanEmail);
+
     // Chercher un utilisateur existant
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
     const existingUser = existingUsers?.users?.find(
@@ -92,6 +99,7 @@ serve(async (req) => {
     );
 
     if (existingUser) {
+      console.log('👤 Utilisateur existant, génération magic link');
       // Utilisateur existant → générer magic link
       const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
         type: 'magiclink',
@@ -99,7 +107,7 @@ serve(async (req) => {
       });
 
       if (linkError) {
-        console.error('Erreur génération lien:', linkError);
+        console.error('❌ Erreur génération lien:', linkError);
         throw new Error('Erreur de connexion');
       }
 
@@ -119,32 +127,39 @@ serve(async (req) => {
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } else {
-      // Nouvel utilisateur → créer le compte
-      const tempPassword = crypto.randomUUID();
+      console.log('🆕 Nouvel utilisateur, création du compte');
+      // Nouvel utilisateur → créer le compte avec le vrai mot de passe ou un temp
+      const userPassword = password || crypto.randomUUID();
 
       const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
         email: cleanEmail,
-        password: tempPassword,
-        email_confirm: true,
+        password: userPassword,
+        email_confirm: true, // Email déjà vérifié par OTP
         user_metadata: {
           full_name: fullName || 'Utilisateur Djassa',
+          phone: phone || '',
+          country: country || 'CI',
+          user_role: userRole || 'buyer',
+          shop_name: shopName || '',
           auth_method: 'email_otp',
         },
       });
 
       if (createError) {
-        console.error('Erreur création utilisateur:', createError);
+        console.error('❌ Erreur création utilisateur:', createError);
         throw new Error('Erreur lors de la création du compte');
       }
 
-      // Générer magic link
+      console.log('✅ Utilisateur créé:', newUser.user.id);
+
+      // Générer magic link pour connexion automatique
       const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
         type: 'magiclink',
         email: cleanEmail,
       });
 
       if (linkError) {
-        console.error('Erreur génération lien:', linkError);
+        console.error('⚠️ Erreur génération lien:', linkError);
       }
 
       // Nettoyer les OTPs
@@ -166,7 +181,7 @@ serve(async (req) => {
     }
 
   } catch (error: unknown) {
-    console.error('Erreur verify-email-otp:', error);
+    console.error('❌ Erreur verify-email-otp:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Erreur serveur' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

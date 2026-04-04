@@ -191,7 +191,7 @@ async function createPartnerRecords(
     type: "recovery",
     email: data.email,
     options: {
-      redirectTo: "https://djassa.siteviral.site/auth/reset-password",
+      redirectTo: "https://djassa.tech/auth/reset-password",
     },
   });
 

@@ -14,7 +14,6 @@ serve(async (req) => {
   try {
     const { email } = await req.json();
 
-    // Validation email
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return new Response(
         JSON.stringify({ error: 'Adresse email invalide' }),
@@ -23,6 +22,7 @@ serve(async (req) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
+    console.log('📩 Email reçu:', cleanEmail);
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -53,6 +53,7 @@ serve(async (req) => {
 
     // Générer OTP 6 chiffres
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log('🔐 OTP généré:', otpCode);
 
     // Stocker l'OTP
     const { error: insertError } = await supabaseAdmin
@@ -64,19 +65,51 @@ serve(async (req) => {
       });
 
     if (insertError) {
-      console.error('Erreur insertion OTP:', insertError);
+      console.error('❌ Erreur insertion OTP:', insertError);
       throw new Error('Erreur lors de la création du code');
     }
 
     // Envoyer via Resend
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
     if (!resendApiKey) {
-      console.error('RESEND_API_KEY not configured');
+      console.error('❌ RESEND_API_KEY not configured');
       return new Response(
         JSON.stringify({ error: 'Service email temporairement indisponible.' }),
         { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log('🚀 Envoi email via Resend à:', cleanEmail);
+
+    const resendBody = {
+      from: 'Djassa <noreply@mail.djassa.tech>',
+      to: [cleanEmail],
+      subject: 'Code de vérification Djassa',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #ffffff; border-radius: 12px; border: 1px solid #e5e7eb;">
+          <div style="text-align: center; margin-bottom: 24px;">
+            <h1 style="color: #F97316; font-size: 24px; margin: 0;">Djassa</h1>
+          </div>
+          <h2 style="color: #111827; font-size: 20px; text-align: center; margin-bottom: 8px;">
+            Code de vérification
+          </h2>
+          <p style="color: #6b7280; text-align: center; margin-bottom: 24px;">
+            Utilisez le code ci-dessous pour vous connecter à Djassa.
+          </p>
+          <div style="background: #FFF7ED; border: 2px solid #F97316; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 24px;">
+            <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #F97316;">
+              ${otpCode}
+            </span>
+          </div>
+          <p style="color: #9ca3af; font-size: 14px; text-align: center;">
+            Ce code expire dans <strong>5 minutes</strong>.
+          </p>
+          <p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 24px;">
+            Si vous n'avez pas demandé ce code, ignorez cet email.
+          </p>
+        </div>
+      `,
+    };
 
     const resendResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -84,53 +117,33 @@ serve(async (req) => {
         'Authorization': `Bearer ${resendApiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        from: 'Djassa <noreply@mail.djassa.tech>',
-        to: [cleanEmail],
-        subject: 'Code de vérification Djassa',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #ffffff; border-radius: 12px; border: 1px solid #e5e7eb;">
-            <div style="text-align: center; margin-bottom: 24px;">
-              <h1 style="color: #F97316; font-size: 24px; margin: 0;">Djassa</h1>
-            </div>
-            <h2 style="color: #111827; font-size: 20px; text-align: center; margin-bottom: 8px;">
-              Code de vérification
-            </h2>
-            <p style="color: #6b7280; text-align: center; margin-bottom: 24px;">
-              Utilisez le code ci-dessous pour vous connecter à Djassa.
-            </p>
-            <div style="background: #FFF7ED; border: 2px solid #F97316; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 24px;">
-              <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #F97316;">
-                ${otpCode}
-              </span>
-            </div>
-            <p style="color: #9ca3af; font-size: 14px; text-align: center;">
-              Ce code expire dans <strong>5 minutes</strong>.
-            </p>
-            <p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 24px;">
-              Si vous n'avez pas demandé ce code, ignorez cet email.
-            </p>
-          </div>
-        `,
-      }),
+      body: JSON.stringify(resendBody),
     });
 
+    const resendResponseText = await resendResponse.text();
+    console.log('📊 STATUS:', resendResponse.status);
+    console.log('📊 RESPONSE:', resendResponseText);
+
     if (!resendResponse.ok) {
-      const resendError = await resendResponse.text();
-      console.error('Erreur Resend:', resendError);
+      console.error('❌ Erreur Resend:', resendResponse.status, resendResponseText);
       return new Response(
-        JSON.stringify({ error: "Erreur lors de l'envoi de l'email. Veuillez réessayer." }),
+        JSON.stringify({ 
+          error: "Erreur lors de l'envoi de l'email. Veuillez réessayer.",
+          details: `Resend status: ${resendResponse.status}` 
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    console.log('✅ Email envoyé avec succès à', cleanEmail);
+
     return new Response(
-      JSON.stringify({ success: true, message: 'Code envoyé par email' }),
+      JSON.stringify({ success: true, message: 'Code envoyé' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error: unknown) {
-    console.error('Erreur send-email-otp:', error);
+    console.error('❌ Erreur send-email-otp:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Erreur serveur' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

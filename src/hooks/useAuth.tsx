@@ -120,7 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     role?: 'buyer' | 'seller',
     shopName?: string
   ) => {
-    const redirectUrl = `https://djassa.siteviral.site/auth/callback`;
+    const redirectUrl = `${window.location.origin}/auth/callback`;
 
     // === LOGS TEMPORAIRES ===
     console.log('[signup] email:', email);
@@ -277,7 +277,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const resetPassword = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `https://djassa.siteviral.site/auth/reset-password`,
+      redirectTo: `${window.location.origin}/auth/reset-password`,
     });
     return { error };
   };

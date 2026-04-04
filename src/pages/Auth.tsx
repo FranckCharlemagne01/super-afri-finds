@@ -469,134 +469,55 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const fullPhoneNumber = phone.trim();
       const fullName = `${firstName} ${lastName}`.trim();
+      const fullPhoneNumber = phone.trim();
       const shopNameToSend = userRole === 'seller' && shopName.trim() ? shopName.trim() : '';
-      
-      const { error: signUpError, data: signUpData } = await signUp(
-        email,
-        signupPassword,
-        fullName,
-        fullPhoneNumber,
-        country || 'CI',
-        userRole || 'buyer',
-        shopNameToSend
-      );
-      
-       if (signUpError) {
-         // Logs temporaires (à retirer après validation)
-         console.log('🟣 [handleSignUp] signUpError', {
-           message: signUpError.message,
-           isUnconfirmed: !!(signUpError.__isUnconfirmedEmail),
-           isConfirmed: !!(signUpError.__isConfirmedEmail),
-         });
+      const userEmail = email.trim().toLowerCase();
 
-         // CAS 2: Email existe mais NON confirmé
-         // → Renvoi auto déjà fait, rediriger vers page confirmation
-         if (signUpError.message === 'EMAIL_NOT_CONFIRMED' || signUpError.__isUnconfirmedEmail) {
-           toast({
-             title: "📧 Lien de confirmation renvoyé",
-             description: "Un compte existe déjà avec cet email. Nous venons de vous renvoyer le lien de confirmation.",
-             duration: 6000,
-           });
-           navigate(`/verify-otp?email=${encodeURIComponent(email)}`, { replace: true });
-           return;
-         }
+      console.log('[signup] Envoi OTP à:', userEmail);
 
-         // CAS 3: Email existe ET confirmé = vrai doublon
-         if (signUpError.message === 'EMAIL_ALREADY_CONFIRMED' || signUpError.__isConfirmedEmail) {
-           setFormError('Cet email est déjà utilisé. Veuillez vous connecter.');
-           return;
-         }
-        
-        // Autres patterns d'erreur email existant
-        const emailExistsPatterns = [
-          'already registered', 'already been registered', 'user already registered',
-          'email address has already been registered', 'user with this email',
-          'email already exists', 'duplicate key', 'unique constraint'
-        ];
-        
-        const isEmailExistsError = emailExistsPatterns.some(pattern => 
-          signUpError.message.toLowerCase().includes(pattern.toLowerCase())
-        );
-        
-        if (isEmailExistsError) {
-          setFormError('Cet email est déjà utilisé. Veuillez vous connecter.');
-          return;
-        }
-        
-        if (signUpError.message.includes('rate limit exceeded') || signUpError.message.includes('Too many')) {
-          setFormError('Trop de tentatives. Réessayez dans quelques minutes.');
-          return;
-        }
-        
-        if (signUpError.message.includes('Invalid email')) {
-          setFormError('Adresse email invalide.');
-        } else if (signUpError.message.includes('Password')) {
-          setFormError('Mot de passe non conforme.');
-        } else {
-          setFormError(signUpError.message);
-        }
+      // Étape 1: Envoyer le code OTP via Resend (PAS de supabase.auth.signUp)
+      const { data: otpData, error: otpError } = await supabase.functions.invoke('send-email-otp', {
+        body: { email: userEmail }
+      });
+
+      if (otpError || otpData?.error) {
+        const errMsg = otpData?.error || otpError?.message || "Erreur d'envoi du code";
+        console.error('[signup] OTP send error:', errMsg);
+        setFormError(`Erreur lors de l'envoi du code: ${errMsg}`);
         return;
       }
 
-      // CAS 1: Nouvel utilisateur créé → envoyer OTP par email
-      if (signUpData?.user) {
-        const userEmail = email;
-        
-        // Appeler la Edge Function send-email-otp
-        try {
-          const { data: otpData, error: otpError } = await supabase.functions.invoke('send-email-otp', {
-            body: { email: userEmail }
-          });
-          
-          if (otpError || otpData?.error) {
-            const errMsg = otpData?.error || otpError?.message || "Erreur d'envoi du code";
-            console.error('[signup] OTP send error:', errMsg);
-            toast({
-              title: "⚠️ Compte créé",
-              description: `Le compte a été créé mais l'envoi du code a échoué: ${errMsg}`,
-              variant: "destructive",
-              duration: 6000,
-            });
-          } else {
-            console.log('[signup] OTP sent successfully to', userEmail);
-            toast({
-              title: "✅ Compte créé !",
-              description: "Un code de vérification a été envoyé à votre email.",
-              duration: 5000,
-            });
-          }
-        } catch (otpException) {
-          console.error('[signup] OTP exception:', otpException);
-          toast({
-            title: "⚠️ Compte créé",
-            description: "Le compte a été créé mais l'envoi du code a échoué. Réessayez depuis la page de confirmation.",
-            variant: "destructive",
-            duration: 6000,
-          });
-        }
-        
-        // Reset form
-        setEmail('');
-        setSignupPassword('');
-        setFirstName('');
-        setLastName('');
-        setPhone('');
-        setShopName('');
-        
-        navigate(`/verify-otp?email=${encodeURIComponent(userEmail)}&name=${encodeURIComponent(firstName + ' ' + lastName)}`, { replace: true });
-      } else {
-        setFormError("Erreur lors de l'inscription. Réessayez.");
-      }
-      
+      console.log('[signup] ✅ OTP envoyé avec succès à', userEmail);
+
+      // Étape 2: Stocker les données d'inscription en sessionStorage
+      sessionStorage.setItem('signup_data', JSON.stringify({
+        email: userEmail,
+        password: signupPassword,
+        fullName,
+        phone: fullPhoneNumber,
+        country: country || 'CI',
+        userRole: userRole || 'buyer',
+        shopName: shopNameToSend,
+      }));
+
+      toast({
+        title: "📧 Code envoyé !",
+        description: "Un code de vérification a été envoyé à votre email.",
+        duration: 5000,
+      });
+
+      // Étape 3: Rediriger vers la page de vérification OTP
+      navigate(`/verify-otp?email=${encodeURIComponent(userEmail)}&name=${encodeURIComponent(fullName)}`, { replace: true });
+
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erreur inattendue";
+      console.error('[signup] Exception:', errorMessage);
       setFormError(errorMessage);
     } finally {
       setLoading(false);
     }
-  }, [email, signupPassword, firstName, lastName, phone, country, userRole, shopName, signUp, navigate, toast]);
+  }, [email, signupPassword, firstName, lastName, phone, country, userRole, shopName, navigate, toast]);
 
   const handleVerifyOtp = useCallback(async (e?: React.FormEvent) => {
     if (e) e.preventDefault();

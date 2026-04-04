@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Grid3X3, MessageSquare, ShoppingCart, User } from "lucide-react";
+import { Home, Search, PlusCircle, ShoppingCart, User } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -94,13 +94,28 @@ export const MobileBottomNav = () => {
   }, [location.pathname, navigate]);
 
   // Dynamic nav items with smart dashboard routing - MUST be before early return
+  // Navigate to sell / create shop
+  const handleSellClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isAuthenticated) {
+      navigate('/auth?mode=signup&role=seller');
+      return;
+    }
+    if (isSeller || isSuperAdmin) {
+      navigate('/seller-dashboard');
+    } else {
+      navigate('/auth?mode=signup&role=seller');
+    }
+  }, [isAuthenticated, isSeller, isSuperAdmin, navigate]);
+
   const navItems = useMemo(() => [
     { icon: Home, label: "Accueil", path: "/marketplace", onClick: handleHomeClick },
-    { icon: Grid3X3, label: "Catégories", path: "/categories" },
-    { icon: MessageSquare, label: "Messages", path: "/messages", badge: messageBadgeCount },
+    { icon: Search, label: "Explorer", path: "/categories" },
+    { icon: PlusCircle, label: "Vendre", path: "/seller-dashboard", onClick: handleSellClick, highlight: true },
     { icon: ShoppingCart, label: "Panier", path: "/cart", badge: cartItems },
     { icon: User, label: "Compte", path: dashboardPath, onClick: handleAccountClick, onPrefetch: handleAccountPrefetch },
-  ], [handleHomeClick, messageBadgeCount, cartItems, dashboardPath, handleAccountClick, handleAccountPrefetch]);
+  ], [handleHomeClick, cartItems, dashboardPath, handleAccountClick, handleAccountPrefetch, handleSellClick]);
 
   // isActive function - memoized to avoid recreation
   const isActive = useCallback((path: string) => {
@@ -125,12 +140,12 @@ export const MobileBottomNav = () => {
       }}
     >
       <div className="flex items-center justify-around h-16 px-1">
-        {navItems.map(({ icon: Icon, label, path, badge, onClick, onPrefetch }) => {
+        {navItems.map(({ icon: Icon, label, path, badge, onClick, onPrefetch, highlight }) => {
           const active = isActive(path);
           
           return (
             <motion.button
-              key={path}
+              key={label}
               onClick={(e) => onClick ? onClick(e) : navigate(path)}
               onMouseEnter={() => onPrefetch ? onPrefetch() : handleRoutePrefetch(path)}
               onTouchStart={() => onPrefetch ? onPrefetch() : handleRoutePrefetch(path)}
@@ -139,22 +154,30 @@ export const MobileBottomNav = () => {
               className={cn(
                 "flex flex-col items-center justify-center flex-1 h-full gap-0.5 transition-colors duration-200 relative",
                 "touch-manipulation select-none",
-                active
+                highlight && !active
                   ? "text-primary"
-                  : "text-muted-foreground active:text-primary"
+                  : active
+                    ? "text-primary"
+                    : "text-muted-foreground active:text-primary"
               )}
             >
               <div className="relative">
-                <motion.div
-                  initial={false}
-                  animate={active ? { scale: 1.1, y: -2 } : { scale: 1, y: 0 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                >
-                  <Icon className={cn(
-                    "transition-all duration-200",
-                    active ? "w-6 h-6 stroke-[2.5px]" : "w-5 h-5 stroke-[1.8px]"
-                  )} />
-                </motion.div>
+                {highlight ? (
+                  <div className="w-10 h-10 -mt-4 rounded-full bg-gradient-to-br from-primary to-[hsl(16,100%,50%)] flex items-center justify-center shadow-lg">
+                    <Icon className="w-5 h-5 text-white stroke-[2.5px]" />
+                  </div>
+                ) : (
+                  <motion.div
+                    initial={false}
+                    animate={active ? { scale: 1.1, y: -2 } : { scale: 1, y: 0 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  >
+                    <Icon className={cn(
+                      "transition-all duration-200",
+                      active ? "w-6 h-6 stroke-[2.5px]" : "w-5 h-5 stroke-[1.8px]"
+                    )} />
+                  </motion.div>
+                )}
                 
                 <AnimatePresence>
                   {badge !== undefined && badge > 0 && (

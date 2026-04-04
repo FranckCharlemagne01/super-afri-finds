@@ -1,21 +1,19 @@
 import { useNavigate } from "react-router-dom";
 import { useRef, useEffect } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Smartphone, Shirt, Watch, Sparkles, Home, Baby, Car, Dumbbell, Headphones, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const quickCategories = [
-  { name: "Mode Homme", slug: "mode-homme" },
-  { name: "Mode Femme", slug: "mode-femme" },
-  { name: "Mode Enfant", slug: "enfants-bebes" },
-  { name: "Chaussures Homme", slug: "chaussures-homme" },
-  { name: "Chaussures Femme", slug: "chaussures-femme" },
-  { name: "Téléphones", slug: "telephones-portables-accessoires" },
-  { name: "Accessoires Téléphones", slug: "accessoires-telephones" },
-  { name: "Montres Homme", slug: "montres-homme" },
-  { name: "Montres Femme", slug: "montres-femme" },
-  { name: "Beauté", slug: "beaute-cosmetique" },
-  { name: "Maison & Décoration", slug: "maison-vie-quotidienne" },
-  { name: "Jouets Enfants", slug: "jouets-jeux-educatifs" },
+  { name: "Téléphones", slug: "telephones-portables-accessoires", icon: Smartphone, color: "from-blue-500 to-blue-600" },
+  { name: "Mode Homme", slug: "mode-homme", icon: Shirt, color: "from-primary to-[hsl(16,100%,50%)]" },
+  { name: "Mode Femme", slug: "mode-femme", icon: ShoppingBag, color: "from-pink-500 to-rose-500" },
+  { name: "Beauté", slug: "beaute-cosmetique", icon: Sparkles, color: "from-purple-500 to-violet-500" },
+  { name: "Maison", slug: "maison-vie-quotidienne", icon: Home, color: "from-[hsl(var(--success))] to-emerald-600" },
+  { name: "Montres", slug: "montres-homme", icon: Watch, color: "from-amber-500 to-orange-500" },
+  { name: "Enfants", slug: "enfants-bebes", icon: Baby, color: "from-cyan-500 to-teal-500" },
+  { name: "Chaussures", slug: "chaussures-homme", icon: Dumbbell, color: "from-slate-600 to-slate-700" },
+  { name: "Accessoires", slug: "accessoires-telephones", icon: Headphones, color: "from-indigo-500 to-blue-600" },
+  { name: "Auto", slug: "auto-moto", icon: Car, color: "from-red-500 to-rose-600" },
 ];
 
 export const PopularCategories = () => {
@@ -46,11 +44,19 @@ export const PopularCategories = () => {
   };
 
   return (
-    <div className="w-full py-4 sm:py-5">
-      <h2 className="text-base sm:text-lg md:text-xl font-bold mb-4 px-3 sm:px-4 md:px-6 bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
-        ✨ Explorez vos centres d'intérêt
-      </h2>
-      <div className="relative group px-1">
+    <div className="w-full py-3 sm:py-5">
+      <div className="flex items-center justify-between mb-3 px-1">
+        <h2 className="text-sm sm:text-base md:text-lg font-bold text-foreground">
+          Catégories
+        </h2>
+        <button
+          onClick={() => navigate('/categories')}
+          className="text-xs text-primary font-medium"
+        >
+          Voir tout →
+        </button>
+      </div>
+      <div className="relative group">
         <button
           onClick={scrollLeft}
           className={cn(
@@ -75,24 +81,33 @@ export const PopularCategories = () => {
 
         <div
           ref={scrollRef}
-          className="flex gap-2.5 sm:gap-3 overflow-x-auto scrollbar-hide scroll-smooth px-3 sm:px-6 touch-pan-x pb-2"
+          className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide scroll-smooth px-1 sm:px-2 touch-pan-x pb-2"
           style={{
             scrollbarWidth: "none",
             msOverflowStyle: "none",
             WebkitOverflowScrolling: "touch",
           }}
         >
-          {quickCategories.map((cat) => (
-            <button
-              key={cat.slug}
-              onClick={() => navigate(`/category/${cat.slug}`)}
-              className="flex-shrink-0 px-4 py-2.5 rounded-full border border-border bg-card hover:bg-accent hover:border-primary/30 transition-all duration-200 shadow-sm"
-            >
-              <span className="text-sm font-semibold text-foreground whitespace-nowrap">
-                {cat.name}
-              </span>
-            </button>
-          ))}
+          {quickCategories.map((cat) => {
+            const Icon = cat.icon;
+            return (
+              <button
+                key={cat.slug}
+                onClick={() => navigate(`/category/${cat.slug}`)}
+                className="flex-shrink-0 flex flex-col items-center gap-1.5 w-[60px] sm:w-[72px] group/cat"
+              >
+                <div className={cn(
+                  "w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br flex items-center justify-center shadow-sm transition-transform duration-200 group-active/cat:scale-95",
+                  cat.color
+                )}>
+                  <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                </div>
+                <span className="text-[10px] sm:text-xs font-medium text-foreground text-center leading-tight line-clamp-1">
+                  {cat.name}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

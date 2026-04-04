@@ -1,15 +1,17 @@
-// Djassa Marketplace - Index Page (v4 - Performance Optimized)
+// Djassa Marketplace - Index Page (v5 - Design Enhanced)
 import { ProductCard } from "@/components/ProductCard";
 import SEOHead from "@/components/SEOHead";
 import { CategoryCard } from "@/components/CategoryCard";
 import { SearchBar } from "@/components/SearchBar";
-import PromoBanner from "@/components/PromoBanner";
 import { FloatingChatWidget } from "@/components/FloatingChatWidget";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 import { HelpButton } from "@/components/HelpButton";
 
 import { FloatingChatButton } from "@/components/FloatingChatButton";
 import FAQ from "@/components/FAQ";
+import { SellerCTABanner } from "@/components/SellerCTABanner";
+import { FlashSalesCarousel } from "@/components/FlashSalesCarousel";
+import { MarketplaceFooter } from "@/components/MarketplaceFooter";
 import { useTheme } from "next-themes";
 
 import { CategorySidebar } from "@/components/CategorySidebar";

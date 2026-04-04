@@ -560,45 +560,47 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Top CTA Banner */}
-      <SellerCTABanner variant="top" onShowSellerUpgrade={() => setShowSellerUpgrade(true)} />
+      {/* Top CTA Banner - only on desktop */}
+      <div className="hidden md:block">
+        <SellerCTABanner variant="top" onShowSellerUpgrade={() => setShowSellerUpgrade(true)} />
+      </div>
 
       {/* Main Content */}
-      <main className="container mx-auto px-3 sm:px-4 lg:px-8 xl:px-12 py-4 sm:py-6 lg:py-8 max-w-[1600px] overflow-x-hidden">
+      <main className="container mx-auto px-3 sm:px-4 lg:px-8 xl:px-12 py-3 sm:py-6 lg:py-8 max-w-[1600px] overflow-x-hidden">
         
         {/* Flash Sales - Horizontal Carousel */}
         <FlashSalesCarousel products={specialOffersProducts} />
 
-        {/* Catégories populaires */}
-        <section className="mb-6 sm:mb-8 lg:mb-12">
+        {/* Catégories avec icônes */}
+        <section className="mb-5 sm:mb-8 lg:mb-12">
           <PopularCategories />
         </section>
 
-        {/* Produits Recommandés */}
-        <section className="mb-6 sm:mb-8 lg:mb-12">
-          <div className="flex items-center justify-between mb-4 lg:mb-6">
+        {/* Produits Recommandés - Grid */}
+        <section className="mb-5 sm:mb-8 lg:mb-12">
+          <div className="flex items-center justify-between mb-3 lg:mb-6">
             <div className="flex items-center gap-2 lg:gap-3">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-[hsl(16,100%,50%)] rounded-xl flex items-center justify-center shadow-md">
-                <Sparkles className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-[hsl(16,100%,50%)] rounded-xl flex items-center justify-center shadow-sm">
+                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground">Recommandés pour vous</h2>
+              <h2 className="text-base sm:text-xl lg:text-2xl font-bold text-foreground">Recommandés</h2>
             </div>
             <Button 
               variant="ghost" 
               size="sm" 
               onClick={handleRefreshRecommendations} 
-              className="text-xs lg:text-sm hover:text-primary transition-colors px-3 lg:px-4 h-9 lg:h-10 rounded-lg active:scale-95"
+              className="text-xs hover:text-primary transition-colors px-3 h-8 rounded-lg active:scale-95"
             >
               Actualiser
             </Button>
           </div>
           
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-5 xl:gap-6" key={refreshKey}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5 sm:gap-4 lg:gap-5 xl:gap-6" key={refreshKey}>
             {shuffledProducts.slice(0, 12).map((product, index) => (
               <div 
                 key={`${product.id}-${refreshKey}`} 
                 className="animate-fade-in"
-                style={{ animationDelay: `${index * 40}ms` }}
+                style={{ animationDelay: `${index * 30}ms` }}
               >
                 <ProductCard {...convertToProductCardProps(product)} />
               </div>
@@ -606,38 +608,41 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Tendances du moment */}
-        <section className="mb-6 sm:mb-8 lg:mb-12">
-          <div className="flex items-center justify-between mb-4 lg:mb-6">
+        {/* CTA Vendeur - Section dédiée entre les sections */}
+        <SellerCTABanner variant="bottom" onShowSellerUpgrade={() => setShowSellerUpgrade(true)} />
+
+        {/* Tendances du moment - Grid */}
+        <section className="mb-5 sm:mb-8 lg:mb-12">
+          <div className="flex items-center justify-between mb-3 lg:mb-6">
             <div className="flex items-center gap-2 lg:gap-3">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-[hsl(var(--success))] to-[hsl(134,61%,35%)] rounded-xl flex items-center justify-center shadow-md">
-                <ShoppingBag className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[hsl(var(--success))] to-[hsl(134,61%,35%)] rounded-xl flex items-center justify-center shadow-sm">
+                <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground">
-                Tendances du moment
+              <h2 className="text-base sm:text-xl lg:text-2xl font-bold text-foreground">
+                Tendances
               </h2>
             </div>
-            <Badge variant="outline" className="text-xs lg:text-sm rounded-lg px-3 py-1">
+            <Badge variant="outline" className="text-[10px] sm:text-xs rounded-lg px-2.5 py-0.5">
               {regularProducts.length} produits
             </Badge>
           </div>
           
           {regularProducts.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-5 xl:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5 sm:gap-4 lg:gap-5 xl:gap-6">
               {regularProducts.map((product, index) => (
                 <div 
                   key={product.id}
                   className="animate-fade-in"
-                  style={{ animationDelay: `${index * 40}ms` }}
+                  style={{ animationDelay: `${index * 30}ms` }}
                 >
                   <ProductCard {...convertToProductCardProps(product)} />
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 px-4 bg-muted/30 rounded-2xl border border-border/50">
-              <ShoppingBag className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-              <p className="text-muted-foreground">
+            <div className="text-center py-10 px-4 bg-muted/30 rounded-2xl border border-border/50">
+              <ShoppingBag className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">
                 {userLocation.city 
                   ? `Aucun produit disponible à ${userLocation.city} pour le moment`
                   : 'Aucun produit disponible pour le moment'}
@@ -645,9 +650,6 @@ const Index = () => {
             </div>
           )}
         </section>
-
-        {/* Bottom CTA Banner */}
-        <SellerCTABanner variant="bottom" onShowSellerUpgrade={() => setShowSellerUpgrade(true)} />
 
         {/* Section vendeur - data attribute conservé pour le scroll programmatique */}
         <section className="mb-6" data-seller-upgrade />

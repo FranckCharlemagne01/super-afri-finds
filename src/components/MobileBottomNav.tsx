@@ -140,12 +140,12 @@ export const MobileBottomNav = () => {
       }}
     >
       <div className="flex items-center justify-around h-16 px-1">
-        {navItems.map(({ icon: Icon, label, path, badge, onClick, onPrefetch }) => {
+        {navItems.map(({ icon: Icon, label, path, badge, onClick, onPrefetch, highlight }) => {
           const active = isActive(path);
           
           return (
             <motion.button
-              key={path}
+              key={label}
               onClick={(e) => onClick ? onClick(e) : navigate(path)}
               onMouseEnter={() => onPrefetch ? onPrefetch() : handleRoutePrefetch(path)}
               onTouchStart={() => onPrefetch ? onPrefetch() : handleRoutePrefetch(path)}
@@ -154,9 +154,11 @@ export const MobileBottomNav = () => {
               className={cn(
                 "flex flex-col items-center justify-center flex-1 h-full gap-0.5 transition-colors duration-200 relative",
                 "touch-manipulation select-none",
-                active
+                highlight && !active
                   ? "text-primary"
-                  : "text-muted-foreground active:text-primary"
+                  : active
+                    ? "text-primary"
+                    : "text-muted-foreground active:text-primary"
               )}
             >
               <div className="relative">

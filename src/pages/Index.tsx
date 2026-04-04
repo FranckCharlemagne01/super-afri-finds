@@ -16,9 +16,7 @@ import { useTheme } from "next-themes";
 
 import { CategorySidebar } from "@/components/CategorySidebar";
 import { PopularCategories } from "@/components/PopularCategories";
-import { FeaturedProductsGrid } from "@/components/FeaturedProductsGrid";
-import { DynamicPromoBanner } from "@/components/DynamicPromoBanner";
-import { NativeAnnouncementSlider } from "@/components/NativeAnnouncementSlider";
+import { NotificationBell } from "@/components/NotificationBell";
 import { MarketplaceTutorial } from "@/components/MarketplaceTutorial";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ProductSkeleton } from "@/components/ui/ProductSkeleton";

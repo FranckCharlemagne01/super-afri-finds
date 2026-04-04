@@ -587,51 +587,14 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Main Content - Enhanced for desktop */}
+      {/* Top CTA Banner */}
+      <SellerCTABanner variant="top" onShowSellerUpgrade={() => setShowSellerUpgrade(true)} />
+
+      {/* Main Content */}
       <main className="container mx-auto px-3 sm:px-4 lg:px-8 xl:px-12 py-4 sm:py-6 lg:py-8 max-w-[1600px] overflow-x-hidden">
-        {specialOffersProducts.length > 0 && (
-          <section className="mb-6 sm:mb-8 lg:mb-12">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 lg:gap-4 mb-4 lg:mb-6">
-              <div className="flex items-center gap-2 lg:gap-3">
-                <div className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 gradient-primary rounded-xl flex items-center justify-center animate-pulse shadow-md">
-                  <span className="text-white text-sm sm:text-base lg:text-lg">⚡</span>
-                </div>
-                <h2 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-foreground">Offres Spéciales</h2>
-              </div>
-              <Badge className="bg-promo text-promo-foreground animate-pulse-promo w-fit text-[10px] sm:text-xs lg:text-sm rounded-lg lg:rounded-xl px-3 lg:px-4 py-1 lg:py-1.5">
-                Limitées dans le temps
-              </Badge>
-              <div className="sm:ml-auto">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => navigate('/flash-sales')} 
-                  className="text-xs lg:text-sm hover:text-primary transition-colors px-3 lg:px-4 h-9 lg:h-10 rounded-lg active:scale-95"
-                >
-                  Voir tout →
-                </Button>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-5 xl:gap-6">
-              {specialOffersProducts.slice(0, 12).map((product, index) => (
-                <div 
-                  key={product.id} 
-                  className="animate-fade-in"
-                  style={{ animationDelay: `${index * 40}ms` }}
-                >
-                  <ProductCard {...convertToProductCardProps(product)} />
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Bannière statique promotionnelle */}
-        <section className="mb-6 sm:mb-8 lg:mb-12">
-          <DynamicPromoBanner />
-        </section>
-
+        
+        {/* Flash Sales - Horizontal Carousel */}
+        <FlashSalesCarousel products={specialOffersProducts} />
 
         {/* Catégories populaires */}
         <section className="mb-6 sm:mb-8 lg:mb-12">
@@ -641,7 +604,12 @@ const Index = () => {
         {/* Produits Recommandés */}
         <section className="mb-6 sm:mb-8 lg:mb-12">
           <div className="flex items-center justify-between mb-4 lg:mb-6">
-            <h2 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-foreground">Recommandés pour vous</h2>
+            <div className="flex items-center gap-2 lg:gap-3">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-[hsl(16,100%,50%)] rounded-xl flex items-center justify-center shadow-md">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground">Recommandés pour vous</h2>
+            </div>
             <Button 
               variant="ghost" 
               size="sm" 
@@ -668,10 +636,15 @@ const Index = () => {
         {/* Tendances du moment */}
         <section className="mb-6 sm:mb-8 lg:mb-12">
           <div className="flex items-center justify-between mb-4 lg:mb-6">
-            <h2 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-foreground">
-              Tendances du moment
-            </h2>
-            <Badge variant="outline" className="text-xs lg:text-sm rounded-lg lg:rounded-xl px-3 lg:px-4 py-1 lg:py-1.5">
+            <div className="flex items-center gap-2 lg:gap-3">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-[hsl(var(--success))] to-[hsl(134,61%,35%)] rounded-xl flex items-center justify-center shadow-md">
+                <ShoppingBag className="w-5 h-5 text-white" />
+              </div>
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground">
+                Tendances du moment
+              </h2>
+            </div>
+            <Badge variant="outline" className="text-xs lg:text-sm rounded-lg px-3 py-1">
               {regularProducts.length} produits
             </Badge>
           </div>
@@ -689,7 +662,8 @@ const Index = () => {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 px-4 bg-muted/30 rounded-lg">
+            <div className="text-center py-12 px-4 bg-muted/30 rounded-2xl border border-border/50">
+              <ShoppingBag className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
               <p className="text-muted-foreground">
                 {userLocation.city 
                   ? `Aucun produit disponible à ${userLocation.city} pour le moment`
@@ -699,119 +673,22 @@ const Index = () => {
           )}
         </section>
 
+        {/* Bottom CTA Banner */}
+        <SellerCTABanner variant="bottom" onShowSellerUpgrade={() => setShowSellerUpgrade(true)} />
+
         {/* Section vendeur - data attribute conservé pour le scroll programmatique */}
-        <section className="mb-6 sm:mb-8 lg:mb-12" data-seller-upgrade />
+        <section className="mb-6" data-seller-upgrade />
       </main>
 
-      {/* FAQ Section - Hidden on mobile/tablet, enhanced for desktop */}
+      {/* FAQ Section - Hidden on mobile/tablet */}
       <div className="hidden md:block">
         <div className="container mx-auto px-4 lg:px-8 xl:px-12 max-w-[1600px]">
           <FAQ />
         </div>
       </div>
 
-      {/* Footer - Enhanced for desktop */}
-      <footer className="hidden md:block bg-secondary mt-8 lg:mt-16 py-10 lg:py-14 border-t">
-        <div className="container mx-auto px-4 lg:px-8 xl:px-12 max-w-[1600px]">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-10 lg:mb-12">
-            <div>
-              <h4 className="font-semibold mb-4 text-sm lg:text-base text-foreground">Assistance</h4>
-              <ul className="space-y-3">
-                <li>
-                  <button className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                    Centre d'aide
-                  </button>
-                </li>
-                <li>
-                  <button className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                    Support 24/7
-                  </button>
-                </li>
-                <li>
-                  <button className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                    FAQ
-                  </button>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4 text-sm lg:text-base text-foreground">Informations</h4>
-              <ul className="space-y-3">
-                <li>
-                  <button 
-                    onClick={() => navigate("/about")}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    À propos de Djassa
-                  </button>
-                </li>
-                <li>
-                  <button 
-                    onClick={() => navigate("/legal")}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    Politique de confidentialité
-                  </button>
-                </li>
-                <li>
-                  <button 
-                    onClick={() => navigate("/legal")}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    Mentions légales
-                  </button>
-                </li>
-                <li>
-                  <button className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                    CGV
-                  </button>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4 text-sm lg:text-base text-foreground">Contact</h4>
-              <ul className="space-y-3">
-                <li>
-                  <a 
-                    href="mailto:djassa@djassa.tech" 
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    Email: djassa@djassa.tech
-                  </a>
-                </li>
-                <li>
-                  <a 
-                    href="https://wa.me/2250788281222" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    WhatsApp: +225 07 88 28 12 22
-                  </a>
-                </li>
-                <li className="text-sm text-muted-foreground">Abidjan, Côte d'Ivoire</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4 text-sm lg:text-base text-foreground">Paiement & Livraison</h4>
-              <ul className="space-y-3">
-                <li className="text-sm text-muted-foreground">Orange Money</li>
-                <li className="text-sm text-muted-foreground">MTN Mobile Money</li>
-                <li className="text-sm text-muted-foreground">Livraison 2-5 jours</li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="border-t pt-8 text-center">
-            <p className="text-sm lg:text-base text-muted-foreground mb-2">
-              © {new Date().getFullYear()} Djassa - Votre marketplace de confiance
-            </p>
-            <p className="text-xs lg:text-sm text-muted-foreground">
-              Fait avec ❤️ en Côte d'Ivoire 🇨🇮
-            </p>
-          </div>
-        </div>
-      </footer>
+      {/* Footer */}
+      <MarketplaceFooter />
 
       {/* Floating elements */}
       <FloatingChatButton />

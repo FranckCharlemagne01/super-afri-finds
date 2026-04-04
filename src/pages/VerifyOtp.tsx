@@ -42,8 +42,23 @@ const VerifyOtp = () => {
     setError('');
 
     try {
+      // Récupérer les données d'inscription stockées
+      const signupDataRaw = sessionStorage.getItem('signup_data');
+      const signupData = signupDataRaw ? JSON.parse(signupDataRaw) : {};
+
+      console.log('[verify-otp] Vérification pour:', emailFromParams, 'avec données signup:', !!signupDataRaw);
+
       const { data, error: fnError } = await supabase.functions.invoke('verify-email-otp', {
-        body: { email: emailFromParams, otp: otpCode, fullName }
+        body: { 
+          email: emailFromParams, 
+          otp: otpCode, 
+          fullName: fullName || signupData.fullName,
+          password: signupData.password,
+          phone: signupData.phone,
+          country: signupData.country,
+          userRole: signupData.userRole,
+          shopName: signupData.shopName,
+        }
       });
 
       if (fnError || data?.error) {
@@ -53,6 +68,9 @@ const VerifyOtp = () => {
       }
 
       if (data?.success && data?.magicLink) {
+        // Nettoyer les données d'inscription
+        sessionStorage.removeItem('signup_data');
+
         // Extract token from magic link and use it to sign in
         const url = new URL(data.magicLink);
         const token_hash = url.searchParams.get('token') || url.hash?.split('token=')[1];

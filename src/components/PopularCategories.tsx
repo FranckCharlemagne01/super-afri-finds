@@ -1,20 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { useRef, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Smartphone, Shirt, Watch, Sparkles, Home, Baby, Car, Dumbbell, Headphones, ShoppingBag } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { categories } from "@/data/categories";
 
-const quickCategories = [
-  { name: "Téléphones", slug: "telephones-portables-accessoires", icon: Smartphone, color: "from-blue-500 to-blue-600" },
-  { name: "Mode Homme", slug: "mode-homme", icon: Shirt, color: "from-primary to-[hsl(16,100%,50%)]" },
-  { name: "Mode Femme", slug: "mode-femme", icon: ShoppingBag, color: "from-pink-500 to-rose-500" },
-  { name: "Beauté", slug: "beaute-cosmetique", icon: Sparkles, color: "from-purple-500 to-violet-500" },
-  { name: "Maison", slug: "maison-vie-quotidienne", icon: Home, color: "from-[hsl(var(--success))] to-emerald-600" },
-  { name: "Montres", slug: "montres-homme", icon: Watch, color: "from-amber-500 to-orange-500" },
-  { name: "Enfants", slug: "enfants-bebes", icon: Baby, color: "from-cyan-500 to-teal-500" },
-  { name: "Chaussures", slug: "chaussures-homme", icon: Dumbbell, color: "from-slate-600 to-slate-700" },
-  { name: "Accessoires", slug: "accessoires-telephones", icon: Headphones, color: "from-indigo-500 to-blue-600" },
-  { name: "Auto", slug: "auto-moto", icon: Car, color: "from-red-500 to-rose-600" },
-];
+// Top 10 categories for quick access on homepage
+const quickCategories = categories.slice(0, 10);
 
 export const PopularCategories = () => {
   const navigate = useNavigate();
@@ -41,6 +32,19 @@ export const PopularCategories = () => {
 
   const scrollRight = () => {
     scrollRef.current?.scrollBy({ left: 200, behavior: "smooth" });
+  };
+
+  const categoryColors: Record<string, string> = {
+    "mode-vetements": "from-primary to-[hsl(16,100%,50%)]",
+    "chaussures": "from-slate-600 to-slate-700",
+    "sacs-accessoires": "from-pink-500 to-rose-500",
+    "telephones-electronique": "from-blue-500 to-blue-600",
+    "beaute-coiffure": "from-purple-500 to-violet-500",
+    "maison-cuisine": "from-[hsl(var(--success))] to-emerald-600",
+    "meubles": "from-amber-600 to-yellow-700",
+    "auto-moto": "from-red-500 to-rose-600",
+    "bebe-enfants": "from-cyan-500 to-teal-500",
+    "alimentation": "from-orange-500 to-amber-500",
   };
 
   return (
@@ -90,6 +94,7 @@ export const PopularCategories = () => {
         >
           {quickCategories.map((cat) => {
             const Icon = cat.icon;
+            const color = categoryColors[cat.slug] || "from-gray-500 to-gray-600";
             return (
               <button
                 key={cat.slug}
@@ -98,12 +103,12 @@ export const PopularCategories = () => {
               >
                 <div className={cn(
                   "w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br flex items-center justify-center shadow-sm transition-transform duration-200 group-active/cat:scale-95",
-                  cat.color
+                  color
                 )}>
                   <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
                 <span className="text-[10px] sm:text-xs font-medium text-foreground text-center leading-tight line-clamp-1">
-                  {cat.name}
+                  {cat.name.split(" ")[0]}
                 </span>
               </button>
             );

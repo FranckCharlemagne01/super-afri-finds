@@ -18,7 +18,6 @@ export const CategorySidebar = () => {
         .select('category')
         .eq('is_active', true);
       
-      // Filtrage géographique : même ville ET même pays
       if (userLocation.city && userLocation.country) {
         query = query
           .eq('city', userLocation.city)
@@ -65,7 +64,7 @@ export const CategorySidebar = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm text-foreground group-hover:text-primary transition-colors truncate">
-                      {category.name}
+                      {category.emoji} {category.name}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {categoryTotal.toLocaleString()} articles

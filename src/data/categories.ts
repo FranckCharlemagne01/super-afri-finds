@@ -5,12 +5,14 @@ import {
   Sparkles, 
   ShoppingBag, 
   Car,
-  Gamepad2,
   Baby,
-  Watch,
-  Gift,
   Footprints,
-  Headphones,
+  Gift,
+  Dog,
+  Wrench,
+  Briefcase,
+  Sofa,
+  UtensilsCrossed,
   LucideIcon
 } from "lucide-react";
 
@@ -25,125 +27,124 @@ export interface Category {
   name: string;
   slug: string;
   icon: LucideIcon;
+  emoji: string;
   subcategories: SubCategory[];
 }
 
 export const categories: Category[] = [
   {
-    id: "men-fashion",
-    name: "Mode Homme",
-    slug: "mode-homme",
+    id: "mode-vetements",
+    name: "Mode & Vêtements",
+    slug: "mode-vetements",
     icon: Shirt,
+    emoji: "👗",
     subcategories: [
-      { id: "men-tshirts", name: "T-shirts Homme", slug: "tshirts-homme" },
-      { id: "men-pants", name: "Pantalons Homme", slug: "pantalons-homme" },
-      { id: "men-jackets", name: "Vestes & Manteaux Homme", slug: "vestes-manteaux-homme" },
-      { id: "men-clothing", name: "Vêtements Homme", slug: "vetements-homme" },
-      { id: "men-sportswear", name: "Sportwear & Streetwear", slug: "sportwear-streetwear" },
-      { id: "men-grooming", name: "Soins de barbe & Beauté Homme", slug: "soins-barbe-beaute-homme" },
-      { id: "men-accessories", name: "Lunettes & Casquettes Homme", slug: "lunettes-casquettes" },
-      { id: "men-suits", name: "Costumes & Chemises Homme", slug: "costumes-chemises-homme" },
+      { id: "mode-homme", name: "Homme", slug: "vetements-homme" },
+      { id: "mode-homme-tshirts", name: "T-shirts Homme", slug: "tshirts-homme" },
+      { id: "mode-homme-pantalons", name: "Pantalons Homme", slug: "pantalons-homme" },
+      { id: "mode-homme-vestes", name: "Vestes & Manteaux", slug: "vestes-manteaux-homme" },
+      { id: "mode-homme-costumes", name: "Costumes & Chemises", slug: "costumes-chemises-homme" },
+      { id: "mode-homme-sport", name: "Sportwear & Streetwear", slug: "sportwear-streetwear" },
+      { id: "mode-femme", name: "Femme", slug: "vetements-femme" },
+      { id: "mode-femme-robes", name: "Robes Femme", slug: "robes-femme" },
+      { id: "mode-femme-tops", name: "T-shirts & Tops Femme", slug: "tshirts-tops-femme" },
+      { id: "mode-femme-lingerie", name: "Lingerie", slug: "lingerie-sous-vetements" },
+      { id: "mode-femme-musulmane", name: "Mode musulmane & Voiles", slug: "mode-musulmane-voiles" },
+      { id: "mode-africaine", name: "Tenues africaines", slug: "tenues-africaines" },
+      { id: "mode-sport", name: "Vêtements de sport", slug: "vetements-sport" },
     ]
   },
   {
-    id: "women-fashion",
-    name: "Mode Femme",
-    slug: "mode-femme",
-    icon: Sparkles,
-    subcategories: [
-      { id: "women-dresses", name: "Robes Femme", slug: "robes-femme" },
-      { id: "women-tshirts", name: "T-shirts & Tops Femme", slug: "tshirts-tops-femme" },
-      { id: "women-clothing", name: "Vêtements Femme", slug: "vetements-femme" },
-      { id: "women-bags", name: "Sacs Femme & Maroquinerie", slug: "sacs-main-maroquinerie" },
-      { id: "women-jewelry", name: "Bijoux & Montres Femme", slug: "bijoux-montres-femme" },
-      { id: "women-lingerie", name: "Lingerie & Sous-vêtements", slug: "lingerie-sous-vetements" },
-      { id: "women-beauty", name: "Beauté, Maquillage & Soins", slug: "beaute-maquillage-soins" },
-      { id: "women-muslim", name: "Mode musulmane & Voiles", slug: "mode-musulmane-voiles" },
-      { id: "women-accessories", name: "Accessoires Femme", slug: "accessoires-femme" },
-    ]
-  },
-  {
-    id: "kids-baby",
-    name: "Mode Enfant & Bébé",
-    slug: "enfants-bebes",
-    icon: Baby,
-    subcategories: [
-      { id: "kids-boys", name: "Vêtements Garçon", slug: "vetements-garcon" },
-      { id: "kids-girls", name: "Vêtements Fille", slug: "vetements-fille" },
-      { id: "kids-baby-clothes", name: "Vêtements Bébé", slug: "vetements-bebe" },
-      { id: "kids-shoes", name: "Chaussures Enfant", slug: "chaussures-enfant" },
-      { id: "kids-toys", name: "Jouets & Jeux éducatifs", slug: "jouets-jeux-educatifs" },
-      { id: "kids-strollers", name: "Poussettes & Accessoires Bébé", slug: "poussettes-accessoires-bebe" },
-      { id: "kids-school", name: "Fournitures scolaires & Sac à dos", slug: "fournitures-scolaires-sac-dos" },
-    ]
-  },
-  {
-    id: "shoes",
+    id: "chaussures",
     name: "Chaussures",
     slug: "chaussures",
     icon: Footprints,
+    emoji: "👟",
     subcategories: [
-      { id: "shoes-men", name: "Chaussures Homme", slug: "chaussures-homme" },
-      { id: "shoes-women", name: "Chaussures Femme", slug: "chaussures-femme" },
-      { id: "shoes-kids", name: "Chaussures Enfant", slug: "chaussures-enfant-cat" },
-      { id: "shoes-sneakers", name: "Baskets & Sneakers", slug: "baskets-sneakers" },
-      { id: "shoes-sandals", name: "Sandales & Claquettes", slug: "sandales-claquettes" },
-      { id: "shoes-sport", name: "Chaussures de sport", slug: "chaussures-sport" },
+      { id: "chaussures-homme", name: "Chaussures Homme", slug: "chaussures-homme" },
+      { id: "chaussures-femme", name: "Chaussures Femme", slug: "chaussures-femme" },
+      { id: "chaussures-enfant", name: "Chaussures Enfant", slug: "chaussures-enfant" },
+      { id: "chaussures-enfant-cat", name: "Chaussures Enfant", slug: "chaussures-enfant-cat" },
+      { id: "baskets-sneakers", name: "Baskets & Sneakers", slug: "baskets-sneakers" },
+      { id: "sandales-claquettes", name: "Sandales & Claquettes", slug: "sandales-claquettes" },
+      { id: "chaussures-sport", name: "Chaussures de sport", slug: "chaussures-sport" },
     ]
   },
   {
-    id: "watches-jewelry",
-    name: "Montres & Bijoux",
-    slug: "montres-bijoux",
-    icon: Watch,
+    id: "sacs-accessoires",
+    name: "Sacs & Accessoires",
+    slug: "sacs-accessoires",
+    icon: ShoppingBag,
+    emoji: "👜",
     subcategories: [
-      { id: "watches-men", name: "Montres Homme", slug: "montres-homme" },
-      { id: "watches-women", name: "Montres Femme", slug: "montres-femme" },
-      { id: "watches-accessories", name: "Montres & Accessoires", slug: "montres-accessoires" },
-      { id: "jewelry-general", name: "Bijoux & Parures", slug: "bijoux-parures" },
-      { id: "watches-jewelry-perfume", name: "Montres, Bijoux & Parfums", slug: "montres-bijoux-parfums" },
+      { id: "sacs-main", name: "Sacs & Maroquinerie", slug: "sacs-main-maroquinerie" },
+      { id: "sacs-ceintures", name: "Sacs, Ceintures & Portefeuilles", slug: "sacs-ceintures-portefeuilles" },
+      { id: "lunettes-casquettes", name: "Lunettes & Casquettes", slug: "lunettes-casquettes" },
+      { id: "lunettes-mode", name: "Lunettes & Accessoires de mode", slug: "lunettes-accessoires-mode" },
+      { id: "bijoux-montres", name: "Bijoux & Montres", slug: "bijoux-montres-femme" },
+      { id: "bijoux-parures", name: "Bijoux & Parures", slug: "bijoux-parures" },
+      { id: "montres-homme", name: "Montres Homme", slug: "montres-homme" },
+      { id: "montres-femme", name: "Montres Femme", slug: "montres-femme" },
+      { id: "montres-accessoires", name: "Montres & Accessoires", slug: "montres-accessoires" },
+      { id: "montres-bijoux-parfums", name: "Montres, Bijoux & Parfums", slug: "montres-bijoux-parfums" },
+      { id: "accessoires-femme", name: "Accessoires Femme", slug: "accessoires-femme" },
     ]
   },
   {
-    id: "tech",
-    name: "Électronique",
-    slug: "technologie-electronique",
+    id: "telephones-electronique",
+    name: "Téléphones & Électronique",
+    slug: "telephones-electronique",
     icon: Smartphone,
+    emoji: "📱",
     subcategories: [
-      { id: "tech-phones", name: "Téléphones portables", slug: "telephones-portables-accessoires" },
-      { id: "tech-phone-accessories", name: "Accessoires Téléphones", slug: "accessoires-telephones" },
-      { id: "tech-headphones", name: "Casques & Écouteurs", slug: "casques-ecouteurs" },
-      { id: "tech-computers", name: "Ordinateurs & Accessoires", slug: "ordinateurs-accessoires" },
-      { id: "tech-tablets", name: "Tablettes & Accessoires", slug: "tablettes-accessoires" },
-      { id: "tech-tv", name: "Télévisions & Audio", slug: "televisions-audio" },
-      { id: "tech-gaming", name: "Jeux vidéo & Consoles", slug: "jeux-video-consoles" },
-      { id: "tech-smart", name: "Électroménager intelligent", slug: "electromenager-intelligent" },
+      { id: "smartphones", name: "Smartphones", slug: "telephones-portables-accessoires" },
+      { id: "accessoires-tel", name: "Accessoires Téléphones", slug: "accessoires-telephones" },
+      { id: "casques-ecouteurs", name: "Casques & Écouteurs", slug: "casques-ecouteurs" },
+      { id: "ordinateurs", name: "Ordinateurs", slug: "ordinateurs-accessoires" },
+      { id: "tablettes", name: "Tablettes", slug: "tablettes-accessoires" },
+      { id: "tv-audio", name: "TV & Audio", slug: "televisions-audio" },
+      { id: "jeux-video", name: "Jeux vidéo & Consoles", slug: "jeux-video-consoles" },
+      { id: "electromenager", name: "Électroménager", slug: "electromenager-intelligent" },
     ]
   },
   {
-    id: "home-living",
-    name: "Maison & Vie quotidienne",
-    slug: "maison-vie-quotidienne",
-    icon: Home,
-    subcategories: [
-      { id: "home-furniture", name: "Meubles & Décoration intérieure", slug: "meubles-decoration-interieure" },
-      { id: "home-kitchen", name: "Cuisine & Ustensiles", slug: "cuisine-ustensiles" },
-      { id: "home-linen", name: "Linge de maison & Literie", slug: "linge-maison-literie" },
-      { id: "home-garden", name: "Jardin & Extérieur", slug: "jardin-exterieur" },
-      { id: "home-storage", name: "Rangement & Organisation", slug: "rangement-organisation" },
-    ]
-  },
-  {
-    id: "beauty-cosmetics",
-    name: "Beauté & Cosmétique",
-    slug: "beaute-cosmetique",
+    id: "beaute-coiffure",
+    name: "Beauté & Coiffure",
+    slug: "beaute-coiffure",
     icon: Sparkles,
+    emoji: "💄",
     subcategories: [
-      { id: "beauty-makeup", name: "Maquillage", slug: "maquillage" },
-      { id: "beauty-skincare", name: "Soins de la peau", slug: "soins-peau" },
-      { id: "beauty-perfume", name: "Parfums", slug: "parfums" },
-      { id: "beauty-hair", name: "Coiffure & Extensions", slug: "coiffure-extensions" },
-      { id: "beauty-health", name: "Santé & Hygiène", slug: "sante-hygiene" },
+      { id: "produits-capillaires", name: "Produits capillaires", slug: "coiffure-extensions" },
+      { id: "maquillage", name: "Maquillage", slug: "maquillage" },
+      { id: "beaute-maquillage-soins", name: "Beauté & Soins", slug: "beaute-maquillage-soins" },
+      { id: "parfums", name: "Parfums", slug: "parfums" },
+      { id: "soins-peau", name: "Soins de la peau", slug: "soins-peau" },
+      { id: "soins-barbe", name: "Soins barbe & Beauté Homme", slug: "soins-barbe-beaute-homme" },
+      { id: "sante-hygiene", name: "Santé & Hygiène", slug: "sante-hygiene" },
+    ]
+  },
+  {
+    id: "maison-cuisine",
+    name: "Maison & Cuisine",
+    slug: "maison-cuisine",
+    icon: Home,
+    emoji: "🏠",
+    subcategories: [
+      { id: "cuisine-ustensiles", name: "Cuisine & Ustensiles", slug: "cuisine-ustensiles" },
+      { id: "linge-maison", name: "Linge de maison & Literie", slug: "linge-maison-literie" },
+      { id: "jardin", name: "Jardin & Extérieur", slug: "jardin-exterieur" },
+      { id: "rangement", name: "Rangement & Organisation", slug: "rangement-organisation" },
+      { id: "maison-general", name: "Maison & Vie quotidienne", slug: "maison-vie-quotidienne" },
+    ]
+  },
+  {
+    id: "meubles",
+    name: "Meubles",
+    slug: "meubles",
+    icon: Sofa,
+    emoji: "🛋️",
+    subcategories: [
+      { id: "meubles-deco", name: "Meubles & Décoration", slug: "meubles-decoration-interieure" },
     ]
   },
   {
@@ -151,46 +152,90 @@ export const categories: Category[] = [
     name: "Auto & Moto",
     slug: "auto-moto",
     icon: Car,
+    emoji: "🚗",
     subcategories: [
-      { id: "auto-parts", name: "Pièces & Accessoires Auto", slug: "pieces-accessoires-auto" },
-      { id: "auto-maintenance", name: "Entretien & Nettoyage Véhicule", slug: "entretien-nettoyage-vehicule" },
-      { id: "moto-accessories", name: "Moto & Accessoires", slug: "moto-accessoires" },
-      { id: "auto-safety", name: "Équipement de sécurité", slug: "equipement-securite" },
+      { id: "voitures", name: "Voitures", slug: "voitures" },
+      { id: "motos", name: "Motos", slug: "motos" },
+      { id: "pieces-auto", name: "Pièces & Accessoires Auto", slug: "pieces-accessoires-auto" },
+      { id: "entretien-vehicule", name: "Entretien Véhicule", slug: "entretien-nettoyage-vehicule" },
+      { id: "moto-accessoires", name: "Moto & Accessoires", slug: "moto-accessoires" },
+      { id: "equipement-securite", name: "Équipement de sécurité", slug: "equipement-securite" },
     ]
   },
   {
-    id: "sports-wellness",
-    name: "Sport, Santé & Bien-être",
-    slug: "sport-sante-bien-etre",
-    icon: Gamepad2,
+    id: "bebe-enfants",
+    name: "Bébé & Enfants",
+    slug: "bebe-enfants",
+    icon: Baby,
+    emoji: "👶",
     subcategories: [
-      { id: "sports-clothing", name: "Vêtements de sport", slug: "vetements-sport" },
-      { id: "sports-equipment", name: "Équipements sportifs", slug: "equipements-sportifs" },
-      { id: "sports-fitness", name: "Fitness & Gym", slug: "fitness-gym" },
-      { id: "sports-nutrition", name: "Nutrition & Bien-être", slug: "nutrition-bien-etre" },
+      { id: "bebe-0-3", name: "Bébé (0–3 ans)", slug: "vetements-bebe" },
+      { id: "garcon", name: "Garçon", slug: "vetements-garcon" },
+      { id: "fille", name: "Fille", slug: "vetements-fille" },
+      { id: "jouets", name: "Jouets & Jeux éducatifs", slug: "jouets-jeux-educatifs" },
+      { id: "fournitures-scolaires", name: "Fournitures scolaires", slug: "fournitures-scolaires-sac-dos" },
+      { id: "poussettes", name: "Poussettes & Accessoires", slug: "poussettes-accessoires-bebe" },
     ]
   },
   {
-    id: "food-grocery",
-    name: "Alimentation & Épicerie",
-    slug: "alimentation-epicerie",
-    icon: ShoppingBag,
+    id: "alimentation",
+    name: "Alimentation",
+    slug: "alimentation",
+    icon: UtensilsCrossed,
+    emoji: "🍽️",
     subcategories: [
-      { id: "food-local", name: "Produits locaux & Africains", slug: "produits-locaux-africains" },
-      { id: "food-imported", name: "Produits importés", slug: "produits-importes" },
-      { id: "food-drinks", name: "Boissons & Jus", slug: "boissons-jus" },
-      { id: "food-general", name: "Épicerie générale", slug: "epicerie-generale" },
+      { id: "produits-locaux", name: "Produits locaux & Africains", slug: "produits-locaux-africains" },
+      { id: "produits-importes", name: "Produits importés", slug: "produits-importes" },
+      { id: "boissons", name: "Boissons & Jus", slug: "boissons-jus" },
+      { id: "epicerie", name: "Épicerie générale", slug: "epicerie-generale" },
     ]
   },
   {
-    id: "accessories-lifestyle",
-    name: "Accessoires & Lifestyle",
-    slug: "accessoires-lifestyle",
+    id: "cadeaux-artisanat",
+    name: "Cadeaux & Artisanat",
+    slug: "cadeaux-artisanat",
     icon: Gift,
+    emoji: "🎁",
     subcategories: [
-      { id: "lifestyle-bags", name: "Sacs, Ceintures & Portefeuilles", slug: "sacs-ceintures-portefeuilles" },
-      { id: "lifestyle-glasses", name: "Lunettes & Accessoires de mode", slug: "lunettes-accessoires-mode" },
-      { id: "lifestyle-gifts", name: "Cadeaux & Gadgets", slug: "cadeaux-gadgets" },
+      { id: "cadeaux", name: "Cadeaux & Gadgets", slug: "cadeaux-gadgets" },
+      { id: "artisanat-local", name: "Artisanat local", slug: "artisanat-local" },
+      { id: "decoration-artisanale", name: "Décoration artisanale", slug: "decoration-artisanale" },
+    ]
+  },
+  {
+    id: "animaux",
+    name: "Animaux",
+    slug: "animaux",
+    icon: Dog,
+    emoji: "🐾",
+    subcategories: [
+      { id: "nourriture-animaux", name: "Nourriture animaux", slug: "nourriture-animaux" },
+      { id: "accessoires-animaux", name: "Accessoires animaux", slug: "accessoires-animaux" },
+    ]
+  },
+  {
+    id: "bricolage",
+    name: "Bricolage",
+    slug: "bricolage",
+    icon: Wrench,
+    emoji: "🔧",
+    subcategories: [
+      { id: "outils", name: "Outils", slug: "outils-bricolage" },
+      { id: "materiaux", name: "Matériaux de construction", slug: "materiaux-construction" },
+      { id: "plomberie-electricite", name: "Plomberie & Électricité", slug: "plomberie-electricite" },
+    ]
+  },
+  {
+    id: "services",
+    name: "Services",
+    slug: "services",
+    icon: Briefcase,
+    emoji: "💼",
+    subcategories: [
+      { id: "services-menagers", name: "Services ménagers", slug: "services-menagers" },
+      { id: "services-informatique", name: "Informatique & Réparation", slug: "services-informatique" },
+      { id: "services-beaute", name: "Coiffure & Beauté à domicile", slug: "services-beaute-domicile" },
+      { id: "cours-formations", name: "Cours & Formations", slug: "cours-formations" },
     ]
   },
 ];
@@ -232,3 +277,13 @@ export const getSubCategoryBySlug = (slug: string): { category: Category; subcat
 export const getCategoryProductCount = async (categorySlug: string): Promise<number> => {
   return 0;
 };
+
+// Suggestions populaires pour la recherche
+export const popularSuggestions = [
+  { label: "🔥 Robes fillette", slug: "vetements-fille" },
+  { label: "⚡ Téléphones pas chers", slug: "telephones-portables-accessoires" },
+  { label: "👟 Chaussures tendance", slug: "chaussures-homme" },
+  { label: "💄 Maquillage", slug: "maquillage" },
+  { label: "👗 Tenues africaines", slug: "tenues-africaines" },
+  { label: "🎁 Cadeaux", slug: "cadeaux-gadgets" },
+];

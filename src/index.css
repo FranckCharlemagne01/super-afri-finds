@@ -1541,3 +1541,68 @@ textarea {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* ===== Smooth scroll optimizations ===== */
+
+/* Horizontal scroll containers - fluid touch swiping */
+.scroll-snap-x {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+}
+
+.scroll-snap-x > * {
+  scroll-snap-align: start;
+}
+
+/* Prevent vertical scroll blocking on horizontal scroll zones */
+.touch-scroll-x {
+  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
+}
+
+/* GPU-accelerated scroll containers */
+.scroll-gpu {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: scroll-position;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Momentum scroll for all horizontal scroll areas */
+.overflow-x-auto,
+[class*="overflow-x-auto"] {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+/* Smooth vertical scroll - global */
+@supports (scroll-behavior: smooth) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Optimize scroll performance on mobile */
+@media (hover: none) and (pointer: coarse) {
+  /* Lighter transitions during scroll for performance */
+  .scroll-snap-x *,
+  .overflow-x-auto * {
+    transition-duration: 100ms !important;
+  }
+  
+  /* Ensure momentum scrolling everywhere */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Content-visibility for off-screen sections */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 300px;
+}

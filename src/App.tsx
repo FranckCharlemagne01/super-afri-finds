@@ -58,6 +58,7 @@ const PartnerDashboard = lazyWithRetry(() => import("./pages/PartnerDashboard"))
 const Livraison = lazyWithRetry(() => import("./pages/Livraison"));
 const DriverDashboard = lazyWithRetry(() => import("./pages/DriverDashboard"));
 const DriverLogin = lazyWithRetry(() => import("./pages/DriverLogin"));
+const Support = lazyWithRetry(() => import("./pages/Support"));
 
 // Optimized QueryClient configuration for better caching
 const queryClient = new QueryClient({

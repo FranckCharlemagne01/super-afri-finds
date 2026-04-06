@@ -7,7 +7,7 @@ import { FloatingChatWidget } from "@/components/FloatingChatWidget";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 import { HelpButton } from "@/components/HelpButton";
 
-import { FloatingChatButton } from "@/components/FloatingChatButton";
+import { FloatingSupportButton } from "@/components/FloatingSupportButton";
 import FAQ from "@/components/FAQ";
 import { SellerCTABanner } from "@/components/SellerCTABanner";
 import { FlashSalesCarousel } from "@/components/FlashSalesCarousel";

@@ -187,6 +187,7 @@ const AnimatedRoutes = () => {
                 </ProtectedRoute>
               } 
             />
+            <Route path="/support" element={<Support />} />
           <Route path="*" element={<NotFound />} />
           </Routes>
         </motion.div>

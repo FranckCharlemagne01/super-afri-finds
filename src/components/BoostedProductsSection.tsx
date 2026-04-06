@@ -174,11 +174,12 @@ export const BoostedProductsSection = () => {
           align: "start",
           loop: true,
           dragFree: true,
-          containScroll: "trimSnaps",
+          containScroll: "keepSnaps",
+          duration: 20,
         }}
         className="w-full"
       >
-        <CarouselContent className="-ml-2 md:-ml-4 touch-scroll-x">
+        <CarouselContent className="-ml-2 md:-ml-4 touch-scroll-x scroll-gpu">
           {boostedProducts.map((product) => (
             <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
               <div className="group relative hover-scale">

@@ -93,7 +93,7 @@ const ProductCarousel = memo(({ products }: { products: Product[] }) => {
           <ChevronLeft className="w-5 h-5 text-foreground" />
         </button>
       )}
-      <div ref={scrollRef} className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 scroll-smooth">
+      <div ref={scrollRef} className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 scroll-smooth scroll-snap-x touch-scroll-x scroll-gpu">
         {products.map((product) => (
           <div key={product.id} className="flex-shrink-0 w-[200px] lg:w-[220px]">
             <CategoryProductCard

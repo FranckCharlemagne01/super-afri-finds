@@ -201,7 +201,7 @@ const CategoryPage = () => {
         </div>
 
         {/* Subcategory chips */}
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pb-2.5">
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pb-2.5 scroll-snap-x touch-scroll-x scroll-gpu">
           <button
             onClick={() => setSelectedSubcategory('all')}
             className={cn(

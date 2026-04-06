@@ -1546,10 +1546,9 @@ textarea {
 
 /* Horizontal scroll containers - fluid touch swiping */
 .scroll-snap-x {
-  scroll-snap-type: x mandatory;
+  scroll-snap-type: x proximity;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
-  scroll-behavior: smooth;
 }
 
 .scroll-snap-x > * {
@@ -1568,7 +1567,6 @@ textarea {
 .scroll-gpu {
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
-  will-change: scroll-position;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
@@ -1589,15 +1587,11 @@ textarea {
 
 /* Optimize scroll performance on mobile */
 @media (hover: none) and (pointer: coarse) {
-  /* Lighter transitions during scroll for performance */
-  .scroll-snap-x *,
-  .overflow-x-auto * {
-    transition-duration: 100ms !important;
-  }
-  
-  /* Ensure momentum scrolling everywhere */
-  * {
-    -webkit-overflow-scrolling: touch;
+  /* Disable heavy transitions/animations inside scroll containers */
+  .touch-scroll-x .animate-fade-in,
+  .touch-scroll-x [style*="animation-delay"] {
+    animation: none !important;
+    opacity: 1 !important;
   }
 }
 

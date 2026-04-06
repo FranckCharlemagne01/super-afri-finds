@@ -1,18 +1,17 @@
 import { useState } from "react";
-import { MessageCircle, Phone, Send, X } from "lucide-react";
+import { MessageCircle, Phone, Send, X, User, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
-const WHATSAPP_URL = "https://wa.me/2250788281222?text=" + encodeURIComponent("Bonjour, j'ai besoin d'aide sur Djassa.");
+const WHATSAPP_SELLER_URL = "https://wa.me/2250788281222?text=" + encodeURIComponent("Bonjour, je suis vendeur sur Djassa et j'ai besoin d'assistance pour ma boutique.");
 
 export const FloatingSupportButton = () => {
   const [open, setOpen] = useState(false);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
 
-  // On mobile, hide if bottom nav is visible (user can access via menu)
   if (isMobile) return null;
 
   return (
@@ -26,17 +25,17 @@ export const FloatingSupportButton = () => {
             transition={{ duration: 0.15 }}
             className="flex flex-col gap-2 mb-2"
           >
-            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-              <Button className="bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-full gap-2 shadow-lg h-11 px-5">
-                <Phone className="w-4 h-4" /> WhatsApp
-              </Button>
-            </a>
             <Button
               onClick={() => { navigate("/support"); setOpen(false); }}
               className="rounded-full gap-2 shadow-lg h-11 px-5"
             >
-              <Send className="w-4 h-4" /> Support
+              <User className="w-4 h-4" /> 👤 Client
             </Button>
+            <a href={WHATSAPP_SELLER_URL} target="_blank" rel="noopener noreferrer">
+              <Button className="bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-full gap-2 shadow-lg h-11 px-5 w-full">
+                <Store className="w-4 h-4" /> 🏪 Vendeur
+              </Button>
+            </a>
           </motion.div>
         )}
       </AnimatePresence>

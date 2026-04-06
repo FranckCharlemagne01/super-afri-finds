@@ -85,12 +85,7 @@ export const PopularCategories = () => {
 
         <div
           ref={scrollRef}
-          className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide scroll-smooth px-1 sm:px-2 touch-pan-x pb-2"
-          style={{
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-            WebkitOverflowScrolling: "touch",
-          }}
+          className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide scroll-smooth px-1 sm:px-2 pb-2 scroll-snap-x touch-scroll-x scroll-gpu"
         >
           {quickCategories.map((cat) => {
             const Icon = cat.icon;

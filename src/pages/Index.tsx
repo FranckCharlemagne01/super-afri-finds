@@ -666,7 +666,7 @@ const Index = () => {
       <MarketplaceFooter />
 
       {/* Floating elements */}
-      <FloatingChatButton />
+      <FloatingSupportButton />
       <ScrollToTopButton />
     </div>
     </>

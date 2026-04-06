@@ -66,17 +66,28 @@ export const MarketplaceFooter = () => {
             <h4 className="font-semibold mb-4 text-sm lg:text-base text-white">Assistance</h4>
             <ul className="space-y-3">
               <li>
-                <button className="text-sm text-white/60 hover:text-primary transition-colors">
+                <button 
+                  onClick={() => navigate("/support")}
+                  className="text-sm text-white/60 hover:text-primary transition-colors"
+                >
                   Centre d'aide
                 </button>
               </li>
               <li>
-                <button className="text-sm text-white/60 hover:text-primary transition-colors">
-                  Support 24/7
-                </button>
+                <a
+                  href="https://wa.me/2250788281222?text=Bonjour%2C%20j%27ai%20besoin%20d%27aide%20sur%20Djassa."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-white/60 hover:text-primary transition-colors"
+                >
+                  Support WhatsApp
+                </a>
               </li>
               <li>
-                <button className="text-sm text-white/60 hover:text-primary transition-colors">
+                <button 
+                  onClick={() => navigate("/support")}
+                  className="text-sm text-white/60 hover:text-primary transition-colors"
+                >
                   FAQ
                 </button>
               </li>

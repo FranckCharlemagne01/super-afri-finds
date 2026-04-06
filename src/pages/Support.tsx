@@ -85,9 +85,9 @@ const Support = () => {
   const [submitted, setSubmitted] = useState(false);
 
   const [form, setForm] = useState({
-    name: profile?.full_name || "",
-    email: profile?.email || user?.email || "",
-    phone: profile?.phone || "",
+    name: "",
+    email: user?.email || "",
+    phone: "",
     subject: "",
     category: "",
     message: "",

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useStableAuth } from '@/hooks/useStableAuth';
 import { Gift, X, Rocket, Sparkles } from 'lucide-react';
@@ -28,6 +28,70 @@ const markBonusSeen = (id: string) => {
   }
 };
 
+/* ── tiny confetti canvas ── */
+const ConfettiCanvas = ({ active }: { active: boolean }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (!active) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    canvas.width = canvas.offsetWidth * 2;
+    canvas.height = canvas.offsetHeight * 2;
+    ctx.scale(2, 2);
+
+    const colors = ['#f59e0b', '#ec4899', '#8b5cf6', '#10b981', '#3b82f6', '#ef4444'];
+    const pieces: { x: number; y: number; w: number; h: number; color: string; vy: number; vx: number; rot: number; rv: number }[] = [];
+
+    for (let i = 0; i < 60; i++) {
+      pieces.push({
+        x: Math.random() * canvas.offsetWidth,
+        y: -10 - Math.random() * 80,
+        w: 4 + Math.random() * 4,
+        h: 8 + Math.random() * 6,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        vy: 1.5 + Math.random() * 2.5,
+        vx: (Math.random() - 0.5) * 2,
+        rot: Math.random() * 360,
+        rv: (Math.random() - 0.5) * 8,
+      });
+    }
+
+    let raf: number;
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+      let alive = false;
+      for (const p of pieces) {
+        p.y += p.vy;
+        p.x += p.vx;
+        p.rot += p.rv;
+        if (p.y < canvas.offsetHeight + 20) alive = true;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rot * Math.PI) / 180);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      }
+      if (alive) raf = requestAnimationFrame(draw);
+    };
+    raf = requestAnimationFrame(draw);
+    return () => cancelAnimationFrame(raf);
+  }, [active]);
+
+  if (!active) return null;
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 pointer-events-none z-10"
+      style={{ width: '100%', height: '100%' }}
+    />
+  );
+};
+
 export const BonusNotificationPopup = () => {
   const { userId } = useStableAuth();
   const [bonus, setBonus] = useState<BonusInfo | null>(null);
@@ -38,10 +102,8 @@ export const BonusNotificationPopup = () => {
     if (bonus) markBonusSeen(bonus.id);
   }, [bonus]);
 
-  // Check for unseen bonuses on mount / when userId changes
   useEffect(() => {
     if (!userId) return;
-
     let cancelled = false;
 
     const check = async () => {
@@ -65,7 +127,6 @@ export const BonusNotificationPopup = () => {
       }
     };
 
-    // Small delay so the app finishes rendering first
     const timer = setTimeout(check, 1200);
     return () => {
       cancelled = true;
@@ -73,10 +134,10 @@ export const BonusNotificationPopup = () => {
     };
   }, [userId]);
 
-  // Auto-dismiss after 6 seconds
+  // Auto-dismiss after 8 seconds
   useEffect(() => {
     if (!visible) return;
-    const t = setTimeout(dismiss, 6000);
+    const t = setTimeout(dismiss, 8000);
     return () => clearTimeout(t);
   }, [visible, dismiss]);
 
@@ -92,7 +153,6 @@ export const BonusNotificationPopup = () => {
     <AnimatePresence>
       {visible && bonus && (
         <>
-          {/* Backdrop */}
           <motion.div
             key="bonus-backdrop"
             initial={{ opacity: 0 }}
@@ -102,7 +162,6 @@ export const BonusNotificationPopup = () => {
             className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center p-4"
             onClick={dismiss}
           >
-            {/* Card */}
             <motion.div
               key="bonus-card"
               initial={{ opacity: 0, scale: 0.8, y: 30 }}
@@ -112,9 +171,11 @@ export const BonusNotificationPopup = () => {
               onClick={(e) => e.stopPropagation()}
               className="relative w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl"
             >
+              {/* Confetti overlay */}
+              <ConfettiCanvas active={visible} />
+
               {/* Gradient header */}
               <div className="bg-gradient-to-br from-amber-400 via-orange-500 to-pink-500 p-6 text-center text-white relative overflow-hidden">
-                {/* Floating sparkle decorations */}
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
@@ -130,32 +191,30 @@ export const BonusNotificationPopup = () => {
                   <Sparkles className="w-16 h-16" />
                 </motion.div>
 
-                {/* Close button */}
                 <button
                   onClick={dismiss}
-                  className="absolute top-3 right-3 p-1 rounded-full bg-white/20 hover:bg-white/40 transition-colors"
+                  className="absolute top-3 right-3 p-1 rounded-full bg-white/20 hover:bg-white/40 transition-colors z-20"
                   aria-label="Fermer"
                 >
                   <X className="w-4 h-4" />
                 </button>
 
-                {/* Bouncing gift icon */}
                 <motion.div
                   animate={{ y: [0, -8, 0] }}
                   transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                  className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/20 mb-3"
+                  className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/20 mb-3 relative z-20"
                 >
                   <Gift className="w-8 h-8" />
                 </motion.div>
 
-                <h2 className="text-xl font-bold mb-1">✨ Bonne nouvelle !</h2>
-                <p className="text-sm opacity-90">
+                <h2 className="text-xl font-bold mb-1 relative z-20">✨ Bonne nouvelle !</h2>
+                <p className="text-sm opacity-90 relative z-20">
                   Vous avez reçu un bonus Djassa 🎁
                 </p>
               </div>
 
               {/* Body */}
-              <div className="bg-background p-5 text-center space-y-3">
+              <div className="bg-background p-5 text-center space-y-3 relative z-20">
                 <p className="text-sm text-foreground font-medium flex items-center justify-center gap-2">
                   <Rocket className="w-4 h-4 text-orange-500" />
                   Publiez vos produits gratuitement dès maintenant

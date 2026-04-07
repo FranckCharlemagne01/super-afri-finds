@@ -250,6 +250,7 @@ const App = () => {
               <PWABottomInstallBar />
               <ProfileCompletionModal />
               <GoogleOnboardingRedirect />
+              <BonusNotificationPopup />
             </BrowserRouter>
           </TooltipProvider>
         </NativeAppProvider>

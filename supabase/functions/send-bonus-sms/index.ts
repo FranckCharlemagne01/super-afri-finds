@@ -84,11 +84,14 @@ Deno.serve(async (req) => {
       }),
     })
 
-    const data = await response.json()
-    console.log('[send-bonus-sms] AT response:', JSON.stringify(data))
+    const responseText = await response.text()
+    console.log('[send-bonus-sms] AT response:', responseText)
+
+    let data: unknown
+    try { data = JSON.parse(responseText) } catch { data = responseText }
 
     if (!response.ok) {
-      throw new Error(`Africa's Talking API error [${response.status}]: ${JSON.stringify(data)}`)
+      throw new Error(`Africa's Talking API error [${response.status}]: ${responseText}`)
     }
 
     return new Response(JSON.stringify({ success: true, data, bonus_id }), {

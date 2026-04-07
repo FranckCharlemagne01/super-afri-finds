@@ -1,4 +1,7 @@
-import { corsHeaders } from '@supabase/supabase-js/cors'
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const SANDBOX_URL = 'https://api.sandbox.africastalking.com/version1/messaging/bulk'
@@ -81,11 +84,14 @@ Deno.serve(async (req) => {
       }),
     })
 
-    const data = await response.json()
-    console.log('[send-bonus-sms] AT response:', JSON.stringify(data))
+    const responseText = await response.text()
+    console.log('[send-bonus-sms] AT response:', responseText)
+
+    let data: unknown
+    try { data = JSON.parse(responseText) } catch { data = responseText }
 
     if (!response.ok) {
-      throw new Error(`Africa's Talking API error [${response.status}]: ${JSON.stringify(data)}`)
+      throw new Error(`Africa's Talking API error [${response.status}]: ${responseText}`)
     }
 
     return new Response(JSON.stringify({ success: true, data, bonus_id }), {

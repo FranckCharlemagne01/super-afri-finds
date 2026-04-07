@@ -21,6 +21,7 @@ import PWABottomInstallBar from "@/components/PWABottomInstallBar";
 import { ProfileCompletionModal } from "@/components/ProfileCompletionModal";
 import { PreviewBrokenBanner } from "@/components/PreviewBrokenBanner";
 import { GoogleOnboardingRedirect } from "@/components/GoogleOnboardingRedirect";
+import { BonusNotificationPopup } from "@/components/BonusNotificationPopup";
 
 const VerifyOtp = lazyWithRetry(() => import("./pages/VerifyOtp"));
 const Verify = lazyWithRetry(() => import("./pages/Verify"));
@@ -249,6 +250,7 @@ const App = () => {
               <PWABottomInstallBar />
               <ProfileCompletionModal />
               <GoogleOnboardingRedirect />
+              <BonusNotificationPopup />
             </BrowserRouter>
           </TooltipProvider>
         </NativeAppProvider>

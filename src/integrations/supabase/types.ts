@@ -300,6 +300,7 @@ export type Database = {
         Row: {
           average_rating: number | null
           city: string
+          country_code: string | null
           created_at: string
           driver_status: string
           full_name: string
@@ -317,6 +318,7 @@ export type Database = {
         Insert: {
           average_rating?: number | null
           city?: string
+          country_code?: string | null
           created_at?: string
           driver_status?: string
           full_name: string
@@ -334,6 +336,7 @@ export type Database = {
         Update: {
           average_rating?: number | null
           city?: string
+          country_code?: string | null
           created_at?: string
           driver_status?: string
           full_name?: string
@@ -1099,6 +1102,7 @@ export type Database = {
           max_products: number
           reason: string | null
           seller_id: string
+          sms_status: string | null
           starts_at: string
         }
         Insert: {
@@ -1108,6 +1112,7 @@ export type Database = {
           max_products: number
           reason?: string | null
           seller_id: string
+          sms_status?: string | null
           starts_at: string
         }
         Update: {
@@ -1117,6 +1122,7 @@ export type Database = {
           max_products?: number
           reason?: string | null
           seller_id?: string
+          sms_status?: string | null
           starts_at?: string
         }
         Relationships: []

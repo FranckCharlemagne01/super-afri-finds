@@ -7,17 +7,15 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  RAISE NOTICE 'HTTP POST envoyé pour seller_id: %', NEW.seller_id;
-
   PERFORM net.http_post(
     'https://zqskpspbyzptzjcoitwt.supabase.co/functions/v1/send-bonus-sms'::text,
     json_build_object(
       'seller_id', NEW.seller_id,
       'expires_at', NEW.expires_at
-    )::text,
-    '{"Content-Type": "application/json"}'::jsonb,
-    5000
+    )::jsonb
   );
+
+  RAISE NOTICE 'HTTP POST OK pour seller_id: %', NEW.seller_id;
 
   RETURN NEW;
 END;

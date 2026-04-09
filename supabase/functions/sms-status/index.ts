@@ -5,13 +5,30 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Convert international phone to local format
+// Extensible: add more country codes as needed
+const COUNTRY_PREFIXES: Record<string, string> = {
+  '+225': '0', // Côte d'Ivoire
+  '+233': '0', // Ghana
+  '+234': '0', // Nigeria
+  '+221': '0', // Sénégal
+}
+
+function toLocalPhone(phone: string): string {
+  for (const [prefix, local] of Object.entries(COUNTRY_PREFIXES)) {
+    if (phone.startsWith(prefix)) {
+      return local + phone.slice(prefix.length)
+    }
+  }
+  return phone
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    // Africa's Talking sends delivery reports as application/x-www-form-urlencoded
     const contentType = req.headers.get('content-type') || ''
     let phoneNumber: string | null = null
     let status: string | null = null
@@ -38,26 +55,31 @@ Deno.serve(async (req) => {
       })
     }
 
+    // Convert to local format for DB lookup
+    const localPhone = toLocalPhone(phoneNumber)
+    console.log('[sms-status] Converted phone:', phoneNumber, '→', localPhone)
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    // Map AT status to our sms_status
     const smsStatus = status === 'Success' ? 'delivered' : 'failed'
 
-    // Find the seller by phone number, then update their latest bonus
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('user_id')
-      .eq('phone', phoneNumber)
+    // Find user by phone in driver_profiles, select id
+    const { data: profile, error: profileError } = await supabase
+      .from('driver_profiles')
+      .select('id')
+      .eq('phone', localPhone)
       .single()
 
+    console.log('[sms-status] Profile lookup result:', { profile, profileError })
+
     if (profile) {
-      const { error } = await supabase
+      const { error, count } = await supabase
         .from('publication_bonuses')
         .update({ sms_status: smsStatus })
-        .eq('seller_id', profile.user_id)
+        .eq('seller_id', profile.id)
         .eq('sms_status', 'pending')
         .order('created_at', { ascending: false })
         .limit(1)
@@ -65,10 +87,10 @@ Deno.serve(async (req) => {
       if (error) {
         console.error('[sms-status] Update error:', error)
       } else {
-        console.log('[sms-status] Updated sms_status to', smsStatus, 'for seller', profile.user_id)
+        console.log('[sms-status] Updated sms_status to', smsStatus, 'for seller', profile.id, 'rows affected:', count)
       }
     } else {
-      console.warn('[sms-status] No profile found for phone:', phoneNumber)
+      console.warn('[sms-status] No profile found for phone:', localPhone)
     }
 
     return new Response(JSON.stringify({ success: true }), {
@@ -79,7 +101,7 @@ Deno.serve(async (req) => {
     console.error('[sms-status] Error:', error)
     const msg = error instanceof Error ? error.message : 'Unknown error'
     return new Response(JSON.stringify({ error: msg }), {
-      status: 200, // Always return 200 to AT to avoid retries
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }

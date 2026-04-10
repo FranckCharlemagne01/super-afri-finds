@@ -22,10 +22,35 @@ Deno.serve(async (req) => {
       throw new Error('AFRICASTALKING_API_KEY is not configured')
     }
 
-    const { bonus_id, seller_id, expires_at, phone } = await req.json()
+    let body: Record<string, unknown> = {}
+    try {
+      body = await req.json()
+    } catch (e) {
+      console.error('[send-bonus-sms] Erreur parsing JSON:', e)
+      return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
-    if (!seller_id || !expires_at) {
-      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+    console.log('[send-bonus-sms] BODY REÇU:', JSON.stringify(body))
+
+    const { bonus_id, seller_id, expires_at, phone } = body as {
+      bonus_id?: string
+      seller_id?: string
+      expires_at?: string
+      phone?: string
+    }
+
+    if (!seller_id) {
+      return new Response(JSON.stringify({ error: 'Missing seller_id' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    if (!expires_at) {
+      return new Response(JSON.stringify({ error: 'Missing expires_at' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })

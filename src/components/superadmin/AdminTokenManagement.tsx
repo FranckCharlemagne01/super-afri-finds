@@ -188,6 +188,24 @@ export const AdminTokenManagement = () => {
         if (error) throw error;
         const result = (typeof data === 'object' && data !== null) ? data : (typeof data === 'string' ? (() => { try { return JSON.parse(data); } catch { return { success: true }; } })() : { success: true });
         if (result?.success || result?.bonus_id) {
+          // Appel direct à l'Edge Function pour envoyer le SMS (sans trigger SQL)
+          try {
+            const smsResponse = await fetch('https://zqskpspbyzptzjcoitwt.supabase.co/functions/v1/send-bonus-sms', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                seller_id: selectedUser.user_id,
+                expires_at: new Date(bonusEndDate).toISOString(),
+              }),
+            });
+            if (smsResponse.ok) {
+              console.log('SMS envoyé après bonus');
+            } else {
+              console.error('Échec envoi SMS bonus:', await smsResponse.text());
+            }
+          } catch (smsError) {
+            console.error('Erreur envoi SMS bonus:', smsError);
+          }
           toast.success(`✅ Bonus de ${parseInt(bonusMaxProducts)} publications accordé !`);
           setBonusStartDate('');
           setBonusEndDate('');

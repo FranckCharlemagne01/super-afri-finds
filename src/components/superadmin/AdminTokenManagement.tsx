@@ -190,13 +190,19 @@ export const AdminTokenManagement = () => {
         if (result?.success || result?.bonus_id) {
           // Appel direct à l'Edge Function pour envoyer le SMS (sans trigger SQL)
           try {
+            const smsPayload = {
+              seller_id: selectedUser.user_id,
+              expires_at: new Date(bonusEndDate).toISOString(),
+            };
+            console.log('SMS POST envoyé', smsPayload);
             const smsResponse = await fetch('https://zqskpspbyzptzjcoitwt.supabase.co/functions/v1/send-bonus-sms', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                seller_id: selectedUser.user_id,
-                expires_at: new Date(bonusEndDate).toISOString(),
-              }),
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpxc2twc3BieXpwdHpqY29pdHd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0NjU4MTksImV4cCI6MjA3MzA0MTgxOX0.CIgTsYIxD--vDwa-4nebRWglksMaUfxdBFgBmeRSYns`,
+                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpxc2twc3BieXpwdHpqY29pdHd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0NjU4MTksImV4cCI6MjA3MzA0MTgxOX0.CIgTsYIxD--vDwa-4nebRWglksMaUfxdBFgBmeRSYns',
+              },
+              body: JSON.stringify(smsPayload),
             });
             if (smsResponse.ok) {
               console.log('SMS envoyé après bonus');

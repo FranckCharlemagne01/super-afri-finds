@@ -15,6 +15,8 @@ import { useInactivityDetector } from "@/hooks/useInactivityDetector";
 import { useVisitorTracking } from "@/hooks/useVisitorTracking";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import { NativeAppProvider } from "@/components/NativeAppProvider";
+import { DeviceProvider } from "@/hooks/useDeviceContext";
+import { NetworkStatusBar } from "@/components/NetworkStatusBar";
 import { prefetchCriticalRoutes, useAutoPrefetch } from "@/hooks/usePrefetch";
 import { motion } from "framer-motion";
 import PWABottomInstallBar from "@/components/PWABottomInstallBar";

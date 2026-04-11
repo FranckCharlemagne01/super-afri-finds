@@ -24,7 +24,7 @@ export const MarketplaceFooter = () => {
   };
 
   return (
-    <footer className="bg-[hsl(235,20%,11%)] text-white mt-8 lg:mt-16">
+    <footer className="hidden sm:block bg-[hsl(235,20%,11%)] text-white mt-8 lg:mt-16">
       {/* Newsletter bar */}
       <div className="bg-gradient-to-r from-primary to-[hsl(16,100%,50%)]">
         <div className="container mx-auto max-w-[1600px] px-4 lg:px-8 py-6 sm:py-8">

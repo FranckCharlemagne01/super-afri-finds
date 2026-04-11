@@ -1,23 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ShoppingBag, User, Phone, MapPin, ChevronDown, ChevronUp, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { useOrders, OrderData } from '@/hooks/useOrders';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
 import type { CartItem } from '@/hooks/useCart';
 import { toast } from '@/hooks/use-toast';
 import { validateOrderCustomer } from '@/utils/orderValidation';
-
+import { supabase } from '@/integrations/supabase/client';
 
 interface CheckoutDialogProps {
   open: boolean;
@@ -38,50 +34,64 @@ export const CheckoutDialog = ({
     deliveryLocation: ''
   });
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { createOrder } = useOrders();
   const { user } = useAuth();
-  const { fetchCartItems, clearCart } = useCart();
+  const { clearCart } = useCart();
+
+  // Auto-fill from profile
+  useEffect(() => {
+    if (!user || !open) return;
+    const fetchProfile = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('full_name, phone, address, city, commune')
+        .eq('user_id', user.id)
+        .single();
+      if (data) {
+        setFormData(prev => ({
+          customerName: prev.customerName || data.full_name || '',
+          customerPhone: prev.customerPhone || data.phone || '',
+          deliveryLocation: prev.deliveryLocation || [data.commune, data.city].filter(Boolean).join(', ') || data.address || '',
+        }));
+      }
+    };
+    fetchProfile();
+  }, [user, open]);
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors(prev => { const n = {...prev}; delete n[field]; return n; });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!user) {
-      toast({
-        title: "Connexion requise",
-        description: "Vous devez être connecté pour passer une commande",
-        variant: "destructive",
-      });
+      toast({ title: "Connexion requise", description: "Vous devez être connecté pour passer une commande", variant: "destructive" });
       return;
     }
     
-    // SECURITY: Validate customer data against schema to prevent injection attacks
     const validation = validateOrderCustomer(formData);
     
     if (!validation.success) {
-      const errorMessage = validation.error.errors[0]?.message || 'Données invalides';
-      toast({
-        title: "Validation échouée",
-        description: errorMessage,
-        variant: "destructive",
+      const fieldErrors: Record<string, string> = {};
+      validation.error.errors.forEach(err => {
+        const field = err.path[0] as string;
+        if (field) fieldErrors[field] = err.message;
       });
+      setErrors(fieldErrors);
       return;
     }
 
     setIsProcessing(true);
 
     try {
-      // Use validated data
       const validatedData = validation.data;
-      
-      // Create orders for each cart item (grouped by seller if needed)
       const orderPromises = cartItems.map(async (item) => {
         const orderData: OrderData = {
           customerName: validatedData.customerName,
@@ -93,45 +103,30 @@ export const CheckoutDialog = ({
           quantity: item.quantity,
           sellerId: item.product.seller_id
         };
-
         return createOrder(orderData);
       });
 
       const results = await Promise.all(orderPromises);
-      
-      // Check if all orders were successful
       const failedOrders = results.filter(result => !result.success);
       
       if (failedOrders.length === 0) {
         toast({
-          title: "Commandes créées avec succès!",
-          description: `${cartItems.length} commande${cartItems.length > 1 ? 's' : ''} envoyée${cartItems.length > 1 ? 's' : ''} aux vendeurs.`,
+          title: "✅ Commande confirmée !",
+          description: `${cartItems.length} article${cartItems.length > 1 ? 's' : ''} commandé${cartItems.length > 1 ? 's' : ''}`,
         });
-        
-        // Clear the form and close dialog
-        setFormData({
-          customerName: '',
-          customerPhone: '',
-          deliveryLocation: ''
-        });
+        setFormData({ customerName: '', customerPhone: '', deliveryLocation: '' });
         onOpenChange(false);
-        
-        // Clear cart after successful orders
         await clearCart();
       } else {
         toast({
           title: "Erreur partielle",
-          description: `${failedOrders.length} commande${failedOrders.length > 1 ? 's' : ''} n'${failedOrders.length > 1 ? 'ont' : 'a'} pas pu être créée${failedOrders.length > 1 ? 's' : ''}`,
+          description: `${failedOrders.length} commande${failedOrders.length > 1 ? 's' : ''} échouée${failedOrders.length > 1 ? 's' : ''}`,
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error('Error creating orders:', error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la création des commandes",
-        variant: "destructive",
-      });
+      toast({ title: "Erreur", description: "Une erreur est survenue", variant: "destructive" });
     } finally {
       setIsProcessing(false);
     }
@@ -139,104 +134,155 @@ export const CheckoutDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md w-[calc(100vw-2rem)] mx-auto max-h-[90vh] overflow-y-auto p-4 sm:p-6">
-        <DialogHeader>
-          <DialogTitle>Finaliser votre commande</DialogTitle>
-        </DialogHeader>
+      <DialogContent className="max-w-full sm:max-w-md h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col p-0 gap-0 rounded-none sm:rounded-2xl overflow-hidden border-0 sm:border">
+        {/* Header mobile natif */}
+        <div className="flex-shrink-0 bg-primary px-4 py-3 flex items-center gap-3 safe-area-inset-top">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onOpenChange(false)}
+            className="h-10 w-10 rounded-full hover:bg-white/20 text-primary-foreground"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
+              <ShoppingBag className="h-4.5 w-4.5 text-primary-foreground" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-primary-foreground">Commander</h2>
+              <p className="text-xs text-primary-foreground/70">{cartItems.length} article{cartItems.length > 1 ? 's' : ''}</p>
+            </div>
+          </div>
+        </div>
         
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Order Summary */}
-          <div className="space-y-4">
-            <h3 className="text-base font-semibold text-foreground">Résumé de la commande</h3>
-            <Card className="p-4 shadow-sm border-2 bg-muted/30">
-              <div className="space-y-3">
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-y-auto">
+          <div className="flex-1 px-4 py-4 space-y-4">
+            {/* Résumé compact */}
+            <button
+              type="button"
+              onClick={() => setShowSummary(!showSummary)}
+              className="w-full flex items-center justify-between p-3 bg-muted/40 rounded-xl border border-border/50 active:scale-[0.98] transition-transform"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <ShoppingBag className="h-4 w-4 text-primary" />
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-semibold text-foreground">{cartItems.length} article{cartItems.length > 1 ? 's' : ''}</p>
+                  <p className="text-xs text-muted-foreground">Voir le détail</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-base font-bold text-primary">{totalPrice.toLocaleString('fr-FR')} F</span>
+                {showSummary ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+              </div>
+            </button>
+
+            {showSummary && (
+              <div className="space-y-2 px-1 animate-in slide-in-from-top-2 duration-200">
                 {cartItems.map((item) => (
-                  <div key={item.id} className="flex justify-between items-start text-sm">
-                    <div className="flex-1">
-                      <p className="font-semibold text-foreground">{item.product.title}</p>
-                      <p className="text-xs text-muted-foreground mt-1">Quantité: x{item.quantity}</p>
+                  <div key={item.id} className="flex justify-between items-center text-sm py-1.5">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-foreground truncate">{item.product.title}</p>
+                      <p className="text-xs text-muted-foreground">x{item.quantity}</p>
                     </div>
-                    <p className="font-bold text-foreground whitespace-nowrap ml-2">
-                      {(item.product.price * item.quantity).toLocaleString('fr-FR')} FCFA
+                    <p className="font-semibold text-foreground ml-3 whitespace-nowrap">
+                      {(item.product.price * item.quantity).toLocaleString('fr-FR')} F
                     </p>
                   </div>
                 ))}
-                <Separator className="my-3" />
-                <div className="flex justify-between items-center text-base font-bold">
-                  <span className="text-foreground">Total</span>
-                  <span className="gradient-text-primary text-lg">{totalPrice.toLocaleString('fr-FR')} FCFA</span>
-                </div>
               </div>
-            </Card>
+            )}
+
+            <Separator />
+
+            {/* Champs du formulaire */}
+            <div className="space-y-3.5">
+              <div>
+                <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-colors ${errors.customerName ? 'border-destructive bg-destructive/5' : 'border-border/50 bg-muted/20 focus-within:border-primary/50 focus-within:bg-background'}`}>
+                  <User className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                  <input
+                    type="text"
+                    placeholder="Votre nom complet"
+                    value={formData.customerName}
+                    onChange={(e) => handleInputChange('customerName', e.target.value)}
+                    className="flex-1 bg-transparent border-none outline-none text-[15px] text-foreground placeholder:text-muted-foreground/50"
+                    required
+                    autoComplete="name"
+                  />
+                  {formData.customerName.length >= 2 && !errors.customerName && (
+                    <CheckCircle2 className="h-4.5 w-4.5 text-green-500 flex-shrink-0" />
+                  )}
+                </div>
+                {errors.customerName && <p className="text-xs text-destructive mt-1 ml-1">{errors.customerName}</p>}
+              </div>
+
+              <div>
+                <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-colors ${errors.customerPhone ? 'border-destructive bg-destructive/5' : 'border-border/50 bg-muted/20 focus-within:border-primary/50 focus-within:bg-background'}`}>
+                  <Phone className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                  <input
+                    type="tel"
+                    placeholder="+225 07 XX XX XX XX"
+                    value={formData.customerPhone}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === '' || /^(\+|0{0,2})[0-9\s]*$/.test(value)) {
+                        handleInputChange('customerPhone', value);
+                      }
+                    }}
+                    className="flex-1 bg-transparent border-none outline-none text-[15px] text-foreground placeholder:text-muted-foreground/50"
+                    required
+                    maxLength={20}
+                    autoComplete="tel"
+                  />
+                  {formData.customerPhone.length >= 8 && !errors.customerPhone && (
+                    <CheckCircle2 className="h-4.5 w-4.5 text-green-500 flex-shrink-0" />
+                  )}
+                </div>
+                {errors.customerPhone && <p className="text-xs text-destructive mt-1 ml-1">{errors.customerPhone}</p>}
+              </div>
+
+              <div>
+                <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-colors ${errors.deliveryLocation ? 'border-destructive bg-destructive/5' : 'border-border/50 bg-muted/20 focus-within:border-primary/50 focus-within:bg-background'}`}>
+                  <MapPin className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                  <input
+                    type="text"
+                    placeholder="Lieu de livraison (Cocody, Yopougon...)"
+                    value={formData.deliveryLocation}
+                    onChange={(e) => handleInputChange('deliveryLocation', e.target.value)}
+                    className="flex-1 bg-transparent border-none outline-none text-[15px] text-foreground placeholder:text-muted-foreground/50"
+                    required
+                    autoComplete="address-line1"
+                  />
+                  {formData.deliveryLocation.length >= 5 && !errors.deliveryLocation && (
+                    <CheckCircle2 className="h-4.5 w-4.5 text-green-500 flex-shrink-0" />
+                  )}
+                </div>
+                {errors.deliveryLocation && <p className="text-xs text-destructive mt-1 ml-1">{errors.deliveryLocation}</p>}
+              </div>
+            </div>
           </div>
 
-          {/* Customer Information */}
-          <div className="space-y-5">
-            <h3 className="text-base font-semibold text-foreground">Vos informations</h3>
-            
-            <div className="space-y-2">
-              <Label htmlFor="customerName">Nom complet *</Label>
-              <Input
-                id="customerName"
-                placeholder="Votre nom et prénom"
-                value={formData.customerName}
-                onChange={(e) => handleInputChange('customerName', e.target.value)}
-                required
-                className="w-full"
-              />
+          {/* Bouton fixe en bas */}
+          <div className="flex-shrink-0 p-4 bg-card border-t border-border/50 safe-area-inset-bottom">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-muted-foreground">Total à payer</span>
+              <span className="text-xl font-bold text-primary">{totalPrice.toLocaleString('fr-FR')} FCFA</span>
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="customerPhone">Téléphone *</Label>
-              <Input
-                id="customerPhone"
-                type="text"
-                placeholder="+225 07 XX XX XX XX"
-                value={formData.customerPhone}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value === '' || /^(\+|0{0,2})[0-9\s]*$/.test(value)) {
-                    handleInputChange('customerPhone', value);
-                  }
-                }}
-                required
-                className="w-full"
-                maxLength={20}
-              />
-              <p className="text-xs text-muted-foreground mt-1.5">Format: +225 0707070707, 00225 0707070707 ou 0707070707</p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="deliveryLocation">Lieu de livraison *</Label>
-              <Input
-                id="deliveryLocation"
-                placeholder="Adresse de livraison (ex: Cocody Angré, Yopougon 2, Zone 4C)"
-                value={formData.deliveryLocation}
-                onChange={(e) => handleInputChange('deliveryLocation', e.target.value)}
-                required
-                className="w-full"
-              />
-              <p className="text-xs text-muted-foreground mt-1.5">Précisez le quartier ou la commune</p>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isProcessing}
-              className="flex-1 min-h-[48px] rounded-xl font-semibold transition-all hover:scale-[1.02]"
-            >
-              Annuler
-            </Button>
             <Button
               type="submit"
               disabled={isProcessing}
-              className="flex-1 min-h-[48px] rounded-xl font-semibold gradient-primary transition-all hover:scale-[1.02] shadow-md"
+              className="w-full min-h-[52px] rounded-xl font-bold text-base shadow-lg transition-all active:scale-[0.98]"
             >
-              {isProcessing ? "Traitement en cours..." : "Confirmer la commande"}
+              {isProcessing ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Traitement...
+                </span>
+              ) : (
+                "Confirmer la commande"
+              )}
             </Button>
           </div>
         </form>

@@ -285,17 +285,17 @@ export const ProductCard = ({
               </div>
             </div>
 
-            {/* Mobile: Single row compact buttons */}
-            <div className="flex sm:hidden gap-1">
+            {/* Mobile: Single row compact buttons with proper touch targets */}
+            <div className="flex sm:hidden gap-1.5">
               <motion.div whileTap={{ scale: 0.95 }} className="flex-1">
                 <Button 
                   variant="default" 
                   size="sm" 
-                  className="w-full h-8 rounded-lg text-[10px] px-2"
+                  className="w-full h-9 rounded-lg text-[10px] px-2 min-h-[36px]"
                   onClick={handleAddToCart}
                   disabled={isUnavailable}
                 >
-                  <ShoppingCart className="w-3 h-3" />
+                  <ShoppingCart className="w-3.5 h-3.5" />
                 </Button>
               </motion.div>
               

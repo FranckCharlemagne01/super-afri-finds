@@ -238,12 +238,14 @@ const App = () => {
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange={false}>
     <QueryClientProvider client={queryClient}>
+      <DeviceProvider>
       <AuthProvider>
         <NativeAppProvider>
           <TooltipProvider>
             <Toaster />
             <Sonner />
             <PreviewBrokenBanner />
+            <NetworkStatusBar />
             {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
             <BrowserRouter>
               <AnimatedRoutes />
@@ -257,6 +259,7 @@ const App = () => {
           </TooltipProvider>
         </NativeAppProvider>
       </AuthProvider>
+      </DeviceProvider>
     </QueryClientProvider>
     </ThemeProvider>
   );

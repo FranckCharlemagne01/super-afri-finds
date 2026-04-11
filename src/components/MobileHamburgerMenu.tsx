@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Menu, X, HelpCircle, Info, Phone, MapPin, CreditCard } from "lucide-react";
+import { 
+  Menu, X, HelpCircle, Info, Phone, MapPin, CreditCard, 
+  ChevronRight, Truck, ShieldCheck, Mail, Smartphone
+} from "lucide-react";
 import { Button } from "./ui/button";
-import { motion, AnimatePresence } from "framer-motion";
 
 export const MobileHamburgerMenu = () => {
   const [open, setOpen] = useState(false);
@@ -13,13 +15,19 @@ export const MobileHamburgerMenu = () => {
     navigate(path);
   };
 
-  const menuItems = [
-    { icon: HelpCircle, label: "Assistance", path: "/support" },
-    { icon: Info, label: "Informations", path: "/about" },
-    { icon: Phone, label: "Contact", path: "/support" },
-    { icon: MapPin, label: "Abidjan, Côte d'Ivoire", path: "/categories" },
-    { icon: CreditCard, label: "Paiement & Livraison", path: "/tarifs" },
-  ];
+  if (!open) {
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        className="w-10 h-10 p-0 rounded-full"
+        onClick={() => setOpen(true)}
+        aria-label="Menu"
+      >
+        <Menu className="w-5 h-5" />
+      </Button>
+    );
+  }
 
   return (
     <>
@@ -28,56 +36,225 @@ export const MobileHamburgerMenu = () => {
         size="icon"
         className="w-10 h-10 p-0 rounded-full"
         onClick={() => setOpen(true)}
+        aria-label="Menu"
       >
         <Menu className="w-5 h-5" />
       </Button>
 
-      <AnimatePresence>
-        {open && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-black/50 z-[100]"
-              onClick={() => setOpen(false)}
-            />
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/50"
+        style={{ zIndex: 10000 }}
+        onClick={() => setOpen(false)}
+      />
 
-            <motion.div
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", stiffness: 350, damping: 35 }}
-              className="fixed inset-y-0 left-0 w-[280px] bg-background z-[101] shadow-2xl flex flex-col"
-            >
-              <div className="flex items-center justify-between px-4 py-4 border-b border-border/50">
-                <span className="text-lg font-bold gradient-text-primary">Djassa</span>
-                <Button variant="ghost" size="icon" className="w-9 h-9 rounded-full" onClick={() => setOpen(false)}>
-                  <X className="w-5 h-5" />
-                </Button>
+      {/* Drawer */}
+      <div
+        className="fixed top-0 left-0 shadow-2xl"
+        style={{
+          zIndex: 10001,
+          width: "min(300px, 85vw)",
+          height: "100vh",
+          backgroundColor: "#ffffff",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        {/* Header */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "16px 20px",
+            borderBottom: "1px solid #f3f4f6",
+            flexShrink: 0,
+          }}
+        >
+          <span style={{ fontSize: 18, fontWeight: 700, color: "hsl(var(--primary))" }}>Djassa</span>
+          <button
+            onClick={() => setOpen(false)}
+            style={{
+              width: 36,
+              height: 36,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: "50%",
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+            }}
+            aria-label="Fermer"
+          >
+            <X style={{ width: 20, height: 20, color: "#6b7280" }} />
+          </button>
+        </div>
+
+        {/* Scrollable Menu Content */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "12px" }}>
+          {/* Assistance */}
+          <button
+            onClick={() => go("/support")}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "100%",
+              padding: "14px 12px",
+              borderRadius: 12,
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              textAlign: "left",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <HelpCircle style={{ width: 20, height: 20, color: "hsl(var(--primary))" }} />
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 500, color: "#1f2937" }}>Assistance</div>
+                <div style={{ fontSize: 11, color: "#9ca3af" }}>Centre d'aide & FAQ</div>
               </div>
+            </div>
+            <ChevronRight style={{ width: 16, height: 16, color: "#d1d5db" }} />
+          </button>
 
-              <nav className="flex-1 overflow-y-auto py-4 px-3">
-                {menuItems.map((item, i) => (
-                  <button
-                    key={i}
-                    onClick={() => go(item.path)}
-                    className="flex items-center gap-3.5 w-full px-3 py-3.5 rounded-xl text-sm font-medium text-foreground hover:bg-muted active:bg-muted/80 transition-colors touch-manipulation"
-                  >
-                    <item.icon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-                    {item.label}
-                  </button>
-                ))}
-              </nav>
-
-              <div className="px-4 py-3 border-t border-border/50 text-center">
-                <p className="text-[10px] text-muted-foreground">Djassa © 2025 — Marketplace Africaine</p>
+          {/* Informations */}
+          <button
+            onClick={() => go("/about")}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "100%",
+              padding: "14px 12px",
+              borderRadius: 12,
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              textAlign: "left",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <Info style={{ width: 20, height: 20, color: "hsl(var(--primary))" }} />
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 500, color: "#1f2937" }}>Informations</div>
+                <div style={{ fontSize: 11, color: "#9ca3af" }}>À propos & mentions légales</div>
               </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+            </div>
+            <ChevronRight style={{ width: 16, height: 16, color: "#d1d5db" }} />
+          </button>
+
+          {/* Contact */}
+          <button
+            onClick={() => go("/support")}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "100%",
+              padding: "14px 12px",
+              borderRadius: 12,
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              textAlign: "left",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <Phone style={{ width: 20, height: 20, color: "hsl(var(--primary))" }} />
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 500, color: "#1f2937" }}>Contact</div>
+                <div style={{ fontSize: 11, color: "#9ca3af" }}>+225 07 88 28 12 22</div>
+              </div>
+            </div>
+            <ChevronRight style={{ width: 16, height: 16, color: "#d1d5db" }} />
+          </button>
+
+          {/* Localisation */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 12px" }}>
+            <MapPin style={{ width: 20, height: 20, color: "hsl(var(--primary))" }} />
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 500, color: "#1f2937" }}>Abidjan, Côte d'Ivoire</div>
+              <div style={{ fontSize: 11, color: "#9ca3af" }}>Zone de service</div>
+            </div>
+          </div>
+
+          {/* Separator */}
+          <div style={{ margin: "8px 12px", borderTop: "1px solid #f3f4f6" }} />
+
+          {/* Paiement & Livraison */}
+          <div style={{ padding: "14px 12px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+              <CreditCard style={{ width: 20, height: 20, color: "hsl(var(--primary))" }} />
+              <span style={{ fontSize: 14, fontWeight: 500, color: "#1f2937" }}>Paiement & Livraison</span>
+            </div>
+
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, backgroundColor: "#f9fafb", borderRadius: 8, padding: "6px 12px", fontSize: 12, color: "#4b5563" }}>
+                <Smartphone style={{ width: 14, height: 14, color: "#f97316" }} />
+                Orange Money
+              </span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, backgroundColor: "#f9fafb", borderRadius: 8, padding: "6px 12px", fontSize: 12, color: "#4b5563" }}>
+                <Smartphone style={{ width: 14, height: 14, color: "#eab308" }} />
+                MTN MoMo
+              </span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, backgroundColor: "#f9fafb", borderRadius: 8, padding: "6px 12px", fontSize: 12, color: "#4b5563" }}>
+                <Smartphone style={{ width: 14, height: 14, color: "#3b82f6" }} />
+                Moov Money
+              </span>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#6b7280" }}>
+              <Truck style={{ width: 16, height: 16, color: "#22c55e" }} />
+              <span>Livraison 2-5 jours</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#6b7280", marginTop: 6 }}>
+              <ShieldCheck style={{ width: 16, height: 16, color: "#22c55e" }} />
+              <span>Paiement sécurisé SSL</span>
+            </div>
+          </div>
+
+          {/* Separator */}
+          <div style={{ margin: "8px 12px", borderTop: "1px solid #f3f4f6" }} />
+
+          {/* WhatsApp */}
+          <a
+            href="https://wa.me/2250788281222?text=Bonjour%2C%20j%27ai%20besoin%20d%27aide%20sur%20Djassa."
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setOpen(false)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              padding: "14px 12px",
+              borderRadius: 12,
+              fontSize: 14,
+              fontWeight: 500,
+              color: "#16a34a",
+              textDecoration: "none",
+            }}
+          >
+            <Mail style={{ width: 20, height: 20 }} />
+            <span>Support WhatsApp</span>
+          </a>
+        </div>
+
+        {/* Footer */}
+        <div
+          style={{
+            padding: "12px 20px",
+            borderTop: "1px solid #f3f4f6",
+            textAlign: "center",
+            flexShrink: 0,
+          }}
+        >
+          <p style={{ fontSize: 10, color: "#9ca3af" }}>
+            Djassa © {new Date().getFullYear()} — Marketplace Africaine 🇨🇮
+          </p>
+        </div>
+      </div>
     </>
   );
 };

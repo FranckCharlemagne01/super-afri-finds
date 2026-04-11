@@ -12,7 +12,7 @@ import { BoostCountdown } from "@/components/BoostCountdown";
 import { ProductImage } from "@/components/ui/optimized-image";
 import { motion } from "framer-motion";
 import { useProductPrefetch } from "@/hooks/useProductCache";
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { QuickViewDialog, type QuickViewProduct } from "@/components/QuickViewDialog";
 
 interface ProductCardProps {
@@ -69,6 +69,18 @@ export const ProductCard = ({
   const navigate = useNavigate();
   const { prefetchOnHover, cancelPrefetch } = useProductPrefetch();
   const [quickViewOpen, setQuickViewOpen] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const previewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const triggerPreviewButton = useCallback(() => {
+    setShowPreview(true);
+    if (previewTimerRef.current) clearTimeout(previewTimerRef.current);
+    previewTimerRef.current = setTimeout(() => setShowPreview(false), 2500);
+  }, []);
+
+  useEffect(() => {
+    return () => { if (previewTimerRef.current) clearTimeout(previewTimerRef.current); };
+  }, []);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -161,7 +173,12 @@ export const ProductCard = ({
         </motion.button>
 
         {/* Product Image - Uniform fixed height display */}
-        <div className="group/img relative w-full h-[200px] sm:h-[240px] md:h-[280px] overflow-hidden rounded-t-xl bg-muted">
+        <div 
+          className="group/img relative w-full h-[200px] sm:h-[240px] md:h-[280px] overflow-hidden rounded-t-xl bg-muted"
+          onTouchStart={triggerPreviewButton}
+          onMouseEnter={() => setShowPreview(true)}
+          onMouseLeave={() => setShowPreview(false)}
+        >
           <img 
             src={image} 
             alt={title}
@@ -174,7 +191,7 @@ export const ProductCard = ({
             }}
           />
 
-          {/* Quick View button - visible on mobile, hover on desktop */}
+          {/* Quick View button - appears on interaction, fades after 2.5s on mobile */}
           <button
             type="button"
             onClick={(e) => {
@@ -186,7 +203,9 @@ export const ProductCard = ({
               e.stopPropagation();
               setQuickViewOpen(true);
             }}
-            className="absolute bottom-2 left-2 z-20 bg-background/95 backdrop-blur-sm text-foreground text-[10px] sm:text-xs font-medium px-3 py-2 rounded-lg shadow-md flex items-center gap-1.5 sm:opacity-0 sm:group-hover/img:opacity-100 transition-all duration-200 hover:bg-background active:scale-95 touch-manipulation"
+            className={`absolute bottom-2 left-2 z-20 bg-background/95 backdrop-blur-sm text-foreground text-[10px] sm:text-xs font-medium px-3 py-2 rounded-lg shadow-md flex items-center gap-1.5 transition-all duration-300 hover:bg-background active:scale-95 touch-manipulation ${
+              showPreview ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1 pointer-events-none sm:group-hover/img:opacity-100 sm:group-hover/img:translate-y-0 sm:group-hover/img:pointer-events-auto'
+            }`}
           >
             <Eye className="w-3.5 h-3.5" />
             Aperçu

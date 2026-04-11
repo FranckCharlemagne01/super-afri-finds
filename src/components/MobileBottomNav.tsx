@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Search, PlusCircle, ShoppingCart, User } from "lucide-react";
+import { Home, Search, PlusCircle, MessageSquare, User } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -110,13 +110,22 @@ export const MobileBottomNav = () => {
     }
   }, [isAuthenticated, isSeller, isSuperAdmin, navigate]);
 
-  const navItems = useMemo(() => [
-    { icon: Home, label: "Accueil", path: "/marketplace", onClick: handleHomeClick },
-    { icon: Search, label: "Explorer", path: "/categories" },
-    { icon: PlusCircle, label: "Vendre", path: "/seller-dashboard", onClick: handleSellClick, highlight: true },
-    { icon: ShoppingCart, label: "Panier", path: "/cart", badge: cartItems },
-    { icon: User, label: "Compte", path: dashboardPath, onClick: handleAccountClick, onPrefetch: handleAccountPrefetch },
-  ], [handleHomeClick, cartItems, dashboardPath, handleAccountClick, handleAccountPrefetch, handleSellClick]);
+  const navItems = useMemo(() => {
+    const items = [
+      { icon: Home, label: "Accueil", path: "/marketplace", onClick: handleHomeClick },
+      { icon: Search, label: "Explorer", path: "/categories" },
+      { icon: PlusCircle, label: "Vendre", path: "/seller-dashboard", onClick: handleSellClick, highlight: true },
+    ];
+    
+    // Messages tab only for authenticated users
+    if (isAuthenticated) {
+      items.push({ icon: MessageSquare, label: "Messages", path: "/messages", badge: messageBadgeCount > 0 ? messageBadgeCount : undefined } as any);
+    }
+    
+    items.push({ icon: User, label: "Compte", path: dashboardPath, onClick: handleAccountClick, onPrefetch: handleAccountPrefetch } as any);
+    
+    return items;
+  }, [handleHomeClick, dashboardPath, handleAccountClick, handleAccountPrefetch, handleSellClick, isAuthenticated, messageBadgeCount]);
 
   // isActive function - memoized to avoid recreation
   const isActive = useCallback((path: string) => {

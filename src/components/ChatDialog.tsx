@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { User, Store, Package, Paperclip, X, ArrowLeft, ShoppingBag, MessageSquare } from 'lucide-react';
+import { User, Store, Package, Paperclip, X, ArrowLeft, ShoppingBag, MessageSquare, ExternalLink, ChevronDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { ChatInput } from '@/components/ChatInput';
@@ -42,6 +42,7 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [otherUserInfo, setOtherUserInfo] = useState<{ full_name?: string; email?: string } | null>(null);
+  const [showProductBanner, setShowProductBanner] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -196,11 +197,46 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
 
   let lastDateLabel = '';
 
+  // Render product card bubble (shared or order context)
+  const renderProductCardInMessage = (isMe: boolean) => {
+    if (!initialMessage.product) return null;
+    return (
+      <div 
+        onClick={() => handleProductClick(initialMessage.product_id || '')} 
+        className="cursor-pointer active:scale-[0.98] transition-transform"
+      >
+        <div className={`flex items-start gap-3 p-2.5 rounded-xl border min-w-[220px] ${
+          isMe ? 'bg-primary-foreground/10 border-primary-foreground/20' : 'bg-muted/40 border-border/50'
+        }`}>
+          <img 
+            src={getProductImage(initialMessage.product.images, 0)} 
+            alt={initialMessage.product.title}
+            className="w-14 h-14 object-cover rounded-lg flex-shrink-0 bg-muted/30"
+            onError={handleImageError}
+          />
+          <div className="flex-1 min-w-0">
+            <p className={`text-sm font-semibold line-clamp-2 ${isMe ? 'text-primary-foreground' : 'text-foreground'}`}>
+              {initialMessage.product.title}
+            </p>
+            {initialMessage.product.price && (
+              <p className={`text-sm font-bold mt-0.5 ${isMe ? 'text-primary-foreground/90' : 'text-primary'}`}>
+                {initialMessage.product.price.toLocaleString('fr-FR')} FCFA
+              </p>
+            )}
+            <p className={`text-[10px] mt-1 flex items-center gap-1 ${isMe ? 'text-primary-foreground/50' : 'text-muted-foreground'}`}>
+              <ExternalLink className="h-3 w-3" /> Voir le produit
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-full sm:max-w-3xl lg:max-w-4xl h-[100dvh] sm:h-[90vh] flex flex-col p-0 gap-0 rounded-none sm:rounded-2xl overflow-hidden border-0 sm:border">
         {/* Header */}
-        <DialogHeader className="flex-shrink-0 bg-gradient-to-r from-primary via-primary to-primary-hover safe-area-inset-top">
+        <DialogHeader className="flex-shrink-0 bg-gradient-to-r from-primary via-primary to-primary/90 safe-area-inset-top">
           <div className="px-3 py-3 flex items-center gap-3">
             <Button
               variant="ghost"
@@ -226,10 +262,64 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
           </div>
         </DialogHeader>
 
+        {/* Pinned product banner */}
+        {initialMessage.product && showProductBanner && (
+          <div className="flex-shrink-0 bg-card border-b border-border/30">
+            <div 
+              className="flex items-center gap-3 px-3 py-2 cursor-pointer active:bg-muted/30 transition-colors"
+              onClick={() => handleProductClick(initialMessage.product_id || '')}
+            >
+              <img 
+                src={getProductImage(initialMessage.product.images, 0)} 
+                alt={initialMessage.product.title}
+                className="w-11 h-11 object-cover rounded-lg bg-muted/20 border border-border/30"
+                onError={handleImageError}
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-semibold truncate text-foreground">{initialMessage.product.title}</p>
+                {initialMessage.product.price && (
+                  <p className="text-[13px] text-primary font-bold">{initialMessage.product.price.toLocaleString('fr-FR')} FCFA</p>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => { e.stopPropagation(); sendProductCard(); }}
+                  disabled={sending}
+                  className="h-8 px-2.5 text-xs rounded-full bg-primary/10 text-primary hover:bg-primary/20"
+                >
+                  <ShoppingBag className="h-3.5 w-3.5 mr-1" />
+                  Partager
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={(e) => { e.stopPropagation(); setShowProductBanner(false); }}
+                  className="h-7 w-7 rounded-full text-muted-foreground"
+                >
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Collapsed product indicator */}
+        {initialMessage.product && !showProductBanner && (
+          <button 
+            onClick={() => setShowProductBanner(true)}
+            className="flex-shrink-0 flex items-center justify-center gap-1.5 py-1.5 bg-primary/5 border-b border-border/20 text-xs text-primary font-medium hover:bg-primary/10 transition-colors"
+          >
+            <Package className="h-3 w-3" />
+            {initialMessage.product.title}
+          </button>
+        )}
+
         {/* Messages */}
         <div 
           ref={messagesContainerRef}
-          className="flex-1 overflow-y-auto bg-gradient-to-b from-muted/20 to-background overscroll-contain"
+          className="flex-1 overflow-y-auto bg-gradient-to-b from-muted/10 to-background overscroll-contain"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
           <div className="px-3 py-3 space-y-0.5 min-h-full flex flex-col justify-end">
@@ -239,19 +329,43 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
                 <p className="text-sm text-muted-foreground">Chargement...</p>
               </div>
             ) : messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 px-4">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                  <MessageSquare className="w-8 h-8 text-primary" />
+              <div className="flex flex-col items-center justify-center py-10 px-4">
+                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+                  <MessageSquare className="w-7 h-7 text-primary" />
                 </div>
                 <p className="text-center text-foreground font-semibold text-sm">Nouvelle conversation</p>
-                <p className="text-center text-muted-foreground text-xs mt-1">Envoyez un message pour démarrer</p>
+                <p className="text-center text-muted-foreground text-xs mt-1 max-w-[250px]">
+                  {initialMessage.product 
+                    ? `Discussion à propos de "${initialMessage.product.title}"`
+                    : 'Envoyez un message pour démarrer'
+                  }
+                </p>
+                {/* Auto product context card for new conversations */}
+                {initialMessage.product && (
+                  <div 
+                    className="mt-4 w-full max-w-[280px] cursor-pointer"
+                    onClick={() => handleProductClick(initialMessage.product_id || '')}
+                  >
+                    <div className="flex items-center gap-3 p-3 bg-card rounded-2xl border border-border/50 shadow-sm">
+                      <img 
+                        src={getProductImage(initialMessage.product.images, 0)} 
+                        alt={initialMessage.product.title}
+                        className="w-16 h-16 object-cover rounded-xl bg-muted/20"
+                        onError={handleImageError}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold line-clamp-2 text-foreground">{initialMessage.product.title}</p>
+                        {initialMessage.product.price && (
+                          <p className="text-sm font-bold text-primary mt-1">{initialMessage.product.price.toLocaleString('fr-FR')} FCFA</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               messages.map((message, index) => {
                 const isMe = message.sender_id === user?.id;
-                const showTime = index === messages.length - 1 || 
-                  messages[index + 1]?.sender_id !== message.sender_id ||
-                  new Date(messages[index + 1]?.created_at).getTime() - new Date(message.created_at).getTime() > 300000;
                 const isNewGroup = index === 0 || messages[index - 1]?.sender_id !== message.sender_id;
                 
                 // Date separator
@@ -262,6 +376,8 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
                   showDateSeparator = true;
                 }
 
+                const isProductShare = message.content === '[PRODUCT_SHARE]';
+
                 return (
                   <div key={message.id}>
                     {showDateSeparator && (
@@ -269,41 +385,23 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
                         <span className="text-[11px] text-muted-foreground bg-muted/60 px-3 py-1 rounded-full font-medium">{dateLabel}</span>
                       </div>
                     )}
-                    <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} ${isNewGroup ? 'mt-2.5' : 'mt-0.5'}`}>
-                      <div className={`flex flex-col max-w-[80%] sm:max-w-[65%] ${isMe ? 'items-end' : 'items-start'}`}>
+                    <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} ${isNewGroup ? 'mt-3' : 'mt-0.5'}`}>
+                      <div className={`flex flex-col max-w-[82%] sm:max-w-[65%] ${isMe ? 'items-end' : 'items-start'}`}>
                         <div
                           className={`relative px-3 py-2 ${
                             isMe
-                              ? 'bg-primary text-primary-foreground rounded-2xl rounded-br-sm'
-                              : 'bg-card text-foreground rounded-2xl rounded-bl-sm border border-border/40 shadow-sm'
+                              ? 'bg-primary text-primary-foreground rounded-2xl rounded-br-md shadow-sm'
+                              : 'bg-card text-foreground rounded-2xl rounded-bl-md border border-border/40 shadow-sm'
                           }`}
                         >
-                          {message.content === '[PRODUCT_SHARE]' && initialMessage.product ? (
-                            <div onClick={() => handleProductClick(initialMessage.product_id || '')} className="cursor-pointer active:opacity-80">
-                              <div className="flex items-start gap-2.5 p-2 bg-background/80 rounded-xl border border-border/50 min-w-[180px]">
-                                <img 
-                                  src={getProductImage(initialMessage.product.images, 0)} 
-                                  alt={initialMessage.product.title}
-                                  className="w-12 h-12 object-contain rounded-lg flex-shrink-0 bg-muted/20"
-                                  onError={handleImageError}
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-semibold line-clamp-2 text-foreground">{initialMessage.product.title}</p>
-                                  {initialMessage.product.price && (
-                                    <p className="text-sm font-bold text-primary mt-0.5">{initialMessage.product.price.toLocaleString('fr-FR')} F</p>
-                                  )}
-                                </div>
-                              </div>
-                              <p className="text-[10px] mt-1 opacity-50 flex items-center gap-1">
-                                <Package className="h-3 w-3" /> Voir le produit
-                              </p>
-                            </div>
+                          {isProductShare ? (
+                            renderProductCardInMessage(isMe)
                           ) : message.content ? (
                             <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words">{message.content}</p>
                           ) : null}
                           
                           {message.media_url && message.media_type === 'image' && (
-                            <div className={message.content && message.content !== '[PRODUCT_SHARE]' ? 'mt-1.5' : ''}>
+                            <div className={message.content && !isProductShare ? 'mt-1.5' : ''}>
                               <img 
                                 src={message.media_url} alt={message.media_name || 'Image'} 
                                 className="max-w-full h-auto rounded-xl cursor-pointer active:opacity-80"
@@ -313,7 +411,7 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
                           )}
                           
                           {message.media_url && message.media_type === 'video' && (
-                            <div className={message.content && message.content !== '[PRODUCT_SHARE]' ? 'mt-1.5' : ''}>
+                            <div className={message.content && !isProductShare ? 'mt-1.5' : ''}>
                               <video controls className="max-w-full h-auto rounded-xl" preload="metadata" playsInline>
                                 <source src={message.media_url} type="video/mp4" />
                               </video>
@@ -322,7 +420,9 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
 
                           <div className={`flex items-center justify-end gap-1 mt-1 -mb-0.5 ${isMe ? 'text-primary-foreground/60' : 'text-muted-foreground/70'}`}>
                             <span className="text-[10px]">{format(new Date(message.created_at), 'HH:mm', { locale: fr })}</span>
-                            {isMe && <span className="text-[10px]">✓✓</span>}
+                            {isMe && (
+                              <span className="text-[10px]">{message.is_read ? '✓✓' : '✓'}</span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -335,40 +435,7 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
           </div>
         </div>
 
-        {/* Product preview bar */}
-        {initialMessage.product && (
-          <div className="flex-shrink-0 px-3 py-2 border-t border-border/30 bg-muted/20">
-            <div 
-              className="flex items-center gap-2.5 p-2 bg-card rounded-lg border border-border/40 cursor-pointer active:bg-muted/50 transition-colors"
-              onClick={() => handleProductClick(initialMessage.product_id || '')}
-            >
-              <img 
-                src={getProductImage(initialMessage.product.images, 0)} 
-                alt={initialMessage.product.title}
-                className="w-9 h-9 object-contain rounded-md bg-muted/20"
-                onError={handleImageError}
-              />
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium truncate">{initialMessage.product.title}</p>
-                {initialMessage.product.price && (
-                  <p className="text-xs text-primary font-bold">{initialMessage.product.price.toLocaleString('fr-FR')} F</p>
-                )}
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => { e.stopPropagation(); sendProductCard(); }}
-                className="text-xs h-8 px-2"
-                disabled={sending}
-              >
-                <ShoppingBag className="h-3 w-3 mr-1" />
-                Partager
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Input */}
+        {/* Input area */}
         <div className="flex-shrink-0 bg-card border-t border-border/30 safe-area-inset-bottom">
           {selectedFile && (
             <div className="px-3 py-2 bg-muted/30 border-b border-border/20">

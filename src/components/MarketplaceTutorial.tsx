@@ -9,8 +9,8 @@ const TUTORIAL_SHOWN_COUNT_KEY = 'tutorial_shown_count';
 const TUTORIAL_LAST_SHOWN_KEY = 'tutorial_last_shown_at';
 const TUTORIAL_COMPLETED_KEY = 'tutorial_completed';
 
-const MAX_APPEARANCES = 4;
-const COOLDOWN_MINUTES = 5;
+const MAX_APPEARANCES = 1;
+const COOLDOWN_MINUTES = 0;
 
 interface TutorialStep {
   id: number;
@@ -24,31 +24,19 @@ const tutorialSteps: TutorialStep[] = [
     id: 1,
     icon: <Sparkles className="h-8 w-8 text-primary" />,
     title: "Bienvenue sur Djassa",
-    message: "La marketplace qui connecte acheteurs et vendeurs. Rejoignez une communauté dynamique et découvrez des opportunités uniques."
+    message: "Achetez et vendez facilement en Côte d'Ivoire. Des milliers de produits à portée de main."
   },
   {
     id: 2,
-    icon: <Search className="h-8 w-8 text-primary" />,
-    title: "Trouvez l'exceptionnel",
-    message: "Recherche intelligente, catégories claires. Accédez instantanément à des milliers de produits sélectionnés pour vous."
+    icon: <ShoppingCart className="h-8 w-8 text-success" />,
+    title: "Achetez en toute sécurité",
+    message: "Paiement sécurisé via Mobile Money et carte bancaire. Commandez en quelques clics."
   },
   {
     id: 3,
-    icon: <ShoppingCart className="h-8 w-8 text-success" />,
-    title: "Achetez en toute sécurité",
-    message: "Paiement sécurisé, transaction protégée. Commandez en quelques clics avec une confiance totale."
-  },
-  {
-    id: 4,
     icon: <Store className="h-8 w-8 text-accent" />,
-    title: "Lancez votre boutique",
-    message: "Créez votre e-commerce en 2 minutes. 28 jours gratuits pour tester, zéro risque, potentiel illimité."
-  },
-  {
-    id: 5,
-    icon: <Truck className="h-8 w-8 text-promo" />,
-    title: "Gérez tout, simplement",
-    message: "Tableau de bord intuitif, suivi en temps réel. Gardez le contrôle de vos achats et ventes depuis n'importe où."
+    title: "Vendez gratuitement",
+    message: "Créez votre boutique en 2 minutes. 28 jours gratuits + 50 jetons offerts pour publier vos produits."
   }
 ];
 
@@ -156,7 +144,8 @@ export const MarketplaceTutorial = () => {
   };
 
   const handleClose = () => {
-    // User clicked X - just close, don't mark as completed (will show again up to 4 times)
+    // User clicked X - mark as completed so it never shows again
+    markTutorialCompleted();
     setShowTutorial(false);
   };
 

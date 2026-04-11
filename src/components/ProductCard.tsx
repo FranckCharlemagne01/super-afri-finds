@@ -175,14 +175,22 @@ export const ProductCard = ({
           />
 
           {/* Quick View button - visible on mobile, hover on desktop */}
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={handleQuickView}
-            className="absolute bottom-2 left-2 z-10 bg-background/90 backdrop-blur-sm text-foreground text-[10px] sm:text-xs font-medium px-2.5 py-1.5 rounded-lg shadow-md flex items-center gap-1 sm:opacity-0 sm:group-hover/img:opacity-100 transition-all duration-200 hover:bg-background"
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setQuickViewOpen(true);
+            }}
+            onTouchEnd={(e) => {
+              e.stopPropagation();
+              setQuickViewOpen(true);
+            }}
+            className="absolute bottom-2 left-2 z-20 bg-background/95 backdrop-blur-sm text-foreground text-[10px] sm:text-xs font-medium px-3 py-2 rounded-lg shadow-md flex items-center gap-1.5 sm:opacity-0 sm:group-hover/img:opacity-100 transition-all duration-200 hover:bg-background active:scale-95 touch-manipulation"
           >
-            <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+            <Eye className="w-3.5 h-3.5" />
             Aperçu
-          </motion.button>
+          </button>
           
           {/* Video indicator overlay */}
           {videoUrl && (

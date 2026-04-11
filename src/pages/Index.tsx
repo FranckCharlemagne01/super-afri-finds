@@ -5,7 +5,7 @@ import { CategoryCard } from "@/components/CategoryCard";
 import { SearchBar } from "@/components/SearchBar";
 import { FloatingChatWidget } from "@/components/FloatingChatWidget";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
-import { HelpButton } from "@/components/HelpButton";
+import { MobileHamburgerMenu } from "@/components/MobileHamburgerMenu";
 
 import { FloatingSupportButton } from "@/components/FloatingSupportButton";
 import FAQ from "@/components/FAQ";
@@ -420,6 +420,7 @@ const Index = () => {
         <div className="md:hidden">
           {/* Row 1: Logo + Location + Icons */}
           <div className="px-3 pt-2.5 pb-1.5 flex items-center gap-2">
+            <MobileHamburgerMenu />
             <h1 
               className="text-xl font-extrabold gradient-text-primary cursor-pointer transition-transform active:scale-95 whitespace-nowrap tracking-tight" 
               onClick={handleLogoClick}

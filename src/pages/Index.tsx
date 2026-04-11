@@ -580,8 +580,8 @@ const Index = () => {
         {/* Flash Sales - Horizontal Carousel */}
         <FlashSalesCarousel products={specialOffersProducts} />
 
-        {/* Catégories avec icônes */}
-        <section className="mb-5 sm:mb-8 lg:mb-12">
+        {/* Catégories - Hidden on mobile to focus on products */}
+        <section className="hidden sm:block mb-5 sm:mb-8 lg:mb-12">
           <PopularCategories />
         </section>
 
@@ -617,8 +617,10 @@ const Index = () => {
           </div>
         </section>
 
-        {/* CTA Vendeur - Section dédiée entre les sections */}
-        <SellerCTABanner variant="bottom" onShowSellerUpgrade={() => setShowSellerUpgrade(true)} />
+        {/* CTA Vendeur - Hidden on mobile */}
+        <div className="hidden sm:block">
+          <SellerCTABanner variant="bottom" onShowSellerUpgrade={() => setShowSellerUpgrade(true)} />
+        </div>
 
         {/* Tendances du moment - Grid */}
         <section className="mb-5 sm:mb-8 lg:mb-12">

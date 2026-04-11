@@ -211,6 +211,7 @@ const Index = () => {
     fetchProducts();
   }, [user, userLocation.city, userLocation.country]);
 
+
   // City-aware cache key
   const productsCacheKey = userLocation.city 
     ? `${CACHE_KEYS.PRODUCTS}:city:${userLocation.city.toLowerCase()}` 
@@ -274,6 +275,13 @@ const Index = () => {
     
     await fetchFromServer();
   }, [userLocation.city, productsCacheKey, fetchFromServer]);
+
+  // Listen for refresh event from bottom nav (avoids full page reload)
+  useEffect(() => {
+    const handleRefresh = () => fetchProducts(true);
+    window.addEventListener('djassa:refresh-products', handleRefresh);
+    return () => window.removeEventListener('djassa:refresh-products', handleRefresh);
+  }, [fetchProducts]);
 
   const handleRefreshRecommendations = useCallback(() => {
     setRefreshKey(prev => prev + 1);

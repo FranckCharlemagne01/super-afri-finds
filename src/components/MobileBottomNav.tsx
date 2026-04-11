@@ -79,7 +79,8 @@ export const MobileBottomNav = () => {
     
     if (isOnMarketplace) {
       if (isAtTop) {
-        window.location.reload();
+        // Dispatch event to refresh products without full reload
+        window.dispatchEvent(new CustomEvent('djassa:refresh-products'));
         toast({
           title: "✅ Produits actualisés",
           description: "Affichage des derniers produits disponibles",

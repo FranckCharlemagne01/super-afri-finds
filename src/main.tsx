@@ -185,7 +185,7 @@ if ('serviceWorker' in navigator) {
 
       // IMPORTANT: version the SW URL so browsers/CDNs don't serve an old script.
       // This forces an update even when HTTP caches behave unexpectedly.
-      const SW_SCRIPT_URL = `/sw.js?v=11`;
+      const SW_SCRIPT_URL = `/sw.js?v=12`;
 
       const registration = await navigator.serviceWorker.register(SW_SCRIPT_URL, {
         scope: '/',

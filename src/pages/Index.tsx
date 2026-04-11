@@ -5,7 +5,7 @@ import { CategoryCard } from "@/components/CategoryCard";
 import { SearchBar } from "@/components/SearchBar";
 import { FloatingChatWidget } from "@/components/FloatingChatWidget";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
-import { HelpButton } from "@/components/HelpButton";
+import { MobileHamburgerMenu } from "@/components/MobileHamburgerMenu";
 
 import { FloatingSupportButton } from "@/components/FloatingSupportButton";
 import FAQ from "@/components/FAQ";

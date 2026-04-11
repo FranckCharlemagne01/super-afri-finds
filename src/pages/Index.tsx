@@ -211,12 +211,6 @@ const Index = () => {
     fetchProducts();
   }, [user, userLocation.city, userLocation.country]);
 
-  // Listen for refresh event from bottom nav (avoids full page reload)
-  useEffect(() => {
-    const handleRefresh = () => fetchProducts(true);
-    window.addEventListener('djassa:refresh-products', handleRefresh);
-    return () => window.removeEventListener('djassa:refresh-products', handleRefresh);
-  }, [fetchProducts]);
 
   // City-aware cache key
   const productsCacheKey = userLocation.city 

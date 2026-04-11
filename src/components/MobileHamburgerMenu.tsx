@@ -15,6 +15,20 @@ export const MobileHamburgerMenu = () => {
     navigate(path);
   };
 
+  if (!open) {
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        className="w-10 h-10 p-0 rounded-full"
+        onClick={() => setOpen(true)}
+        aria-label="Menu"
+      >
+        <Menu className="w-5 h-5" />
+      </Button>
+    );
+  }
+
   return (
     <>
       <Button
@@ -27,145 +41,220 @@ export const MobileHamburgerMenu = () => {
         <Menu className="w-5 h-5" />
       </Button>
 
-      {open && (
-        <>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/50 z-[9998]"
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/50"
+        style={{ zIndex: 10000 }}
+        onClick={() => setOpen(false)}
+      />
+
+      {/* Drawer */}
+      <div
+        className="fixed top-0 left-0 shadow-2xl"
+        style={{
+          zIndex: 10001,
+          width: "min(300px, 85vw)",
+          height: "100vh",
+          backgroundColor: "#ffffff",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        {/* Header */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "16px 20px",
+            borderBottom: "1px solid #f3f4f6",
+            flexShrink: 0,
+          }}
+        >
+          <span style={{ fontSize: 18, fontWeight: 700, color: "hsl(var(--primary))" }}>Djassa</span>
+          <button
             onClick={() => setOpen(false)}
-          />
-
-          {/* Drawer */}
-          <div
-            className="fixed top-0 left-0 bottom-0 w-[300px] bg-white z-[9999] shadow-2xl flex flex-col overflow-hidden"
-            style={{ maxWidth: "85vw" }}
+            style={{
+              width: 36,
+              height: 36,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: "50%",
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+            }}
+            aria-label="Fermer"
           >
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-              <span className="text-lg font-bold text-primary">Djassa</span>
-              <button
-                onClick={() => setOpen(false)}
-                className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors"
-                aria-label="Fermer"
-              >
-                <X className="w-5 h-5 text-gray-600" />
-              </button>
+            <X style={{ width: 20, height: 20, color: "#6b7280" }} />
+          </button>
+        </div>
+
+        {/* Scrollable Menu Content */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "12px" }}>
+          {/* Assistance */}
+          <button
+            onClick={() => go("/support")}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "100%",
+              padding: "14px 12px",
+              borderRadius: 12,
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              textAlign: "left",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <HelpCircle style={{ width: 20, height: 20, color: "hsl(var(--primary))" }} />
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 500, color: "#1f2937" }}>Assistance</div>
+                <div style={{ fontSize: 11, color: "#9ca3af" }}>Centre d'aide & FAQ</div>
+              </div>
             </div>
+            <ChevronRight style={{ width: 16, height: 16, color: "#d1d5db" }} />
+          </button>
 
-            {/* Menu Items */}
-            <div className="flex-1 overflow-y-auto">
-              <nav className="py-3 px-3">
-                {/* Assistance */}
-                <button
-                  onClick={() => go("/support")}
-                  className="flex items-center justify-between w-full px-4 py-4 rounded-xl text-sm font-medium text-gray-800 hover:bg-gray-50 active:bg-gray-100 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <HelpCircle className="w-5 h-5 text-primary" />
-                    <div className="text-left">
-                      <span className="block">Assistance</span>
-                      <span className="text-xs text-gray-400">Centre d'aide & FAQ</span>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-gray-300" />
-                </button>
-
-                {/* Informations */}
-                <button
-                  onClick={() => go("/about")}
-                  className="flex items-center justify-between w-full px-4 py-4 rounded-xl text-sm font-medium text-gray-800 hover:bg-gray-50 active:bg-gray-100 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <Info className="w-5 h-5 text-primary" />
-                    <div className="text-left">
-                      <span className="block">Informations</span>
-                      <span className="text-xs text-gray-400">À propos & mentions légales</span>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-gray-300" />
-                </button>
-
-                {/* Contact */}
-                <button
-                  onClick={() => go("/support")}
-                  className="flex items-center justify-between w-full px-4 py-4 rounded-xl text-sm font-medium text-gray-800 hover:bg-gray-50 active:bg-gray-100 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <Phone className="w-5 h-5 text-primary" />
-                    <div className="text-left">
-                      <span className="block">Contact</span>
-                      <span className="text-xs text-gray-400">+225 07 88 28 12 22</span>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-gray-300" />
-                </button>
-
-                {/* Localisation */}
-                <div className="flex items-center gap-3 px-4 py-4 rounded-xl">
-                  <MapPin className="w-5 h-5 text-primary" />
-                  <div>
-                    <span className="block text-sm font-medium text-gray-800">Abidjan, Côte d'Ivoire</span>
-                    <span className="text-xs text-gray-400">Zone de service</span>
-                  </div>
-                </div>
-
-                {/* Separator */}
-                <div className="mx-4 my-2 border-t border-gray-100" />
-
-                {/* Paiement & Livraison */}
-                <div className="px-4 py-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <CreditCard className="w-5 h-5 text-primary" />
-                    <span className="text-sm font-medium text-gray-800">Paiement & Livraison</span>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    <span className="inline-flex items-center gap-1.5 bg-gray-50 rounded-lg px-3 py-1.5 text-xs text-gray-600">
-                      <Smartphone className="w-3.5 h-3.5 text-orange-500" />
-                      Orange Money
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 bg-gray-50 rounded-lg px-3 py-1.5 text-xs text-gray-600">
-                      <Smartphone className="w-3.5 h-3.5 text-yellow-500" />
-                      MTN MoMo
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 bg-gray-50 rounded-lg px-3 py-1.5 text-xs text-gray-600">
-                      <Smartphone className="w-3.5 h-3.5 text-blue-500" />
-                      Moov Money
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <Truck className="w-4 h-4 text-green-500" />
-                    <span>Livraison 2-5 jours</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-gray-500 mt-1.5">
-                    <ShieldCheck className="w-4 h-4 text-green-500" />
-                    <span>Paiement sécurisé SSL</span>
-                  </div>
-                </div>
-
-                {/* WhatsApp */}
-                <div className="mx-4 my-2 border-t border-gray-100" />
-                <a
-                  href="https://wa.me/2250788281222?text=Bonjour%2C%20j%27ai%20besoin%20d%27aide%20sur%20Djassa."
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 px-4 py-4 rounded-xl text-sm font-medium text-green-600 hover:bg-green-50 active:bg-green-100 transition-colors"
-                  onClick={() => setOpen(false)}
-                >
-                  <Mail className="w-5 h-5" />
-                  <span>Support WhatsApp</span>
-                </a>
-              </nav>
+          {/* Informations */}
+          <button
+            onClick={() => go("/about")}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "100%",
+              padding: "14px 12px",
+              borderRadius: 12,
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              textAlign: "left",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <Info style={{ width: 20, height: 20, color: "hsl(var(--primary))" }} />
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 500, color: "#1f2937" }}>Informations</div>
+                <div style={{ fontSize: 11, color: "#9ca3af" }}>À propos & mentions légales</div>
+              </div>
             </div>
+            <ChevronRight style={{ width: 16, height: 16, color: "#d1d5db" }} />
+          </button>
 
-            {/* Footer */}
-            <div className="px-5 py-3 border-t border-gray-100 text-center">
-              <p className="text-[10px] text-gray-400">Djassa © {new Date().getFullYear()} — Marketplace Africaine 🇨🇮</p>
+          {/* Contact */}
+          <button
+            onClick={() => go("/support")}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "100%",
+              padding: "14px 12px",
+              borderRadius: 12,
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              textAlign: "left",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <Phone style={{ width: 20, height: 20, color: "hsl(var(--primary))" }} />
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 500, color: "#1f2937" }}>Contact</div>
+                <div style={{ fontSize: 11, color: "#9ca3af" }}>+225 07 88 28 12 22</div>
+              </div>
+            </div>
+            <ChevronRight style={{ width: 16, height: 16, color: "#d1d5db" }} />
+          </button>
+
+          {/* Localisation */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 12px" }}>
+            <MapPin style={{ width: 20, height: 20, color: "hsl(var(--primary))" }} />
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 500, color: "#1f2937" }}>Abidjan, Côte d'Ivoire</div>
+              <div style={{ fontSize: 11, color: "#9ca3af" }}>Zone de service</div>
             </div>
           </div>
-        </>
-      )}
+
+          {/* Separator */}
+          <div style={{ margin: "8px 12px", borderTop: "1px solid #f3f4f6" }} />
+
+          {/* Paiement & Livraison */}
+          <div style={{ padding: "14px 12px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+              <CreditCard style={{ width: 20, height: 20, color: "hsl(var(--primary))" }} />
+              <span style={{ fontSize: 14, fontWeight: 500, color: "#1f2937" }}>Paiement & Livraison</span>
+            </div>
+
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, backgroundColor: "#f9fafb", borderRadius: 8, padding: "6px 12px", fontSize: 12, color: "#4b5563" }}>
+                <Smartphone style={{ width: 14, height: 14, color: "#f97316" }} />
+                Orange Money
+              </span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, backgroundColor: "#f9fafb", borderRadius: 8, padding: "6px 12px", fontSize: 12, color: "#4b5563" }}>
+                <Smartphone style={{ width: 14, height: 14, color: "#eab308" }} />
+                MTN MoMo
+              </span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, backgroundColor: "#f9fafb", borderRadius: 8, padding: "6px 12px", fontSize: 12, color: "#4b5563" }}>
+                <Smartphone style={{ width: 14, height: 14, color: "#3b82f6" }} />
+                Moov Money
+              </span>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#6b7280" }}>
+              <Truck style={{ width: 16, height: 16, color: "#22c55e" }} />
+              <span>Livraison 2-5 jours</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#6b7280", marginTop: 6 }}>
+              <ShieldCheck style={{ width: 16, height: 16, color: "#22c55e" }} />
+              <span>Paiement sécurisé SSL</span>
+            </div>
+          </div>
+
+          {/* Separator */}
+          <div style={{ margin: "8px 12px", borderTop: "1px solid #f3f4f6" }} />
+
+          {/* WhatsApp */}
+          <a
+            href="https://wa.me/2250788281222?text=Bonjour%2C%20j%27ai%20besoin%20d%27aide%20sur%20Djassa."
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setOpen(false)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              padding: "14px 12px",
+              borderRadius: 12,
+              fontSize: 14,
+              fontWeight: 500,
+              color: "#16a34a",
+              textDecoration: "none",
+            }}
+          >
+            <Mail style={{ width: 20, height: 20 }} />
+            <span>Support WhatsApp</span>
+          </a>
+        </div>
+
+        {/* Footer */}
+        <div
+          style={{
+            padding: "12px 20px",
+            borderTop: "1px solid #f3f4f6",
+            textAlign: "center",
+            flexShrink: 0,
+          }}
+        >
+          <p style={{ fontSize: 10, color: "#9ca3af" }}>
+            Djassa © {new Date().getFullYear()} — Marketplace Africaine 🇨🇮
+          </p>
+        </div>
+      </div>
     </>
   );
 };

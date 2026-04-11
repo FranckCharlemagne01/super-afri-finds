@@ -420,6 +420,7 @@ const Index = () => {
         <div className="md:hidden">
           {/* Row 1: Logo + Location + Icons */}
           <div className="px-3 pt-2.5 pb-1.5 flex items-center gap-2">
+            <MobileHamburgerMenu />
             <h1 
               className="text-xl font-extrabold gradient-text-primary cursor-pointer transition-transform active:scale-95 whitespace-nowrap tracking-tight" 
               onClick={handleLogoClick}

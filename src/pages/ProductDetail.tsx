@@ -36,7 +36,10 @@ import {
   Tag,
   ChevronRight,
   MessageCircle,
-  Eye
+  Eye,
+  MapPin,
+  BadgeCheck,
+  ShoppingBag
 } from "lucide-react";
 import {
   Carousel,

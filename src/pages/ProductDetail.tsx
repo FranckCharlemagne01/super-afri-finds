@@ -73,6 +73,15 @@ interface Shop {
   shop_slug: string;
   shop_description?: string;
   logo_url?: string;
+  banner_url?: string;
+}
+
+interface ShopStats {
+  totalProducts: number;
+  totalSales: number;
+  avgRating: number;
+  city?: string;
+  isVerified: boolean;
 }
 
 // Category icon helper

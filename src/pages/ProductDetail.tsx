@@ -218,8 +218,11 @@ const ProductDetail = (): JSX.Element | null => {
             // Fetch stats for each similar shop
             const shopsWithStats = await Promise.all(
               similarShopsData.map(async (s) => {
-                const stats = await fetchShopStats(s.seller_id, s.id);
-                return { ...s, stats };
+                const [stats, shopProds] = await Promise.all([
+                  fetchShopStats(s.seller_id, s.id),
+                  supabase.from('products').select('*').eq('shop_id', s.id).eq('is_active', true).order('rating', { ascending: false }).limit(4),
+                ]);
+                return { ...s, stats, products: (shopProds.data || []) as Product[] };
               })
             );
             setSimilarShops(shopsWithStats);

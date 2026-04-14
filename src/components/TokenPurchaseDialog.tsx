@@ -46,9 +46,13 @@ export const TokenPurchaseDialog = ({ open, onOpenChange, onPurchaseComplete }: 
         },
       });
 
-      if (error) throw error;
-      if (data && !data.success && data.status !== 'success') {
-        throw new Error(data.error || "Impossible d'initialiser le paiement");
+      if (error) {
+        console.error('Edge function invoke error:', error);
+        throw new Error("Impossible de contacter le service de paiement");
+      }
+
+      if (!data?.success) {
+        throw new Error(data?.error || "Impossible d'initialiser le paiement");
       }
 
       const authorizationUrl = data?.data?.authorization_url;

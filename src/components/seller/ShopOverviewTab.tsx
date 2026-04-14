@@ -50,6 +50,7 @@ interface ShopOverviewTabProps {
   trialStatus: TrialStatus;
   onRefresh: () => void;
   onPublishProduct?: () => void;
+  onNavigateToProducts?: () => void;
 }
 
 export const ShopOverviewTab = memo(({
@@ -58,7 +59,8 @@ export const ShopOverviewTab = memo(({
   tokenBalance,
   trialStatus,
   onRefresh,
-  onPublishProduct
+  onPublishProduct,
+  onNavigateToProducts
 }: ShopOverviewTabProps) => {
   const navigate = useNavigate();
   const { user } = useStableAuth();
@@ -135,11 +137,11 @@ export const ShopOverviewTab = memo(({
       disabled: false,
     },
     {
-      label: 'Voir ma boutique',
-      icon: ShoppingBag,
-      onClick: () => shop && navigate(`/boutique/${shop.shop_slug}`),
+      label: 'Produits',
+      icon: Package,
+      onClick: onNavigateToProducts || (() => {}),
       variant: 'outline' as const,
-      description: 'Voir la page publique',
+      description: 'Gérer mes produits',
       disabled: false,
     },
   ], [onPublishProduct, shop, navigate]);

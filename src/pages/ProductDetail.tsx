@@ -118,7 +118,8 @@ const ProductDetail = (): JSX.Element | null => {
   const [shop, setShop] = useState<Shop | null>(cachedShop as Shop | null);
   const [shopProducts, setShopProducts] = useState<Product[]>([]);
   const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
-  const [similarShops, setSimilarShops] = useState<Shop[]>([]);
+  const [similarShops, setSimilarShops] = useState<(Shop & { stats?: ShopStats })[]>([]);
+  const [shopStats, setShopStats] = useState<ShopStats | null>(null);
   const [loading, setLoading] = useState(!cachedProduct);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [offerExpired, setOfferExpired] = useState(false);

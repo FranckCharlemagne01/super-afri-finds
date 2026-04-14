@@ -544,6 +544,7 @@ const SellerDashboard = memo(() => {
                 trialStatus={trialStatus}
                 onRefresh={handleRefresh}
                 onPublishProduct={handlePublishProduct}
+                onNavigateToProducts={() => setActiveSection('products')}
               />
             </Suspense>
           )}

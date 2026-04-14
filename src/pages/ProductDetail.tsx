@@ -610,27 +610,69 @@ const ProductDetail = (): JSX.Element | null => {
               <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
             </button>
 
-            {/* Shop link */}
+            {/* ===== SELLER INFO BLOCK ===== */}
             {shop && (
-              <button
-                onClick={() => navigate(`/boutique/${shop.shop_slug}`)}
-                onMouseEnter={() => prefetchShopBySlug(shop.shop_slug)}
-                onTouchStart={() => prefetchShopBySlug(shop.shop_slug)}
-                className="flex items-center gap-3 w-full p-3 rounded-xl border border-border/50 hover:border-primary/30 hover:bg-primary/5 transition-all group"
-              >
-                {shop.logo_url ? (
-                  <img src={shop.logo_url} alt={shop.shop_name} className="w-10 h-10 rounded-full object-cover border-2 border-primary/20" />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Store className="w-5 h-5 text-primary" />
+              <div className="border border-border/50 rounded-2xl p-4 space-y-4 bg-card shadow-sm">
+                <div className="flex items-start gap-3">
+                  {shop.logo_url ? (
+                    <img src={shop.logo_url} alt={shop.shop_name} className="w-14 h-14 rounded-xl object-cover border-2 border-primary/20 flex-shrink-0" />
+                  ) : (
+                    <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Store className="w-7 h-7 text-primary" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-base font-bold text-foreground truncate">{shop.shop_name}</h3>
+                      {shopStats?.isVerified && (
+                        <Badge className="bg-success/10 text-success border-success/20 text-[10px] gap-1">
+                          <BadgeCheck className="w-3 h-3" /> Vérifié
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3 mt-1 flex-wrap">
+                      {shopStats && shopStats.avgRating > 0 && (
+                        <div className="flex items-center gap-1">
+                          <Star className="w-3.5 h-3.5 text-accent fill-current" />
+                          <span className="text-xs font-semibold">{shopStats.avgRating.toFixed(1)}</span>
+                        </div>
+                      )}
+                      {shopStats && shopStats.totalSales > 0 && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <ShoppingBag className="w-3 h-3" />
+                          <span>{shopStats.totalSales} vente{shopStats.totalSales > 1 ? 's' : ''}</span>
+                        </div>
+                      )}
+                      {shopStats?.city && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <MapPin className="w-3 h-3" />
+                          <span>{shopStats.city}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
-                <div className="text-left flex-1 min-w-0">
-                  <p className="text-xs text-muted-foreground">Vendu par</p>
-                  <p className="text-sm font-semibold group-hover:text-primary transition-colors truncate">{shop.shop_name}</p>
                 </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-              </button>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-xl border-primary/30 hover:bg-primary/5"
+                    onClick={() => navigate(`/boutique/${shop.shop_slug}`)}
+                    onMouseEnter={() => prefetchShopBySlug(shop.shop_slug)}
+                  >
+                    <Store className="w-4 h-4 mr-1.5" />
+                    Voir la boutique
+                  </Button>
+                  <ContactSellerButton
+                    productId={product.id}
+                    sellerId={product.seller_id}
+                    productTitle={product.title}
+                    productPrice={salePrice}
+                    productImage={productImage}
+                  />
+                </div>
+              </div>
             )}
           </div>
         </div>

@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Store, ExternalLink, LogOut, Coins, Clock, CheckCircle2, ArrowLeft, Plus } from 'lucide-react';
+import { Store, LogOut, Coins, Clock, CheckCircle2, ArrowLeft, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from '@/hooks/use-toast';
@@ -158,17 +158,6 @@ export const ModernSellerHeader = memo(({
                 <span className="truncate">Accueil</span>
               </Button>
               
-              {shop && (
-                <Button
-                  variant="outline"
-                  onClick={() => navigate(`/boutique/${shop.shop_slug}`)}
-                  className="bg-card hover:bg-primary/10 border-primary/30 flex-1 text-xs md:text-sm h-auto py-2.5 rounded-xl"
-                >
-                  <ExternalLink className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1" />
-                  <span className="truncate hidden sm:inline">Ma boutique</span>
-                  <span className="truncate sm:hidden">Boutique</span>
-                </Button>
-              )}
               <Button
                 variant="ghost"
                 onClick={onSignOut}

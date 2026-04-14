@@ -76,12 +76,13 @@ interface Shop {
 }
 
 const sectionTitles: Record<SellerSection, string> = {
-  overview: 'Ma Boutique',
+  overview: 'Tableau de bord',
   products: 'Produits',
+  publish: 'Publier un produit',
   orders: 'Commandes',
   messages: 'Messages',
   tokens: 'Compte Djassa',
-  wallet: '💰 Retrait',
+  wallet: 'Wallet',
   settings: 'Paramètres',
 };
 
@@ -93,7 +94,16 @@ const SellerDashboard = memo(() => {
 
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState<SellerSection>('overview');
+  const [activeSection, setActiveSectionRaw] = useState<SellerSection>('overview');
+
+  const setActiveSection = useCallback((section: SellerSection) => {
+    if (section === 'publish') {
+      setActiveSectionRaw('products');
+      setOpenProductForm(true);
+      return;
+    }
+    setActiveSectionRaw(section);
+  }, []);
   const [openProductForm, setOpenProductForm] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState<string | null>(null);
@@ -475,7 +485,6 @@ const SellerDashboard = memo(() => {
         onToggleDark={toggleDark}
         onSignOut={handleSignOut}
         shopName={shop?.shop_name}
-        shopSlug={shop?.shop_slug}
         shopLogoUrl={shop?.logo_url}
       />
 

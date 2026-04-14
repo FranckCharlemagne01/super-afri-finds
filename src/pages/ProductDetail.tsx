@@ -121,7 +121,7 @@ const ProductDetail = (): JSX.Element | null => {
   const [shop, setShop] = useState<Shop | null>(cachedShop as Shop | null);
   const [shopProducts, setShopProducts] = useState<Product[]>([]);
   const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
-  const [similarShops, setSimilarShops] = useState<(Shop & { stats?: ShopStats })[]>([]);
+  const [similarShops, setSimilarShops] = useState<(Shop & { stats?: ShopStats; products?: Product[] })[]>([]);
   const [shopStats, setShopStats] = useState<ShopStats | null>(null);
   const [loading, setLoading] = useState(!cachedProduct);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -218,8 +218,11 @@ const ProductDetail = (): JSX.Element | null => {
             // Fetch stats for each similar shop
             const shopsWithStats = await Promise.all(
               similarShopsData.map(async (s) => {
-                const stats = await fetchShopStats(s.seller_id, s.id);
-                return { ...s, stats };
+                const [stats, shopProds] = await Promise.all([
+                  fetchShopStats(s.seller_id, s.id),
+                  supabase.from('products').select('*').eq('shop_id', s.id).eq('is_active', true).order('rating', { ascending: false }).limit(4),
+                ]);
+                return { ...s, stats, products: (shopProds.data || []) as Product[] };
               })
             );
             setSimilarShops(shopsWithStats);
@@ -727,56 +730,106 @@ const ProductDetail = (): JSX.Element | null => {
         </section>
       )}
 
-      {/* ===== SIMILAR SHOPS ===== */}
+      {/* ===== SIMILAR SHOPS WITH PRODUCTS ===== */}
       {similarShops.length > 0 && (
         <section className="container mx-auto px-4 py-6 border-t border-border/30">
-          <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+          <h2 className="text-lg sm:text-xl font-bold text-foreground mb-5 flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
               <Store className="w-4 h-4 text-success" />
             </div>
-            Autres boutiques similaires
+            Découvrez d'autres boutiques
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="space-y-6">
             {similarShops.map((s) => (
-              <div
-                key={s.id}
-                className="cursor-pointer group p-4 border border-border/50 rounded-2xl hover:shadow-xl hover:border-primary/30 transition-all duration-300 bg-card"
-                onClick={() => navigate(`/boutique/${s.shop_slug}`)}
-              >
-                <div className="flex flex-col items-center text-center gap-3">
-                  {s.logo_url ? (
-                    <img src={s.logo_url} alt={s.shop_name} className="w-16 h-16 rounded-xl object-cover border-2 border-primary/20 group-hover:border-primary group-hover:scale-105 transition-all shadow-sm" />
-                  ) : (
-                    <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 group-hover:scale-105 transition-all">
-                      <Store className="w-8 h-8 text-primary" />
-                    </div>
-                  )}
-                  <div className="min-w-0 w-full space-y-1.5">
-                    <div className="flex items-center justify-center gap-1.5">
-                      <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">{s.shop_name}</h3>
-                      {s.stats?.isVerified && <BadgeCheck className="w-3.5 h-3.5 text-success flex-shrink-0" />}
-                    </div>
-                    <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                      {s.stats && s.stats.avgRating > 0 && (
-                        <span className="flex items-center gap-0.5">
-                          <Star className="w-3 h-3 text-accent fill-current" />
-                          {s.stats.avgRating.toFixed(1)}
-                        </span>
-                      )}
-                      {s.stats && s.stats.totalSales > 0 && (
-                        <span>{s.stats.totalSales} vente{s.stats.totalSales > 1 ? 's' : ''}</span>
-                      )}
-                    </div>
-                    {s.stats?.city && (
-                      <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-1">
-                        <MapPin className="w-2.5 h-2.5" /> {s.stats.city}
-                      </p>
+              <div key={s.id} className="border border-border/50 rounded-2xl overflow-hidden bg-card shadow-sm hover:shadow-md transition-shadow">
+                {/* Shop header */}
+                <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border/30 bg-muted/20">
+                  <div className="flex items-center gap-3 min-w-0">
+                    {s.logo_url ? (
+                      <img src={s.logo_url} alt={s.shop_name} className="w-10 h-10 rounded-xl object-cover border border-primary/20 flex-shrink-0" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Store className="w-5 h-5 text-primary" />
+                      </div>
                     )}
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <h3 className="text-sm font-bold text-foreground truncate">{s.shop_name}</h3>
+                        {s.stats?.isVerified && <BadgeCheck className="w-3.5 h-3.5 text-success flex-shrink-0" />}
+                      </div>
+                      <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                        {s.stats && s.stats.avgRating > 0 && (
+                          <span className="flex items-center gap-0.5">
+                            <Star className="w-3 h-3 text-accent fill-current" />
+                            {s.stats.avgRating.toFixed(1)}
+                          </span>
+                        )}
+                        {s.stats && s.stats.totalSales > 0 && (
+                          <span>{s.stats.totalSales} vente{s.stats.totalSales > 1 ? 's' : ''}</span>
+                        )}
+                        {s.stats?.city && (
+                          <span className="flex items-center gap-0.5">
+                            <MapPin className="w-2.5 h-2.5" /> {s.stats.city}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <Button size="sm" variant="outline" className="w-full text-xs rounded-xl border-primary/30 hover:bg-primary/5 font-medium" onClick={(e) => { e.stopPropagation(); navigate(`/boutique/${s.shop_slug}`); }}>
-                    <Store className="w-3 h-3 mr-1" /> Voir la boutique
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs rounded-xl border-primary/30 hover:bg-primary/5 flex-shrink-0"
+                    onClick={() => navigate(`/boutique/${s.shop_slug}`)}
+                  >
+                    Voir tout
+                    <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
                   </Button>
                 </div>
+
+                {/* Shop products carousel */}
+                {s.products && s.products.length > 0 ? (
+                  <div className="p-3 sm:p-4">
+                    <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-proximity scrollbar-none" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pan-y' }}>
+                      {s.products.map((prod) => (
+                        <div
+                          key={prod.id}
+                          className="snap-start flex-shrink-0 w-[140px] sm:w-[160px] cursor-pointer group"
+                          onClick={() => navigate(`/product/${prod.id}`)}
+                        >
+                          <div className="relative aspect-square overflow-hidden rounded-xl bg-muted/10 mb-1.5">
+                            <img
+                              src={getProductImage(prod.images, 0)}
+                              alt={prod.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              onError={(e) => handleImageError(e)}
+                              loading="lazy"
+                            />
+                            {prod.discount_percentage && prod.discount_percentage > 0 && (
+                              <Badge className="absolute top-1.5 left-1.5 bg-promo text-promo-foreground text-[9px] font-bold px-1.5 py-0.5">
+                                -{prod.discount_percentage}%
+                              </Badge>
+                            )}
+                            {prod.badge && (
+                              <Badge className="absolute top-1.5 right-1.5 bg-accent text-accent-foreground text-[9px] px-1.5 py-0.5">
+                                {prod.badge}
+                              </Badge>
+                            )}
+                          </div>
+                          <h4 className="text-xs font-medium text-foreground line-clamp-2 leading-tight group-hover:text-primary transition-colors">
+                            {prod.title}
+                          </h4>
+                          <p className="text-xs font-bold text-primary mt-0.5">
+                            {prod.price.toLocaleString()} FCFA
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-4 text-center text-xs text-muted-foreground">
+                    Aucun produit disponible
+                  </div>
+                )}
               </div>
             ))}
           </div>

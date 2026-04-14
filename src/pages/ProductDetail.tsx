@@ -788,16 +788,15 @@ const ProductDetail = (): JSX.Element | null => {
 
 /* ===== Mini Product Card for recommendations ===== */
 const ProductMiniCard = ({ product, onClick }: { product: Product; onClick: () => void }) => (
-  <div onClick={onClick} className="cursor-pointer group">
-    <div className="relative aspect-square overflow-hidden rounded-xl bg-muted/10 mb-2">
+  <div onClick={onClick} className="cursor-pointer group bg-card rounded-xl border border-border/50 overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-300">
+    <div className="relative aspect-square overflow-hidden bg-muted/10">
       <img
         src={getProductImage(product.images, 0)}
         alt={product.title}
         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         onError={(e) => handleImageError(e)}
       />
-      {/* Hover overlay */}
-      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 rounded-xl" />
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
       {product.discount_percentage && product.discount_percentage > 0 && (
         <Badge className="absolute top-2 left-2 bg-promo text-promo-foreground text-[10px] font-bold shadow-sm">
           -{product.discount_percentage}%
@@ -814,17 +813,30 @@ const ProductMiniCard = ({ product, onClick }: { product: Product; onClick: () =
         </Badge>
       )}
     </div>
-    <h3 className="text-xs sm:text-sm font-medium text-foreground line-clamp-2 mb-1 group-hover:text-primary transition-colors">
-      {product.title}
-    </h3>
-    <p className="text-sm sm:text-base font-bold text-primary">
-      {product.price.toLocaleString()} <span className="text-xs font-normal">FCFA</span>
-    </p>
-    {product.original_price && product.original_price > product.price && (
-      <p className="text-xs text-muted-foreground line-through">
-        {product.original_price.toLocaleString()} FCFA
+    <div className="p-2.5 space-y-1">
+      <h3 className="text-xs sm:text-sm font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors leading-tight">
+        {product.title}
+      </h3>
+      <div className="flex items-center gap-1.5">
+        {product.rating && product.rating > 0 ? (
+          <div className="flex items-center gap-0.5">
+            <Star className="w-3 h-3 text-accent fill-current" />
+            <span className="text-[10px] font-medium">{product.rating.toFixed(1)}</span>
+          </div>
+        ) : null}
+        {product.reviews_count && product.reviews_count > 0 ? (
+          <span className="text-[10px] text-muted-foreground">({product.reviews_count})</span>
+        ) : null}
+      </div>
+      <p className="text-sm font-bold text-primary">
+        {product.price.toLocaleString()} <span className="text-[10px] font-normal">FCFA</span>
       </p>
-    )}
+      {product.original_price && product.original_price > product.price && (
+        <p className="text-[10px] text-muted-foreground line-through">
+          {product.original_price.toLocaleString()} FCFA
+        </p>
+      )}
+    </div>
   </div>
 );
 

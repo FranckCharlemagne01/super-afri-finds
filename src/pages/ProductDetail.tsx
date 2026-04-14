@@ -736,27 +736,45 @@ const ProductDetail = (): JSX.Element | null => {
             </div>
             Autres boutiques similaires
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {similarShops.map((s) => (
               <div
                 key={s.id}
+                className="cursor-pointer group p-4 border border-border/50 rounded-2xl hover:shadow-xl hover:border-primary/30 transition-all duration-300 bg-card"
                 onClick={() => navigate(`/boutique/${s.shop_slug}`)}
-                className="cursor-pointer group p-4 border border-border/50 rounded-2xl hover:shadow-lg hover:border-primary/30 transition-all duration-300 bg-card"
               >
                 <div className="flex flex-col items-center text-center gap-3">
                   {s.logo_url ? (
-                    <img src={s.logo_url} alt={s.shop_name} className="w-14 h-14 rounded-full object-cover border-2 border-primary/20 group-hover:border-primary group-hover:scale-110 transition-all" />
+                    <img src={s.logo_url} alt={s.shop_name} className="w-16 h-16 rounded-xl object-cover border-2 border-primary/20 group-hover:border-primary group-hover:scale-105 transition-all shadow-sm" />
                   ) : (
-                    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 group-hover:scale-110 transition-all">
-                      <span className="text-2xl">🏪</span>
+                    <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 group-hover:scale-105 transition-all">
+                      <Store className="w-8 h-8 text-primary" />
                     </div>
                   )}
-                  <div className="min-w-0 w-full">
-                    <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">{s.shop_name}</h3>
-                    {s.shop_description && <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{s.shop_description}</p>}
+                  <div className="min-w-0 w-full space-y-1.5">
+                    <div className="flex items-center justify-center gap-1.5">
+                      <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">{s.shop_name}</h3>
+                      {s.stats?.isVerified && <BadgeCheck className="w-3.5 h-3.5 text-success flex-shrink-0" />}
+                    </div>
+                    <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                      {s.stats && s.stats.avgRating > 0 && (
+                        <span className="flex items-center gap-0.5">
+                          <Star className="w-3 h-3 text-accent fill-current" />
+                          {s.stats.avgRating.toFixed(1)}
+                        </span>
+                      )}
+                      {s.stats && s.stats.totalSales > 0 && (
+                        <span>{s.stats.totalSales} vente{s.stats.totalSales > 1 ? 's' : ''}</span>
+                      )}
+                    </div>
+                    {s.stats?.city && (
+                      <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-1">
+                        <MapPin className="w-2.5 h-2.5" /> {s.stats.city}
+                      </p>
+                    )}
                   </div>
-                  <Button size="sm" variant="outline" className="w-full text-xs rounded-full border-primary/30 hover:bg-primary/5" onClick={(e) => { e.stopPropagation(); navigate(`/boutique/${s.shop_slug}`); }}>
-                    Visiter la boutique
+                  <Button size="sm" variant="outline" className="w-full text-xs rounded-xl border-primary/30 hover:bg-primary/5 font-medium" onClick={(e) => { e.stopPropagation(); navigate(`/boutique/${s.shop_slug}`); }}>
+                    <Store className="w-3 h-3 mr-1" /> Voir la boutique
                   </Button>
                 </div>
               </div>

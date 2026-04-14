@@ -94,7 +94,16 @@ const SellerDashboard = memo(() => {
 
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState<SellerSection>('overview');
+  const [activeSection, setActiveSectionRaw] = useState<SellerSection>('overview');
+
+  const setActiveSection = useCallback((section: SellerSection) => {
+    if (section === 'publish') {
+      setActiveSectionRaw('products');
+      setOpenProductForm(true);
+      return;
+    }
+    setActiveSectionRaw(section);
+  }, []);
   const [openProductForm, setOpenProductForm] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState<string | null>(null);

@@ -50,6 +50,7 @@ interface ShopOverviewTabProps {
   trialStatus: TrialStatus;
   onRefresh: () => void;
   onPublishProduct?: () => void;
+  onNavigateToProducts?: () => void;
 }
 
 export const ShopOverviewTab = memo(({
@@ -58,7 +59,8 @@ export const ShopOverviewTab = memo(({
   tokenBalance,
   trialStatus,
   onRefresh,
-  onPublishProduct
+  onPublishProduct,
+  onNavigateToProducts
 }: ShopOverviewTabProps) => {
   const navigate = useNavigate();
   const { user } = useStableAuth();

@@ -135,11 +135,11 @@ export const ShopOverviewTab = memo(({
       disabled: false,
     },
     {
-      label: 'Voir ma boutique',
-      icon: ShoppingBag,
-      onClick: () => shop && navigate(`/boutique/${shop.shop_slug}`),
+      label: 'Produits',
+      icon: Package,
+      onClick: onNavigateToProducts || (() => {}),
       variant: 'outline' as const,
-      description: 'Voir la page publique',
+      description: 'Gérer mes produits',
       disabled: false,
     },
   ], [onPublishProduct, shop, navigate]);

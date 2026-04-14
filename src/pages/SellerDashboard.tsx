@@ -76,12 +76,13 @@ interface Shop {
 }
 
 const sectionTitles: Record<SellerSection, string> = {
-  overview: 'Ma Boutique',
+  overview: 'Tableau de bord',
   products: 'Produits',
+  publish: 'Publier un produit',
   orders: 'Commandes',
   messages: 'Messages',
   tokens: 'Compte Djassa',
-  wallet: '💰 Retrait',
+  wallet: 'Wallet',
   settings: 'Paramètres',
 };
 
@@ -475,7 +476,6 @@ const SellerDashboard = memo(() => {
         onToggleDark={toggleDark}
         onSignOut={handleSignOut}
         shopName={shop?.shop_name}
-        shopSlug={shop?.shop_slug}
         shopLogoUrl={shop?.logo_url}
       />
 

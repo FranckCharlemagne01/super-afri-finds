@@ -139,6 +139,26 @@ const ProductDetail = (): JSX.Element | null => {
     }
   }, [id]);
 
+  const fetchShopStats = async (sellerId: string, shopId: string): Promise<ShopStats> => {
+    const [productsRes, ordersRes, profileRes] = await Promise.all([
+      supabase.from('products').select('id, rating', { count: 'exact' }).eq('shop_id', shopId).eq('is_active', true),
+      supabase.from('orders').select('id', { count: 'exact' }).eq('seller_id', sellerId).in('status', ['delivered', 'confirmed', 'shipped']),
+      supabase.from('profiles').select('city, commune').eq('user_id', sellerId).single(),
+    ]);
+    
+    const products = productsRes.data || [];
+    const ratings = products.map(p => p.rating).filter(Boolean) as number[];
+    const avgRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+    
+    return {
+      totalProducts: productsRes.count || 0,
+      totalSales: ordersRes.count || 0,
+      avgRating,
+      city: profileRes.data?.city || undefined,
+      isVerified: (ordersRes.count || 0) >= 5,
+    };
+  };
+
   const fetchProduct = async (productId: string) => {
     try {
       if (!product) setLoading(true);
@@ -167,19 +187,40 @@ const ProductDetail = (): JSX.Element | null => {
           setCachedShop(shopData);
           setShop(shopData);
           trackShopVisit(shopData.id);
-          const intelligentShopProducts = await getShopProducts(data.shop_id, productId, 6);
+          
+          const [intelligentShopProducts, stats] = await Promise.all([
+            getShopProducts(data.shop_id, productId, 6),
+            fetchShopStats(data.seller_id, data.shop_id),
+          ]);
           setShopProducts(intelligentShopProducts as Product[]);
+          setShopStats(stats);
         }
       }
       
+      // Similar products - filter by same category and close price range
       const intelligentSimilarProducts = await getSimilarProducts(productId, data.shop_id, data.category, 8);
-      setSimilarProducts(intelligentSimilarProducts as Product[]);
+      const priceRange = data.price * 0.5;
+      const filteredSimilar = intelligentSimilarProducts.filter((p: any) => 
+        p.category === data.category && 
+        Math.abs(p.price - data.price) <= priceRange
+      );
+      setSimilarProducts((filteredSimilar.length > 0 ? filteredSimilar : intelligentSimilarProducts) as Product[]);
       
+      // Similar shops with stats
       if (intelligentSimilarProducts.length > 0) {
-        const similarShopIds = Array.from(new Set(intelligentSimilarProducts.map(p => p.shop_id).filter(Boolean)));
+        const similarShopIds = Array.from(new Set(intelligentSimilarProducts.map((p: any) => p.shop_id).filter(Boolean)));
         if (similarShopIds.length > 0) {
           const { data: similarShopsData } = await supabase.from('seller_shops').select('*').in('id', similarShopIds).eq('is_active', true).limit(4);
-          if (similarShopsData) setSimilarShops(similarShopsData);
+          if (similarShopsData) {
+            // Fetch stats for each similar shop
+            const shopsWithStats = await Promise.all(
+              similarShopsData.map(async (s) => {
+                const stats = await fetchShopStats(s.seller_id, s.id);
+                return { ...s, stats };
+              })
+            );
+            setSimilarShops(shopsWithStats);
+          }
         }
       }
     } catch (error) {

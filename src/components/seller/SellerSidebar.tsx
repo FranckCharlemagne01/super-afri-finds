@@ -1,31 +1,33 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import {
-  LayoutDashboard, Package, MessageSquare, Wallet, ShoppingBag,
+  LayoutDashboard, Package, PlusCircle, MessageSquare, Wallet, ShoppingBag,
   Settings, ChevronLeft, ChevronRight, Menu, X,
-  Sun, Moon, LogOut, Store, ExternalLink, ArrowLeft, Banknote
+  Sun, Moon, LogOut, Store, ArrowLeft, Banknote
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 
-export type SellerSection = 'overview' | 'products' | 'orders' | 'messages' | 'tokens' | 'wallet' | 'settings';
+export type SellerSection = 'overview' | 'products' | 'publish' | 'orders' | 'messages' | 'tokens' | 'wallet' | 'settings';
 
 interface NavItem {
   id: SellerSection;
   label: string;
   icon: React.ElementType;
   group: string;
+  highlight?: boolean;
 }
 
 const navItems: NavItem[] = [
-  { id: 'overview', label: 'Ma Boutique', icon: LayoutDashboard, group: 'Principal' },
+  { id: 'overview', label: 'Tableau de bord', icon: LayoutDashboard, group: 'Principal' },
   { id: 'products', label: 'Produits', icon: Package, group: 'Principal' },
+  { id: 'publish', label: 'Publier un produit', icon: PlusCircle, group: 'Principal', highlight: true },
   { id: 'orders', label: 'Commandes', icon: ShoppingBag, group: 'Gestion' },
+  { id: 'wallet', label: 'Wallet', icon: Banknote, group: 'Gestion' },
   { id: 'messages', label: 'Messages', icon: MessageSquare, group: 'Gestion' },
   { id: 'tokens', label: 'Compte Djassa', icon: Wallet, group: 'Gestion' },
-  { id: 'wallet', label: '💰 Retrait', icon: Banknote, group: 'Gestion' },
   { id: 'settings', label: 'Paramètres', icon: Settings, group: 'Réglages' },
 ];
 
@@ -36,7 +38,6 @@ interface SellerSidebarProps {
   onToggleDark: () => void;
   onSignOut: () => void;
   shopName?: string;
-  shopSlug?: string;
   shopLogoUrl?: string | null;
 }
 
@@ -47,7 +48,6 @@ export const SellerSidebar = ({
   onToggleDark,
   onSignOut,
   shopName,
-  shopSlug,
   shopLogoUrl,
 }: SellerSidebarProps) => {
   const isMobile = useIsMobile();
@@ -118,13 +118,15 @@ export const SellerSidebar = ({
                       onClick={() => handleSelect(item.id)}
                       className={cn(
                         'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
-                        isActive
-                          ? 'bg-primary/10 text-primary shadow-sm'
-                          : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
+                        item.highlight && !isActive
+                          ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm'
+                          : isActive
+                            ? 'bg-primary/10 text-primary shadow-sm'
+                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
                         collapsed && 'justify-center px-2'
                       )}
                     >
-                      <item.icon className={cn('w-[18px] h-[18px] shrink-0', isActive && 'text-primary')} />
+                      <item.icon className={cn('w-[18px] h-[18px] shrink-0', isActive && 'text-primary', item.highlight && !isActive && 'text-primary-foreground')} />
                       {!collapsed && <span className="truncate">{item.label}</span>}
                     </button>
                   );
@@ -147,15 +149,6 @@ export const SellerSidebar = ({
               <ArrowLeft className="w-4 h-4" />
               <span>Retour au site</span>
             </button>
-            {shopSlug && (
-              <button
-                onClick={() => navigate(`/boutique/${shopSlug}`)}
-                className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-colors"
-              >
-                <ExternalLink className="w-4 h-4" />
-                <span>Voir ma boutique</span>
-              </button>
-            )}
           </div>
         )}
 

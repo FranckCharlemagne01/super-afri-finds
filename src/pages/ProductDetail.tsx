@@ -36,7 +36,10 @@ import {
   Tag,
   ChevronRight,
   MessageCircle,
-  Eye
+  Eye,
+  MapPin,
+  BadgeCheck,
+  ShoppingBag
 } from "lucide-react";
 import {
   Carousel,
@@ -73,6 +76,15 @@ interface Shop {
   shop_slug: string;
   shop_description?: string;
   logo_url?: string;
+  banner_url?: string;
+}
+
+interface ShopStats {
+  totalProducts: number;
+  totalSales: number;
+  avgRating: number;
+  city?: string;
+  isVerified: boolean;
 }
 
 // Category icon helper
@@ -109,7 +121,8 @@ const ProductDetail = (): JSX.Element | null => {
   const [shop, setShop] = useState<Shop | null>(cachedShop as Shop | null);
   const [shopProducts, setShopProducts] = useState<Product[]>([]);
   const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
-  const [similarShops, setSimilarShops] = useState<Shop[]>([]);
+  const [similarShops, setSimilarShops] = useState<(Shop & { stats?: ShopStats })[]>([]);
+  const [shopStats, setShopStats] = useState<ShopStats | null>(null);
   const [loading, setLoading] = useState(!cachedProduct);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [offerExpired, setOfferExpired] = useState(false);
@@ -128,6 +141,26 @@ const ProductDetail = (): JSX.Element | null => {
       fetchProduct(id);
     }
   }, [id]);
+
+  const fetchShopStats = async (sellerId: string, shopId: string): Promise<ShopStats> => {
+    const [productsRes, ordersRes, profileRes] = await Promise.all([
+      supabase.from('products').select('id, rating', { count: 'exact' }).eq('shop_id', shopId).eq('is_active', true),
+      supabase.from('orders').select('id', { count: 'exact' }).eq('seller_id', sellerId).in('status', ['delivered', 'confirmed', 'shipped']),
+      supabase.from('profiles').select('city, commune').eq('user_id', sellerId).single(),
+    ]);
+    
+    const products = productsRes.data || [];
+    const ratings = products.map(p => p.rating).filter(Boolean) as number[];
+    const avgRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+    
+    return {
+      totalProducts: productsRes.count || 0,
+      totalSales: ordersRes.count || 0,
+      avgRating,
+      city: profileRes.data?.city || undefined,
+      isVerified: (ordersRes.count || 0) >= 5,
+    };
+  };
 
   const fetchProduct = async (productId: string) => {
     try {
@@ -157,19 +190,40 @@ const ProductDetail = (): JSX.Element | null => {
           setCachedShop(shopData);
           setShop(shopData);
           trackShopVisit(shopData.id);
-          const intelligentShopProducts = await getShopProducts(data.shop_id, productId, 6);
+          
+          const [intelligentShopProducts, stats] = await Promise.all([
+            getShopProducts(data.shop_id, productId, 6),
+            fetchShopStats(data.seller_id, data.shop_id),
+          ]);
           setShopProducts(intelligentShopProducts as Product[]);
+          setShopStats(stats);
         }
       }
       
+      // Similar products - filter by same category and close price range
       const intelligentSimilarProducts = await getSimilarProducts(productId, data.shop_id, data.category, 8);
-      setSimilarProducts(intelligentSimilarProducts as Product[]);
+      const priceRange = data.price * 0.5;
+      const filteredSimilar = intelligentSimilarProducts.filter((p: any) => 
+        p.category === data.category && 
+        Math.abs(p.price - data.price) <= priceRange
+      );
+      setSimilarProducts((filteredSimilar.length > 0 ? filteredSimilar : intelligentSimilarProducts) as Product[]);
       
+      // Similar shops with stats
       if (intelligentSimilarProducts.length > 0) {
-        const similarShopIds = Array.from(new Set(intelligentSimilarProducts.map(p => p.shop_id).filter(Boolean)));
+        const similarShopIds = Array.from(new Set(intelligentSimilarProducts.map((p: any) => p.shop_id).filter(Boolean)));
         if (similarShopIds.length > 0) {
           const { data: similarShopsData } = await supabase.from('seller_shops').select('*').in('id', similarShopIds).eq('is_active', true).limit(4);
-          if (similarShopsData) setSimilarShops(similarShopsData);
+          if (similarShopsData) {
+            // Fetch stats for each similar shop
+            const shopsWithStats = await Promise.all(
+              similarShopsData.map(async (s) => {
+                const stats = await fetchShopStats(s.seller_id, s.id);
+                return { ...s, stats };
+              })
+            );
+            setSimilarShops(shopsWithStats);
+          }
         }
       }
     } catch (error) {
@@ -556,27 +610,69 @@ const ProductDetail = (): JSX.Element | null => {
               <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
             </button>
 
-            {/* Shop link */}
+            {/* ===== SELLER INFO BLOCK ===== */}
             {shop && (
-              <button
-                onClick={() => navigate(`/boutique/${shop.shop_slug}`)}
-                onMouseEnter={() => prefetchShopBySlug(shop.shop_slug)}
-                onTouchStart={() => prefetchShopBySlug(shop.shop_slug)}
-                className="flex items-center gap-3 w-full p-3 rounded-xl border border-border/50 hover:border-primary/30 hover:bg-primary/5 transition-all group"
-              >
-                {shop.logo_url ? (
-                  <img src={shop.logo_url} alt={shop.shop_name} className="w-10 h-10 rounded-full object-cover border-2 border-primary/20" />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Store className="w-5 h-5 text-primary" />
+              <div className="border border-border/50 rounded-2xl p-4 space-y-4 bg-card shadow-sm">
+                <div className="flex items-start gap-3">
+                  {shop.logo_url ? (
+                    <img src={shop.logo_url} alt={shop.shop_name} className="w-14 h-14 rounded-xl object-cover border-2 border-primary/20 flex-shrink-0" />
+                  ) : (
+                    <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Store className="w-7 h-7 text-primary" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-base font-bold text-foreground truncate">{shop.shop_name}</h3>
+                      {shopStats?.isVerified && (
+                        <Badge className="bg-success/10 text-success border-success/20 text-[10px] gap-1">
+                          <BadgeCheck className="w-3 h-3" /> Vérifié
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3 mt-1 flex-wrap">
+                      {shopStats && shopStats.avgRating > 0 && (
+                        <div className="flex items-center gap-1">
+                          <Star className="w-3.5 h-3.5 text-accent fill-current" />
+                          <span className="text-xs font-semibold">{shopStats.avgRating.toFixed(1)}</span>
+                        </div>
+                      )}
+                      {shopStats && shopStats.totalSales > 0 && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <ShoppingBag className="w-3 h-3" />
+                          <span>{shopStats.totalSales} vente{shopStats.totalSales > 1 ? 's' : ''}</span>
+                        </div>
+                      )}
+                      {shopStats?.city && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <MapPin className="w-3 h-3" />
+                          <span>{shopStats.city}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
-                <div className="text-left flex-1 min-w-0">
-                  <p className="text-xs text-muted-foreground">Vendu par</p>
-                  <p className="text-sm font-semibold group-hover:text-primary transition-colors truncate">{shop.shop_name}</p>
                 </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-              </button>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-xl border-primary/30 hover:bg-primary/5"
+                    onClick={() => navigate(`/boutique/${shop.shop_slug}`)}
+                    onMouseEnter={() => prefetchShopBySlug(shop.shop_slug)}
+                  >
+                    <Store className="w-4 h-4 mr-1.5" />
+                    Voir la boutique
+                  </Button>
+                  <ContactSellerButton
+                    productId={product.id}
+                    sellerId={product.seller_id}
+                    productTitle={product.title}
+                    productPrice={salePrice}
+                    productImage={productImage}
+                  />
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -640,27 +736,45 @@ const ProductDetail = (): JSX.Element | null => {
             </div>
             Autres boutiques similaires
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {similarShops.map((s) => (
               <div
                 key={s.id}
+                className="cursor-pointer group p-4 border border-border/50 rounded-2xl hover:shadow-xl hover:border-primary/30 transition-all duration-300 bg-card"
                 onClick={() => navigate(`/boutique/${s.shop_slug}`)}
-                className="cursor-pointer group p-4 border border-border/50 rounded-2xl hover:shadow-lg hover:border-primary/30 transition-all duration-300 bg-card"
               >
                 <div className="flex flex-col items-center text-center gap-3">
                   {s.logo_url ? (
-                    <img src={s.logo_url} alt={s.shop_name} className="w-14 h-14 rounded-full object-cover border-2 border-primary/20 group-hover:border-primary group-hover:scale-110 transition-all" />
+                    <img src={s.logo_url} alt={s.shop_name} className="w-16 h-16 rounded-xl object-cover border-2 border-primary/20 group-hover:border-primary group-hover:scale-105 transition-all shadow-sm" />
                   ) : (
-                    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 group-hover:scale-110 transition-all">
-                      <span className="text-2xl">🏪</span>
+                    <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 group-hover:scale-105 transition-all">
+                      <Store className="w-8 h-8 text-primary" />
                     </div>
                   )}
-                  <div className="min-w-0 w-full">
-                    <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">{s.shop_name}</h3>
-                    {s.shop_description && <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{s.shop_description}</p>}
+                  <div className="min-w-0 w-full space-y-1.5">
+                    <div className="flex items-center justify-center gap-1.5">
+                      <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">{s.shop_name}</h3>
+                      {s.stats?.isVerified && <BadgeCheck className="w-3.5 h-3.5 text-success flex-shrink-0" />}
+                    </div>
+                    <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                      {s.stats && s.stats.avgRating > 0 && (
+                        <span className="flex items-center gap-0.5">
+                          <Star className="w-3 h-3 text-accent fill-current" />
+                          {s.stats.avgRating.toFixed(1)}
+                        </span>
+                      )}
+                      {s.stats && s.stats.totalSales > 0 && (
+                        <span>{s.stats.totalSales} vente{s.stats.totalSales > 1 ? 's' : ''}</span>
+                      )}
+                    </div>
+                    {s.stats?.city && (
+                      <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-1">
+                        <MapPin className="w-2.5 h-2.5" /> {s.stats.city}
+                      </p>
+                    )}
                   </div>
-                  <Button size="sm" variant="outline" className="w-full text-xs rounded-full border-primary/30 hover:bg-primary/5" onClick={(e) => { e.stopPropagation(); navigate(`/boutique/${s.shop_slug}`); }}>
-                    Visiter la boutique
+                  <Button size="sm" variant="outline" className="w-full text-xs rounded-xl border-primary/30 hover:bg-primary/5 font-medium" onClick={(e) => { e.stopPropagation(); navigate(`/boutique/${s.shop_slug}`); }}>
+                    <Store className="w-3 h-3 mr-1" /> Voir la boutique
                   </Button>
                 </div>
               </div>
@@ -674,16 +788,15 @@ const ProductDetail = (): JSX.Element | null => {
 
 /* ===== Mini Product Card for recommendations ===== */
 const ProductMiniCard = ({ product, onClick }: { product: Product; onClick: () => void }) => (
-  <div onClick={onClick} className="cursor-pointer group">
-    <div className="relative aspect-square overflow-hidden rounded-xl bg-muted/10 mb-2">
+  <div onClick={onClick} className="cursor-pointer group bg-card rounded-xl border border-border/50 overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-300">
+    <div className="relative aspect-square overflow-hidden bg-muted/10">
       <img
         src={getProductImage(product.images, 0)}
         alt={product.title}
         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         onError={(e) => handleImageError(e)}
       />
-      {/* Hover overlay */}
-      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 rounded-xl" />
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
       {product.discount_percentage && product.discount_percentage > 0 && (
         <Badge className="absolute top-2 left-2 bg-promo text-promo-foreground text-[10px] font-bold shadow-sm">
           -{product.discount_percentage}%
@@ -700,17 +813,30 @@ const ProductMiniCard = ({ product, onClick }: { product: Product; onClick: () =
         </Badge>
       )}
     </div>
-    <h3 className="text-xs sm:text-sm font-medium text-foreground line-clamp-2 mb-1 group-hover:text-primary transition-colors">
-      {product.title}
-    </h3>
-    <p className="text-sm sm:text-base font-bold text-primary">
-      {product.price.toLocaleString()} <span className="text-xs font-normal">FCFA</span>
-    </p>
-    {product.original_price && product.original_price > product.price && (
-      <p className="text-xs text-muted-foreground line-through">
-        {product.original_price.toLocaleString()} FCFA
+    <div className="p-2.5 space-y-1">
+      <h3 className="text-xs sm:text-sm font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors leading-tight">
+        {product.title}
+      </h3>
+      <div className="flex items-center gap-1.5">
+        {product.rating && product.rating > 0 ? (
+          <div className="flex items-center gap-0.5">
+            <Star className="w-3 h-3 text-accent fill-current" />
+            <span className="text-[10px] font-medium">{product.rating.toFixed(1)}</span>
+          </div>
+        ) : null}
+        {product.reviews_count && product.reviews_count > 0 ? (
+          <span className="text-[10px] text-muted-foreground">({product.reviews_count})</span>
+        ) : null}
+      </div>
+      <p className="text-sm font-bold text-primary">
+        {product.price.toLocaleString()} <span className="text-[10px] font-normal">FCFA</span>
       </p>
-    )}
+      {product.original_price && product.original_price > product.price && (
+        <p className="text-[10px] text-muted-foreground line-through">
+          {product.original_price.toLocaleString()} FCFA
+        </p>
+      )}
+    </div>
   </div>
 );
 

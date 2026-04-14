@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingBag, Store } from "lucide-react";
+import { ShoppingBag, Store, Filter, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useStableRole } from "@/hooks/useStableRole";
 import { BuyerOrdersList } from "@/components/orders/BuyerOrdersList";
 import { SellerOrdersList } from "@/components/orders/SellerOrdersList";
+import { Button } from "@/components/ui/button";
 
 interface Order {
   id: string;
@@ -37,6 +38,16 @@ interface CancelOrderResponse {
 }
 
 type OrdersTabsInitialTab = 'purchases' | 'sales';
+type StatusFilter = 'all' | 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
+
+const statusFilters: { value: StatusFilter; label: string }[] = [
+  { value: 'all', label: 'Toutes' },
+  { value: 'pending', label: 'En attente' },
+  { value: 'confirmed', label: 'Confirmées' },
+  { value: 'shipped', label: 'En livraison' },
+  { value: 'delivered', label: 'Livrées' },
+  { value: 'cancelled', label: 'Annulées' },
+];
 
 export const MyOrdersTabs = ({ initialTab }: { initialTab?: OrdersTabsInitialTab }) => {
   const [buyerOrders, setBuyerOrders] = useState<Order[]>([]);
@@ -44,6 +55,7 @@ export const MyOrdersTabs = ({ initialTab }: { initialTab?: OrdersTabsInitialTab
   const [loading, setLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<OrdersTabsInitialTab>(initialTab ?? 'purchases');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
   const { user } = useAuth();
   const { isSeller, loading: roleLoading } = useStableRole();
@@ -51,7 +63,6 @@ export const MyOrdersTabs = ({ initialTab }: { initialTab?: OrdersTabsInitialTab
 
   const fetchOrders = useCallback(async () => {
     if (!user?.id) return;
-
     try {
       setLoading(true);
       const { data, error } = await supabase.rpc('get_seller_orders');
@@ -67,7 +78,6 @@ export const MyOrdersTabs = ({ initialTab }: { initialTab?: OrdersTabsInitialTab
           .select('seller_id, shop_name, shop_slug')
           .in('seller_id', sellerIds)
           .eq('is_active', true);
-
         if (shopsError) throw shopsError;
 
         const shopMap = new Map(
@@ -87,15 +97,10 @@ export const MyOrdersTabs = ({ initialTab }: { initialTab?: OrdersTabsInitialTab
       } else {
         setBuyerOrders([]);
       }
-
       setSellerOrders(sales);
     } catch (error) {
       console.error('Error fetching orders:', error);
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de charger vos commandes',
-        variant: 'destructive',
-      });
+      toast({ title: 'Erreur', description: 'Impossible de charger vos commandes', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -106,22 +111,13 @@ export const MyOrdersTabs = ({ initialTab }: { initialTab?: OrdersTabsInitialTab
     fetchOrders();
   }, [user?.id, fetchOrders]);
 
-  // Real-time subscription for orders
   useEffect(() => {
     if (!user?.id) return;
-
     const channel = supabase
       .channel('my-orders-realtime')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'orders' },
-        () => fetchOrders()
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => fetchOrders())
       .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [user?.id, fetchOrders]);
 
   const cancelOrder = async (orderId: string) => {
@@ -129,119 +125,129 @@ export const MyOrdersTabs = ({ initialTab }: { initialTab?: OrdersTabsInitialTab
       setCancellingId(orderId);
       const { data, error } = await supabase.rpc('cancel_order_by_customer', { order_id: orderId });
       if (error) throw error;
-
       const result = data as unknown as CancelOrderResponse;
-
       if (result?.success) {
-        toast({
-          title: '✅ Commande annulée',
-          description: 'Votre commande a été annulée avec succès',
-        });
+        toast({ title: '✅ Commande annulée', description: 'Votre commande a été annulée avec succès' });
         fetchOrders();
       } else {
         throw new Error(result?.error || "Impossible d'annuler la commande");
       }
     } catch (error: any) {
       console.error('Error cancelling order:', error);
-      toast({
-        title: 'Erreur',
-        description: error?.message || "Impossible d'annuler la commande",
-        variant: 'destructive',
-      });
+      toast({ title: 'Erreur', description: error?.message || "Impossible d'annuler la commande", variant: 'destructive' });
     } finally {
       setCancellingId(null);
     }
   };
 
-  // If embedded somewhere without a logged-in user, keep it silent (avoid redirect loops)
   if (!user) return null;
 
   if (loading || roleLoading) {
     return (
       <div className="space-y-3">
         {[...Array(4)].map((_, i) => (
-          <div
-            key={i}
-            className="h-24 bg-muted rounded-2xl animate-pulse"
-            style={{ animationDelay: `${i * 100}ms` }}
-          />
+          <div key={i} className="h-24 bg-muted rounded-2xl animate-pulse" style={{ animationDelay: `${i * 100}ms` }} />
         ))}
       </div>
     );
   }
 
+  const filterOrders = (orders: Order[]) => {
+    if (statusFilter === 'all') return orders;
+    return orders.filter(o => o.status === statusFilter);
+  };
+
+  const filteredBuyerOrders = filterOrders(buyerOrders);
+  const filteredSellerOrders = filterOrders(sellerOrders);
+
   const totalBuyerOrders = buyerOrders.length;
   const totalSellerOrders = sellerOrders.length;
+  const pendingBuyerOrders = buyerOrders.filter(o => o.status === 'pending').length;
+  const pendingSellerOrders = sellerOrders.filter(o => o.status === 'pending').length;
 
   return (
-    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as OrdersTabsInitialTab)} className="w-full">
-      <TabsList
-        className={`grid w-full mb-4 bg-muted/40 rounded-2xl p-1.5 h-auto ${
-          isSeller ? 'grid-cols-2' : 'grid-cols-1'
-        }`}
-      >
-        <TabsTrigger
-          value="purchases"
-          className="gap-2 data-[state=active]:bg-card data-[state=active]:shadow-md rounded-xl py-3 text-sm font-bold transition-all"
+    <div className="space-y-3">
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as OrdersTabsInitialTab); setStatusFilter('all'); }} className="w-full">
+        <TabsList
+          className={`grid w-full mb-3 bg-muted/40 rounded-2xl p-1.5 h-auto ${isSeller ? 'grid-cols-2' : 'grid-cols-1'}`}
         >
-          <ShoppingBag className="h-4 w-4" />
-          <span>Mes Achats</span>
-          {totalBuyerOrders > 0 && (
-            <Badge
-              variant="secondary"
-              className="ml-1 h-5 min-w-5 flex items-center justify-center rounded-full text-[10px] font-bold bg-primary/15 text-primary"
-            >
-              {totalBuyerOrders}
-            </Badge>
-          )}
-        </TabsTrigger>
-
-        {isSeller && (
           <TabsTrigger
-            value="sales"
+            value="purchases"
             className="gap-2 data-[state=active]:bg-card data-[state=active]:shadow-md rounded-xl py-3 text-sm font-bold transition-all"
           >
-            <Store className="h-4 w-4" />
-            <span>Mes Ventes</span>
-            {totalSellerOrders > 0 && (
-              <Badge
-                variant="secondary"
-                className="ml-1 h-5 min-w-5 flex items-center justify-center rounded-full text-[10px] font-bold bg-primary/15 text-primary"
-              >
-                {totalSellerOrders}
+            <ShoppingBag className="h-4 w-4" />
+            <span>Mes commandes</span>
+            {pendingBuyerOrders > 0 && (
+              <Badge className="ml-1 h-5 min-w-5 flex items-center justify-center rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 border-0">
+                {pendingBuyerOrders}
               </Badge>
             )}
           </TabsTrigger>
-        )}
-      </TabsList>
 
-      <AnimatePresence mode="wait">
-        <TabsContent value="purchases" className="mt-0">
-          <motion.div 
-            key="purchases"
-            initial={{ opacity: 0, x: -20 }} 
-            animate={{ opacity: 1, x: 0 }} 
-            exit={{ opacity: 0, x: 20 }}
-            transition={{ duration: 0.2 }}
-          >
-            <BuyerOrdersList orders={buyerOrders} onCancelOrder={cancelOrder} cancellingId={cancellingId} />
-          </motion.div>
-        </TabsContent>
+          {isSeller && (
+            <TabsTrigger
+              value="sales"
+              className="gap-2 data-[state=active]:bg-card data-[state=active]:shadow-md rounded-xl py-3 text-sm font-bold transition-all"
+            >
+              <Store className="h-4 w-4" />
+              <span>Commandes reçues</span>
+              {pendingSellerOrders > 0 && (
+                <Badge className="ml-1 h-5 min-w-5 flex items-center justify-center rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 border-0 animate-pulse">
+                  {pendingSellerOrders}
+                </Badge>
+              )}
+            </TabsTrigger>
+          )}
+        </TabsList>
 
-        {isSeller && (
-          <TabsContent value="sales" className="mt-0">
-            <motion.div 
-              key="sales"
-              initial={{ opacity: 0, x: 20 }} 
-              animate={{ opacity: 1, x: 0 }} 
-              exit={{ opacity: 0, x: -20 }}
+        {/* Status filter chips */}
+        <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1">
+          {statusFilters.map((filter) => (
+            <Button
+              key={filter.value}
+              variant={statusFilter === filter.value ? "default" : "outline"}
+              size="sm"
+              onClick={() => setStatusFilter(filter.value)}
+              className={`flex-shrink-0 rounded-full text-xs h-8 px-3 font-semibold transition-all ${
+                statusFilter === filter.value
+                  ? 'shadow-sm'
+                  : 'bg-card hover:bg-muted/80 border-border/50'
+              }`}
+            >
+              {filter.value === 'pending' && <Clock className="w-3 h-3 mr-1" />}
+              {filter.label}
+            </Button>
+          ))}
+        </div>
+
+        <AnimatePresence mode="wait">
+          <TabsContent value="purchases" className="mt-0">
+            <motion.div
+              key={`purchases-${statusFilter}`}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.2 }}
             >
-              <SellerOrdersList orders={sellerOrders} onOrderUpdated={fetchOrders} />
+              <BuyerOrdersList orders={filteredBuyerOrders} onCancelOrder={cancelOrder} cancellingId={cancellingId} />
             </motion.div>
           </TabsContent>
-        )}
-      </AnimatePresence>
-    </Tabs>
+
+          {isSeller && (
+            <TabsContent value="sales" className="mt-0">
+              <motion.div
+                key={`sales-${statusFilter}`}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <SellerOrdersList orders={filteredSellerOrders} onOrderUpdated={fetchOrders} />
+              </motion.div>
+            </TabsContent>
+          )}
+        </AnimatePresence>
+      </Tabs>
+    </div>
   );
 };

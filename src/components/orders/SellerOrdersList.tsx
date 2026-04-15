@@ -188,6 +188,7 @@ export const SellerOrdersList = ({ orders, onOrderUpdated }: SellerOrdersListPro
           return (
             <motion.div
               key={order.id}
+              ref={highlightedId === order.id ? highlightRef : undefined}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               whileTap={{ scale: 0.98 }}
@@ -195,7 +196,7 @@ export const SellerOrdersList = ({ orders, onOrderUpdated }: SellerOrdersListPro
               onClick={() => handleOrderClick(order)}
               className={`bg-card rounded-2xl border overflow-hidden shadow-sm cursor-pointer active:bg-muted/20 transition-colors ${
                 isPending ? 'border-amber-500/40 ring-1 ring-amber-500/20' : 'border-border/50'
-              }`}
+              } ${highlightClass(order.id)}`}
             >
               <div className="p-3.5 flex gap-3.5">
                 {/* Product Image */}

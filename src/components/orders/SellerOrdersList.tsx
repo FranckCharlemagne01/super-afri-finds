@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useHighlightedItem } from '@/hooks/useHighlightedItem';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Package, Eye, Calendar, User, Phone, MapPin, ChevronRight, CheckCircle, Clock, Truck, X, AlertTriangle } from "lucide-react";
@@ -82,6 +83,21 @@ export const SellerOrdersList = ({ orders, onOrderUpdated }: SellerOrdersListPro
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderDetailOpen, setOrderDetailOpen] = useState(false);
   const [productImages, setProductImages] = useState<Record<string, string>>({});
+  const { highlightedId, highlightClass } = useHighlightedItem();
+  const highlightRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to highlighted order
+  useEffect(() => {
+    if (highlightedId && highlightRef.current) {
+      highlightRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Auto-open the highlighted order
+      const order = orders.find(o => o.id === highlightedId);
+      if (order) {
+        setSelectedOrder(order);
+        setOrderDetailOpen(true);
+      }
+    }
+  }, [highlightedId, orders]);
 
   // Fetch product images
   useEffect(() => {

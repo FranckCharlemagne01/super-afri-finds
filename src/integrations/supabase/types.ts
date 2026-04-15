@@ -565,6 +565,7 @@ export type Database = {
           is_read: boolean
           link: string | null
           message: string
+          reference_id: string | null
           title: string
           type: string
           updated_at: string
@@ -577,6 +578,7 @@ export type Database = {
           is_read?: boolean
           link?: string | null
           message: string
+          reference_id?: string | null
           title: string
           type?: string
           updated_at?: string
@@ -589,6 +591,7 @@ export type Database = {
           is_read?: boolean
           link?: string | null
           message?: string
+          reference_id?: string | null
           title?: string
           type?: string
           updated_at?: string

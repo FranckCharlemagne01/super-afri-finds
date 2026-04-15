@@ -2,6 +2,9 @@
  * Resolves a notification type + optional reference to a valid app route.
  * Keeps all routing logic in one place so notification creators
  * never hardcode URLs that may not exist.
+ *
+ * IMPORTANT: The `link` field stored in the DB is IGNORED by the frontend.
+ * Links are always reconstructed dynamically from type + reference_id.
  */
 
 type NotificationType =
@@ -19,25 +22,29 @@ type NotificationType =
 
 /**
  * Returns the correct frontend route for a given notification type.
- * @param type  - notification type stored in the DB
- * @param referenceId - optional entity id (order id, product id, shop slug…)
+ * @param type        - notification type stored in the DB
+ * @param referenceId - optional entity id (order id, sender id, product id, shop slug…)
  */
-export function getNotificationLink(type: NotificationType, referenceId?: string): string {
+export function getNotificationLink(type: NotificationType, referenceId?: string | null): string {
   switch (type) {
     // ── Orders ──────────────────────────────────────
     case 'new_order':
-      // Sellers receive this → go to seller dashboard orders tab
-      return '/seller-dashboard?tab=orders';
+      return referenceId
+        ? `/seller-dashboard?tab=orders&highlight=${referenceId}`
+        : '/seller-dashboard?tab=orders';
 
     case 'order_status':
     case 'order_shipped':
     case 'order_delivered':
-      // Buyers receive these → go to my orders
-      return '/my-orders';
+      return referenceId
+        ? `/my-orders?highlight=${referenceId}`
+        : '/my-orders';
 
     // ── Messages ────────────────────────────────────
     case 'new_message':
-      return '/messages';
+      return referenceId
+        ? `/messages?conversation=${referenceId}`
+        : '/messages';
 
     // ── Products ────────────────────────────────────
     case 'product':

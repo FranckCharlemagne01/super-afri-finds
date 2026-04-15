@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ShoppingBag, Package } from 'lucide-react';
 import { createNotification } from '@/utils/notificationPersistence';
+import { getNotificationLink } from '@/utils/notificationLinks';
 
 interface NewOrder {
   id: string;

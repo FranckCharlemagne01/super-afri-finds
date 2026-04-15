@@ -78,7 +78,7 @@ export const RealtimeMessagesNotification = () => {
             message: newMessage.subject 
               ? `${newMessage.subject}: ${newMessage.content.substring(0, 80)}`
               : newMessage.content.substring(0, 100),
-            link: '/messages',
+            link: getNotificationLink('new_message'),
           });
 
           // Vibrer si disponible (mobile)

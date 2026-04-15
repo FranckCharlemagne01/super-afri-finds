@@ -84,7 +84,7 @@ export const RealtimeOrdersNotification = () => {
             type: 'new_order',
             title: 'Nouvelle commande reçue',
             message: `${newOrder.customer_name} a commandé "${newOrder.product_title}" pour ${newOrder.total_amount.toLocaleString()} FCFA`,
-            link: '/seller',
+            link: getNotificationLink('new_order'),
           });
 
           // Vibrer si disponible (mobile)

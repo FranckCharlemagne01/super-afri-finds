@@ -45,11 +45,12 @@ interface MessageThread {
 
 interface MyMessagesTabsProps {
   initialTab?: 'purchases' | 'sales';
+  autoOpenConversation?: string | null;
 }
 
 type UnreadFilter = 'all' | 'unread';
 
-export const MyMessagesTabs = ({ initialTab = 'purchases' }: MyMessagesTabsProps) => {
+export const MyMessagesTabs = ({ initialTab = 'purchases', autoOpenConversation }: MyMessagesTabsProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [threads, setThreads] = useState<MessageThread[]>([]);
@@ -58,6 +59,7 @@ export const MyMessagesTabs = ({ initialTab = 'purchases' }: MyMessagesTabsProps
   const [chatOpen, setChatOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(initialTab);
   const [unreadFilter, setUnreadFilter] = useState<UnreadFilter>('all');
+  const [autoOpenDone, setAutoOpenDone] = useState(false);
 
   useEffect(() => {
     if (user) fetchThreads();

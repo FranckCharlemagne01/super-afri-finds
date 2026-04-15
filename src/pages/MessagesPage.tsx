@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useStableAuth } from "@/hooks/useStableAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,9 @@ import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 const MessagesPage = () => {
   const { user } = useStableAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { unreadMessages } = useRealtimeNotifications();
+  const conversationUserId = searchParams.get('conversation');
   const [activeTab, setActiveTab] = useState("messages");
 
   if (!user) {
@@ -70,7 +72,7 @@ const MessagesPage = () => {
           </TabsList>
 
           <TabsContent value="messages" className="mt-0 animate-fade-in">
-            <MyMessagesTabs initialTab="purchases" />
+            <MyMessagesTabs initialTab="purchases" autoOpenConversation={conversationUserId} />
           </TabsContent>
 
           <TabsContent value="orders" className="mt-0 animate-fade-in">

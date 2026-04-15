@@ -11,6 +11,7 @@ interface Notification {
   message: string;
   icon: string | null;
   link: string | null;
+  reference_id: string | null;
   is_read: boolean;
   created_at: string;
 }

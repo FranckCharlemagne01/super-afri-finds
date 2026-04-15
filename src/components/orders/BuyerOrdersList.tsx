@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useHighlightedItem } from '@/hooks/useHighlightedItem';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Package, Clock, CheckCircle, Truck, ChevronDown, MapPin, Phone, User, Calendar, Eye, MessageSquare, X, Store, ChevronRight } from "lucide-react";

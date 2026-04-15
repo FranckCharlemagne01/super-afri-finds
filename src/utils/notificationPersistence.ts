@@ -7,6 +7,7 @@ interface CreateNotificationParams {
   message: string;
   link?: string;
   icon?: string;
+  referenceId?: string;
 }
 
 /**
@@ -20,6 +21,7 @@ export const createNotification = async ({
   message,
   link,
   icon,
+  referenceId,
 }: CreateNotificationParams) => {
   try {
     const { error } = await supabase.from('notifications').insert({
@@ -30,7 +32,8 @@ export const createNotification = async ({
       link: link || null,
       icon: icon || null,
       is_read: false,
-    });
+      reference_id: referenceId || null,
+    } as any);
     if (error) console.error('Error creating notification:', error);
   } catch (err) {
     console.error('Error creating notification:', err);

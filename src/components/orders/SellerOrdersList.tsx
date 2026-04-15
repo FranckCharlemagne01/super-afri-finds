@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useHighlightedItem } from '@/hooks/useHighlightedItem';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Package, Eye, Calendar, User, Phone, MapPin, ChevronRight, CheckCircle, Clock, Truck, X, AlertTriangle } from "lucide-react";
@@ -82,6 +83,21 @@ export const SellerOrdersList = ({ orders, onOrderUpdated }: SellerOrdersListPro
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderDetailOpen, setOrderDetailOpen] = useState(false);
   const [productImages, setProductImages] = useState<Record<string, string>>({});
+  const { highlightedId, highlightClass } = useHighlightedItem();
+  const highlightRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to highlighted order
+  useEffect(() => {
+    if (highlightedId && highlightRef.current) {
+      highlightRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Auto-open the highlighted order
+      const order = orders.find(o => o.id === highlightedId);
+      if (order) {
+        setSelectedOrder(order);
+        setOrderDetailOpen(true);
+      }
+    }
+  }, [highlightedId, orders]);
 
   // Fetch product images
   useEffect(() => {
@@ -172,6 +188,7 @@ export const SellerOrdersList = ({ orders, onOrderUpdated }: SellerOrdersListPro
           return (
             <motion.div
               key={order.id}
+              ref={highlightedId === order.id ? highlightRef : undefined}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               whileTap={{ scale: 0.98 }}
@@ -179,7 +196,7 @@ export const SellerOrdersList = ({ orders, onOrderUpdated }: SellerOrdersListPro
               onClick={() => handleOrderClick(order)}
               className={`bg-card rounded-2xl border overflow-hidden shadow-sm cursor-pointer active:bg-muted/20 transition-colors ${
                 isPending ? 'border-amber-500/40 ring-1 ring-amber-500/20' : 'border-border/50'
-              }`}
+              } ${highlightClass(order.id)}`}
             >
               <div className="p-3.5 flex gap-3.5">
                 {/* Product Image */}

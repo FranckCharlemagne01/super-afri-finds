@@ -187,8 +187,8 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
     if (!notification.is_read) {
       await markAsRead(notification.id);
     }
-    // Use stored link if valid, otherwise resolve from type
-    const link = notification.link || getNotificationLink(notification.type);
+    // ALWAYS reconstruct link dynamically — ignore stored link field
+    const link = getNotificationLink(notification.type, notification.reference_id);
     navigate(link);
     onClose();
   };
@@ -346,11 +346,9 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
                           </div>
 
                           <div className="flex flex-col items-center gap-1 shrink-0">
-                            {notification.link && (
-                              <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
-                                <ChevronRight className="w-3 h-3 text-muted-foreground" />
-                              </div>
-                            )}
+                            <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
+                              <ChevronRight className="w-3 h-3 text-muted-foreground" />
+                            </div>
                             <Button
                               variant="ghost"
                               size="icon"

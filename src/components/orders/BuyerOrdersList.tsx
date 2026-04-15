@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useHighlightedItem } from '@/hooks/useHighlightedItem';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Package, Clock, CheckCircle, Truck, ChevronDown, MapPin, Phone, User, Calendar, Eye, MessageSquare, X, Store, ChevronRight } from "lucide-react";
@@ -94,6 +95,16 @@ export const BuyerOrdersList = ({ orders, onCancelOrder, cancellingId }: BuyerOr
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [productImages, setProductImages] = useState<Record<string, string>>({});
   const navigate = useNavigate();
+  const { highlightedId, highlightClass } = useHighlightedItem();
+  const highlightRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to highlighted order
+  useEffect(() => {
+    if (highlightedId && highlightRef.current) {
+      highlightRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setExpandedOrderId(highlightedId);
+    }
+  }, [highlightedId]);
 
   // Fetch product images
   useEffect(() => {
@@ -200,12 +211,13 @@ export const BuyerOrdersList = ({ orders, onCancelOrder, cancellingId }: BuyerOr
           return (
             <motion.div 
               key={order.id}
+              ref={highlightedId === order.id ? highlightRef : undefined}
               layout
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ delay: index * 0.05 }}
-              className="bg-card rounded-2xl border border-border/50 overflow-hidden shadow-sm"
+              className={`bg-card rounded-2xl border border-border/50 overflow-hidden shadow-sm ${highlightClass(order.id)}`}
             >
               {/* Order Card Header */}
               <motion.button

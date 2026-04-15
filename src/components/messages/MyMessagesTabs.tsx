@@ -45,11 +45,12 @@ interface MessageThread {
 
 interface MyMessagesTabsProps {
   initialTab?: 'purchases' | 'sales';
+  autoOpenConversation?: string | null;
 }
 
 type UnreadFilter = 'all' | 'unread';
 
-export const MyMessagesTabs = ({ initialTab = 'purchases' }: MyMessagesTabsProps) => {
+export const MyMessagesTabs = ({ initialTab = 'purchases', autoOpenConversation }: MyMessagesTabsProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [threads, setThreads] = useState<MessageThread[]>([]);
@@ -58,10 +59,28 @@ export const MyMessagesTabs = ({ initialTab = 'purchases' }: MyMessagesTabsProps
   const [chatOpen, setChatOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(initialTab);
   const [unreadFilter, setUnreadFilter] = useState<UnreadFilter>('all');
+  const [autoOpenDone, setAutoOpenDone] = useState(false);
 
   useEffect(() => {
     if (user) fetchThreads();
   }, [user]);
+
+  // Auto-open conversation from URL param
+  useEffect(() => {
+    if (!autoOpenConversation || autoOpenDone || loading || threads.length === 0) return;
+    
+    const matchingThread = threads.find(t => t.other_user_id === autoOpenConversation);
+    if (matchingThread) {
+      // Switch to the correct tab
+      setActiveTab(matchingThread.type === 'buyer' ? 'purchases' : 'sales');
+      setSelectedThread(matchingThread);
+      setChatOpen(true);
+      setAutoOpenDone(true);
+    } else {
+      // No matching thread found, mark as done to avoid loops
+      setAutoOpenDone(true);
+    }
+  }, [autoOpenConversation, autoOpenDone, loading, threads]);
 
   useEffect(() => {
     if (!user?.id) return;

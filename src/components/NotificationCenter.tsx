@@ -2,7 +2,6 @@ import { useRef, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { getNotificationLink } from '@/utils/notificationLinks';
-import { useNavigate } from 'react-router-dom';
 import { 
   ShoppingCart, 
   MessageSquare, 

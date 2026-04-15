@@ -1,6 +1,8 @@
 import { useRef, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
+import { getNotificationLink } from '@/utils/notificationLinks';
+import { useNavigate } from 'react-router-dom';
 import { 
   ShoppingCart, 
   MessageSquare, 
@@ -186,10 +188,10 @@ export const NotificationCenter = ({ isOpen, onClose, anchorRef }: NotificationC
     if (!notification.is_read) {
       await markAsRead(notification.id);
     }
-    if (notification.link) {
-      navigate(notification.link);
-      onClose();
-    }
+    // Use stored link if valid, otherwise resolve from type
+    const link = notification.link || getNotificationLink(notification.type);
+    navigate(link);
+    onClose();
   };
 
   const formatTime = (dateString: string) => {

@@ -3,52 +3,63 @@ import { useEffect, useState, useCallback } from 'react';
 interface NativeAppState {
   isNative: boolean;
   isOnline: boolean;
-  platform: string;
+  platform: 'web' | 'ios' | 'android';
 }
 
 /**
- * Hook pour gérer les fonctionnalités natives iOS/Android via Capacitor.
- * Safe pour le web — charge Capacitor uniquement en contexte natif.
+ * Hook central pour toutes les fonctionnalités natives Capacitor.
+ * Safe pour le web : les imports sont dynamiques et conditionnels.
  */
 export const useNativeApp = () => {
   const [state, setState] = useState<NativeAppState>({
     isNative: false,
-    isOnline: true,
+    isOnline: navigator.onLine,
     platform: 'web'
   });
 
-  const initializeNative = useCallback(async () => {
-    const { Capacitor } = await import('@capacitor/core');
-    if (!Capacitor.isNativePlatform()) return;
+  // ─── Initialisation ───
+  useEffect(() => {
+    let cancelled = false;
+    const init = async () => {
+      try {
+        const { Capacitor } = await import('@capacitor/core');
+        if (!Capacitor.isNativePlatform() || cancelled) return;
 
-    try {
-      const platform = Capacitor.getPlatform();
+        const platform = Capacitor.getPlatform() as 'ios' | 'android';
 
-      // Status bar
-      if (platform === 'ios' || platform === 'android') {
-        const { StatusBar, Style } = await import('@capacitor/status-bar');
-        await StatusBar.setStyle({ style: Style.Dark });
-        if (platform === 'android') {
-          await StatusBar.setBackgroundColor({ color: '#ffffff' });
+        // Status bar
+        try {
+          const { StatusBar, Style } = await import('@capacitor/status-bar');
+          await StatusBar.setStyle({ style: Style.Light });
+          if (platform === 'android') {
+            await StatusBar.setBackgroundColor({ color: '#0b0f19' });
+          }
+        } catch {}
+
+        // Splash screen
+        try {
+          const { SplashScreen } = await import('@capacitor/splash-screen');
+          await SplashScreen.hide({ fadeOutDuration: 500 });
+        } catch {}
+
+        // Network
+        let connected = true;
+        try {
+          const { Network } = await import('@capacitor/network');
+          const status = await Network.getStatus();
+          connected = status.connected;
+        } catch {}
+
+        if (!cancelled) {
+          setState({ isNative: true, isOnline: connected, platform });
         }
-      }
-
-      // Splash screen
-      const { SplashScreen } = await import('@capacitor/splash-screen');
-      await SplashScreen.hide({ fadeOutDuration: 500 });
-
-      // Network
-      const { Network } = await import('@capacitor/network');
-      const status = await Network.getStatus();
-
-      setState({ isNative: true, isOnline: status.connected, platform });
-      console.log('[NativeApp] Initialized:', { platform, connected: status.connected });
-    } catch (error) {
-      console.error('[NativeApp] Init error:', error);
-    }
+      } catch {}
+    };
+    init();
+    return () => { cancelled = true; };
   }, []);
 
-  // Network listener
+  // ─── Network listener ───
   useEffect(() => {
     let cleanup: (() => void) | undefined;
     const setup = async () => {
@@ -66,38 +77,57 @@ export const useNativeApp = () => {
     return () => cleanup?.();
   }, []);
 
-  // Deep links + back button
+  // ─── Back button Android + Deep links ───
   useEffect(() => {
-    let cleanupUrl: (() => void) | undefined;
-    let cleanupBack: (() => void) | undefined;
+    let cleanups: (() => void)[] = [];
     const setup = async () => {
       try {
         const { Capacitor } = await import('@capacitor/core');
         if (!Capacitor.isNativePlatform()) return;
         const { App } = await import('@capacitor/app');
 
+        // Deep links : redirige vers le bon chemin interne
         const urlH = await App.addListener('appUrlOpen', (e) => {
           if (e.url) {
-            const path = new URL(e.url).pathname;
-            window.location.href = path || '/';
+            try {
+              const path = new URL(e.url).pathname;
+              if (path && path !== '/') {
+                window.location.href = path;
+              }
+            } catch {}
           }
         });
-        cleanupUrl = () => urlH.remove();
+        cleanups.push(() => urlH.remove());
 
+        // Bouton retour Android
         const backH = await App.addListener('backButton', ({ canGoBack }) => {
-          if (canGoBack) window.history.back();
-          else App.minimizeApp();
+          if (canGoBack) {
+            window.history.back();
+          } else {
+            App.minimizeApp();
+          }
         });
-        cleanupBack = () => backH.remove();
+        cleanups.push(() => backH.remove());
       } catch {}
     };
     setup();
-    return () => { cleanupUrl?.(); cleanupBack?.(); };
+    return () => cleanups.forEach(fn => fn());
   }, []);
 
-  useEffect(() => { initializeNative(); }, [initializeNative]);
+  // ─── Web fallback pour online/offline ───
+  useEffect(() => {
+    const onOnline = () => setState(prev => ({ ...prev, isOnline: true }));
+    const onOffline = () => setState(prev => ({ ...prev, isOnline: false }));
+    window.addEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+    return () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
+    };
+  }, []);
 
-  // Haptics
+  // ─── Actions ───
+
   const vibrate = useCallback(async (style: 'light' | 'medium' | 'heavy' = 'medium') => {
     try {
       const { Capacitor } = await import('@capacitor/core');
@@ -108,11 +138,11 @@ export const useNativeApp = () => {
     } catch {}
   }, []);
 
-  // Share
   const shareContent = useCallback(async (opts: { title: string; text?: string; url?: string }) => {
     try {
       const { Capacitor } = await import('@capacitor/core');
       if (!Capacitor.isNativePlatform()) {
+        // Fallback Web Share API
         if (navigator.share) await navigator.share(opts);
         return;
       }
@@ -121,7 +151,6 @@ export const useNativeApp = () => {
     } catch {}
   }, []);
 
-  // Splash
   const showSplash = useCallback(async () => {
     try {
       const { Capacitor } = await import('@capacitor/core');

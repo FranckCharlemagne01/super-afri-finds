@@ -15,7 +15,8 @@ import {
   Clock,
   CheckCircle2,
   Wallet,
-  RefreshCw
+  RefreshCw,
+  AlertCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -64,6 +65,7 @@ export const ShopOverviewTab = memo(({
 }: ShopOverviewTabProps) => {
   const navigate = useNavigate();
   const { user } = useStableAuth();
+  const DefaultIcon: React.ElementType = AlertCircle;
 
   // Fetch seller type and orders
   const [sellerType, setSellerType] = useState<SellerType>('particulier');
@@ -167,6 +169,9 @@ export const ShopOverviewTab = memo(({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span>
+                      {(() => {
+                        const ActionIcon = action.icon ?? DefaultIcon;
+                        return (
                       <Button
                         onClick={action.onClick}
                         variant={action.variant}
@@ -174,13 +179,15 @@ export const ShopOverviewTab = memo(({
                         className={`h-auto py-3 md:py-4 flex flex-col items-center gap-2 transition-all touch-manipulation rounded-xl shadow-sm w-full ${action.disabled ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.02] active:scale-95'}`}
                       >
                         <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full ${action.variant === 'default' ? 'bg-primary-foreground/20' : 'bg-primary/10'} flex items-center justify-center`}>
-                          <action.icon className="h-5 w-5 md:h-6 md:w-6" />
+                          <ActionIcon className="h-5 w-5 md:h-6 md:w-6" />
                         </div>
                         <div className="text-center">
                           <span className="text-xs md:text-sm font-medium block">{action.label}</span>
                           <span className="text-[10px] md:text-xs text-muted-foreground/80 mt-0.5 block">{action.description}</span>
                         </div>
                       </Button>
+                        );
+                      })()}
                     </span>
                   </TooltipTrigger>
                   {action.disabled && (
@@ -201,9 +208,14 @@ export const ShopOverviewTab = memo(({
               <div className="absolute inset-0 bg-gradient-to-br from-transparent to-primary/3 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="relative z-10 space-y-2 md:space-y-3">
                 <div className="flex items-start justify-between gap-2">
+                  {(() => {
+                    const StatIcon = stat.icon ?? DefaultIcon;
+                    return (
                   <div className={`w-9 h-9 md:w-11 md:h-11 rounded-xl ${stat.bgColor} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}>
-                    <stat.icon className={`h-4 w-4 md:h-5 md:w-5 ${stat.textColor}`} />
+                    <StatIcon className={`h-4 w-4 md:h-5 md:w-5 ${stat.textColor}`} />
                   </div>
+                    );
+                  })()}
                   <div className="text-right flex-1 min-w-0">
                     <p className="text-2xl md:text-3xl font-bold tabular-nums truncate">{stat.value}</p>
                   </div>

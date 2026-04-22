@@ -112,6 +112,7 @@ export const SellerSidebar = ({
               <div className="space-y-0.5">
                 {items.map(item => {
                   const isActive = activeSection === item.id;
+                  const NavIcon = item.icon ?? Store;
                   return (
                     <button
                       key={item.id}
@@ -126,7 +127,7 @@ export const SellerSidebar = ({
                         collapsed && 'justify-center px-2'
                       )}
                     >
-                      <item.icon className={cn('w-[18px] h-[18px] shrink-0', isActive && 'text-primary', item.highlight && !isActive && 'text-primary-foreground')} />
+                      <NavIcon className={cn('w-[18px] h-[18px] shrink-0', isActive && 'text-primary', item.highlight && !isActive && 'text-primary-foreground')} />
                       {!collapsed && <span className="truncate">{item.label}</span>}
                     </button>
                   );

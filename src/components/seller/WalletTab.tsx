@@ -406,8 +406,25 @@ export const WalletTab = memo(() => {
 WalletTab.displayName = 'WalletTab';
 
 // Sub-components
-const DEFAULT_TX_CONFIG = { label: 'Transaction', icon: History, positive: false };
-const DEFAULT_STATUS_CONFIG = { label: 'En attente', color: 'bg-muted text-muted-foreground', icon: Clock };
+const DefaultIcon: React.ElementType = AlertCircle;
+const DEFAULT_TX_CONFIG = { label: 'Transaction', icon: DefaultIcon, positive: false };
+const DEFAULT_STATUS_CONFIG = { label: 'En attente', color: 'bg-muted text-muted-foreground', icon: DefaultIcon };
+
+const ensureIcon = (icon?: React.ElementType | null, source = 'WalletTab') => {
+  const safeIcon = icon ?? DefaultIcon;
+
+  if (!icon) {
+    console.log('DEBUG ICON FINAL:', {
+      source,
+      icon,
+      safeIcon,
+      defaultConfig: DEFAULT_TX_CONFIG,
+      statusConfig: DEFAULT_STATUS_CONFIG,
+    });
+  }
+
+  return safeIcon;
+};
 
 const resolveTransactionConfig = (tx?: WalletTransaction | null) => {
   const amount = typeof tx?.amount === 'number' ? tx.amount : 0;
@@ -417,10 +434,21 @@ const resolveTransactionConfig = (tx?: WalletTransaction | null) => {
     label: txType || DEFAULT_TX_CONFIG.label,
     positive: amount > 0,
   };
-  const config = txTypeLabels[txType] ?? fallbackConfig;
+  const config = {
+    ...fallbackConfig,
+    ...(txTypeLabels[txType] ?? {}),
+    icon: ensureIcon(txTypeLabels[txType]?.icon ?? fallbackConfig.icon, 'WalletTab.TransactionConfig'),
+  };
 
   if (!tx || !tx?.transaction_type || !txTypeLabels[txType]) {
-    console.log('DEBUG ICON:', { source: 'WalletTab.TransactionRow', transaction: tx, txType, config });
+    console.log('DEBUG ICON FINAL:', {
+      source: 'WalletTab.TransactionRow',
+      transaction: tx,
+      txType,
+      config,
+      defaultConfig: DEFAULT_TX_CONFIG,
+      statusConfig: DEFAULT_STATUS_CONFIG,
+    });
   }
 
   return { amount, config };
@@ -428,10 +456,21 @@ const resolveTransactionConfig = (tx?: WalletTransaction | null) => {
 
 const resolveStatusConfig = (status?: string | null, source = 'WalletTab') => {
   const normalizedStatus = status ?? 'pending';
-  const config = statusConfig[normalizedStatus] ?? DEFAULT_STATUS_CONFIG;
+  const config = {
+    ...DEFAULT_STATUS_CONFIG,
+    ...(statusConfig[normalizedStatus] ?? {}),
+    icon: ensureIcon(statusConfig[normalizedStatus]?.icon ?? DEFAULT_STATUS_CONFIG.icon, `${source}.StatusConfig`),
+  };
 
   if (!status || !statusConfig[normalizedStatus]) {
-    console.log('DEBUG ICON:', { source, status, normalizedStatus, config });
+    console.log('DEBUG ICON FINAL:', {
+      source,
+      status,
+      normalizedStatus,
+      config,
+      defaultConfig: DEFAULT_TX_CONFIG,
+      statusConfig: DEFAULT_STATUS_CONFIG,
+    });
   }
 
   return config;
@@ -439,12 +478,17 @@ const resolveStatusConfig = (status?: string | null, source = 'WalletTab') => {
 
 const TransactionRow = ({ tx }: { tx: WalletTransaction }) => {
   if (!tx) {
-    console.log('DEBUG ICON:', { source: 'WalletTab.TransactionRow', transaction: tx });
+    console.log('DEBUG ICON FINAL:', {
+      source: 'WalletTab.TransactionRow',
+      transaction: tx,
+      defaultConfig: DEFAULT_TX_CONFIG,
+      statusConfig: DEFAULT_STATUS_CONFIG,
+    });
     return null;
   }
 
   const { amount, config } = resolveTransactionConfig(tx);
-  const Icon = config?.icon || DEFAULT_TX_CONFIG.icon;
+  const Icon = ensureIcon(config?.icon ?? DEFAULT_TX_CONFIG.icon, 'WalletTab.TransactionRow.Icon');
   const sConfig = resolveStatusConfig(tx?.status, 'WalletTab.TransactionStatus');
 
   return (
@@ -470,12 +514,17 @@ const TransactionRow = ({ tx }: { tx: WalletTransaction }) => {
 
 const WithdrawalRow = ({ withdrawal }: { withdrawal: WithdrawalRequest }) => {
   if (!withdrawal) {
-    console.log('DEBUG ICON:', { source: 'WalletTab.WithdrawalRow', withdrawal });
+    console.log('DEBUG ICON FINAL:', {
+      source: 'WalletTab.WithdrawalRow',
+      withdrawal,
+      defaultConfig: DEFAULT_TX_CONFIG,
+      statusConfig: DEFAULT_STATUS_CONFIG,
+    });
     return null;
   }
 
   const sConfig = resolveStatusConfig(withdrawal?.status, 'WalletTab.WithdrawalStatus');
-  const StatusIcon = sConfig?.icon || Clock;
+  const StatusIcon = ensureIcon(sConfig?.icon ?? DEFAULT_STATUS_CONFIG.icon, 'WalletTab.WithdrawalRow.Icon');
 
   return (
     <div className="p-4 rounded-xl border border-border/50 hover:bg-muted/30 transition-colors">

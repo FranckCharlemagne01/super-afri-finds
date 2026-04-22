@@ -50,6 +50,23 @@ const DEFAULT_STATUS_DISPLAY = {
   message: 'Le statut KYC reçu est inattendu. Vérifiez les données avant de continuer.',
 };
 
+const DefaultIcon: React.ElementType = AlertCircle;
+
+const ensureIcon = (icon?: React.ElementType | null, source = 'KYCVerificationDialog') => {
+  const safeIcon = icon ?? DefaultIcon;
+
+  if (!icon) {
+    console.log('DEBUG ICON FINAL:', {
+      source,
+      icon,
+      safeIcon,
+      defaultConfig: DEFAULT_STATUS_DISPLAY,
+    });
+  }
+
+  return safeIcon;
+};
+
 export const KYCVerificationDialog = memo(({ open, onOpenChange, onVerified }: KYCVerificationDialogProps) => {
   const { status, adminNote, submitKYC, loading: kycLoading } = useKYC();
   const [selfie, setSelfie] = useState<File | null>(null);
@@ -63,11 +80,20 @@ export const KYCVerificationDialog = memo(({ open, onOpenChange, onVerified }: K
 
   const canSubmit = status === 'none' || status === 'rejected';
   const allFilesSelected = selfie && idFront && idBack;
-  const display = statusDisplay[status] ?? DEFAULT_STATUS_DISPLAY;
-  const StatusIcon = display?.icon || AlertCircle;
+  const display = {
+    ...DEFAULT_STATUS_DISPLAY,
+    ...(statusDisplay[status] ?? {}),
+    icon: ensureIcon(statusDisplay[status]?.icon ?? DEFAULT_STATUS_DISPLAY.icon, 'KYCVerificationDialog.StatusDisplay'),
+  };
+  const StatusIcon = ensureIcon(display?.icon ?? DEFAULT_STATUS_DISPLAY.icon, 'KYCVerificationDialog.StatusIcon');
 
   if (!statusDisplay[status]) {
-    console.log('DEBUG ICON:', { source: 'KYCVerificationDialog', status, display });
+    console.log('DEBUG ICON FINAL:', {
+      source: 'KYCVerificationDialog',
+      status,
+      display,
+      defaultConfig: DEFAULT_STATUS_DISPLAY,
+    });
   }
 
   const handleSubmit = async () => {

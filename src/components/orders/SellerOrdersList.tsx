@@ -10,6 +10,7 @@ import { OrderDetailDialog } from '@/components/OrderDetailDialog';
 import { supabase } from "@/integrations/supabase/client";
 import { getProductImage, handleImageError } from '@/utils/productImageHelper';
 import { calculateCommission, formatFCFA, getCommissionStatus, getCommissionStatusDisplay } from '@/utils/commissionCalculator';
+import { DefaultIcon, safeIcon, safeMappedConfig } from '@/utils/safeIcon';
 
 interface Order {
   id: string;
@@ -77,6 +78,18 @@ const statusConfig = {
     textColor: 'text-red-600 dark:text-red-400',
     iconBg: 'bg-red-500/20'
   },
+};
+
+const DEFAULT_STATUS_CONFIG = {
+  label: 'En attente',
+  icon: DefaultIcon,
+  bgColor: 'bg-muted',
+  textColor: 'text-muted-foreground',
+  iconBg: 'bg-muted/70',
+};
+
+const resolveOrderStatusConfig = (status?: string | null, source = 'SellerOrdersList') => {
+  return safeMappedConfig(statusConfig, status ?? 'pending', DEFAULT_STATUS_CONFIG, `${source}.StatusConfig`);
 };
 
 export const SellerOrdersList = ({ orders, onOrderUpdated }: SellerOrdersListProps) => {
@@ -179,8 +192,8 @@ export const SellerOrdersList = ({ orders, onOrderUpdated }: SellerOrdersListPro
 
       <div className="space-y-3">
         {orders.map((order, index) => {
-          const statusInfo = statusConfig[order.status as keyof typeof statusConfig] || statusConfig.pending;
-          const StatusIcon = statusInfo.icon;
+          const statusInfo = resolveOrderStatusConfig(order.status, 'SellerOrdersList.OrderCard');
+          const StatusIcon = safeIcon(statusConfig, order.status, 'SellerOrdersList.OrderStatusIcon');
           const productImage = productImages[order.product_id] || '/placeholder.svg';
           const isPending = order.status === 'pending';
           const needsConfirmation = order.status === 'delivered' && !order.is_confirmed_by_seller;

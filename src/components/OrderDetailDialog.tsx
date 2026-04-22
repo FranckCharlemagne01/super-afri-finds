@@ -13,6 +13,7 @@ import { fr } from 'date-fns/locale';
 import { DeliveryConfirmationDialog } from '@/components/DeliveryConfirmationDialog';
 import { motion } from 'framer-motion';
 import { getProductImage, handleImageError } from '@/utils/productImageHelper';
+import { DefaultIcon, safeIcon, safeMappedConfig } from '@/utils/safeIcon';
 
 interface Order {
   id: string;
@@ -89,6 +90,19 @@ const statusConfig = {
   },
 };
 
+const DEFAULT_STATUS_CONFIG = {
+  label: 'En attente',
+  icon: DefaultIcon,
+  bgColor: 'bg-muted',
+  textColor: 'text-muted-foreground',
+  iconBg: 'bg-muted/70',
+  step: 0,
+};
+
+const resolveOrderStatusConfig = (status?: string | null, source = 'OrderDetailDialog') => {
+  return safeMappedConfig(statusConfig, status ?? 'pending', DEFAULT_STATUS_CONFIG, `${source}.StatusConfig`);
+};
+
 // Order Timeline Component
 const OrderTimeline = ({ status }: { status: string }) => {
   const steps = [
@@ -98,7 +112,7 @@ const OrderTimeline = ({ status }: { status: string }) => {
     { key: 'delivered', label: 'Livrée', icon: CheckCircle2 },
   ];
 
-  const currentStep = statusConfig[status as keyof typeof statusConfig]?.step || 0;
+  const currentStep = resolveOrderStatusConfig(status, 'OrderDetailDialog.Timeline').step || 0;
 
   if (status === 'cancelled') {
     return (
@@ -177,8 +191,8 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
 
   if (!order) return null;
 
-  const statusInfo = statusConfig[order.status as keyof typeof statusConfig] || statusConfig.pending;
-  const StatusIcon = statusInfo.icon;
+  const statusInfo = resolveOrderStatusConfig(order.status, 'OrderDetailDialog.OrderStatus');
+  const StatusIcon = safeIcon(statusConfig, order.status, 'OrderDetailDialog.StatusIcon');
 
   const updateOrderStatus = async (newStatus: string) => {
     if (!order?.id) {

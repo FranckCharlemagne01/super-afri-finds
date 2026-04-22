@@ -8,6 +8,7 @@ import {
   RefreshCw, ShieldCheck, AlertCircle, User,
 } from 'lucide-react';
 import { useKYC, type KYCStatus } from '@/hooks/useKYC';
+import { DefaultIcon, safeIcon, safeMappedConfig } from '@/utils/safeIcon';
 import { toast } from 'sonner';
 
 interface KYCVerificationDialogProps {
@@ -46,25 +47,8 @@ const statusDisplay: Record<KYCStatus, { label: string; color: string; icon: Rea
 const DEFAULT_STATUS_DISPLAY = {
   label: 'Statut inconnu',
   color: 'bg-muted text-muted-foreground',
-  icon: AlertCircle,
+  icon: DefaultIcon,
   message: 'Le statut KYC reçu est inattendu. Vérifiez les données avant de continuer.',
-};
-
-const DefaultIcon: React.ElementType = AlertCircle;
-
-const ensureIcon = (icon?: React.ElementType | null, source = 'KYCVerificationDialog') => {
-  const safeIcon = icon ?? DefaultIcon;
-
-  if (!icon) {
-    console.log('DEBUG ICON FINAL:', {
-      source,
-      icon,
-      safeIcon,
-      defaultConfig: DEFAULT_STATUS_DISPLAY,
-    });
-  }
-
-  return safeIcon;
 };
 
 export const KYCVerificationDialog = memo(({ open, onOpenChange, onVerified }: KYCVerificationDialogProps) => {
@@ -80,21 +64,8 @@ export const KYCVerificationDialog = memo(({ open, onOpenChange, onVerified }: K
 
   const canSubmit = status === 'none' || status === 'rejected';
   const allFilesSelected = selfie && idFront && idBack;
-  const display = {
-    ...DEFAULT_STATUS_DISPLAY,
-    ...(statusDisplay[status] ?? {}),
-    icon: ensureIcon(statusDisplay[status]?.icon ?? DEFAULT_STATUS_DISPLAY.icon, 'KYCVerificationDialog.StatusDisplay'),
-  };
-  const StatusIcon = ensureIcon(display?.icon ?? DEFAULT_STATUS_DISPLAY.icon, 'KYCVerificationDialog.StatusIcon');
-
-  if (!statusDisplay[status]) {
-    console.log('DEBUG ICON FINAL:', {
-      source: 'KYCVerificationDialog',
-      status,
-      display,
-      defaultConfig: DEFAULT_STATUS_DISPLAY,
-    });
-  }
+  const display = safeMappedConfig(statusDisplay, status, DEFAULT_STATUS_DISPLAY, 'KYCVerificationDialog.StatusDisplay');
+  const StatusIcon = safeIcon(statusDisplay, status, 'KYCVerificationDialog.StatusIcon');
 
   const handleSubmit = async () => {
     if (!selfie || !idFront || !idBack) return;

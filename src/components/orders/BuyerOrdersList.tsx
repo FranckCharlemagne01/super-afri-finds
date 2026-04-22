@@ -18,6 +18,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { getProductImage, handleImageError } from '@/utils/productImageHelper';
+import { DefaultIcon, safeIcon, safeMappedConfig } from '@/utils/safeIcon';
 
 interface Order {
   id: string;
@@ -91,6 +92,20 @@ const statusConfig = {
   },
 };
 
+const DEFAULT_STATUS_CONFIG = {
+  label: 'En attente',
+  icon: DefaultIcon,
+  bgColor: 'bg-muted',
+  textColor: 'text-muted-foreground',
+  iconBg: 'bg-muted/70',
+  progressColor: 'bg-primary',
+  step: 0,
+};
+
+const resolveOrderStatusConfig = (status?: string | null, source = 'BuyerOrdersList') => {
+  return safeMappedConfig(statusConfig, status ?? 'pending', DEFAULT_STATUS_CONFIG, `${source}.StatusConfig`);
+};
+
 export const BuyerOrdersList = ({ orders, onCancelOrder, cancellingId }: BuyerOrdersListProps) => {
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [productImages, setProductImages] = useState<Record<string, string>>({});
@@ -146,8 +161,9 @@ export const BuyerOrdersList = ({ orders, onCancelOrder, cancellingId }: BuyerOr
   };
 
   const OrderProgress = ({ status }: { status: string }) => {
-    const currentStep = statusConfig[status as keyof typeof statusConfig]?.step || 0;
-    const progressColor = statusConfig[status as keyof typeof statusConfig]?.progressColor || 'bg-primary';
+    const statusInfo = resolveOrderStatusConfig(status, 'BuyerOrdersList.Progress');
+    const currentStep = statusInfo.step || 0;
+    const progressColor = statusInfo.progressColor || 'bg-primary';
 
     if (status === 'cancelled') {
       return (
@@ -203,8 +219,8 @@ export const BuyerOrdersList = ({ orders, onCancelOrder, cancellingId }: BuyerOr
     <div className="space-y-3">
       <AnimatePresence mode="popLayout">
         {orders.map((order, index) => {
-          const statusInfo = statusConfig[order.status as keyof typeof statusConfig] || statusConfig.pending;
-          const StatusIcon = statusInfo.icon;
+          const statusInfo = resolveOrderStatusConfig(order.status, 'BuyerOrdersList.OrderCard');
+          const StatusIcon = safeIcon(statusConfig, order.status, 'BuyerOrdersList.OrderStatusIcon');
           const isExpanded = expandedOrderId === order.id;
           const productImage = productImages[order.product_id] || '/placeholder.svg';
 

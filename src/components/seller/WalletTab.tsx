@@ -406,10 +406,16 @@ export const WalletTab = memo(() => {
 WalletTab.displayName = 'WalletTab';
 
 // Sub-components
+const DEFAULT_TX_CONFIG = { label: 'Transaction', icon: History, positive: false };
+const DEFAULT_STATUS_CONFIG = { label: 'En attente', color: 'bg-muted text-muted-foreground', icon: Clock };
+
 const TransactionRow = ({ tx }: { tx: WalletTransaction }) => {
-  const config = txTypeLabels[tx.transaction_type] || { label: tx.transaction_type, icon: History, positive: tx.amount > 0 };
-  const Icon = config.icon;
-  const sConfig = statusConfig[tx.status] || statusConfig.pending;
+  if (!tx) return null;
+  const txType = tx.transaction_type ?? 'unknown';
+  const amount = typeof tx.amount === 'number' ? tx.amount : 0;
+  const config = txTypeLabels[txType] || { label: txType || 'Transaction', icon: History, positive: amount > 0 };
+  const Icon = config?.icon || DEFAULT_TX_CONFIG.icon;
+  const sConfig = statusConfig[tx.status ?? ''] || statusConfig.pending || DEFAULT_STATUS_CONFIG;
 
   return (
     <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors">
@@ -433,8 +439,9 @@ const TransactionRow = ({ tx }: { tx: WalletTransaction }) => {
 };
 
 const WithdrawalRow = ({ withdrawal }: { withdrawal: WithdrawalRequest }) => {
-  const sConfig = statusConfig[withdrawal.status] || statusConfig.pending;
-  const StatusIcon = sConfig.icon;
+  if (!withdrawal) return null;
+  const sConfig = statusConfig[withdrawal.status ?? ''] || statusConfig.pending || DEFAULT_STATUS_CONFIG;
+  const StatusIcon = sConfig?.icon || Clock;
 
   return (
     <div className="p-4 rounded-xl border border-border/50 hover:bg-muted/30 transition-colors">

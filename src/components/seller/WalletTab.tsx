@@ -159,11 +159,13 @@ export const WalletTab = memo(() => {
               {kyc.status === 'none' && 'Vérification d\'identité requise'}
               {kyc.status === 'pending' && 'Vérification en cours...'}
               {kyc.status === 'rejected' && 'Vérification rejetée'}
+              {kyc.status === 'suspended' && 'Vérification suspendue'}
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">
               {kyc.status === 'none' && 'Vous devez vérifier votre identité (KYC) avant de pouvoir effectuer des retraits.'}
               {kyc.status === 'pending' && 'Vos documents sont en cours d\'examen. Vous pourrez retirer dès l\'approbation.'}
               {kyc.status === 'rejected' && (kyc.adminNote ? `Raison : ${kyc.adminNote}` : 'Veuillez soumettre de nouveaux documents.')}
+              {kyc.status === 'suspended' && (kyc.adminNote ? `Raison : ${kyc.adminNote}` : 'Contactez le support pour réactiver votre vérification.')}
             </p>
             {(kyc.status === 'none' || kyc.status === 'rejected') && (
               <Button

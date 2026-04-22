@@ -42,6 +42,12 @@ const statusDisplay: Record<KYCStatus, { label: string; color: string; icon: Rea
     icon: XCircle,
     message: 'Votre vérification a été rejetée. Veuillez soumettre de nouveaux documents.',
   },
+  suspended: {
+    label: 'Suspendu',
+    color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
+    icon: AlertCircle,
+    message: 'Votre vérification a été suspendue. Contactez le support pour plus d\'informations.',
+  },
 };
 
 const DEFAULT_STATUS_DISPLAY = {

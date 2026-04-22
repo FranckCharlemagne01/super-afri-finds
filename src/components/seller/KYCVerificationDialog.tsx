@@ -43,6 +43,13 @@ const statusDisplay: Record<KYCStatus, { label: string; color: string; icon: Rea
   },
 };
 
+const DEFAULT_STATUS_DISPLAY = {
+  label: 'Statut inconnu',
+  color: 'bg-muted text-muted-foreground',
+  icon: AlertCircle,
+  message: 'Le statut KYC reçu est inattendu. Vérifiez les données avant de continuer.',
+};
+
 export const KYCVerificationDialog = memo(({ open, onOpenChange, onVerified }: KYCVerificationDialogProps) => {
   const { status, adminNote, submitKYC, loading: kycLoading } = useKYC();
   const [selfie, setSelfie] = useState<File | null>(null);
@@ -56,8 +63,12 @@ export const KYCVerificationDialog = memo(({ open, onOpenChange, onVerified }: K
 
   const canSubmit = status === 'none' || status === 'rejected';
   const allFilesSelected = selfie && idFront && idBack;
-  const display = statusDisplay[status];
-  const StatusIcon = display.icon;
+  const display = statusDisplay[status] ?? DEFAULT_STATUS_DISPLAY;
+  const StatusIcon = display?.icon || AlertCircle;
+
+  if (!statusDisplay[status]) {
+    console.log('DEBUG ICON:', { source: 'KYCVerificationDialog', status, display });
+  }
 
   const handleSubmit = async () => {
     if (!selfie || !idFront || !idBack) return;

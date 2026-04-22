@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useStableAuth } from './useStableAuth';
 
-export type KYCStatus = 'none' | 'pending' | 'approved' | 'rejected';
+export type KYCStatus = 'none' | 'pending' | 'approved' | 'rejected' | 'suspended';
 
 export interface KYCState {
   status: KYCStatus;

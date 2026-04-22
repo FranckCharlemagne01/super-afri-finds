@@ -3,6 +3,7 @@ import { AlertCircle } from 'lucide-react';
 
 type IconMapEntry = {
   icon?: ElementType | null;
+  [key: string]: unknown;
 };
 
 type IconMap<T extends IconMapEntry = IconMapEntry> = Record<string, T | undefined>;
@@ -10,7 +11,7 @@ type IconMap<T extends IconMapEntry = IconMapEntry> = Record<string, T | undefin
 export const DefaultIcon: ElementType = AlertCircle;
 
 export function safeIcon<T extends IconMapEntry>(
-  map: IconMap<T> | null | undefined,
+  map: Record<string, T | undefined> | null | undefined,
   key: string | null | undefined,
   source = 'safeIcon',
 ): ElementType {
@@ -30,7 +31,7 @@ export function safeIcon<T extends IconMapEntry>(
 }
 
 export function safeMappedConfig<T extends IconMapEntry>(
-  map: IconMap<T> | null | undefined,
+  map: Record<string, Partial<T> | undefined> | null | undefined,
   key: string | null | undefined,
   fallback: T,
   source = 'safeMappedConfig',
@@ -40,6 +41,6 @@ export function safeMappedConfig<T extends IconMapEntry>(
   return {
     ...fallback,
     ...(resolvedEntry ?? {}),
-    icon: safeIcon(map, key, source),
+    icon: safeIcon(map as Record<string, IconMapEntry | undefined>, key, source),
   } as T & { icon: ElementType };
 }

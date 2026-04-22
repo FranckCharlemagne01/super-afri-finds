@@ -102,12 +102,12 @@ export const OrdersManagement = ({ orders, onRefresh }: OrdersManagementProps) =
   };
 
   const getStatusBadge = (status: string) => {
-    const config = statusConfig[status] || statusConfig.pending;
-    const Icon = config.icon;
+    const config = statusConfig[status] || statusConfig.pending || { label: status || 'Inconnu', color: 'bg-muted text-muted-foreground', icon: Clock };
+    const Icon = config?.icon || Clock;
     return (
-      <Badge className={`${config.color} border flex items-center gap-1.5 font-medium`}>
+      <Badge className={`${config?.color || ''} border flex items-center gap-1.5 font-medium`}>
         <Icon className="w-3 h-3" />
-        {config.label}
+        {config?.label || status}
       </Badge>
     );
   };

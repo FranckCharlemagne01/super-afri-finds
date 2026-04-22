@@ -194,11 +194,11 @@ export const SecurityDashboard = () => {
           ) : (
             <div className="space-y-2 max-h-80 overflow-y-auto">
               {logs.map((log) => {
-                const config = severityConfig[log.severity] || severityConfig.info;
-                const Icon = config.icon;
+                const config = severityConfig[log.severity] || severityConfig.info || { label: log.severity || 'Info', color: 'bg-muted text-muted-foreground', icon: ShieldCheck };
+                const Icon = config?.icon || ShieldCheck;
                 return (
                   <div key={log.id} className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors">
-                    <div className={`p-1.5 rounded-md border ${config.color}`}>
+                    <div className={`p-1.5 rounded-md border ${config?.color || ''}`}>
                       <Icon className="w-3.5 h-3.5" />
                     </div>
                     <div className="flex-1 min-w-0">

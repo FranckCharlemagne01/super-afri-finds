@@ -18,13 +18,9 @@ export function safeIcon<T extends IconMapEntry>(
   const resolvedEntry = key ? map?.[key] : undefined;
   const resolvedIcon = resolvedEntry?.icon ?? DefaultIcon;
 
-  if (!resolvedEntry?.icon) {
-    console.log('DEBUG ICON FINAL:', {
-      source,
-      key,
-      resolvedEntry,
-      fallbackIcon: 'AlertCircle',
-    });
+  // Avertissement uniquement en développement pour détecter les statuts non mappés
+  if (!resolvedEntry?.icon && import.meta.env.DEV) {
+    console.warn(`[safeIcon] Statut non mappé "${key}" dans ${source} → fallback AlertCircle`);
   }
 
   return resolvedIcon;

@@ -376,6 +376,85 @@ serve(async (req) => {
       });
     }
 
+    // ============================================================
+    // ACTION: verify_order_payment
+    // Vérifie un paiement Paystack pour une commande (orders)
+    // et marque la commande comme payée si succès.
+    // ============================================================
+    if (action === 'verify_order_payment') {
+      const { reference, order_id } = payload;
+
+      if (!reference || typeof reference !== 'string') {
+        return respond(false, { error: 'Référence de paiement manquante' });
+      }
+      if (!order_id || typeof order_id !== 'string') {
+        return respond(false, { error: 'order_id manquant' });
+      }
+
+      console.log('🔍 Verifying ORDER payment:', reference, 'for order', order_id);
+
+      // 1. Vérifier le paiement auprès de Paystack
+      const paystackResponse = await fetch(
+        `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
+        { headers: { 'Authorization': `Bearer ${paystackKeys.secretKey}` } }
+      );
+      const paystackData = await paystackResponse.json();
+
+      if (!paystackData.status || paystackData.data?.status !== 'success') {
+        // Marquer comme failed
+        await supabase
+          .from('orders')
+          .update({ payment_status: 'failed' })
+          .eq('id', order_id);
+        return respond(false, { error: 'Paiement non confirmé par Paystack' });
+      }
+
+      // 2. Récupérer la commande pour valider le montant
+      const { data: order, error: orderErr } = await supabase
+        .from('orders')
+        .select('id, total_amount, payment_status, payment_method, seller_id, customer_id')
+        .eq('id', order_id)
+        .single();
+
+      if (orderErr || !order) {
+        console.error('❌ Order not found:', orderErr);
+        return respond(false, { error: 'Commande introuvable' });
+      }
+
+      // Idempotence : si déjà payée, on retourne succès
+      if (order.payment_status === 'paid') {
+        return respond(true, { message: 'Paiement déjà confirmé', already_paid: true });
+      }
+
+      // 3. Vérifier le montant (Paystack en kobo/centimes)
+      const paidAmount = (paystackData.data.amount || 0) / 100;
+      if (Math.abs(paidAmount - Number(order.total_amount)) > 1) {
+        console.error(`❌ Amount mismatch: paid ${paidAmount}, expected ${order.total_amount}`);
+        return respond(false, { error: 'Montant payé incohérent' });
+      }
+
+      // 4. Marquer la commande comme payée + confirmée
+      const { error: updateErr } = await supabase
+        .from('orders')
+        .update({
+          payment_status: 'paid',
+          paystack_reference: reference,
+          status: 'confirmed',
+        })
+        .eq('id', order_id);
+
+      if (updateErr) {
+        console.error('❌ Order update failed:', updateErr);
+        return respond(false, { error: 'Erreur lors de la mise à jour de la commande' });
+      }
+
+      console.log('✅ Order marked as paid:', order_id);
+      return respond(true, {
+        message: 'Paiement confirmé',
+        data: { order_id, amount: paidAmount, reference }
+      });
+    }
+
     return respond(false, { error: 'Action invalide' });
 
   } catch (error: unknown) {

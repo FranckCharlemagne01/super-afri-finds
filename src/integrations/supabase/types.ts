@@ -640,6 +640,9 @@ export type Database = {
           delivery_location: string
           id: string
           is_confirmed_by_seller: boolean | null
+          payment_method: string
+          payment_status: string
+          paystack_reference: string | null
           product_id: string
           product_price: number
           product_title: string
@@ -659,6 +662,9 @@ export type Database = {
           delivery_location: string
           id?: string
           is_confirmed_by_seller?: boolean | null
+          payment_method?: string
+          payment_status?: string
+          paystack_reference?: string | null
           product_id: string
           product_price: number
           product_title: string
@@ -678,6 +684,9 @@ export type Database = {
           delivery_location?: string
           id?: string
           is_confirmed_by_seller?: boolean | null
+          payment_method?: string
+          payment_status?: string
+          paystack_reference?: string | null
           product_id?: string
           product_price?: number
           product_title?: string

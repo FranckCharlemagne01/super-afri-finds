@@ -28,6 +28,8 @@ interface Order {
   created_at: string;
   updated_at: string;
   is_confirmed_by_seller?: boolean;
+  payment_method?: string | null;
+  payment_status?: string | null;
 }
 
 interface SellerOrdersListProps {

@@ -135,11 +135,11 @@ export const useOrders = () => {
       if (error) throw error;
       if (!data?.success) throw new Error(data?.error || 'Vérification du paiement échouée');
 
-      // Notifications vendeur (paiement sécurisé)
+      // Notifications vendeur (paiement reçu — en attente d'acceptation)
       await sendPushNotification(supabase, {
         user_id: params.sellerId,
-        title: '💰 Paiement reçu — commande à livrer',
-        body: `${params.customerName} a payé ${params.productTitle} en ligne`,
+        title: '💰 Paiement reçu — commande à accepter',
+        body: `${params.customerName} a payé ${params.productTitle} en ligne. Confirmez la commande pour démarrer la préparation.`,
         url: '/seller-dashboard',
         tag: 'order_paid',
       });
@@ -147,8 +147,8 @@ export const useOrders = () => {
       createNotification({
         userId: params.sellerId,
         type: 'new_order',
-        title: 'Commande payée en ligne',
-        message: `${params.customerName} a réglé "${params.productTitle}" (${params.totalAmount.toLocaleString()} FCFA). Vous pouvez livrer en toute sécurité.`,
+        title: 'Commande payée — à confirmer',
+        message: `${params.customerName} a réglé "${params.productTitle}" (${params.totalAmount.toLocaleString()} FCFA). Acceptez la commande pour démarrer la préparation.`,
         link: '/seller',
       });
 
@@ -157,14 +157,14 @@ export const useOrders = () => {
           userId: user.id,
           type: 'order_status',
           title: 'Paiement confirmé',
-          message: `Votre paiement pour "${params.productTitle}" a été confirmé.`,
+          message: `Votre paiement pour "${params.productTitle}" a été confirmé. Le vendeur va valider votre commande.`,
           link: '/my-orders',
         });
       }
 
       toast({
         title: '✅ Paiement confirmé !',
-        description: 'Le vendeur a été notifié.',
+        description: 'Le vendeur va valider votre commande.',
       });
 
       return { success: true };

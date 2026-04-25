@@ -458,6 +458,28 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
               </div>
             </div>
 
+            {/* Paid online → seller must accept */}
+            {order.status === 'paid' && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-4 bg-emerald-500/10 border-2 border-emerald-500/30 rounded-2xl flex items-start gap-3"
+              >
+                <div className="w-11 h-11 rounded-xl bg-emerald-500/20 flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-bold text-emerald-700 dark:text-emerald-300 mb-1">
+                    💰 Paiement reçu — à accepter
+                  </h4>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 leading-relaxed">
+                    L'acheteur a payé en ligne. Cliquez sur <strong>Confirmer</strong> ci-dessous pour
+                    accepter la commande et démarrer la préparation.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+
             {/* Status Management */}
             <div className="space-y-3 pt-2">
               <div className="flex items-center gap-2">

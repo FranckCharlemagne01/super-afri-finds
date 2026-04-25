@@ -127,13 +127,6 @@ const OrderTimeline = ({ status }: { status: string }) => {
     return (
       <div className="flex items-center justify-center gap-2 py-3 px-4 bg-red-500/10 rounded-xl">
         <X className="w-5 h-5 text-red-500" />
-
-  const currentStep = resolveOrderStatusConfig(status, 'OrderDetailDialog.Timeline').step || 0;
-
-  if (status === 'cancelled') {
-    return (
-      <div className="flex items-center justify-center gap-2 py-3 px-4 bg-red-500/10 rounded-xl">
-        <X className="w-5 h-5 text-red-500" />
         <span className="text-sm font-bold text-red-600 dark:text-red-400">Commande annulée</span>
       </div>
     );

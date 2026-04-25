@@ -479,6 +479,7 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="pending">⏳ En attente</SelectItem>
+                    <SelectItem value="paid">💰 Payée (en ligne)</SelectItem>
                     <SelectItem value="confirmed">✅ Confirmée</SelectItem>
                     <SelectItem value="processing">📦 En préparation</SelectItem>
                     <SelectItem value="shipped">🚚 En livraison</SelectItem>

@@ -48,13 +48,21 @@ const statusConfig = {
     iconBg: "bg-amber-500/20",
     step: 1
   },
+  paid: { 
+    label: "Payée", 
+    icon: CheckCircle, 
+    bgColor: "bg-emerald-500/10", 
+    textColor: "text-emerald-600 dark:text-emerald-400",
+    iconBg: "bg-emerald-500/20",
+    step: 2
+  },
   confirmed: { 
     label: "Confirmée", 
     icon: CheckCircle, 
     bgColor: "bg-blue-500/10", 
     textColor: "text-blue-600 dark:text-blue-400",
     iconBg: "bg-blue-500/20",
-    step: 2
+    step: 3
   },
   processing: { 
     label: "Préparation", 
@@ -62,7 +70,7 @@ const statusConfig = {
     bgColor: "bg-purple-500/10", 
     textColor: "text-purple-600 dark:text-purple-400",
     iconBg: "bg-purple-500/20",
-    step: 2
+    step: 3
   },
   shipped: { 
     label: "En livraison", 
@@ -70,7 +78,7 @@ const statusConfig = {
     bgColor: "bg-indigo-500/10", 
     textColor: "text-indigo-600 dark:text-indigo-400",
     iconBg: "bg-indigo-500/20",
-    step: 3
+    step: 4
   },
   delivered: { 
     label: "Livrée", 
@@ -78,7 +86,7 @@ const statusConfig = {
     bgColor: "bg-emerald-500/10", 
     textColor: "text-emerald-600 dark:text-emerald-400",
     iconBg: "bg-emerald-500/20",
-    step: 4
+    step: 5
   },
   cancelled: { 
     label: "Annulée", 

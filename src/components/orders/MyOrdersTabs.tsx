@@ -38,11 +38,12 @@ interface CancelOrderResponse {
 }
 
 type OrdersTabsInitialTab = 'purchases' | 'sales';
-type StatusFilter = 'all' | 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
+type StatusFilter = 'all' | 'pending' | 'paid' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
 
 const statusFilters: { value: StatusFilter; label: string }[] = [
   { value: 'all', label: 'Toutes' },
   { value: 'pending', label: 'En attente' },
+  { value: 'paid', label: 'Payées' },
   { value: 'confirmed', label: 'Confirmées' },
   { value: 'shipped', label: 'En livraison' },
   { value: 'delivered', label: 'Livrées' },

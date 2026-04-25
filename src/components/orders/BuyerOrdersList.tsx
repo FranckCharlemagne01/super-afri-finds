@@ -79,7 +79,7 @@ const statusConfig = {
     textColor: "text-indigo-600 dark:text-indigo-400", 
     iconBg: "bg-indigo-500/20",
     progressColor: "bg-indigo-500",
-    step: 3
+    step: 4
   },
   delivered: { 
     label: "Livrée", 
@@ -88,7 +88,7 @@ const statusConfig = {
     textColor: "text-emerald-600 dark:text-emerald-400", 
     iconBg: "bg-emerald-500/20",
     progressColor: "bg-emerald-500",
-    step: 4
+    step: 5
   },
   cancelled: { 
     label: "Annulée", 

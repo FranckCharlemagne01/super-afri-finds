@@ -115,10 +115,18 @@ const resolveOrderStatusConfig = (status?: string | null, source = 'OrderDetailD
 const OrderTimeline = ({ status }: { status: string }) => {
   const steps = [
     { key: 'pending', label: 'Reçue', icon: Clock },
+    { key: 'paid', label: 'Payée', icon: CheckCircle },
     { key: 'confirmed', label: 'Confirmée', icon: CheckCircle },
     { key: 'shipped', label: 'Expédiée', icon: Truck },
     { key: 'delivered', label: 'Livrée', icon: CheckCircle2 },
   ];
+
+  const currentStep = resolveOrderStatusConfig(status, 'OrderDetailDialog.Timeline').step || 0;
+
+  if (status === 'cancelled') {
+    return (
+      <div className="flex items-center justify-center gap-2 py-3 px-4 bg-red-500/10 rounded-xl">
+        <X className="w-5 h-5 text-red-500" />
 
   const currentStep = resolveOrderStatusConfig(status, 'OrderDetailDialog.Timeline').step || 0;
 

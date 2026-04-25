@@ -54,6 +54,15 @@ const statusConfig = {
     progressColor: "bg-amber-500",
     step: 1
   },
+  paid: { 
+    label: "Payée", 
+    icon: CheckCircle, 
+    bgColor: "bg-emerald-500/15", 
+    textColor: "text-emerald-600 dark:text-emerald-400", 
+    iconBg: "bg-emerald-500/20",
+    progressColor: "bg-emerald-500",
+    step: 2
+  },
   confirmed: { 
     label: "Confirmée", 
     icon: CheckCircle, 
@@ -61,7 +70,7 @@ const statusConfig = {
     textColor: "text-blue-600 dark:text-blue-400", 
     iconBg: "bg-blue-500/20",
     progressColor: "bg-blue-500",
-    step: 2
+    step: 3
   },
   shipped: { 
     label: "En livraison", 

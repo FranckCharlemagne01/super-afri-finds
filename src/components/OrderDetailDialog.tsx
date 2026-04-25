@@ -48,13 +48,21 @@ const statusConfig = {
     iconBg: "bg-amber-500/20",
     step: 1
   },
+  paid: { 
+    label: "Payée", 
+    icon: CheckCircle, 
+    bgColor: "bg-emerald-500/10", 
+    textColor: "text-emerald-600 dark:text-emerald-400",
+    iconBg: "bg-emerald-500/20",
+    step: 2
+  },
   confirmed: { 
     label: "Confirmée", 
     icon: CheckCircle, 
     bgColor: "bg-blue-500/10", 
     textColor: "text-blue-600 dark:text-blue-400",
     iconBg: "bg-blue-500/20",
-    step: 2
+    step: 3
   },
   processing: { 
     label: "Préparation", 
@@ -62,7 +70,7 @@ const statusConfig = {
     bgColor: "bg-purple-500/10", 
     textColor: "text-purple-600 dark:text-purple-400",
     iconBg: "bg-purple-500/20",
-    step: 2
+    step: 3
   },
   shipped: { 
     label: "En livraison", 
@@ -70,7 +78,7 @@ const statusConfig = {
     bgColor: "bg-indigo-500/10", 
     textColor: "text-indigo-600 dark:text-indigo-400",
     iconBg: "bg-indigo-500/20",
-    step: 3
+    step: 4
   },
   delivered: { 
     label: "Livrée", 
@@ -78,7 +86,7 @@ const statusConfig = {
     bgColor: "bg-emerald-500/10", 
     textColor: "text-emerald-600 dark:text-emerald-400",
     iconBg: "bg-emerald-500/20",
-    step: 4
+    step: 5
   },
   cancelled: { 
     label: "Annulée", 
@@ -107,6 +115,7 @@ const resolveOrderStatusConfig = (status?: string | null, source = 'OrderDetailD
 const OrderTimeline = ({ status }: { status: string }) => {
   const steps = [
     { key: 'pending', label: 'Reçue', icon: Clock },
+    { key: 'paid', label: 'Payée', icon: CheckCircle },
     { key: 'confirmed', label: 'Confirmée', icon: CheckCircle },
     { key: 'shipped', label: 'Expédiée', icon: Truck },
     { key: 'delivered', label: 'Livrée', icon: CheckCircle2 },
@@ -449,6 +458,28 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
               </div>
             </div>
 
+            {/* Paid online → seller must accept */}
+            {order.status === 'paid' && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-4 bg-emerald-500/10 border-2 border-emerald-500/30 rounded-2xl flex items-start gap-3"
+              >
+                <div className="w-11 h-11 rounded-xl bg-emerald-500/20 flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-bold text-emerald-700 dark:text-emerald-300 mb-1">
+                    💰 Paiement reçu — à accepter
+                  </h4>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 leading-relaxed">
+                    L'acheteur a payé en ligne. Cliquez sur <strong>Confirmer</strong> ci-dessous pour
+                    accepter la commande et démarrer la préparation.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+
             {/* Status Management */}
             <div className="space-y-3 pt-2">
               <div className="flex items-center gap-2">
@@ -470,6 +501,7 @@ export const OrderDetailDialog = ({ order, open, onOpenChange, onOrderUpdated }:
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="pending">⏳ En attente</SelectItem>
+                    <SelectItem value="paid">💰 Payée (en ligne)</SelectItem>
                     <SelectItem value="confirmed">✅ Confirmée</SelectItem>
                     <SelectItem value="processing">📦 En préparation</SelectItem>
                     <SelectItem value="shipped">🚚 En livraison</SelectItem>

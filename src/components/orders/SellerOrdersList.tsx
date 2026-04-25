@@ -45,6 +45,13 @@ const statusConfig = {
     textColor: 'text-amber-600 dark:text-amber-400',
     iconBg: 'bg-amber-500/20'
   },
+  paid: { 
+    label: 'Payée — à confirmer', 
+    icon: CheckCircle,
+    bgColor: 'bg-emerald-500/15',
+    textColor: 'text-emerald-600 dark:text-emerald-400',
+    iconBg: 'bg-emerald-500/20'
+  },
   confirmed: { 
     label: 'Confirmée', 
     icon: CheckCircle,

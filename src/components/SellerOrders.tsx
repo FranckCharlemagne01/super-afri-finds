@@ -43,6 +43,7 @@ const statusColors = {
 
 const statusLabels = {
   pending: 'En attente',
+  paid: 'Payée — à confirmer',
   confirmed: 'Confirmée',
   processing: 'En préparation',
   shipped: 'Expédiée',

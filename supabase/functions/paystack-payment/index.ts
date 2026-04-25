@@ -433,13 +433,14 @@ serve(async (req) => {
         return respond(false, { error: 'Montant payé incohérent' });
       }
 
-      // 4. Marquer la commande comme payée + confirmée
+      // 4. Marquer la commande comme PAYÉE (paiement ≠ validation)
+      // Le vendeur devra ensuite manuellement passer en 'confirmed'
       const { error: updateErr } = await supabase
         .from('orders')
         .update({
           payment_status: 'paid',
           paystack_reference: reference,
-          status: 'confirmed',
+          status: 'paid',
         })
         .eq('id', order_id);
 

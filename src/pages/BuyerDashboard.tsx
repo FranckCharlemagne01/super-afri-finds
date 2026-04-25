@@ -82,6 +82,7 @@ interface UserProfile {
 
 const statusConfig = {
   pending: { label: "En attente", color: "text-orange-500", bgColor: "bg-orange-100 dark:bg-orange-900/30" },
+  paid: { label: "Payée", color: "text-emerald-500", bgColor: "bg-emerald-100 dark:bg-emerald-900/30" },
   confirmed: { label: "Confirmée", color: "text-blue-500", bgColor: "bg-blue-100 dark:bg-blue-900/30" },
   shipped: { label: "Expédiée", color: "text-purple-500", bgColor: "bg-purple-100 dark:bg-purple-900/30" },
   delivered: { label: "Livrée", color: "text-green-500", bgColor: "bg-green-100 dark:bg-green-900/30" },

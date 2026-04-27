@@ -51,8 +51,10 @@ const statusConfig: Record<string, { label: string; color: string; icon: React.E
 
 const txTypeLabels: Record<string, { label: string; icon: React.ElementType; positive: boolean }> = {
   sale_credit: { label: 'Vente reçue', icon: ArrowDownCircle, positive: true },
+  sale_earning: { label: 'Gain de vente livrée', icon: ArrowDownCircle, positive: true },
   escrow_release: { label: 'Paiement libéré', icon: CheckCircle2, positive: true },
   refund: { label: 'Remboursement', icon: ArrowDownCircle, positive: true },
+  recharge: { label: 'Recharge wallet', icon: ArrowDownCircle, positive: true },
   withdrawal: { label: 'Retrait', icon: ArrowUpCircle, positive: false },
   commission_deduction: { label: 'Commission', icon: Banknote, positive: false },
 };

@@ -1567,6 +1567,45 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_audit_log: {
+        Row: {
+          amount: number
+          balance_after: number
+          balance_before: number
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          order_id: string | null
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          balance_after?: number
+          balance_before?: number
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          order_id?: string | null
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          balance_after?: number
+          balance_before?: number
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          order_id?: string | null
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       wallet_transactions: {
         Row: {
           amount: number
@@ -2199,6 +2238,19 @@ export type Database = {
       }
       is_in_trial_period: { Args: { _user_id: string }; Returns: boolean }
       is_product_boosted: { Args: { _product_id: string }; Returns: boolean }
+      log_wallet_event: {
+        Args: {
+          _amount: number
+          _balance_after: number
+          _balance_before: number
+          _event_type: string
+          _metadata?: Json
+          _order_id?: string
+          _reason?: string
+          _user_id: string
+        }
+        Returns: undefined
+      }
       recharge_wallet: {
         Args: {
           _amount: number

@@ -1542,17 +1542,19 @@ textarea {
   display: none;
 }
 
-/* ===== Smooth scroll optimizations ===== */
+/* ===== Smooth scroll optimizations (premium native feel) ===== */
 
 /* Horizontal scroll containers - fluid touch swiping */
 .scroll-snap-x {
   scroll-snap-type: x proximity;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
+  scroll-padding-left: 0.5rem;
 }
 
 .scroll-snap-x > * {
   scroll-snap-align: start;
+  flex-shrink: 0;
 }
 
 /* Prevent vertical scroll blocking on horizontal scroll zones */
@@ -1561,6 +1563,7 @@ textarea {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
   overscroll-behavior-y: auto;
+  scroll-behavior: auto; /* native momentum, no JS smoothing that competes with touch */
 }
 
 /* GPU-accelerated scroll containers */
@@ -1569,6 +1572,7 @@ textarea {
   -webkit-transform: translateZ(0);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  will-change: scroll-position;
 }
 
 /* Momentum scroll for all horizontal scroll areas */
@@ -1578,6 +1582,20 @@ textarea {
   overscroll-behavior-x: contain;
 }
 
+/* Embla carousel fluidity */
+.embla-smooth [data-embla-container],
+.embla-smooth .embla__container {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.will-change-transform {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
 /* Smooth vertical scroll - global */
 @supports (scroll-behavior: smooth) {
   html {
@@ -1585,13 +1603,22 @@ textarea {
   }
 }
 
-/* Optimize scroll performance on mobile */
+/* Touch device specific: kill hover transforms inside scroll zones (prevents micro-jumps) */
 @media (hover: none) and (pointer: coarse) {
-  /* Disable heavy transitions/animations inside scroll containers */
   .touch-scroll-x .animate-fade-in,
   .touch-scroll-x [style*="animation-delay"] {
     animation: none !important;
     opacity: 1 !important;
+  }
+
+  /* Disable hover lift on touch devices - causes stutter during swipe */
+  .product-card-hover:hover {
+    transform: none !important;
+  }
+
+  /* Disable smooth scroll globally on touch (let native momentum take over) */
+  html {
+    scroll-behavior: auto;
   }
 }
 

@@ -12,7 +12,7 @@ import { BoostCountdown } from "@/components/BoostCountdown";
 import { ProductImage } from "@/components/ui/optimized-image";
 import { motion } from "framer-motion";
 import { useProductPrefetch } from "@/hooks/useProductCache";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { QuickViewDialog, type QuickViewProduct } from "@/components/QuickViewDialog";
 
 interface ProductCardProps {
@@ -40,7 +40,7 @@ interface ProductCardProps {
   description?: string;
 }
 
-export const ProductCard = ({
+const ProductCardComponent = ({
   id = 'sample-product',
   image,
   images,
@@ -110,9 +110,9 @@ export const ProductCard = ({
   return (
     <motion.div
       whileTap={{ scale: 0.98 }}
-      whileHover={{ y: -4 }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className="h-full"
+      className="h-full product-card-hover"
+      style={{ willChange: 'transform' }}
       onMouseEnter={() => prefetchOnHover(id)}
       onMouseLeave={cancelPrefetch}
       onTouchStart={() => prefetchOnHover(id)}
@@ -374,3 +374,22 @@ export const ProductCard = ({
     </motion.div>
   );
 };
+
+export const ProductCard = memo(ProductCardComponent, (prev, next) => {
+  return (
+    prev.id === next.id &&
+    prev.image === next.image &&
+    prev.title === next.title &&
+    prev.salePrice === next.salePrice &&
+    prev.originalPrice === next.originalPrice &&
+    prev.discount === next.discount &&
+    prev.rating === next.rating &&
+    prev.reviews === next.reviews &&
+    prev.badge === next.badge &&
+    prev.isFlashSale === next.isFlashSale &&
+    prev.isBoosted === next.isBoosted &&
+    prev.boostedUntil === next.boostedUntil &&
+    prev.isSold === next.isSold &&
+    prev.stockQuantity === next.stockQuantity
+  );
+});

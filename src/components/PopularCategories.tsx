@@ -16,9 +16,10 @@ export const PopularCategories = () => {
     if (!scrollElement) return;
 
     const handleWheel = (e: WheelEvent) => {
-      if (e.deltaY !== 0) {
+      // Only convert vertical wheel to horizontal when there's no native horizontal intent
+      if (e.deltaY !== 0 && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
         e.preventDefault();
-        scrollElement.scrollBy({ left: e.deltaY, behavior: "auto" });
+        scrollElement.scrollLeft += e.deltaY;
       }
     };
 

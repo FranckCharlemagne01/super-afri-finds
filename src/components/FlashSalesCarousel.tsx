@@ -76,14 +76,15 @@ export const FlashSalesCarousel = ({ products }: FlashSalesCarouselProps) => {
 
       {/* Horizontal carousel */}
       <Carousel
-        opts={{ align: "start", loop: false, dragFree: true, containScroll: "trimSnaps", duration: 25, skipSnaps: true }}
-        className="w-full"
+        opts={{ align: "start", loop: false, dragFree: true, containScroll: "trimSnaps", duration: 20 }}
+        className="w-full embla-smooth"
       >
-        <CarouselContent className="-ml-2 sm:-ml-3">
+        <CarouselContent className="-ml-2 sm:-ml-3 will-change-transform">
           {products.slice(0, 12).map((product) => (
             <CarouselItem
               key={product.id}
-              className="pl-2 sm:pl-3 basis-[48%] sm:basis-1/3 lg:basis-1/4 xl:basis-1/5"
+              className="pl-2 sm:pl-3 basis-[48%] sm:basis-1/3 lg:basis-1/4 xl:basis-1/5 flex-shrink-0"
+              style={{ willChange: 'transform' }}
             >
               <div>
                 <ProductCard

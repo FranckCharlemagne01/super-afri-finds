@@ -12,6 +12,8 @@ import FAQ from "@/components/FAQ";
 import { SellerCTABanner } from "@/components/SellerCTABanner";
 import { FlashSalesCarousel } from "@/components/FlashSalesCarousel";
 import { MarketplaceFooter } from "@/components/MarketplaceFooter";
+import { DesktopHeroSection } from "@/components/desktop/DesktopHeroSection";
+import { TrustBadgesSection } from "@/components/desktop/TrustBadgesSection";
 import { useTheme } from "next-themes";
 
 import { PopularCategories } from "@/components/PopularCategories";
@@ -27,6 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useStableAuth } from "@/hooks/useStableAuth";
 import { useCart } from "@/hooks/useCart";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useStableRole } from "@/hooks/useStableRole";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
@@ -106,6 +109,7 @@ const Index = () => {
   const location = useLocation();
   const [refreshKey, setRefreshKey] = useState(0);
   const { setTheme } = useTheme();
+  const isMobile = useIsMobile();
 
   // Force light mode on public marketplace
   useEffect(() => {
@@ -569,16 +573,24 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Top CTA Banner - only on desktop */}
-      <div className="hidden md:block">
+      {/* Top CTA Banner - tablet only (hidden on lg+ since hero takes over) */}
+      <div className="hidden md:block lg:hidden">
         <SellerCTABanner variant="top" onShowSellerUpgrade={() => setShowSellerUpgrade(true)} />
       </div>
+
+      {/* Desktop premium hero (lg+) */}
+      <DesktopHeroSection onShowSellerUpgrade={() => setShowSellerUpgrade(true)} />
+
+      {/* Desktop trust strip (lg+) */}
+      <TrustBadgesSection />
 
       {/* Main Content */}
       <main className="container mx-auto px-3 sm:px-4 lg:px-8 xl:px-12 py-3 sm:py-6 lg:py-8 max-w-[1600px] overflow-x-hidden">
         
         {/* Flash Sales - Horizontal Carousel */}
-        <FlashSalesCarousel products={specialOffersProducts} />
+        <div data-section="flash-sales">
+          <FlashSalesCarousel products={specialOffersProducts} />
+        </div>
 
         {/* Catégories - Hidden on mobile to focus on products */}
         <section className="hidden sm:block mb-5 sm:mb-8 lg:mb-12">
@@ -592,7 +604,10 @@ const Index = () => {
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-[hsl(16,100%,50%)] rounded-xl flex items-center justify-center shadow-sm">
                 <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-              <h2 className="text-base sm:text-xl lg:text-2xl font-bold text-foreground">Recommandés</h2>
+              <h2 className="text-base sm:text-xl lg:text-2xl font-bold text-foreground">
+                <span className="lg:hidden">Recommandés</span>
+                <span className="hidden lg:inline">Pour vous</span>
+              </h2>
             </div>
             <Button 
               variant="ghost" 
@@ -605,7 +620,7 @@ const Index = () => {
           </div>
           
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5 sm:gap-4 lg:gap-5 xl:gap-6" key={refreshKey}>
-            {shuffledProducts.slice(0, 12).map((product, index) => (
+            {(isMobile ? shuffledProducts.slice(0, 12) : shuffledProducts).map((product, index) => (
               <div 
                 key={`${product.id}-${refreshKey}`} 
                 className="animate-fade-in"
@@ -622,8 +637,8 @@ const Index = () => {
           <SellerCTABanner variant="bottom" onShowSellerUpgrade={() => setShowSellerUpgrade(true)} />
         </div>
 
-        {/* Tendances du moment - Grid */}
-        <section className="mb-5 sm:mb-8 lg:mb-12">
+        {/* Tendances du moment - Grid (mobile + tablet only; on desktop "Recommandés" already covers it to avoid duplication) */}
+        <section className="mb-5 sm:mb-8 lg:hidden">
           <div className="flex items-center justify-between mb-3 lg:mb-6">
             <div className="flex items-center gap-2 lg:gap-3">
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[hsl(var(--success))] to-[hsl(134,61%,35%)] rounded-xl flex items-center justify-center shadow-sm">

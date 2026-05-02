@@ -29,6 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useStableAuth } from "@/hooks/useStableAuth";
 import { useCart } from "@/hooks/useCart";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useStableRole } from "@/hooks/useStableRole";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
@@ -618,10 +619,7 @@ const Index = () => {
           </div>
           
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5 sm:gap-4 lg:gap-5 xl:gap-6" key={refreshKey}>
-            {(typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches
-              ? shuffledProducts
-              : shuffledProducts.slice(0, 12)
-            ).map((product, index) => (
+            {(isMobile ? shuffledProducts.slice(0, 12) : shuffledProducts).map((product, index) => (
               <div 
                 key={`${product.id}-${refreshKey}`} 
                 className="animate-fade-in"

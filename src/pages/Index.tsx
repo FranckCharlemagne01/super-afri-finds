@@ -15,7 +15,6 @@ import { MarketplaceFooter } from "@/components/MarketplaceFooter";
 import { useTheme } from "next-themes";
 
 import { PopularCategories } from "@/components/PopularCategories";
-import { CategorySidebar } from "@/components/CategorySidebar";
 import { MarketplaceTutorial } from "@/components/MarketplaceTutorial";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ProductSkeleton } from "@/components/ui/ProductSkeleton";
@@ -576,19 +575,13 @@ const Index = () => {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-3 sm:px-4 lg:px-8 xl:px-12 py-3 sm:py-6 lg:py-8 max-w-[1600px] overflow-x-hidden">
-        <div className="flex gap-6 xl:gap-8">
-          {/* Desktop sidebar (lg+) */}
-          <CategorySidebar />
-
-          {/* Main column */}
-          <main className="flex-1 min-w-0">
+      <main className="container mx-auto px-3 sm:px-4 lg:px-8 xl:px-12 py-3 sm:py-6 lg:py-8 max-w-[1600px] overflow-x-hidden">
         
         {/* Flash Sales - Horizontal Carousel */}
         <FlashSalesCarousel products={specialOffersProducts} />
 
-        {/* Catégories - Hidden on mobile to focus on products. Hidden on lg+ since sidebar shows them */}
-        <section className="hidden sm:block lg:hidden mb-5 sm:mb-8 lg:mb-12">
+        {/* Catégories - Hidden on mobile to focus on products */}
+        <section className="hidden sm:block mb-5 sm:mb-8 lg:mb-12">
           <PopularCategories />
         </section>
 
@@ -611,7 +604,7 @@ const Index = () => {
             </Button>
           </div>
           
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2.5 sm:gap-4 lg:gap-5 xl:gap-6" key={refreshKey}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5 sm:gap-4 lg:gap-5 xl:gap-6" key={refreshKey}>
             {shuffledProducts.slice(0, 12).map((product, index) => (
               <div 
                 key={`${product.id}-${refreshKey}`} 
@@ -646,7 +639,7 @@ const Index = () => {
           </div>
           
           {regularProducts.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2.5 sm:gap-4 lg:gap-5 xl:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5 sm:gap-4 lg:gap-5 xl:gap-6">
               {regularProducts.map((product, index) => (
                 <div 
                   key={product.id}
@@ -671,9 +664,7 @@ const Index = () => {
 
         {/* Section vendeur - data attribute conservé pour le scroll programmatique */}
         <section className="mb-6" data-seller-upgrade />
-          </main>
-        </div>
-      </div>
+      </main>
 
       {/* FAQ Section - Hidden on mobile/tablet */}
       <div className="hidden md:block">

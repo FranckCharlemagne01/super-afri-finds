@@ -109,6 +109,7 @@ const Index = () => {
   const location = useLocation();
   const [refreshKey, setRefreshKey] = useState(0);
   const { setTheme } = useTheme();
+  const isMobile = useIsMobile();
 
   // Force light mode on public marketplace
   useEffect(() => {

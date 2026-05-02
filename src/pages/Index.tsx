@@ -602,7 +602,10 @@ const Index = () => {
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-[hsl(16,100%,50%)] rounded-xl flex items-center justify-center shadow-sm">
                 <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-              <h2 className="text-base sm:text-xl lg:text-2xl font-bold text-foreground">Recommandés</h2>
+              <h2 className="text-base sm:text-xl lg:text-2xl font-bold text-foreground">
+                <span className="lg:hidden">Recommandés</span>
+                <span className="hidden lg:inline">Pour vous</span>
+              </h2>
             </div>
             <Button 
               variant="ghost" 
@@ -615,7 +618,10 @@ const Index = () => {
           </div>
           
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5 sm:gap-4 lg:gap-5 xl:gap-6" key={refreshKey}>
-            {shuffledProducts.slice(0, 12).map((product, index) => (
+            {(typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches
+              ? shuffledProducts
+              : shuffledProducts.slice(0, 12)
+            ).map((product, index) => (
               <div 
                 key={`${product.id}-${refreshKey}`} 
                 className="animate-fade-in"

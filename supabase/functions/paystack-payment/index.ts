@@ -436,6 +436,22 @@ serve(async (req) => {
         return respond(false, { error: 'Commande introuvable' });
       }
 
+      // SECURITY: only the customer of this order can confirm payment
+      if (order.customer_id !== authenticatedUserId) {
+        return respond(false, { error: 'Forbidden: not the order owner' });
+      }
+
+      // SECURITY: prevent reuse of a Paystack reference across orders
+      const { data: existingRef } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('paystack_reference', reference)
+        .neq('id', order_id)
+        .maybeSingle();
+      if (existingRef) {
+        return respond(false, { error: 'Référence Paystack déjà utilisée' });
+      }
+
       // Idempotence : si déjà payée, on retourne succès
       if (order.payment_status === 'paid') {
         return respond(true, { message: 'Paiement déjà confirmé', already_paid: true });

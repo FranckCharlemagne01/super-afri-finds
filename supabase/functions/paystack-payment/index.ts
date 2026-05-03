@@ -153,6 +153,11 @@ serve(async (req) => {
         return respond(false, { error: 'Champs requis manquants: user_id, email, amount, payment_type' });
       }
 
+      // SECURITY: enforce user_id matches authenticated user
+      if (user_id !== authenticatedUserId) {
+        return respond(false, { error: 'Forbidden: user mismatch' });
+      }
+
       if (typeof amount !== 'number' || amount < 500) {
         return respond(false, { error: 'Le montant minimum est de 500 FCFA' });
       }

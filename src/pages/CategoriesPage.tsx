@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
-import { CategoryProductCard } from "@/components/CategoryProductCard";
+import { ExplorerProductCard } from "@/components/ExplorerProductCard";
 import { cn } from "@/lib/utils";
 import { getProductImage } from "@/utils/productImageHelper";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -54,32 +54,21 @@ const ProductGridSkeleton = memo(() => (
 ));
 ProductGridSkeleton.displayName = "ProductGridSkeleton";
 
-/** Wraps a CategoryProductCard with a 🎥 indicator when the product has a video */
+/** Lightweight Explorer card */
 const CardWithVideoBadge = memo(
   ({ product }: { product: Product }) => (
-    <div className="relative">
-      <CategoryProductCard
-        id={product.id}
-        image={getProductImage(product.images, 0)}
-        images={product.images}
-        title={product.title}
-        originalPrice={product.original_price}
-        salePrice={product.price}
-        discount={product.discount_percentage}
-        rating={product.rating}
-        reviews={product.reviews_count}
-        badge={product.badge}
-        isFlashSale={product.is_flash_sale}
-        isBoosted={product.is_boosted}
-        boostedUntil={product.boosted_until}
-        shop_name={product.shop_name}
-      />
-      {product.video_url && (
-        <div className="absolute bottom-12 right-1.5 z-10 w-7 h-7 rounded-full bg-black/70 backdrop-blur-sm flex items-center justify-center pointer-events-none shadow-md">
-          <Video className="w-3.5 h-3.5 text-white" fill="currentColor" />
-        </div>
-      )}
-    </div>
+    <ExplorerProductCard
+      id={product.id}
+      image={getProductImage(product.images, 0)}
+      title={product.title}
+      salePrice={product.price}
+      originalPrice={product.original_price}
+      discount={product.discount_percentage}
+      badge={product.badge}
+      isFlashSale={product.is_flash_sale}
+      hasVideo={!!product.video_url}
+      shopName={product.shop_name}
+    />
   )
 );
 CardWithVideoBadge.displayName = "CardWithVideoBadge";

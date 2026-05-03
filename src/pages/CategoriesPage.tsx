@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
-import { CategoryProductCard } from "@/components/CategoryProductCard";
+import { ExplorerProductCard } from "@/components/ExplorerProductCard";
 import { cn } from "@/lib/utils";
 import { getProductImage } from "@/utils/productImageHelper";
 import { Skeleton } from "@/components/ui/skeleton";

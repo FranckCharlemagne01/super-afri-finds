@@ -97,20 +97,30 @@ serve(async (req) => {
 
     // Auth check
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return respond(false, { error: 'Authentication required' });
     }
 
-    // Rate limit
-    const ip = req.headers.get('x-forwarded-for') || 'unknown';
-    if (!checkRateLimit(`${ip}-${authHeader.substring(0, 20)}`)) {
-      return respond(false, { error: 'Trop de requêtes. Réessayez plus tard.' });
-    }
-
-    // Supabase client
+    // Supabase client (service role for DB writes)
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // SECURITY: validate JWT against Supabase auth
+    const token = authHeader.replace('Bearer ', '');
+    const authClient = createClient(supabaseUrl, supabaseAnonKey);
+    const { data: authData, error: authError } = await authClient.auth.getUser(token);
+    if (authError || !authData?.user) {
+      return respond(false, { error: 'Unauthorized' });
+    }
+    const authenticatedUserId = authData.user.id;
+
+    // Rate limit
+    const ip = req.headers.get('x-forwarded-for') || 'unknown';
+    if (!checkRateLimit(`${ip}-${authenticatedUserId}`)) {
+      return respond(false, { error: 'Trop de requêtes. Réessayez plus tard.' });
+    }
 
     // Get Paystack keys
     let paystackKeys: { secretKey: string; mode: string };

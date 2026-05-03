@@ -491,15 +491,17 @@ const Auth = () => {
       console.log('[signup] ✅ OTP envoyé avec succès à', userEmail);
 
       // Étape 2: Stocker les données d'inscription en sessionStorage
+      // SECURITY: never store the plaintext password — it is passed via window.history.state instead
       sessionStorage.setItem('signup_data', JSON.stringify({
         email: userEmail,
-        password: signupPassword,
         fullName,
         phone: fullPhoneNumber,
         country: country || 'CI',
         userRole: userRole || 'buyer',
         shopName: shopNameToSend,
       }));
+      // In-memory only password handoff (cleared on tab close, not persisted)
+      try { (window as any).__djassa_pending_password = signupPassword; } catch {}
 
       toast({
         title: "📧 Code envoyé !",

@@ -53,7 +53,8 @@ serve(async (req) => {
 
     // Générer OTP 6 chiffres
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log('🔐 OTP généré:', otpCode);
+    // SECURITY: never log OTP codes
+    console.log('OTP generated for:', cleanEmail);
 
     // Stocker l'OTP
     const { error: insertError } = await supabaseAdmin

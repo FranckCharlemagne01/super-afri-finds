@@ -97,20 +97,30 @@ serve(async (req) => {
 
     // Auth check
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return respond(false, { error: 'Authentication required' });
     }
 
-    // Rate limit
-    const ip = req.headers.get('x-forwarded-for') || 'unknown';
-    if (!checkRateLimit(`${ip}-${authHeader.substring(0, 20)}`)) {
-      return respond(false, { error: 'Trop de requêtes. Réessayez plus tard.' });
-    }
-
-    // Supabase client
+    // Supabase client (service role for DB writes)
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // SECURITY: validate JWT against Supabase auth
+    const token = authHeader.replace('Bearer ', '');
+    const authClient = createClient(supabaseUrl, supabaseAnonKey);
+    const { data: authData, error: authError } = await authClient.auth.getUser(token);
+    if (authError || !authData?.user) {
+      return respond(false, { error: 'Unauthorized' });
+    }
+    const authenticatedUserId = authData.user.id;
+
+    // Rate limit
+    const ip = req.headers.get('x-forwarded-for') || 'unknown';
+    if (!checkRateLimit(`${ip}-${authenticatedUserId}`)) {
+      return respond(false, { error: 'Trop de requêtes. Réessayez plus tard.' });
+    }
 
     // Get Paystack keys
     let paystackKeys: { secretKey: string; mode: string };
@@ -141,6 +151,11 @@ serve(async (req) => {
       // Basic validation
       if (!user_id || !email || !amount || !payment_type) {
         return respond(false, { error: 'Champs requis manquants: user_id, email, amount, payment_type' });
+      }
+
+      // SECURITY: enforce user_id matches authenticated user
+      if (user_id !== authenticatedUserId) {
+        return respond(false, { error: 'Forbidden: user mismatch' });
       }
 
       if (typeof amount !== 'number' || amount < 500) {
@@ -419,6 +434,22 @@ serve(async (req) => {
       if (orderErr || !order) {
         console.error('❌ Order not found:', orderErr);
         return respond(false, { error: 'Commande introuvable' });
+      }
+
+      // SECURITY: only the customer of this order can confirm payment
+      if (order.customer_id !== authenticatedUserId) {
+        return respond(false, { error: 'Forbidden: not the order owner' });
+      }
+
+      // SECURITY: prevent reuse of a Paystack reference across orders
+      const { data: existingRef } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('paystack_reference', reference)
+        .neq('id', order_id)
+        .maybeSingle();
+      if (existingRef) {
+        return respond(false, { error: 'Référence Paystack déjà utilisée' });
       }
 
       // Idempotence : si déjà payée, on retourne succès

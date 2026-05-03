@@ -81,8 +81,7 @@ serve(async (req) => {
 
     if (!termiiApiKey) {
       console.error('TERMII_API_KEY not configured - SMS service unavailable');
-      // Log OTP for server-side debugging only (visible in edge function logs)
-      console.log('DEBUG OTP (server logs only):', otpCode);
+      // SECURITY: never log OTP codes
       return new Response(
         JSON.stringify({ 
           error: 'Service SMS temporairement indisponible. Veuillez réessayer plus tard.' 

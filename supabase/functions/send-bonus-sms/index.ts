@@ -17,6 +17,32 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // SECURITY: require authenticated superadmin
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+    const authClient = createClient(supabaseUrl, supabaseAnonKey)
+    const { data: authData, error: authErr } = await authClient.auth.getUser(authHeader.replace('Bearer ', ''))
+    if (authErr || !authData?.user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey)
+    const { data: roleRow } = await adminClient
+      .from('user_roles').select('role').eq('user_id', authData.user.id).eq('role', 'superadmin').maybeSingle()
+    if (!roleRow) {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     const API_KEY = Deno.env.get('AFRICASTALKING_API_KEY')
     if (!API_KEY) {
       throw new Error('AFRICASTALKING_API_KEY is not configured')

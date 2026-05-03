@@ -72,6 +72,7 @@ const VerifyOtp = () => {
       if (data?.success && data?.magicLink) {
         // Nettoyer les données d'inscription
         sessionStorage.removeItem('signup_data');
+        try { delete (window as any).__djassa_pending_password; } catch {}
 
         // Extract token from magic link and use it to sign in
         const url = new URL(data.magicLink);

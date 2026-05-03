@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { categories } from "@/data/categories";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Search, ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
+import { ArrowLeft, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";

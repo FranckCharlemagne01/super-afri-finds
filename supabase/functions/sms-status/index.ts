@@ -29,6 +29,18 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // SECURITY: validate shared webhook secret if configured
+    const expectedSecret = Deno.env.get('AT_WEBHOOK_SECRET')
+    if (expectedSecret) {
+      const providedSecret = new URL(req.url).searchParams.get('secret') || req.headers.get('x-webhook-secret')
+      if (providedSecret !== expectedSecret) {
+        return new Response(JSON.stringify({ error: 'Forbidden' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+    } else {
+      console.warn('[sms-status] AT_WEBHOOK_SECRET not configured — webhook unprotected')
+    }
     const contentType = req.headers.get('content-type') || ''
     let phoneNumber: string | null = null
     let status: string | null = null

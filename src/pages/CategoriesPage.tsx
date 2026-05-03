@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { categories } from "@/data/categories";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Search, ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
+import { ArrowLeft, Search, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -11,7 +11,6 @@ import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { CategoryProductCard } from "@/components/CategoryProductCard";
 import { cn } from "@/lib/utils";
 import { getProductImage } from "@/utils/productImageHelper";
-import { useUserLocation } from "@/hooks/useUserLocation";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface Product {
@@ -34,14 +33,14 @@ interface Product {
   shop_name?: string;
   city?: string;
   commune?: string;
+  created_at?: string;
 }
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 24;
 
-/** Skeleton grid for loading state */
 const ProductGridSkeleton = memo(() => (
   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4">
-    {Array.from({ length: 8 }).map((_, i) => (
+    {Array.from({ length: 12 }).map((_, i) => (
       <div key={i} className="rounded-xl overflow-hidden border border-border/50">
         <Skeleton className="w-full h-[180px] sm:h-[220px] rounded-none" />
         <div className="p-2 space-y-2">
@@ -55,78 +54,35 @@ const ProductGridSkeleton = memo(() => (
 ));
 ProductGridSkeleton.displayName = "ProductGridSkeleton";
 
-/** Horizontal scroll carousel for desktop category sections */
-const ProductCarousel = memo(({ products }: { products: Product[] }) => {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-
-  const checkScroll = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 4);
-    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
-  }, []);
-
-  useEffect(() => {
-    checkScroll();
-    const el = scrollRef.current;
-    el?.addEventListener("scroll", checkScroll, { passive: true });
-    return () => el?.removeEventListener("scroll", checkScroll);
-  }, [products, checkScroll]);
-
-  const scroll = useCallback((dir: "left" | "right") => {
-    const el = scrollRef.current;
-    if (!el) return;
-    el.scrollBy({ left: dir === "left" ? -el.clientWidth * 0.7 : el.clientWidth * 0.7, behavior: "smooth" });
-  }, []);
-
-  if (products.length === 0) return null;
-
-  return (
-    <div className="relative group">
-      {canScrollLeft && (
-        <button
-          onClick={() => scroll("left")}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-background/90 border border-border shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-accent"
-        >
-          <ChevronLeft className="w-5 h-5 text-foreground" />
-        </button>
-      )}
-      <div ref={scrollRef} className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 scroll-smooth scroll-snap-x touch-scroll-x scroll-gpu">
-        {products.map((product) => (
-          <div key={product.id} className="flex-shrink-0 w-[200px] lg:w-[220px]">
-            <CategoryProductCard
-              id={product.id}
-              image={getProductImage(product.images, 0)}
-              images={product.images}
-              title={product.title}
-              originalPrice={product.original_price}
-              salePrice={product.price}
-              discount={product.discount_percentage}
-              rating={product.rating}
-              reviews={product.reviews_count}
-              badge={product.badge}
-              isFlashSale={product.is_flash_sale}
-              isBoosted={product.is_boosted}
-              boostedUntil={product.boosted_until}
-              shop_name={product.shop_name}
-            />
-          </div>
-        ))}
-      </div>
-      {canScrollRight && (
-        <button
-          onClick={() => scroll("right")}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-background/90 border border-border shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-accent"
-        >
-          <ChevronRight className="w-5 h-5 text-foreground" />
-        </button>
+/** Wraps a CategoryProductCard with a 🎥 indicator when the product has a video */
+const CardWithVideoBadge = memo(
+  ({ product }: { product: Product }) => (
+    <div className="relative">
+      <CategoryProductCard
+        id={product.id}
+        image={getProductImage(product.images, 0)}
+        images={product.images}
+        title={product.title}
+        originalPrice={product.original_price}
+        salePrice={product.price}
+        discount={product.discount_percentage}
+        rating={product.rating}
+        reviews={product.reviews_count}
+        badge={product.badge}
+        isFlashSale={product.is_flash_sale}
+        isBoosted={product.is_boosted}
+        boostedUntil={product.boosted_until}
+        shop_name={product.shop_name}
+      />
+      {product.video_url && (
+        <div className="absolute bottom-12 right-1.5 z-10 w-7 h-7 rounded-full bg-black/70 backdrop-blur-sm flex items-center justify-center pointer-events-none shadow-md">
+          <Video className="w-3.5 h-3.5 text-white" fill="currentColor" />
+        </div>
       )}
     </div>
-  );
-});
-ProductCarousel.displayName = "ProductCarousel";
+  )
+);
+CardWithVideoBadge.displayName = "CardWithVideoBadge";
 
 const CategoriesPage = () => {
   const navigate = useNavigate();
@@ -138,7 +94,6 @@ const CategoriesPage = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const { location } = useUserLocation();
   const observerRef = useRef<IntersectionObserver | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const pageRef = useRef(0);
@@ -163,28 +118,18 @@ const CategoriesPage = () => {
     shop_name: product.seller_shops?.shop_name,
     city: product.city,
     commune: product.commune,
+    created_at: product.created_at,
   });
 
-  const buildQuery = useCallback(
-    (from: number, to: number) => {
-      let query = supabase
-        .from("products")
-        .select(
-          `*, seller_shops!products_shop_id_fkey ( shop_slug, shop_name )`
-        )
-        .eq("is_active", true)
-        .order("is_boosted", { ascending: false })
-        .order("created_at", { ascending: false })
-        .range(from, to);
-
-      if (location.city) {
-        query = query.ilike("city", location.city);
-      }
-
-      return query;
-    },
-    [location.city]
-  );
+  // ALL products from ALL shops, sorted by date (most recent first)
+  const buildQuery = useCallback((from: number, to: number) => {
+    return supabase
+      .from("products")
+      .select(`*, seller_shops!products_shop_id_fkey ( shop_slug, shop_name )`)
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .range(from, to);
+  }, []);
 
   // Initial fetch
   useEffect(() => {
@@ -201,7 +146,6 @@ const CategoriesPage = () => {
     fetchInitial();
   }, [buildQuery]);
 
-  // Load more
   const loadMore = useCallback(async () => {
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
@@ -221,24 +165,20 @@ const CategoriesPage = () => {
     setLoadingMore(false);
   }, [buildQuery, loadingMore, hasMore]);
 
-  // Infinite scroll observer
   useEffect(() => {
     if (observerRef.current) observerRef.current.disconnect();
     observerRef.current = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) loadMore();
       },
-      { rootMargin: "400px" }
+      { rootMargin: "600px" }
     );
     if (sentinelRef.current) observerRef.current.observe(sentinelRef.current);
     return () => observerRef.current?.disconnect();
   }, [loadMore]);
 
-  // Commune prioritization + category/search filtering
   const filteredProducts = (() => {
     let list = products;
-
-    // Category filter
     if (selectedCategory) {
       const cat = categories.find((c) => c.id === selectedCategory);
       if (cat) {
@@ -246,8 +186,6 @@ const CategoriesPage = () => {
         list = list.filter((p) => slugs.has(p.category));
       }
     }
-
-    // Search filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       list = list.filter(
@@ -256,158 +194,134 @@ const CategoriesPage = () => {
           p.category.toLowerCase().includes(q)
       );
     }
-
-    // Commune priority
-    if (location.commune) {
-      const commune = location.commune.toLowerCase();
-      const local = list.filter((p) => p.commune?.toLowerCase() === commune);
-      const rest = list.filter((p) => p.commune?.toLowerCase() !== commune);
-      return [...local, ...rest];
-    }
-
     return list;
   })();
+
+  const CategoryChips = ({ mobile }: { mobile: boolean }) => (
+    <div className={cn("flex gap-2 overflow-x-auto scrollbar-hide", mobile ? "px-3 pb-2.5" : "flex-wrap mb-8")}>
+      <button
+        onClick={() => setSelectedCategory(null)}
+        className={cn(
+          "flex-shrink-0 rounded-full font-medium transition-colors",
+          mobile ? "px-3 py-1.5 text-xs" : "px-3.5 py-1.5 text-xs",
+          selectedCategory === null
+            ? "bg-primary text-primary-foreground shadow-sm"
+            : "bg-muted text-muted-foreground hover:bg-accent"
+        )}
+      >
+        Tous ({products.length})
+      </button>
+      {categories.map((cat) => {
+        const slugs = new Set(cat.subcategories.map((s) => s.slug));
+        const count = products.filter((p) => slugs.has(p.category)).length;
+        if (count === 0) return null;
+        const Icon = cat.icon;
+        return (
+          <button
+            key={cat.id}
+            onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
+            className={cn(
+              "flex-shrink-0 rounded-full font-medium flex items-center gap-1.5 transition-colors",
+              mobile ? "px-3 py-1.5 text-xs" : "px-3.5 py-1.5 text-xs",
+              selectedCategory === cat.id
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "bg-muted text-muted-foreground hover:bg-accent"
+            )}
+          >
+            <Icon className="w-3.5 h-3.5" />
+            {mobile ? cat.name.split(" ")[0] : cat.name} ({count})
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  const InfiniteSentinel = () => (
+    <>
+      {!loading && hasMore && (
+        <div ref={sentinelRef} className="flex justify-center py-8">
+          {loadingMore && (
+            <div className="w-8 h-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+          )}
+        </div>
+      )}
+      {!hasMore && filteredProducts.length > 0 && (
+        <p className="text-center text-xs text-muted-foreground py-6">
+          Vous avez vu tous les produits 🎉
+        </p>
+      )}
+    </>
+  );
 
   // ─── MOBILE ───
   if (isMobile) {
     return (
       <>
-      <SEOHead
-        title="Djassa – Catégories de Produits Locaux en Afrique"
-        description="Explorez les catégories de produits locaux et trouvez des commerçants africains près de chez vous. Vendre sur Djassa est gratuit et simple avec gestion de boutique automatique."
-        url="/categories"
-      />
-      <div className="min-h-[100dvh] bg-muted/30 pb-20 flex flex-col">
-        {/* Sticky header */}
-        <div
-          className={cn(
-            "sticky top-0 z-40 bg-background border-b border-border shadow-sm transition-transform duration-300 ease-out",
-            isHeaderVisible ? "translate-y-0" : "-translate-y-full"
-          )}
-        >
-          <div className="px-3 py-2.5">
-            <div className="flex items-center gap-2.5 mb-2">
-              <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="w-9 h-9 rounded-full">
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-              <h1 className="text-base font-semibold text-foreground">Produits</h1>
-              {location.city && (
-                <span className="ml-auto text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                  📍 {location.city}{location.commune ? ` - ${location.commune}` : ""}
-                </span>
-              )}
-            </div>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Rechercher un produit..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-10 pl-10 pr-4 rounded-full bg-muted border-0 text-sm placeholder:text-muted-foreground focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all"
-              />
-            </div>
-          </div>
-
-          {/* Category chips - horizontal scroll */}
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide px-3 pb-2.5">
-            <button
-              onClick={() => setSelectedCategory(null)}
-              className={cn(
-                "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
-                selectedCategory === null
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "bg-muted text-muted-foreground"
-              )}
-            >
-              Tous ({products.length})
-            </button>
-            {categories.map((cat) => {
-              const slugs = new Set(cat.subcategories.map((s) => s.slug));
-              const count = products.filter((p) => slugs.has(p.category)).length;
-              if (count === 0) return null;
-              const Icon = cat.icon;
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
-                  className={cn(
-                    "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-colors",
-                    selectedCategory === cat.id
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "bg-muted text-muted-foreground"
-                  )}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  {cat.name.split(" ")[0]} ({count})
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Product grid */}
-        <div className="flex-1 px-2.5 pt-3">
-          {searchQuery && (
-            <div className="px-2 py-2 mb-2 bg-background rounded-xl border border-border shadow-sm">
-              <p className="text-xs text-muted-foreground">
-                <span className="font-bold text-foreground">{filteredProducts.length}</span> résultat{filteredProducts.length !== 1 ? "s" : ""} pour "<span className="font-medium text-primary">{searchQuery}</span>"
-              </p>
-            </div>
-          )}
-
-          {loading ? (
-            <ProductGridSkeleton />
-          ) : filteredProducts.length === 0 ? (
-            <div className="text-center py-20 px-6">
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-                <Search className="w-8 h-8 text-muted-foreground/40" />
+        <SEOHead
+          title="Djassa – Explorer tous les produits"
+          description="Explorez tous les produits de toutes les boutiques de Djassa. Recherche globale et filtres par catégorie."
+          url="/categories"
+        />
+        <div className="min-h-[100dvh] bg-muted/30 pb-20 flex flex-col">
+          <div
+            className={cn(
+              "sticky top-0 z-40 bg-background border-b border-border shadow-sm transition-transform duration-300 ease-out",
+              isHeaderVisible ? "translate-y-0" : "-translate-y-full"
+            )}
+          >
+            <div className="px-3 py-2.5">
+              <div className="flex items-center gap-2.5 mb-2">
+                <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="w-9 h-9 rounded-full">
+                  <ArrowLeft className="w-4 h-4" />
+                </Button>
+                <h1 className="text-base font-semibold text-foreground">Explorer</h1>
               </div>
-              <p className="text-sm font-semibold text-foreground mb-1">Aucun produit trouvé</p>
-              <p className="text-xs text-muted-foreground">
-                {searchQuery ? "Essayez une autre recherche" : "Aucun produit disponible"}
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-2.5">
-              {filteredProducts.map((product) => (
-                <CategoryProductCard
-                  key={product.id}
-                  id={product.id}
-                  image={getProductImage(product.images, 0)}
-                  images={product.images}
-                  title={product.title}
-                  originalPrice={product.original_price}
-                  salePrice={product.price}
-                  discount={product.discount_percentage}
-                  rating={product.rating}
-                  reviews={product.reviews_count}
-                  badge={product.badge}
-                  isFlashSale={product.is_flash_sale}
-                  isBoosted={product.is_boosted}
-                  boostedUntil={product.boosted_until}
-                  shop_name={product.shop_name}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Rechercher un produit..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full h-10 pl-10 pr-4 rounded-full bg-muted border-0 text-sm placeholder:text-muted-foreground focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all"
                 />
-              ))}
+              </div>
             </div>
-          )}
+            <CategoryChips mobile />
+          </div>
 
-          {/* Infinite scroll sentinel */}
-          {!loading && hasMore && !selectedCategory && !searchQuery && (
-            <div ref={sentinelRef} className="flex justify-center py-6">
-              {loadingMore && (
-                <div className="w-8 h-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
-              )}
-            </div>
-          )}
+          <div className="flex-1 px-2.5 pt-3">
+            {searchQuery && (
+              <div className="px-2 py-2 mb-2 bg-background rounded-xl border border-border shadow-sm">
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-bold text-foreground">{filteredProducts.length}</span> résultat{filteredProducts.length !== 1 ? "s" : ""} pour "<span className="font-medium text-primary">{searchQuery}</span>"
+                </p>
+              </div>
+            )}
 
-          {!hasMore && filteredProducts.length > 0 && !selectedCategory && !searchQuery && (
-            <p className="text-center text-xs text-muted-foreground py-6">
-              Vous avez vu tous les produits 🎉
-            </p>
-          )}
+            {loading ? (
+              <ProductGridSkeleton />
+            ) : filteredProducts.length === 0 ? (
+              <div className="text-center py-20 px-6">
+                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+                  <Search className="w-8 h-8 text-muted-foreground/40" />
+                </div>
+                <p className="text-sm font-semibold text-foreground mb-1">Aucun produit trouvé</p>
+                <p className="text-xs text-muted-foreground">
+                  {searchQuery ? "Essayez une autre recherche" : "Aucun produit disponible"}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2.5">
+                {filteredProducts.map((product) => (
+                  <CardWithVideoBadge key={product.id} product={product} />
+                ))}
+              </div>
+            )}
+
+            <InfiniteSentinel />
+          </div>
         </div>
-      </div>
       </>
     );
   }
@@ -416,8 +330,8 @@ const CategoriesPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Djassa – Catégories de Produits Locaux en Afrique"
-        description="Explorez les catégories de produits locaux et trouvez des commerçants africains près de chez vous. Vendre sur Djassa est gratuit et simple avec gestion de boutique automatique."
+        title="Djassa – Explorer tous les produits"
+        description="Explorez tous les produits de toutes les boutiques de Djassa. Recherche globale et filtres par catégorie."
         url="/categories"
       />
       <div className="container mx-auto px-4 py-6">
@@ -426,137 +340,37 @@ const CategoriesPage = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Retour
           </Button>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Produits par catégorie</h1>
-          {location.city && (
-            <span className="ml-auto text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">
-              📍 {location.city}{location.commune ? ` - ${location.commune}` : ""}
-            </span>
-          )}
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Explorer</h1>
         </div>
 
-        {/* Search + category chips */}
         <div className="relative max-w-lg mb-4">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Rechercher dans les catégories..."
+            placeholder="Rechercher un produit..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 h-11 rounded-xl"
           />
         </div>
 
-        <div className="flex gap-2 flex-wrap mb-8">
-          <button
-            onClick={() => setSelectedCategory(null)}
-            className={cn(
-              "px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors",
-              selectedCategory === null
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "bg-muted text-muted-foreground hover:bg-accent"
-            )}
-          >
-            Tous ({products.length})
-          </button>
-          {categories.map((cat) => {
-            const slugs = new Set(cat.subcategories.map((s) => s.slug));
-            const count = products.filter((p) => slugs.has(p.category)).length;
-            if (count === 0) return null;
-            const Icon = cat.icon;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
-                className={cn(
-                  "px-3.5 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-colors",
-                  selectedCategory === cat.id
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "bg-muted text-muted-foreground hover:bg-accent"
-                )}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                {cat.name} ({count})
-              </button>
-            );
-          })}
-        </div>
+        <CategoryChips mobile={false} />
 
         {loading ? (
           <ProductGridSkeleton />
+        ) : filteredProducts.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-sm text-muted-foreground">Aucun produit trouvé</p>
+          </div>
         ) : (
-          <div className="space-y-10">
-            {categories.map((category) => {
-              const Icon = category.icon;
-              const slugs = new Set(category.subcategories.map((s) => s.slug));
-              const categoryProducts = filteredProducts.filter((p) => slugs.has(p.category));
-              if (categoryProducts.length === 0) return null;
-
-              return (
-                <section key={category.id} className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-primary/10 p-2.5 rounded-xl">
-                        <Icon className="w-6 h-6 text-primary" />
-                      </div>
-                      <div>
-                        <h2 className="text-lg font-bold text-foreground">{category.name}</h2>
-                        <p className="text-xs text-muted-foreground">
-                          {categoryProducts.length} produit{categoryProducts.length !== 1 ? "s" : ""}
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => navigate(`/category/${category.subcategories[0]?.slug || ""}`)}
-                      className="text-primary text-xs hover:text-primary/80"
-                    >
-                      Voir tout →
-                    </Button>
-                  </div>
-
-                  {/* Vertical grid instead of carousel */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-                    {categoryProducts.map((product) => (
-                      <CategoryProductCard
-                        key={product.id}
-                        id={product.id}
-                        image={getProductImage(product.images, 0)}
-                        images={product.images}
-                        title={product.title}
-                        originalPrice={product.original_price}
-                        salePrice={product.price}
-                        discount={product.discount_percentage}
-                        rating={product.rating}
-                        reviews={product.reviews_count}
-                        badge={product.badge}
-                        isFlashSale={product.is_flash_sale}
-                        isBoosted={product.is_boosted}
-                        boostedUntil={product.boosted_until}
-                        shop_name={product.shop_name}
-                      />
-                    ))}
-                  </div>
-                </section>
-              );
-            })}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            {filteredProducts.map((product) => (
+              <CardWithVideoBadge key={product.id} product={product} />
+            ))}
           </div>
         )}
 
-        {/* Desktop infinite scroll sentinel */}
-        {!loading && hasMore && !selectedCategory && !searchQuery && (
-          <div ref={!isMobile ? sentinelRef : undefined} className="flex justify-center py-8">
-            {loadingMore && (
-              <div className="w-8 h-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
-            )}
-          </div>
-        )}
-
-        {!hasMore && filteredProducts.length > 0 && !selectedCategory && !searchQuery && (
-          <p className="text-center text-xs text-muted-foreground py-6">
-            Vous avez vu tous les produits 🎉
-          </p>
-        )}
+        <InfiniteSentinel />
       </div>
     </div>
   );

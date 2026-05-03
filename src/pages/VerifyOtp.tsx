@@ -45,6 +45,8 @@ const VerifyOtp = () => {
       // Récupérer les données d'inscription stockées
       const signupDataRaw = sessionStorage.getItem('signup_data');
       const signupData = signupDataRaw ? JSON.parse(signupDataRaw) : {};
+      // SECURITY: password is held in memory only (never persisted)
+      const pendingPassword = (window as any).__djassa_pending_password as string | undefined;
 
       console.log('[verify-otp] Vérification pour:', emailFromParams, 'avec données signup:', !!signupDataRaw);
 
@@ -53,7 +55,7 @@ const VerifyOtp = () => {
           email: emailFromParams, 
           otp: otpCode, 
           fullName: fullName || signupData.fullName,
-          password: signupData.password,
+          password: pendingPassword,
           phone: signupData.phone,
           country: signupData.country,
           userRole: signupData.userRole,
@@ -70,6 +72,7 @@ const VerifyOtp = () => {
       if (data?.success && data?.magicLink) {
         // Nettoyer les données d'inscription
         sessionStorage.removeItem('signup_data');
+        try { delete (window as any).__djassa_pending_password; } catch {}
 
         // Extract token from magic link and use it to sign in
         const url = new URL(data.magicLink);

@@ -17,6 +17,7 @@ import { useTheme } from "next-themes";
 import { PopularCategories } from "@/components/PopularCategories";
 import { MarketplaceTutorial } from "@/components/MarketplaceTutorial";
 import { NotificationBell } from "@/components/NotificationBell";
+import { QuickLocationPicker } from "@/components/QuickLocationPicker";
 import { ProductSkeleton } from "@/components/ui/ProductSkeleton";
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useScrollDirection } from "@/hooks/useScrollDirection";

@@ -394,6 +394,7 @@ export const MyMessagesTabs = ({ initialTab = 'purchases', autoOpenConversation,
           open={chatOpen}
           onOpenChange={handleChatClose}
           userType={selectedThread.type === 'buyer' ? 'buyer' : 'seller'}
+          highlightMessageId={highlightMessageId || undefined}
         />
       )}
     </div>

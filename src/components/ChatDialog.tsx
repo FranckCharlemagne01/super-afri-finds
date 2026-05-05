@@ -33,9 +33,10 @@ interface ChatDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userType: 'seller' | 'buyer';
+  highlightMessageId?: string;
 }
 
-export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: ChatDialogProps) => {
+export const ChatDialog = ({ initialMessage, open, onOpenChange, userType, highlightMessageId }: ChatDialogProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();

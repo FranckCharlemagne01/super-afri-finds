@@ -15,6 +15,7 @@ const MessagesPage = () => {
   const [searchParams] = useSearchParams();
   const { unreadMessages } = useRealtimeNotifications();
   const conversationUserId = searchParams.get('conversation');
+  const highlightMessageId = searchParams.get('message');
   const [activeTab, setActiveTab] = useState("messages");
 
   if (!user) {

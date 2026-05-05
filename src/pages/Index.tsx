@@ -515,9 +515,17 @@ const Index = () => {
               </nav>
 
               <div className="flex items-center gap-3 lg:gap-4">
-                <Badge className="gradient-accent text-xs lg:text-sm px-3 py-1.5 rounded-full shadow-sm">
-                  {countryInfo.flag} {countryInfo.name}
-                </Badge>
+                <button
+                  onClick={() => setLocationPickerOpen(true)}
+                  aria-label="Changer de ville ou de commune"
+                  className="flex items-center gap-1.5 px-3 py-1.5 min-h-[40px] rounded-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/15 active:scale-95 transition-all shadow-sm"
+                >
+                  <MapPin className="w-4 h-4" />
+                  <span className="text-sm font-bold truncate max-w-[160px]">
+                    {countryInfo.flag} {locationLabel}
+                  </span>
+                  <span className="text-[10px] opacity-70">▾</span>
+                </button>
                 
                 {user && <NotificationBell />}
                 

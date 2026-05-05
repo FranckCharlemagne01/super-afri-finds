@@ -89,12 +89,42 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType, highl
     fetchOtherUserInfo();
   }, [open, initialMessage, user, userType]);
 
-  // Scroll to bottom
+  // Track which message to highlight (cleared after a few seconds)
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const highlightedRef = useRef<HTMLDivElement | null>(null);
+  const didScrollToHighlightRef = useRef(false);
+
+  // Scroll to bottom by default; if a highlight target is requested, scroll to it instead
   useEffect(() => {
-    if (messagesContainerRef.current) {
+    if (!messages.length) return;
+
+    if (highlightMessageId && !didScrollToHighlightRef.current) {
+      const exists = messages.some((m) => m.id === highlightMessageId);
+      if (exists) {
+        didScrollToHighlightRef.current = true;
+        setHighlightedId(highlightMessageId);
+        // Defer to next frame to ensure DOM is painted
+        requestAnimationFrame(() => {
+          highlightedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+        // Auto-clear highlight
+        const t = setTimeout(() => setHighlightedId(null), 3000);
+        return () => clearTimeout(t);
+      }
+    }
+
+    if (messagesContainerRef.current && !highlightedId) {
       messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, highlightMessageId, highlightedId]);
+
+  // Reset highlight tracker when dialog reopens or target changes
+  useEffect(() => {
+    if (!open) {
+      didScrollToHighlightRef.current = false;
+      setHighlightedId(null);
+    }
+  }, [open, highlightMessageId]);
 
   const uploadFile = async (file: File): Promise<string | null> => {
     if (!user) return null;

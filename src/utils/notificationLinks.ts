@@ -41,10 +41,14 @@ export function getNotificationLink(type: NotificationType, referenceId?: string
         : '/my-orders';
 
     // ── Messages ────────────────────────────────────
-    case 'new_message':
-      return referenceId
-        ? `/messages?conversation=${referenceId}`
-        : '/messages';
+    // reference_id may be "<sender_id>" (legacy) or "<sender_id>:<message_id>" (new)
+    case 'new_message': {
+      if (!referenceId) return '/messages';
+      const [senderId, messageId] = referenceId.split(':');
+      const params = new URLSearchParams({ conversation: senderId });
+      if (messageId) params.set('message', messageId);
+      return `/messages?${params.toString()}`;
+    }
 
     // ── Products ────────────────────────────────────
     case 'product':

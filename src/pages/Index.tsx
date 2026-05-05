@@ -691,6 +691,9 @@ const Index = () => {
       {/* Floating elements */}
       <FloatingSupportButton />
       <ScrollToTopButton />
+
+      {/* Quick location picker (bottom sheet) */}
+      <QuickLocationPicker open={locationPickerOpen} onOpenChange={setLocationPickerOpen} />
     </div>
     </>
   );

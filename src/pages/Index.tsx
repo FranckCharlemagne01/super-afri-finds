@@ -119,6 +119,7 @@ const Index = () => {
   const [loading, setLoading] = useState(!cachedProducts);
   
   const [showSellerUpgrade, setShowSellerUpgrade] = useState(false);
+  const [locationPickerOpen, setLocationPickerOpen] = useState(false);
   const { location: userLocation } = useUserLocation();
   const { isVisible: isHeaderVisible } = useScrollDirection();
 

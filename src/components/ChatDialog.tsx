@@ -33,9 +33,10 @@ interface ChatDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userType: 'seller' | 'buyer';
+  highlightMessageId?: string;
 }
 
-export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: ChatDialogProps) => {
+export const ChatDialog = ({ initialMessage, open, onOpenChange, userType, highlightMessageId }: ChatDialogProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -88,12 +89,42 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
     fetchOtherUserInfo();
   }, [open, initialMessage, user, userType]);
 
-  // Scroll to bottom
+  // Track which message to highlight (cleared after a few seconds)
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const highlightedRef = useRef<HTMLDivElement | null>(null);
+  const didScrollToHighlightRef = useRef(false);
+
+  // Scroll to bottom by default; if a highlight target is requested, scroll to it instead
   useEffect(() => {
-    if (messagesContainerRef.current) {
+    if (!messages.length) return;
+
+    if (highlightMessageId && !didScrollToHighlightRef.current) {
+      const exists = messages.some((m) => m.id === highlightMessageId);
+      if (exists) {
+        didScrollToHighlightRef.current = true;
+        setHighlightedId(highlightMessageId);
+        // Defer to next frame to ensure DOM is painted
+        requestAnimationFrame(() => {
+          highlightedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+        // Auto-clear highlight
+        const t = setTimeout(() => setHighlightedId(null), 3000);
+        return () => clearTimeout(t);
+      }
+    }
+
+    if (messagesContainerRef.current && !highlightedId) {
       messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, highlightMessageId, highlightedId]);
+
+  // Reset highlight tracker when dialog reopens or target changes
+  useEffect(() => {
+    if (!open) {
+      didScrollToHighlightRef.current = false;
+      setHighlightedId(null);
+    }
+  }, [open, highlightMessageId]);
 
   const uploadFile = async (file: File): Promise<string | null> => {
     if (!user) return null;
@@ -378,8 +409,13 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType }: Cha
 
                 const isProductShare = message.content === '[PRODUCT_SHARE]';
 
+                const isHighlighted = highlightedId === message.id;
                 return (
-                  <div key={message.id}>
+                  <div
+                    key={message.id}
+                    ref={isHighlighted ? highlightedRef : undefined}
+                    className={isHighlighted ? 'rounded-2xl ring-2 ring-primary/70 ring-offset-2 ring-offset-background animate-pulse transition-all' : ''}
+                  >
                     {showDateSeparator && (
                       <div className="flex items-center justify-center my-3">
                         <span className="text-[11px] text-muted-foreground bg-muted/60 px-3 py-1 rounded-full font-medium">{dateLabel}</span>

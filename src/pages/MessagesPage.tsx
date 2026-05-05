@@ -15,6 +15,7 @@ const MessagesPage = () => {
   const [searchParams] = useSearchParams();
   const { unreadMessages } = useRealtimeNotifications();
   const conversationUserId = searchParams.get('conversation');
+  const highlightMessageId = searchParams.get('message');
   const [activeTab, setActiveTab] = useState("messages");
 
   if (!user) {
@@ -72,7 +73,7 @@ const MessagesPage = () => {
           </TabsList>
 
           <TabsContent value="messages" className="mt-0 animate-fade-in">
-            <MyMessagesTabs initialTab="purchases" autoOpenConversation={conversationUserId} />
+            <MyMessagesTabs initialTab="purchases" autoOpenConversation={conversationUserId} highlightMessageId={highlightMessageId} />
           </TabsContent>
 
           <TabsContent value="orders" className="mt-0 animate-fade-in">

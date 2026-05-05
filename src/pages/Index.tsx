@@ -430,13 +430,15 @@ const Index = () => {
               Djassa
             </h1>
 
-            {/* Location badge - more prominent */}
-            <button 
-              onClick={() => navigate('/categories')}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary active:bg-primary/20 transition-colors flex-shrink-0"
+            {/* Location selector — quick picker, large tap area */}
+            <button
+              onClick={() => setLocationPickerOpen(true)}
+              aria-label="Changer de ville ou de commune"
+              className="flex items-center gap-1.5 px-3 py-2 min-h-[40px] rounded-full bg-primary/10 text-primary active:bg-primary/20 hover:bg-primary/15 transition-all flex-shrink-0 shadow-sm border border-primary/20"
             >
-              <MapPin className="w-3.5 h-3.5" />
-              <span className="text-[11px] font-semibold truncate max-w-[90px]">{locationLabel}</span>
+              <MapPin className="w-4 h-4" />
+              <span className="text-[12px] font-bold truncate max-w-[110px]">{locationLabel}</span>
+              <span className="text-[9px] opacity-70">▾</span>
             </button>
 
             {/* Spacer */}

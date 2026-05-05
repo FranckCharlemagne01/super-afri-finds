@@ -409,8 +409,13 @@ export const ChatDialog = ({ initialMessage, open, onOpenChange, userType, highl
 
                 const isProductShare = message.content === '[PRODUCT_SHARE]';
 
+                const isHighlighted = highlightedId === message.id;
                 return (
-                  <div key={message.id}>
+                  <div
+                    key={message.id}
+                    ref={isHighlighted ? highlightedRef : undefined}
+                    className={isHighlighted ? 'rounded-2xl ring-2 ring-primary/70 ring-offset-2 ring-offset-background animate-pulse transition-all' : ''}
+                  >
                     {showDateSeparator && (
                       <div className="flex items-center justify-center my-3">
                         <span className="text-[11px] text-muted-foreground bg-muted/60 px-3 py-1 rounded-full font-medium">{dateLabel}</span>
